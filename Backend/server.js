@@ -1,4 +1,8 @@
 const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv').config();
+const cookieParser = require('cookie-parser');
+
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const User = require('./models/userModel');
@@ -7,8 +11,6 @@ const storeRoute = require('./routes/store');
 const purchaseRoute = require('./routes/purchase');
 const salesRoute = require('./routes/sales');
 const pharmacyRoute = require('./routes/pharmacyRoutes');
-const cors = require('cors');
-const dotenv = require('dotenv').config();
 
 const app = express();
 const PORT = 4000;
@@ -16,10 +18,18 @@ const PORT = 4000;
 connectDB(); // Connect database
 
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+
+// Configure CORS middleware
+app.use(
+  cors({
+    origin: 'http://localhost:3000', // Frontend URL
+    credentials: true,
+  })
+);
 
 // Routes
-app.use('/api/user', userRoutes); // User API
+app.use('/api/v1/user', userRoutes); // User API
 app.use('/api/store', storeRoute); // Store API
 app.use('/api/product', productRoute); // Products API
 app.use('/api/purchase', purchaseRoute); // Purchase API
