@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import UploadImage from "../components/UploadImage";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import UploadImage from '../components/UploadImage';
 
 function Register() {
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    phoneNumber: "",
-    imageUrl: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    phoneNumber: '',
+    imageUrl: '',
   });
 
   const navigate = useNavigate();
@@ -21,17 +21,16 @@ function Register() {
 
   // Register User
   const registerUser = () => {
-    fetch("http://localhost:4000/api/register", {
-      method: "POST",
+    fetch('http://localhost:4000/api/v1/user/register', {
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
       body: JSON.stringify(form),
     })
       .then((result) => {
-        alert("Successfully Registered, Now Login with your details");
-        navigate('/login')
-        
+        alert('Successfully Registered, Now Login with your details');
+        navigate('/login');
       })
       .catch((err) => console.log(err));
   };
@@ -40,25 +39,24 @@ function Register() {
   // Uploading image to cloudinary
   const uploadImage = async (image) => {
     const data = new FormData();
-    data.append("file", image);
-    data.append("upload_preset", "inventoryapp");
+    data.append('file', image);
+    data.append('upload_preset', 'inventoryapp');
 
-    await fetch("https://api.cloudinary.com/v1_1/ddhayhptm/image/upload", {
-      method: "POST",
+    await fetch('https://api.cloudinary.com/v1_1/ddhayhptm/image/upload', {
+      method: 'POST',
       body: data,
     })
       .then((res) => res.json())
       .then((data) => {
         setForm({ ...form, imageUrl: data.url });
-        alert("Image Successfully Uploaded");
+        alert('Image Successfully Uploaded');
       })
       .catch((error) => console.log(error));
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
-  }
+  };
 
   return (
     <>
@@ -67,7 +65,7 @@ function Register() {
           <div>
             <img
               className="mx-auto h-12 w-auto"
-              src={require("../assets/logo.png")}
+              src={require('../assets/logo.png')}
               alt="Your Company"
             />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
@@ -157,9 +155,7 @@ function Register() {
               </div>
 
               <div className="text-sm">
-                <span
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
+                <span className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
                 </span>
               </div>
@@ -180,10 +176,8 @@ function Register() {
                 Sign up
               </button>
               <p className="mt-2 text-center text-sm text-gray-600">
-                Or{" "}
-                <span
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
+                Or{' '}
+                <span className="font-medium text-indigo-600 hover:text-indigo-500">
                   Already Have an Account, Please
                   <Link to="/login"> Signin now </Link>
                 </span>
@@ -192,7 +186,7 @@ function Register() {
           </form>
         </div>
         <div className="flex justify-center order-first sm:order-last">
-          <img src={require("../assets/Login.png")} alt="" />
+          <img src={require('../assets/Login.png')} alt="" />
         </div>
       </div>
     </>
