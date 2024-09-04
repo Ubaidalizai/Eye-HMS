@@ -1,10 +1,83 @@
 const Pharmacy = require('../models/pharmacyModel');
+const asyncHandler = require('../middlewares/asyncHandler');
+const validateMongoDBId = require('../utils/validateMongoDBId');
 
-exports.getDrugsInPharmacy = async (req, res) => {
+exports.getAllDrugsInPharmacy = asyncHandler(async (req, res) => {
   try {
     const drugs = await Pharmacy.find();
     res.status(200).json(drugs);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// pharmacyController.js
+exports.getDrug = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    validateMongoDBId(id);
+    const drug = await Pharmacy.findById(id);
+    if (!drug) {
+      res.status(404);
+      throw new Error('Drug not found');
+    }
+    res.status(200).json({
+      status: 'success',
+      data: {
+        drug,
+      },
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error('Failed to retrieve the drug');
+  }
+});
+
+// pharmacyController.js
+exports.updateDrug = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    validateMongoDBId(id);
+    const drug = await Pharmacy.findByIdAndUpdate(id, req.body, {
+      new: true, // Return the updated document
+      runValidators: true, // Validate the update operation against the schema
+    });
+
+    if (!drug) {
+      res.status(404);
+      throw new Error('Drug not found');
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        drug,
+      },
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error('Failed to update the drug');
+  }
+});
+
+// pharmacyController.js
+exports.deleteDrug = async (req, res) => {
+  try {
+    const { id } = req.params;
+    validateMongoDBId(id);
+    const drug = await Pharmacy.findByIdAndDelete(id);
+
+    if (!drug) {
+      res.status(404);
+      throw new Error('Drug not found');
+    }
+
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error('Failed to delete the drug');
   }
 };
