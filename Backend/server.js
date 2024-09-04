@@ -3,9 +3,10 @@ const cors = require('cors');
 const dotenv = require('dotenv').config();
 const cookieParser = require('cookie-parser');
 
-const connectDB = require('./config/db');
-const userRoutes = require('./routes/userRoutes');
 const User = require('./models/userModel');
+const connectDB = require('./config/db');
+
+const userRoutes = require('./routes/userRoutes');
 const productRoute = require('./routes/product');
 const storeRoute = require('./routes/store');
 const purchaseRoute = require('./routes/purchase');
@@ -33,8 +34,8 @@ app.use('/api/v1/user', userRoutes); // User API
 app.use('/api/store', storeRoute); // Store API
 app.use('/api/product', productRoute); // Products API
 app.use('/api/purchase', purchaseRoute); // Purchase API
-app.use('/api/sales', salesRoute); // Sales API
-app.use('/api/pharmacy', pharmacyRoute); // Pharmacy API
+app.use('/api/v1/sales', salesRoute); // Sales API
+app.use('/api/v1/pharmacy', pharmacyRoute); // Pharmacy API
 
 // ------------- Signin --------------
 let userAuthCheck;
