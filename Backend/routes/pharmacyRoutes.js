@@ -3,6 +3,7 @@ const app = express();
 const pharmacy = require('../controllers/pharmacy');
 
 // Add Sales
+app.post('/drugs/sell', pharmacy.sellDrugs);
 app.get('/drugs', pharmacy.getAllDrugsInPharmacy);
 app.get('/drugs/:id', pharmacy.getDrug);
 app.patch('/drugs/:id', pharmacy.updateDrug);
