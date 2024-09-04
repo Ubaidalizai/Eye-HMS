@@ -68,9 +68,9 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
 
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password, phone } = req.body;
+  const { firstName, lastName, email, password, phoneNumber } = req.body;
 
-  if (!firstName || !lastName || !email || !password || !phone) {
+  if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new Error('Please fill all the inputs.');
   }
 
@@ -85,19 +85,19 @@ const registerUser = asyncHandler(async (req, res) => {
     lastName,
     email,
     password,
-    phone,
+    phoneNumber,
   });
 
   try {
     await newUser.save();
-    generateToken(res, newUser._id);
+    const token = generateToken(res, newUser._id);
 
     res.status(201).json({
       _id: newUser._id,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       email: newUser.email,
-      phone: newUser.phone,
+      phoneNumber: newUser.phoneNumber,
     });
   } catch (error) {
     res.status(400);
@@ -108,13 +108,11 @@ const registerUser = asyncHandler(async (req, res) => {
 // Login user
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
   // 1) Check if email and password is exist!
   if (!email || !password) {
     res.status(400);
     throw new Error('Please provide email and password!');
   }
-
   const existingUser = await User.findOne({ email });
 
   // 2) Check if user exists and password is correct
@@ -173,14 +171,14 @@ const updateUserById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDBId(id);
 
-  const { firstName, lastName, email, phone } = req.body;
+  const { firstName, lastName, email, phoneNumber } = req.body;
   const user = await User.findById({ _id: id });
 
   if (user) {
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
-    user.phone = phone || user.phone;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
 
     const updatedUser = await user.save();
     res.status(200).json({
@@ -188,6 +186,7 @@ const updateUserById = asyncHandler(async (req, res) => {
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       email: updatedUser.email,
+      phoneNumber: user.phoneNumber,
     });
   } else {
     res.status(404);
@@ -225,7 +224,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      phone: user.phone,
+      phoneNumber: user.phoneNumber,
     });
   } else {
     res.status(404);
@@ -236,19 +235,24 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
 const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validMongoDBId(_id);
+  const { firstName, lastName, email, phoneNumber } = req.body;
 
   const user = await User.findById(_id);
 
   if (user) {
-    user.username = req.body.username || user.username;
-    user.email = req.body.email || user.email;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.email = email || user.email;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
 
     const updatedUser = await user.save();
 
     res.json({
       _id: updatedUser._id,
-      username: updatedUser.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: updatedUser.email,
+      phoneNumber: user.phoneNumber,
     });
   } else {
     res.status(404);
