@@ -13,6 +13,10 @@ import { useEffect, useState } from "react";
 import Store from "./pages/Store";
 import Sales from "./pages/Sales";
 import PurchaseDetails from "./pages/PurchaseDetails";
+import Move from "./pages/Move";
+import Pharmacy from "./pages/Pharmacy";
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 const App = () => {
   const [user, setUser] = useState("");
@@ -58,29 +62,34 @@ const App = () => {
     );
 
   return (
-    <AuthContext.Provider value={value}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedWrapper>
-                <Layout />
-              </ProtectedWrapper>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/purchase-details" element={<PurchaseDetails />} />
-            <Route path="/sales" element={<Sales />} />
-            <Route path="/manage-store" element={<Store />} />
-          </Route>
-          <Route path="*" element={<NoPageFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthContext.Provider>
+    <Provider store={store}>
+      <AuthContext.Provider value={value}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedWrapper>
+                  <Layout />
+                </ProtectedWrapper>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/purchase-details" element={<PurchaseDetails />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/manage-store" element={<Store />} />
+              <Route path="/move" element={<Move />} />
+              <Route path="/*" element={<Move />} />
+              <Route path="/pharmacy" element={<Pharmacy />} />
+            </Route>
+            <Route path="*" element={<NoPageFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthContext.Provider>
+    </Provider>
   );
 };
 
