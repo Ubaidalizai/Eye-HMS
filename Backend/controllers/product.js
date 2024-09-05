@@ -1,5 +1,6 @@
 const Product = require('../models/product');
 const Purchase = require('../models/purchase');
+const DrugMovement = require('../models/drugMovmentModel');
 const Sales = require('../models/sales');
 const Pharmacy = require('../models/pharmacyModel');
 
@@ -111,6 +112,14 @@ const moveDrugsToPharmacy = async (req, res) => {
     }
 
     await pharmacyDrug.save();
+
+    // 4. Record the movement in the drugMovement collection
+    await DrugMovement.create({
+      inventory_id: product._id,
+      pharmacy_id: pharmacyDrug._id,
+      quantity_moved: quantity,
+      moved_by: req.user._id, // Assuming user is available in req.user
+    });
 
     res.status(200).json({ message: 'Drugs moved to pharmacy successfully' });
   } catch (error) {
