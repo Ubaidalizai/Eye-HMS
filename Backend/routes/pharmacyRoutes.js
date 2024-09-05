@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const pharmacy = require('../controllers/pharmacy');
 
-// Add Sales
+// Add sales
 app.post('/drugs/sell', pharmacy.sellDrugs);
 app.get('/drugs', pharmacy.getAllDrugsInPharmacy);
 app.get('/drugs/:id', pharmacy.getDrug);
