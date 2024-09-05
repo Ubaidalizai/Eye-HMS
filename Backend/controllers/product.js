@@ -2,12 +2,7 @@ const Product = require("../models/product");
 const Purchase = require("../models/purchase");
 const Sales = require("../models/sales");
 const Pharmacy = require("../models/pharmacyModel");
-=======
-const Product = require('../models/product');
-const Purchase = require('../models/purchase');
-const DrugMovement = require('../models/drugMovmentModel');
-const Sales = require('../models/sales');
-const Pharmacy = require('../models/pharmacyModel');
+const DrugMovement = require("../models/drugMovmentModel");
 
 // Add Post
 const addProduct = (req, res) => {
@@ -127,8 +122,7 @@ const moveDrugsToPharmacy = async (req, res) => {
       moved_by: req.user._id, // Assuming user is available in req.user
     });
 
-    res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
-
+    res.status(200).json({ message: "Drugs moved to pharmacy successfully!" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
