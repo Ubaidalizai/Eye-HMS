@@ -260,6 +260,65 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+exports.forgotPassword = asyncHandler(async (req, res) => {
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    res.status(404);
+    throw new Error('There is no user with email address.');
+  }
+
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send it to user's email
+  try {
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/resetPassword/${resetToken}`;
+    await new Email(user, resetURL).sendPasswordReset();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email!',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500
+    );
+  }
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validMongoDBId(_id);
+  const { password } = req.body;
+
+  // 1) Get user from collection
+  const user = await User.findOne({ _id: _id });
+
+  // 2) Check if the POSTed current password is correct
+  if (!user.isPasswordValid(password)) {
+    res.status(401);
+    throw new Error('Your current password is wrong');
+  }
+  // 3) If so, update the password
+  user.password = password;
+  await user.save();
+
+  // 4) Log in user, send jwt
+  generateToken(res, user._id);
+  res.status(200).json({
+    status: 'success',
+    message: 'Your password changed successfully',
+  });
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -274,4 +333,5 @@ module.exports = {
   uploadUserPhoto,
   resizeUserPhoto,
   updateUserPhoto,
+  updatePassword,
 };
