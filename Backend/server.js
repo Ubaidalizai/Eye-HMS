@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv').config();
 const cookieParser = require('cookie-parser');
+const path = require('path');
 
 const User = require('./models/userModel');
 const connectDB = require('./config/db');
@@ -18,14 +19,17 @@ const PORT = 4000;
 
 connectDB(); // Connect database
 
+// Serve static images
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 // Configure CORS middleware
 app.use(
   cors({
     origin: 'http://localhost:3000', // Frontend URL
-    credentials: true,
+    credentials: true, // Allow credentials (cookies, authorization headers)
   })
 );
 
