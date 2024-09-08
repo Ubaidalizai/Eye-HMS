@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
 const product = require('../controllers/product');
-// const authenticate = require("../middlewares/authMiddleware");
+const { authenticate } = require('../middlewares/authMiddleware');
 
 // Move Drugs From Inventory to pharmacy
-app.post('/move', product.moveDrugsToPharmacy);
+app.post('/move', authenticate, product.moveDrugsToPharmacy);
 
 // Add Product
 app.post('/add', product.addProduct);
