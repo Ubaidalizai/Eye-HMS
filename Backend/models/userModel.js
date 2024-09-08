@@ -41,9 +41,6 @@ const userSchema = new mongoose.Schema(
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || this.isNew) return next();
-
   this.passwordChangedAt = Date.now() - 1000;
 });
 
@@ -69,7 +66,7 @@ userSchema.methods.createPasswordResetToken = function () {
   console.log({ resetToken }, this.passwordResetToken);
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // Token expires in 10 minutes
-const User = mongoose.model("User", userSchema)
+  const User = mongoose.model('User', userSchema);
 
   return resetToken;
 };
