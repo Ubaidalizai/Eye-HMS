@@ -2,11 +2,14 @@ const User = require('../models/userModel');
 const asyncHandler = require('../middlewares/asyncHandler.js');
 const validMongoDBId = require('../utils/validateMongoDBId.js');
 const generateToken = require('../utils/generateToken.js');
+const validateMongoDBId = require('../utils/validateMongoDBId.js');
+const Email = require('../utils/email.js');
+
 const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
-const validateMongoDBId = require('../utils/validateMongoDBId.js');
+const crypto = require('crypto');
 
 // Multer setup
 const multerStorage = multer.memoryStorage();
@@ -19,7 +22,7 @@ const multerFilter = (req, file, cb) => {
   }
 };
 
-const dir = path.join(__dirname, 'public/img/users');
+const dir = path.join(__dirname, '../public/img/users');
 if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir, { recursive: true });
 }
@@ -48,15 +51,15 @@ const resizeUserPhoto = asyncHandler(async (req, res, next) => {
 
 const updateUserPhoto = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     {
-      image: req.file.filename,
+      imageUrl: req.file.filename,
     },
     {
       new: true,
       runValidators: true,
     }
-  );
+  ).select('-password');
 
   res.status(200).json({
     status: 'success',
@@ -220,11 +223,15 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById({ _id });
   if (user) {
     res.status(200).json({
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
+      status: 'success',
+      data: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        imageUrl: user.imageUrl,
+      },
     });
   } else {
     res.status(404);
@@ -260,7 +267,7 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-exports.forgotPassword = asyncHandler(async (req, res) => {
+const forgotPassword = asyncHandler(async (req, res) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
@@ -276,7 +283,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   try {
     const resetURL = `${req.protocol}://${req.get(
       'host'
-    )}/api/v1/users/resetPassword/${resetToken}`;
+    )}/api/v1/user/resetPassword/${resetToken}`;
     await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
@@ -287,11 +294,41 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    return next(
-      new AppError('There was an error sending the email. Try again later!'),
-      500
-    );
+    res.status(500);
+    console.log(err);
+    throw new Error('There was an error sending the email. Try again later!');
   }
+});
+
+const resetPassword = asyncHandler(async (req, res, next) => {
+  // 1) Get user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  // 2) if the token has not expired and then is the user, set the new password
+  if (!user) {
+    res.status(400);
+    throw new Error('Token is invalid or has expired!');
+  }
+  user.password = req.body.password;
+  // user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+  // 3) update passwordChangedAt property for the user
+  // 4) Log the user in, send JWT
+  generateToken(res, user._id);
+  res.status(200).json({
+    status: 'success',
+    message: 'Your password reseed successfully',
+  });
 });
 
 const updatePassword = asyncHandler(async (req, res) => {
@@ -334,4 +371,6 @@ module.exports = {
   resizeUserPhoto,
   updateUserPhoto,
   updatePassword,
+  forgotPassword,
+  resetPassword,
 };
