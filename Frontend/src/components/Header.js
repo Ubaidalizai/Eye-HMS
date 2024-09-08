@@ -1,26 +1,52 @@
-import { Fragment, useContext } from "react";
-import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import AuthContext from "../AuthContext";
-import { Link } from "react-router-dom";
+import { Fragment, useContext, useState, useEffect } from 'react';
+import { Disclosure, Menu, Transition } from '@headlessui/react';
+import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import AuthContext from '../AuthContext';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const navigation = [
-  { name: "Dashboard", href: "/", current: true },
-  { name: "Inventory", href: "/inventory", current: false },
-  { name: "Purchase Details", href: "/purchase-details", current: false },
-  { name: "Sales", href: "/sales", current: false },
-  { name: "Manage Store", href: "/manage-store", current: false },
+  { name: 'Dashboard', href: '/', current: true },
+  { name: 'Inventory', href: '/inventory', current: false },
+  { name: 'Purchase Details', href: '/purchase-details', current: false },
+  { name: 'Sales', href: '/sales', current: false },
+  { name: 'Manage Store', href: '/manage-store', current: false },
 ];
 
-const userNavigation = [{ name: "Sign out", href: "./login" }];
+const userNavigation = [{ name: 'Sign out', href: './login' }];
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 export default function Header() {
+  const [userInfo, setUserInfo] = useState('');
   const authContext = useContext(AuthContext);
-  const localStorageData = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Send a GET request to the server to fetch the user profile
+        const res = await axios.get(
+          'http://localhost:4000/api/v1/user/profile',
+          { withCredentials: true }
+        );
+
+        // Check if the response is valid
+        if (res.status === 200) {
+          // Update the user info state with the response data
+          setUserInfo(res?.data?.data);
+        } else {
+          console.error('Failed to fetch user profile', res);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <>
       <div className="min-h-full">
@@ -34,7 +60,7 @@ export default function Header() {
                       <div className="flex justify-center items-center gap-2">
                         <img
                           className="h-8 w-8"
-                          src={require("../assets/logo.png")}
+                          src={require('../assets/logo.png')}
                           alt="Inventory Management System"
                         />
                         <span className="font-bold text-white italic">
@@ -60,7 +86,7 @@ export default function Header() {
                             <span className="sr-only">Open user menu</span>
                             <img
                               className="h-8 w-8 rounded-full"
-                              src={localStorageData.imageUrl}
+                              src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
                               alt="profile"
                             />
                           </Menu.Button>
@@ -81,12 +107,12 @@ export default function Header() {
                                   <Link
                                     to={item.href}
                                     className={classNames(
-                                      active ? "bg-gray-100" : "",
-                                      "block px-4 py-2 text-sm text-gray-700"
+                                      active ? 'bg-gray-100' : '',
+                                      'block px-4 py-2 text-sm text-gray-700'
                                     )}
                                   >
                                     <span onClick={() => authContext.signout()}>
-                                      {item.name}{" "}
+                                      {item.name}{' '}
                                     </span>
                                   </Link>
                                 )}
@@ -127,11 +153,11 @@ export default function Header() {
                         // href={item.href}
                         className={classNames(
                           item.current
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                          "block rounded-md px-3 py-2 text-base font-medium"
+                            ? 'bg-gray-900 text-white'
+                            : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                          'block rounded-md px-3 py-2 text-base font-medium'
                         )}
-                        aria-current={item.current ? "page" : undefined}
+                        aria-current={item.current ? 'page' : undefined}
                       >
                         {item.name}
                       </Disclosure.Button>
@@ -143,18 +169,16 @@ export default function Header() {
                     <div className="flex-shrink-0">
                       <img
                         className="h-10 w-10 rounded-full"
-                        src={localStorageData.imageUrl}
+                        src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
                         alt="profile"
                       />
                     </div>
                     <div className="ml-3">
                       <div className="text-base font-medium leading-none text-white">
-                        {localStorageData.firstName +
-                          " " +
-                          localStorageData.lastName}
+                        {userInfo.firstName + ' ' + userInfo.lastName}
                       </div>
                       <div className="text-sm font-medium leading-none text-gray-400">
-                        {localStorageData.email}
+                        {userInfo.email}
                       </div>
                     </div>
                     <button
@@ -174,7 +198,7 @@ export default function Header() {
                         className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
                       >
                         <span onClick={() => authContext.signout()}>
-                          {item.name}{" "}
+                          {item.name}{' '}
                         </span>
                       </Disclosure.Button>
                     ))}

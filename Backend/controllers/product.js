@@ -1,3 +1,4 @@
+
 const Product = require("../models/product");
 const Purchase = require("../models/purchase");
 const Sales = require("../models/sales");
@@ -62,7 +63,7 @@ const updateSelectedProduct = async (req, res) => {
     res.json(updatedResult);
   } catch (error) {
     console.log(error);
-    res.status(402).send("Error");
+    res.status(402).send('Error');
   }
 };
 
@@ -70,7 +71,7 @@ const updateSelectedProduct = async (req, res) => {
 const searchProduct = async (req, res) => {
   const searchTerm = req.query.searchTerm;
   const products = await Product.find({
-    name: { $regex: searchTerm, $options: "i" },
+    name: { $regex: searchTerm, $options: 'i' },
   });
   res.json(products);
 };
@@ -78,7 +79,6 @@ const searchProduct = async (req, res) => {
 // move drug from inventory to pharmacy
 const moveDrugsToPharmacy = async (req, res) => {
   const { name, quantity, salePrice } = req.body;
-  console.log(req.body);
   try {
     // Find the drug in the inventory
     const product = await Product.findOne({ name: name });
@@ -86,7 +86,7 @@ const moveDrugsToPharmacy = async (req, res) => {
     if (!product || product.stock < quantity) {
       return res
         .status(400)
-        .json({ message: "Insufficient quantity in inventory" });
+        .json({ message: 'Insufficient quantity in inventory' });
     }
 
     // Update the inventory quantity
@@ -113,7 +113,6 @@ const moveDrugsToPharmacy = async (req, res) => {
 
     await pharmacyDrug.save();
 
-    res.status(200).json({ message: "Drugs moved to pharmacy successfully!" });
     // 4. Record the movement in the drugMovement collection
     await DrugMovement.create({
       inventory_id: product._id,
@@ -123,8 +122,10 @@ const moveDrugsToPharmacy = async (req, res) => {
     });
 
     res.status(200).json({ message: "Drugs moved to pharmacy successfully!" });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500);
+    throw new Error(error);
   }
 };
 

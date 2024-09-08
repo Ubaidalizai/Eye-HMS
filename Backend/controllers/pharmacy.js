@@ -1,9 +1,12 @@
 const Pharmacy = require('../models/pharmacyModel');
 const pharmacySale = require('../models/pharmacySaleModel');
+const product = require('../models/product');
+const purchase = require('../models/purchase');
 
 const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
+// GET ALL DRUGS IN PHARMACY
 exports.getAllDrugsInPharmacy = asyncHandler(async (req, res) => {
   try {
     const drugs = await Pharmacy.find();
@@ -13,10 +16,12 @@ exports.getAllDrugsInPharmacy = asyncHandler(async (req, res) => {
   }
 });
 
+// SELL DRUGS
 exports.sellDrugs = asyncHandler(async (req, res) => {
   try {
     const { drugsSold } = req.body; // Array of drug IDs and quantities [{ drugId, quantity }, ...]
     let totalIncome = 0;
+    let totalNetIncome = 0;
     const soldItems = [];
 
     for (const item of drugsSold) {
@@ -44,6 +49,27 @@ exports.sellDrugs = asyncHandler(async (req, res) => {
       const income = drug.salePrice * item.quantity;
       totalIncome += income;
 
+      const productInInventory = await product.findOne({
+        name: drug.name,
+      });
+
+      if (!productInInventory) {
+        res.status(404);
+        throw new Error(`Product with name ${drug.name} not found`);
+      }
+
+      // Find the purchase record for this drug
+      const productPurchase = await purchase.findOne({
+        ProductID: productInInventory._id,
+      });
+
+      if (!productPurchase) {
+        res.status(404);
+        throw new Error(`Purchase record not found for drug: ${drug.name}`);
+      }
+      // Calculate the net income for this drug
+      totalNetIncome +=
+        income - productPurchase.TotalPurchaseAmount * item.quantity;
       // Update drug quantity
       drug.quantity -= item.quantity;
       await drug.save();
@@ -62,6 +88,7 @@ exports.sellDrugs = asyncHandler(async (req, res) => {
     const sale = await pharmacySale.create({
       soldItems,
       totalIncome,
+      totalNetIncome,
       date: Date.now(),
     });
     res.status(201).json({
@@ -72,7 +99,7 @@ exports.sellDrugs = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     res.status(500);
-    throw new Error('Failed to complete the sale', error.message);
+    throw new Error(`Failed to complete the sale, ${error.message}`);
   }
 });
 
@@ -98,7 +125,6 @@ exports.getDrug = asyncHandler(async (req, res) => {
   }
 });
 
-// pharmacyController.js
 exports.updateDrug = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
