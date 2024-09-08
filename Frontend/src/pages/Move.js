@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { moveItemAPI, fetchDrugs } from "../redux/inventorySlice";
+import { useDispatch } from "react-redux";
+import { moveItemAPI } from "../redux/inventorySlice";
 import AuthContext from "../AuthContext";
 
 const Move = () => {
@@ -27,8 +27,8 @@ const Move = () => {
 
     fetchProductsData();
   }, [authContext.user]);
+
   const handleMoveItem = (item) => {
-    console.log(item);
     const quantity = prompt(`How many of ${item.name} do you want to move?`, 1);
     const quantityNum = parseInt(quantity, 10);
 
@@ -37,11 +37,11 @@ const Move = () => {
       return;
     }
 
-    // Assuming item has a salePrice property
-    const salePrice = item.salePrice; // Adjust this based on your item structure
-
     dispatch(
-      moveItemAPI({ item: { ...item, salePrice }, quantity: quantityNum })
+      moveItemAPI({
+        item: { name: item.name, salePrice: item.salePrice },
+        quantity: quantityNum,
+      })
     );
   };
 
@@ -54,7 +54,7 @@ const Move = () => {
       <ul className="space-y-4">
         {products.map((item) => (
           <li
-            key={item.id}
+            key={item._id}
             className="flex justify-between items-center p-4 border-b border-gray-200"
           >
             <div>
