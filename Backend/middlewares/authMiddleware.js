@@ -36,4 +36,33 @@ const authenticate = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = authenticate;
+const authorizeAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(401).send('Not authorized as an admin.');
+  }
+};
+
+const authorizePharmacist = (req, res, next) => {
+  if (req.user && req.user.role === 'pharmacist') {
+    next();
+  } else {
+    res.status(401).send('Not authorized as an pharmacist.');
+  }
+};
+
+const authorizeDoctor = (req, res, next) => {
+  if (req.user && req.user.role === 'doctor') {
+    next();
+  } else {
+    res.status(401).send('Not authorized as an doctor.');
+  }
+};
+
+module.exports = {
+  authenticate,
+  authorizeAdmin,
+  authorizePharmacist,
+  authorizeDoctor,
+};
