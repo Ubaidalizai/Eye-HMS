@@ -15,6 +15,7 @@ export const moveItemAPI = createAsyncThunk(
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(payload), // Send only name, quantity, and salePrice
     });
 

@@ -37,9 +37,20 @@ const Move = () => {
       return;
     }
 
+    const salePrice = prompt(
+      `Enter the sale price for ${item.name}:`,
+      item.salePrice
+    );
+    const salePriceNum = parseFloat(salePrice);
+
+    if (isNaN(salePriceNum) || salePriceNum <= 0) {
+      alert("Please enter a valid sale price.");
+      return;
+    }
+
     dispatch(
       moveItemAPI({
-        item: { name: item.name, salePrice: item.salePrice },
+        item: { name: item.name, salePrice: salePriceNum },
         quantity: quantityNum,
       })
     );
