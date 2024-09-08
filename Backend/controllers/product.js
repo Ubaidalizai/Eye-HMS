@@ -1,13 +1,8 @@
-const Product = require("../models/product");
-const Purchase = require("../models/purchase");
-const Sales = require("../models/sales");
-const Pharmacy = require("../models/pharmacyModel");
-=======
 const Product = require('../models/product');
 const Purchase = require('../models/purchase');
-const DrugMovement = require('../models/drugMovmentModel');
 const Sales = require('../models/sales');
 const Pharmacy = require('../models/pharmacyModel');
+const DrugMovement = require('../models/drugMovmentModel');
 
 // Add Post
 const addProduct = (req, res) => {
@@ -67,7 +62,7 @@ const updateSelectedProduct = async (req, res) => {
     res.json(updatedResult);
   } catch (error) {
     console.log(error);
-    res.status(402).send("Error");
+    res.status(402).send('Error');
   }
 };
 
@@ -75,7 +70,7 @@ const updateSelectedProduct = async (req, res) => {
 const searchProduct = async (req, res) => {
   const searchTerm = req.query.searchTerm;
   const products = await Product.find({
-    name: { $regex: searchTerm, $options: "i" },
+    name: { $regex: searchTerm, $options: 'i' },
   });
   res.json(products);
 };
@@ -91,7 +86,7 @@ const moveDrugsToPharmacy = async (req, res) => {
     if (!product || product.stock < quantity) {
       return res
         .status(400)
-        .json({ message: "Insufficient quantity in inventory" });
+        .json({ message: 'Insufficient quantity in inventory' });
     }
 
     // Update the inventory quantity
@@ -118,7 +113,7 @@ const moveDrugsToPharmacy = async (req, res) => {
 
     await pharmacyDrug.save();
 
-    res.status(200).json({ message: "Drugs moved to pharmacy successfully!" });
+    res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
     // 4. Record the movement in the drugMovement collection
     await DrugMovement.create({
       inventory_id: product._id,
@@ -128,7 +123,6 @@ const moveDrugsToPharmacy = async (req, res) => {
     });
 
     res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
