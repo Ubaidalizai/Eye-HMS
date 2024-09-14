@@ -1,12 +1,12 @@
 // import { LockClosedIcon } from "@heroicons/react/20/solid";
-import { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import AuthContext from '../AuthContext';
+import { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AuthContext from "../AuthContext";
 
 function Login() {
   const [form, setForm] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const authContext = useContext(AuthContext);
@@ -18,27 +18,27 @@ function Login() {
 
   const loginUser = (e) => {
     // Cannot send empty data
-    if (form.email === '' || form.password === '') {
-      alert('To login user, enter details to proceed...');
+    if (form.email === "" || form.password === "") {
+      alert("To login user, enter details to proceed...");
     } else {
-      fetch('http://localhost:4000/api/v1/user/login', {
-        method: 'POST',
+      fetch("http://localhost:4000/api/v1/user/login", {
+        method: "POST",
         headers: {
-          'Content-type': 'application/json',
+          "Content-type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(form),
       })
         .then((result) => result.json())
         .then((data) => {
-          console.log('User login!!!', JSON.stringify(data));
-          localStorage.setItem('user', JSON.stringify(data));
+          console.log("User login!!!", JSON.stringify(data));
+          localStorage.setItem("user", JSON.stringify(data));
           authContext.signin(data._id, () => {
-            navigate('/');
+            navigate("/");
           });
         })
         .catch((error) => {
-          console.log('Something went wrong ', error);
+          console.log("Something went wrong ", error);
         });
     }
     // authCheck();
@@ -52,13 +52,13 @@ function Login() {
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 h-screen  items-center place-items-center">
         <div className="flex justify-center">
-          <img src={require('../assets/signup.jpg')} alt="" />
+          <img src={require("../assets/signup.jpg")} alt="" />
         </div>
         <div className="w-full max-w-md space-y-8 p-10 rounded-lg">
           <div>
             <img
               className="mx-auto h-12 w-auto"
-              src={require('../assets/logo.png')}
+              src={require("../assets/logo.png")}
               alt="Your Company"
             />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
@@ -146,9 +146,9 @@ function Login() {
                 Sign in
               </button>
               <p className="mt-2 text-center text-sm text-gray-600">
-                Or{' '}
+                Or{" "}
                 <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Don't Have an Account, Please{' '}
+                  Don't Have an Account, Please{" "}
                   <Link to="/register"> Register now </Link>
                 </span>
               </p>
