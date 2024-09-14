@@ -17,6 +17,7 @@ import Move from "./pages/Move";
 import Pharmacy from "./pages/Pharmacy";
 import { Provider } from "react-redux";
 import store from "./redux/store";
+import Profile from "./pages/Profile";
 
 const App = () => {
   const [user, setUser] = useState("");
@@ -66,10 +67,10 @@ const App = () => {
       <AuthContext.Provider value={value}>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
             <Route
-              path="/"
+              path='/'
               element={
                 <ProtectedWrapper>
                   <Layout />
@@ -77,15 +78,16 @@ const App = () => {
               }
             >
               <Route index element={<Dashboard />} />
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/purchase-details" element={<PurchaseDetails />} />
-              <Route path="/sales" element={<Sales />} />
-              <Route path="/manage-store" element={<Store />} />
-              <Route path="/move" element={<Move />} />
-              <Route path="/*" element={<Move />} />
-              <Route path="/pharmacy" element={<Pharmacy />} />
+              <Route path='/inventory' element={<Inventory />} />
+              <Route path='/purchase-details' element={<PurchaseDetails />} />
+              <Route path='/sales' element={<Sales />} />
+              <Route path='/manage-store' element={<Store />} />
+              <Route path='/move' element={<Move />} />
+              <Route path='/*' element={<Move />} />
+              <Route path='/pharmacy' element={<Pharmacy />} />
+              <Route path='/profile' element={<Profile />} />
             </Route>
-            <Route path="*" element={<NoPageFound />} />
+            <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>
