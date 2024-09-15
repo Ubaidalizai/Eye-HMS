@@ -8,12 +8,17 @@ const {
 
 // Enable authentication middleware and admin authorization for all routes in this file
 router.use(authenticate);
+
 // Move Drugs From Inventory to pharmacy
 router.post('/product/move', product.moveDrugsToPharmacy);
+
 // Search Products
 router.get('/product/search', product.searchProduct);
 
-router.route('/product/').get(product.getAllProducts).post(product.addProduct);
+router.get('/product/drugs', product.getDrugs);
+router.get('/product/sunglasses', product.getSunglasses);
+
+router.route('/product').get(product.getAllProducts).post(product.addProduct);
 
 router
   .route('/product/:id')
