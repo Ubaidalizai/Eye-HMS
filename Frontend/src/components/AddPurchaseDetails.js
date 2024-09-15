@@ -1,25 +1,39 @@
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
-  products,
+
   handlePageUpdate,
-  authContext
+  authContext,
 }) {
+  const [products, setAllProducts] = useState([]);
+  const [productCatagory, setProductCatagory] = useState("");
   const [purchase, setPurchase] = useState({
     userID: authContext.user,
     productID: "",
     quantityPurchased: "",
     purchaseDate: "",
     totalPurchaseAmount: "",
+    category: "", // New category field
   });
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   console.log("PPu: ", purchase);
+  const fetchProductsData = ({ productCatagory }) => {
+    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setAllProducts(data);
+      })
+      .catch((err) => console.log(err));
+  };
 
+  useEffect(() => {
+    fetchProductsData(productCatagory);
+  }, [productCatagory]);
   // Handling Input Change for input fields
   const handleInputChange = (key, value) => {
     setPurchase({ ...purchase, [key]: value });
@@ -44,7 +58,6 @@ export default function AddPurchaseDetails({
   };
 
   return (
-    // Modal
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         as="div"
@@ -87,12 +100,34 @@ export default function AddPurchaseDetails({
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left ">
                       <Dialog.Title
                         as="h3"
-                        className="text-lg  py-4 font-semibold leading-6 text-gray-900 "
+                        className="text-lg py-4 font-semibold leading-6 text-gray-900 "
                       >
                         Purchase Details
                       </Dialog.Title>
                       <form action="#">
                         <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                          <div>
+                            <label
+                              htmlFor="category"
+                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                            >
+                              Category
+                            </label>
+                            <select
+                              id="category"
+                              name="category"
+                              value={purchase.category}
+                              onChange={(e) =>
+                                handleInputChange(e.target.name, e.target.value)
+                              }
+                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                            >
+                              <option value="">Select Category</option>
+                              <option value="drug">Drug</option>
+                              <option value="sunglasses">Sunglasses</option>
+                            </select>
+                          </div>
+
                           <div>
                             <label
                               htmlFor="productID"
@@ -109,15 +144,14 @@ export default function AddPurchaseDetails({
                               }
                             >
                               <option selected="">Select Products</option>
-                              {products.map((element, index) => {
-                                return (
-                                  <option key={element._id} value={element._id}>
-                                    {element.name}
-                                  </option>
-                                );
-                              })}
+                              {products.map((element) => (
+                                <option key={element._id} value={element._id}>
+                                  {element.name}
+                                </option>
+                              ))}
                             </select>
                           </div>
+
                           <div>
                             <label
                               htmlFor="quantityPurchased"
@@ -137,6 +171,7 @@ export default function AddPurchaseDetails({
                               placeholder="0 - 999"
                             />
                           </div>
+
                           <div>
                             <label
                               htmlFor="totalPurchaseAmount"
@@ -147,7 +182,7 @@ export default function AddPurchaseDetails({
                             <input
                               type="number"
                               name="totalPurchaseAmount"
-                              id="price"
+                              id="totalPurchaseAmount"
                               value={purchase.totalPurchaseAmount}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
@@ -156,12 +191,8 @@ export default function AddPurchaseDetails({
                               placeholder="$299"
                             />
                           </div>
+
                           <div className="h-fit w-fit">
-                            {/* <Datepicker
-                              onChange={handleChange}
-                              show={show}
-                              setShow={handleClose}
-                            /> */}
                             <label
                               className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                               htmlFor="purchaseDate"
@@ -180,32 +211,7 @@ export default function AddPurchaseDetails({
                             />
                           </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          {/* <button
-                            type="submit"
-                            className="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                          >
-                            Update product
-                          </button> */}
-                          {/* <button
-                            type="button"
-                            className="text-red-600 inline-flex items-center hover:text-white border border-red-600 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
-                          >
-                            <svg
-                              className="mr-1 -ml-1 w-5 h-5"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                fill-rule="evenodd"
-                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                clip-rule="evenodd"
-                              ></path>
-                            </svg>
-                            Delete
-                          </button> */}
-                        </div>
+                        <div className="flex items-center space-x-4"></div>
                       </form>
                     </div>
                   </div>

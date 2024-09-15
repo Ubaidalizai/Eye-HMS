@@ -1,16 +1,15 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 
 const router = express.Router();
-const pharmacy = require('../controllers/pharmacy');
-const { authenticate } = require('../middlewares/authMiddleware');
+const pharmacy = require("../controllers/pharmacy");
+const { authenticate } = require("../middlewares/authMiddleware");
 
 router.use(authenticate); // Enable authentication middleware for all routes in this file
 
 router.get('/', pharmacy.getAllDrugsInPharmacy);
-
 router
-  .route('/:id')
+  .route("/:id")
   .get(pharmacy.getDrug)
   .patch(pharmacy.updateDrug)
   .delete(pharmacy.deleteDrug);

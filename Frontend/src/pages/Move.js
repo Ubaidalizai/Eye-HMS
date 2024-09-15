@@ -13,7 +13,10 @@ const Move = () => {
   useEffect(() => {
     const fetchProductsData = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/v1/product');
+        const response = await fetch(
+          `http://localhost:4000/api/product/get/${authContext.user}`,
+          { credentials: "include" }
+        );
         const data = await response.json();
         setProducts(data);
       } catch (error) {
@@ -54,25 +57,29 @@ const Move = () => {
     );
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) return <p className="text-center text-gray-600">Loading...</p>;
+  if (error) return <p className="text-center text-red-600">Error: {error}</p>;
 
   return (
-    <div className="p-16">
-      <h2 className="text-2xl font-bold mb-6">Move Products</h2>
-      <ul className="space-y-4">
+    <div className="p-8 w-[70vw] sm:p-16 bg-gray-50 min-h-screen">
+      <h2 className="text-3xl font-extrabold text-gray-800 mb-8 text-center">
+        Move Products
+      </h2>
+      <ul className="space-y-6 max-w-4xl mx-auto">
         {products.map((item) => (
           <li
             key={item._id}
-            className="flex justify-between items-center p-4 border-b border-gray-200"
+            className="flex justify-between items-center bg-white p-6 shadow-md rounded-lg border hover:shadow-lg transition duration-300"
           >
             <div>
-              <h3 className="text-lg font-semibold">{item.name}</h3>
-              <p className="text-gray-600">Stock: {item.stock}</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                {item.name}
+              </h3>
+              <p className="text-gray-600 mt-2">Stock: {item.stock}</p>
             </div>
             <button
               onClick={() => handleMoveItem(item)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              className="bg-blue-600 text-white px-5 py-2 rounded-full hover:bg-blue-700 transition duration-300 transform hover:scale-105"
             >
               Move
             </button>
