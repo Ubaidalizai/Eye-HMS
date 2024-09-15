@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
-import AddProduct from "../components/AddProduct";
-import UpdateProduct from "../components/UpdateProduct";
-import AuthContext from "../AuthContext";
+import React, { useState, useEffect, useContext } from 'react';
+import AddProduct from '../components/AddProduct';
+import UpdateProduct from '../components/UpdateProduct';
+import AuthContext from '../AuthContext';
 
 function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
@@ -13,9 +13,9 @@ function Inventory() {
   const [stores, setAllStores] = useState([]);
 
   const authContext = useContext(AuthContext);
-  console.log("====================================");
-  console.log(authContext);
-  console.log("====================================");
+  // console.log('====================================');
+  // console.log(authContext);
+  // console.log('====================================');
 
   useEffect(() => {
     fetchProductsData();
@@ -24,17 +24,25 @@ function Inventory() {
 
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
+    fetch(
+      'http://localhost:4000/api/v1/inventory/product',
+      { credentials: 'include' },
+      { method: 'GET' }
+    )
       .then((response) => response.json())
       .then((data) => {
-        setAllProducts(data);
+        setAllProducts(data.data.products);
       })
       .catch((err) => console.log(err));
   };
 
   // Fetching Data of Search Products
   const fetchSearchData = () => {
-    fetch(`http://localhost:4000/api/product/search?searchTerm=${searchTerm}`)
+    fetch(
+      `http://localhost:4000/api/v1/inventory/product/search?searchTerm=${searchTerm}`,
+      { credentials: 'include' },
+      { method: 'GET' }
+    )
       .then((response) => response.json())
       .then((data) => {
         setAllProducts(data);
@@ -58,16 +66,20 @@ function Inventory() {
 
   // Modal for Product UPDATE
   const updateProductModalSetting = (selectedProductData) => {
-    console.log("Clicked: edit");
+    console.log('Clicked: edit');
     setUpdateProduct(selectedProductData);
     setShowUpdateModal(!showUpdateModal);
   };
 
   // Delete item
   const deleteItem = (id) => {
-    console.log("Product ID: ", id);
-    console.log(`http://localhost:4000/api/product/delete/${id}`);
-    fetch(`http://localhost:4000/api/product/delete/${id}`)
+    console.log('Product ID: ', id);
+    console.log(`http://localhost:4000/api/v1/inventory/product/${id}`);
+    fetch(
+      `http://localhost:4000/api/v1/inventory/product/${id}`,
+      { credentials: 'include' },
+      { method: 'DELETE' }
+    )
       .then((response) => response.json())
       .then((data) => {
         setUpdatePage(!updatePage);
@@ -194,7 +206,7 @@ function Inventory() {
                 <img
                   alt="search-icon"
                   className="w-5 h-5"
-                  src={require("../assets/search-icon.png")}
+                  src={require('../assets/search-icon.png')}
                 />
                 <input
                   className="border-none outline-none focus:border-none text-xs"
@@ -256,14 +268,14 @@ function Inventory() {
                       {element.description}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.stock > 0 ? "In Stock" : "Not in Stock"}
+                      {element.stock > 0 ? 'In Stock' : 'Not in Stock'}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                       <span
                         className="text-green-700 cursor-pointer"
                         onClick={() => updateProductModalSetting(element)}
                       >
-                        Edit{" "}
+                        Edit{' '}
                       </span>
                       <span
                         className="text-red-600 px-2 cursor-pointer"
