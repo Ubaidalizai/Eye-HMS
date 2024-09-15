@@ -21,6 +21,7 @@ function PurchaseDetails() {
       .then((response) => response.json())
       .then((data) => {
         setAllPurchaseData(data);
+        console.log(data);
       })
       .catch((err) => console.log(err));
   };
@@ -95,7 +96,7 @@ function PurchaseDetails() {
                 return (
                   <tr key={element._id}>
                     <td className="whitespace-nowrap px-4 py-2  text-gray-900">
-                      {element.name}
+                      {element.userID.name}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                       {element.QuantityPurchased}
