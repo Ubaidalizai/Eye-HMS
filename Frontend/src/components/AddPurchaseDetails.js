@@ -41,7 +41,8 @@ export default function AddPurchaseDetails({
 
   // POST Data
   const addSale = () => {
-    fetch("http://localhost:4000/api/purchase/add", {
+    fetch("http://localhost:4000/api/v1/purchase", {
+      credentials: "include",
       method: "POST",
       headers: {
         "Content-type": "application/json",

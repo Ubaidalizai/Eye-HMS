@@ -1,7 +1,6 @@
 const Pharmacy = require('../models/pharmacyModel');
-const pharmacySale = require('../models/pharmacySaleModel');
-const product = require('../models/product');
-const purchase = require('../models/purchase');
+const Product = require('../models/product');
+const Purchase = require('../models/purchase');
 
 const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
@@ -16,94 +15,7 @@ exports.getAllDrugsInPharmacy = asyncHandler(async (req, res) => {
   }
 });
 
-// SELL DRUGS
-exports.sellDrugs = asyncHandler(async (req, res) => {
-  try {
-    const { drugsSold } = req.body; // Array of drug IDs and quantities [{ drugId, quantity }, ...]
-    let totalIncome = 0;
-    let totalNetIncome = 0;
-    const soldItems = [];
-
-    for (const item of drugsSold) {
-      const drug = await Pharmacy.findById(item.drugId);
-
-      if (!drug) {
-        res.status(404);
-        throw new Error(`Drug with ID ${item.drugId} not found`);
-      }
-
-      if (drug.quantity < item.quantity) {
-        res.status(400);
-        throw new Error(`Not enough quantity for drug: ${drug.name}`);
-      }
-
-      // Ensure price and quantity are valid numbers
-      if (isNaN(drug.salePrice) || isNaN(item.quantity)) {
-        return res.status(400).json({
-          status: 'fail',
-          message: `Invalid price or quantity for drug: ${drug.name}`,
-        });
-      }
-
-      // Calculate income for this drug
-      const income = drug.salePrice * item.quantity;
-      totalIncome += income;
-
-      const productInInventory = await product.findOne({
-        name: drug.name,
-      });
-
-      if (!productInInventory) {
-        res.status(404);
-        throw new Error(`Product with name ${drug.name} not found`);
-      }
-
-      // Find the purchase record for this drug
-      const productPurchase = await purchase.findOne({
-        ProductID: productInInventory._id,
-      });
-
-      if (!productPurchase) {
-        res.status(404);
-        throw new Error(`Purchase record not found for drug: ${drug.name}`);
-      }
-      // Calculate the net income for this drug
-      totalNetIncome +=
-        income - productPurchase.TotalPurchaseAmount * item.quantity;
-      // Update drug quantity
-      drug.quantity -= item.quantity;
-      await drug.save();
-
-      // Record the sale item
-      soldItems.push({
-        drugId: drug._id,
-        name: drug.name,
-        quantity: item.quantity,
-        salePrice: drug.salePrice,
-        income,
-      });
-    }
-
-    // Create a sale record
-    const sale = await pharmacySale.create({
-      soldItems,
-      totalIncome,
-      totalNetIncome,
-      date: Date.now(),
-    });
-    res.status(201).json({
-      status: 'success',
-      data: {
-        sale,
-      },
-    });
-  } catch (error) {
-    res.status(500);
-    throw new Error(`Failed to complete the sale, ${error.message}`);
-  }
-});
-
-// pharmacyController.js
+// GET SINGLE DRUG
 exports.getDrug = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;

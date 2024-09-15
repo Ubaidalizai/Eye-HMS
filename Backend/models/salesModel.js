@@ -1,17 +1,20 @@
 // saleModel.js
 const mongoose = require('mongoose');
+const Pharmacy = require('./pharmacyModel');
+const User = require('./userModel');
 
 const saleSchema = new mongoose.Schema({
   soldItems: [
     {
       drugId: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Drug',
+        ref: 'Pharmacy',
         required: true,
       },
-      name: String,
-      quantity: Number,
-      price: Number,
+      quantity: {
+        type: Number,
+        required: [true, 'A sale must have a total income'],
+      },
       income: Number,
     },
   ],
@@ -27,8 +30,11 @@ const saleSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  soldBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
 });
 
-const pharmacySale = mongoose.model('pharmacySale', saleSchema);
-
-module.exports = pharmacySale;
+const Sale = mongoose.model('Sale', saleSchema);
+module.exports = Sale;

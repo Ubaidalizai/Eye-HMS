@@ -1,16 +1,11 @@
-const express = require("express");
-const app = express();
-const purchase = require("../controllers/purchase");
+const express = require('express');
+const router = express.Router();
+const purchase = require('../controllers/purchase');
+const { authenticate } = require('../middlewares/authMiddleware');
 
-// Add Purchase
-app.post("/add", purchase.addPurchase);
+router.use(authenticate);
+router.get('/totalPurchaseAmount', purchase.getTotalPurchaseAmount);
 
-// Get All Purchase Data
-app.get("/get/:userID", purchase.getPurchaseData);
+router.route('/').get(purchase.getPurchaseData).post(purchase.addPurchase);
 
-app.get("/get/:userID/totalpurchaseamount", purchase.getTotalPurchaseAmount);
-
-module.exports = app;
-
-// http://localhost:4000/api/purchase/add POST
-// http://localhost:4000/api/purchase/get GET
+module.exports = router;

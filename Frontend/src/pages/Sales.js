@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
-import AddSale from "../components/AddSale";
-import AuthContext from "../AuthContext";
+import React, { useState, useEffect, useContext } from 'react';
+import AddSale from '../components/AddSale';
+import AuthContext from '../AuthContext';
 
 function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -19,17 +19,21 @@ function Sales() {
 
   // Fetching Data of All Sales
   const fetchSalesData = () => {
-    fetch(`http://localhost:4000/api/sales/get/${authContext.user}`)
+    fetch(`http://localhost:4000/api/v1/sales`, { credentials: 'include' })
       .then((response) => response.json())
       .then((data) => {
-        setAllSalesData(data);
+        setAllSalesData(data.data.sales);
       })
       .catch((err) => console.log(err));
   };
 
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
+    fetch(
+      'http://localhost:4000/api/v1/pharmacy',
+      { credentials: 'include' },
+      { method: 'GET' }
+    )
       .then((response) => response.json())
       .then((data) => {
         setAllProducts(data);
@@ -91,13 +95,16 @@ function Sales() {
                   Product Name
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Store Name
-                </th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
                   Stock Sold
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Sale Price
+                </th>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
                   Sales Date
+                </th>
+                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
+                  Sales By
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
                   Total Sale Amount
@@ -106,26 +113,29 @@ function Sales() {
             </thead>
 
             <tbody className="divide-y divide-gray-200">
-              {sales.map((element, index) => {
-                return (
-                  <tr key={element._id}>
-                    <td className="whitespace-nowrap px-4 py-2  text-gray-900">
-                      {element.ProductID?.name}
+              {sales.map((sale, index) => {
+                return sale.soldItems.map((item, itemIndex) => (
+                  <tr key={`${sale._id}-${item._id}`}>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-900">
+                      {item.drugId.name}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.StoreID?.name}
+                      {item.quantity}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.StockSold}
+                      ${item.drugId.salePrice}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {element.SaleDate}
+                      {new Date(sale.date).toLocaleDateString()}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      ${element.TotalSaleAmount}
+                      {sale.soldBy.firstName} {sale.soldBy.lastName}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                      ${item.income}
                     </td>
                   </tr>
-                );
+                ));
               })}
             </tbody>
           </table>

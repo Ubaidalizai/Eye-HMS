@@ -11,7 +11,7 @@ const userRoutes = require('./routes/userRoutes');
 const productRoute = require('./routes/product');
 const storeRoute = require('./routes/store');
 const purchaseRoute = require('./routes/purchase');
-const salesRoute = require('./routes/sales');
+const salesRoute = require('./routes/salesRoutes');
 const pharmacyRoute = require('./routes/pharmacyRoutes');
 
 const app = express();
@@ -36,8 +36,8 @@ app.use(
 // Routes
 app.use('/api/v1/user', userRoutes); // User API
 app.use('/api/store', storeRoute); // Store API
-app.use('/api/product', productRoute); // Products API
-app.use('/api/purchase', purchaseRoute); // Purchase API
+app.use('/api/v1/inventory', productRoute); // Products API
+app.use('/api/v1/purchase', purchaseRoute); // Purchase API
 app.use('/api/v1/sales', salesRoute); // Sales API
 app.use('/api/v1/pharmacy', pharmacyRoute); // Pharmacy API
 

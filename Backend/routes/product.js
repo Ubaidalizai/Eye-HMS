@@ -1,26 +1,25 @@
 const express = require('express');
-const app = express();
+const router = express.Router();
 const product = require('../controllers/product');
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdmin,
+} = require('../middlewares/authMiddleware');
 
+// Enable authentication middleware and admin authorization for all routes in this file
+router.use(authenticate);
 // Move Drugs From Inventory to pharmacy
-app.post('/move', authenticate, product.moveDrugsToPharmacy);
+router.post('/product/move', product.moveDrugsToPharmacy);
+// Search Products
+router.get('/product/search', product.searchProduct);
 
-// Add Product
-app.post('/add', product.addProduct);
+router.route('/product/').get(product.getAllProducts).post(product.addProduct);
 
-// Get All Products
-app.get('/get/:userId', product.getAllProducts);
-
-// Delete Selected Product Item
-app.get('/delete/:id', product.deleteSelectedProduct);
-
-// Update Selected Product
-app.post('/update', product.updateSelectedProduct);
-
-// Search Product
-app.get('/search', product.searchProduct);
+router
+  .route('/product/:id')
+  .patch(product.updateSelectedProduct)
+  .delete(product.deleteSelectedProduct);
 
 // http://localhost:4000/api/product/search?searchTerm=fa
 
-module.exports = app;
+module.exports = router;
