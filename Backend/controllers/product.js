@@ -16,8 +16,9 @@ const addProduct = asyncHandler((req, res) => {
     manufacturer: req.body.manufacturer,
     stock: 0,
     description: req.body.description,
-    batchNumber: req.body.batchNumber,
-    expiryDate: req.body.expiryDate,
+    category: req.body.category,
+    // batchNumber: req.body.batchNumber,
+    // expiryDate: req.body.expiryDate,
   });
 
   addProduct
@@ -26,8 +27,29 @@ const addProduct = asyncHandler((req, res) => {
       res.status(200).send(result);
     })
     .catch((err) => {
+      console.log(err);
       res.status(402).send(err);
     });
+});
+
+// GET /api/products/drugs
+const getDrugs = asyncHandler(async (req, res) => {
+  try {
+    const drugs = await Product.find({ category: 'drug' });
+    res.status(200).json({ status: 'success', data: { drugs } });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// GET /api/products/sunglasses
+const getSunglasses = asyncHandler(async (req, res) => {
+  try {
+    const sunglasses = await Product.find({ type: 'sunglasses' });
+    res.status(200).json({ status: 'success', data: { sunglasses } });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
 });
 
 // Get All Products
@@ -203,6 +225,8 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
 
 module.exports = {
   addProduct,
+  getDrugs,
+  getSunglasses,
   getAllProducts,
   deleteSelectedProduct,
   updateSelectedProduct,
