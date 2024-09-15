@@ -1,7 +1,7 @@
-import { Fragment, useContext, useRef, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { PlusIcon } from '@heroicons/react/24/outline';
-import AuthContext from '../AuthContext';
+import { Fragment, useContext, useRef, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import AuthContext from "../AuthContext";
 
 export default function AddProduct({
   addProductModalSetting,
@@ -24,16 +24,16 @@ export default function AddProduct({
   };
 
   const addProduct = () => {
-    fetch('http://localhost:4000/api/v1/inventory/product', {
-      method: 'POST',
+    fetch("http://localhost:4000/api/v1/inventory/product", {
+      method: "POST",
       headers: {
-        'Content-type': 'application/json',
+        "Content-type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify(product),
     })
       .then((result) => {
-        alert('Product ADDED');
+        alert("Product ADDED");
         handlePageUpdate();
         addProductModalSetting();
       })
@@ -145,27 +145,7 @@ export default function AddProduct({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                             />
-                          </div>*/}
-                          <div>
-                            <label
-                              htmlfor="quantity"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                            >
-                              Type
-                            </label>
-                            <input
-                              type="number"
-                              name="type"
-                              id="type"
-                              value={product.type}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                              placeholder="0 - 999"
-                            />
                           </div>
-
                           <div className="sm:col-span-2">
                             <label
                               htmlFor="category"
