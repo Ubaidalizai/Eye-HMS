@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useDispatch } from "react-redux";
-import { moveItemAPI } from "../redux/inventorySlice";
-import AuthContext from "../AuthContext";
+import React, { useState, useEffect, useContext } from 'react';
+import { useDispatch } from 'react-redux';
+import { moveItemAPI } from '../redux/inventorySlice';
+import AuthContext from '../AuthContext';
 
 const Move = () => {
   const dispatch = useDispatch();
@@ -13,13 +13,11 @@ const Move = () => {
   useEffect(() => {
     const fetchProductsData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:4000/api/product/get/${authContext.user}`
-        );
+        const response = await fetch('http://localhost:4000/api/v1/product');
         const data = await response.json();
         setProducts(data);
       } catch (error) {
-        setError("Failed to fetch products.");
+        setError('Failed to fetch products.');
       } finally {
         setLoading(false);
       }
@@ -33,7 +31,7 @@ const Move = () => {
     const quantityNum = parseInt(quantity, 10);
 
     if (isNaN(quantityNum) || quantityNum <= 0 || quantityNum > item.stock) {
-      alert("Please enter a valid quantity.");
+      alert('Please enter a valid quantity.');
       return;
     }
 
@@ -44,7 +42,7 @@ const Move = () => {
     const salePriceNum = parseFloat(salePrice);
 
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
-      alert("Please enter a valid sale price.");
+      alert('Please enter a valid sale price.');
       return;
     }
 
