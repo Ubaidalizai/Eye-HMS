@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
-import AddPurchaseDetails from "../components/AddPurchaseDetails";
-import AuthContext from "../AuthContext";
+import React, { useState, useEffect, useContext } from 'react';
+import AddPurchaseDetails from '../components/AddPurchaseDetails';
+import AuthContext from '../AuthContext';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -17,13 +17,9 @@ function PurchaseDetails() {
 
   // Fetching Data of All Purchase items
   const fetchPurchaseData = () => {
-    fetch("http://localhost:4000/api/v1/purchase", { credentials: "include" })
+    fetch('http://localhost:4000/api/v1/purchase', { credentials: 'include' })
       .then((response) => response.json())
       .then((data) => {
-        setAllPurchaseData(data);
-        console.log(data);
-        console.log(data);
-
         setAllPurchaseData(data.data);
       })
       .catch((err) => console.log(err));
@@ -32,7 +28,7 @@ function PurchaseDetails() {
   // Fetching Data of All Products
   const fetchProductsData = () => {
     fetch(`http://localhost:4000/api/v1/inventory/product`, {
-      credentials: "include",
+      credentials: 'include',
     })
       .then((response) => response.json())
       .then((data) => {
@@ -109,7 +105,7 @@ function PurchaseDetails() {
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                       {new Date(element.PurchaseDate).toLocaleDateString() ==
                       new Date().toLocaleDateString()
-                        ? "Today"
+                        ? 'Today'
                         : element.PurchaseDate}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-700">
