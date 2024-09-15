@@ -1,20 +1,22 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const User = require('../models/userModel');
+const Product = require('../models/product');
 
 const SaleSchema = new mongoose.Schema(
   {
     userID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: 'User',
       required: true,
     },
     ProductID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "product",
+      ref: 'Product',
       required: true,
     },
     StoreID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "store",
+      ref: 'store',
       required: true,
     },
     StockSold: {
@@ -22,7 +24,7 @@ const SaleSchema = new mongoose.Schema(
       required: true,
     },
     SaleDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     TotalSaleAmount: {
@@ -33,5 +35,5 @@ const SaleSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Sales = mongoose.model("sales", SaleSchema);
+const Sales = mongoose.model('sales', SaleSchema);
 module.exports = Sales;

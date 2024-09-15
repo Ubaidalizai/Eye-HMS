@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import AddProduct from "../components/AddProduct";
-import UpdateProduct from "../components/UpdateProduct";
-import AuthContext from "../AuthContext";
-import { moveItemAPI, fetchDrugs } from "../redux/inventorySlice";
+import React, { useState, useEffect, useContext } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import AddProduct from '../components/AddProduct';
+import UpdateProduct from '../components/UpdateProduct';
+import AuthContext from '../AuthContext';
+import { moveItemAPI, fetchDrugs } from '../redux/inventorySlice';
 
 function Inventory() {
   const dispatch = useDispatch();
@@ -11,7 +11,7 @@ function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateProduct, setUpdateProduct] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [updatePage, setUpdatePage] = useState(true);
   const [products, setAllProducts] = useState([]);
   const authContext = useContext(AuthContext);
@@ -23,7 +23,10 @@ function Inventory() {
   }, [updatePage]);
 
   const fetchProductsData = () => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
+    fetch('http://localhost:4000/api/v1/inventory/product', {
+      credentials: 'include',
+      method: 'GET',
+    })
       .then((response) => response.json())
       .then((data) => {
         setAllProducts(data);
@@ -53,9 +56,15 @@ function Inventory() {
   };
 
   const deleteItem = (id) => {
-    fetch(`http://localhost:4000/api/product/delete/${id}`, {
-      method: "DELETE",
-    })
+    fetch(
+      `http://localhost:4000/api/inventory/product/${id}`,
+      {
+        credentials: 'include',
+      },
+      {
+        method: 'DELETE',
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         setUpdatePage(!updatePage);
@@ -180,7 +189,7 @@ function Inventory() {
                 <img
                   alt="search-icon"
                   className="w-5 h-5"
-                  src={require("../assets/search-icon.png")}
+                  src={require('../assets/search-icon.png')}
                 />
                 <input
                   className="border-none outline-none focus:border-none text-xs"
@@ -240,14 +249,14 @@ function Inventory() {
                     {element.description}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                    {element.stock > 0 ? "In Stock" : "Not in Stock"}
+                    {element.stock > 0 ? 'In Stock' : 'Not in Stock'}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                     <span
                       className="text-green-700 cursor-pointer"
                       onClick={() => updateProductModalSetting(element)}
                     >
-                      Edit{" "}
+                      Edit{' '}
                     </span>
                     <span
                       className="text-red-600 px-2 cursor-pointer"

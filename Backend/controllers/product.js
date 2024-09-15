@@ -1,15 +1,17 @@
-
-const Product = require("../models/product");
-const Purchase = require("../models/purchase");
-const Sales = require("../models/sales");
-const Pharmacy = require("../models/pharmacyModel");
-const DrugMovement = require("../models/drugMovmentModel");
+const Product = require('../models/product');
+const Purchase = require('../models/purchase');
+const Sales = require('../models/sales');
+const Pharmacy = require('../models/pharmacyModel');
+const DrugMovement = require('../models/drugMovmentModel');
+const validateMongoDBId = require('../utils/validateMongoDBId');
+const asyncHandler = require('../middlewares/asyncHandler');
 
 // Add Post
-const addProduct = (req, res) => {
-  console.log(req.body);
+const addProduct = asyncHandler((req, res) => {
+  const { _id } = req.user;
+  validateMongoDBId(_id); // Check if _id is valid
   const addProduct = new Product({
-    userID: req.body.userId,
+    userID: _id,
     name: req.body.name,
     manufacturer: req.body.manufacturer,
     stock: 0,
@@ -26,32 +28,68 @@ const addProduct = (req, res) => {
     .catch((err) => {
       res.status(402).send(err);
     });
-};
+});
 
 // Get All Products
-const getAllProducts = async (req, res) => {
-  const findAllProducts = await Product.find({
-    userID: req.params.userId,
+const getAllProducts = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDBId(_id); // Check if _id is valid
+  const products = await Product.find({
+    userID: _id,
   }).sort({ _id: -1 }); // -1 for descending;
-  res.json(findAllProducts);
-};
+  if (!products) {
+    res.status(404);
+    throw new Error('Products not found');
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      products,
+    },
+  });
+});
 
 // Delete Selected Product
-const deleteSelectedProduct = async (req, res) => {
-  const deleteProduct = await Product.deleteOne({ _id: req.params.id });
-  const deletePurchaseProduct = await Purchase.deleteOne({
-    ProductID: req.params.id,
-  });
+const deleteSelectedProduct = asyncHandler(async (req, res) => {
+  try {
+    const productId = req.params.id;
 
-  const deleteSaleProduct = await Sales.deleteOne({ ProductID: req.params.id });
-  res.json({ deleteProduct, deletePurchaseProduct, deleteSaleProduct });
-};
+    // Run all deletions in parallel for performance
+    const [deleteProduct, deletePurchaseProduct, deleteSaleProduct] =
+      await Promise.all([
+        Product.deleteOne({ _id: productId }),
+        Purchase.deleteOne({ ProductID: productId }),
+        Sales.deleteOne({ ProductID: productId }),
+      ]);
+
+    // Check if product was actually deleted, and respond accordingly
+    if (!deleteProduct.deletedCount) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Send back the deletion results
+    res.status(200).json({
+      message: 'Product and related records deleted successfully',
+      deleteProduct,
+      deletePurchaseProduct,
+      deleteSaleProduct,
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error('Internal server error');
+  }
+});
 
 // Update Selected Product
-const updateSelectedProduct = async (req, res) => {
+const updateSelectedProduct = asyncHandler(async (req, res) => {
+  const { productID } = req.body;
+  validateMongoDBId(productID); // Check if ProductID is valid
+
+  // Update Product
   try {
     const updatedResult = await Product.findByIdAndUpdate(
-      { _id: req.body.productID },
+      { _id: productID },
       {
         name: req.body.name,
         manufacturer: req.body.manufacturer,
@@ -59,49 +97,56 @@ const updateSelectedProduct = async (req, res) => {
       },
       { new: true }
     );
-    console.log(updatedResult);
-    res.json(updatedResult);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        updatedResult,
+      },
+    });
   } catch (error) {
     console.log(error);
     res.status(402).send('Error');
   }
-};
+});
 
 // Search Products
-const searchProduct = async (req, res) => {
-  const searchTerm = req.query.searchTerm;
+const searchProduct = asyncHandler(async (req, res) => {
+  const { searchTerm } = req.query;
   const products = await Product.find({
     name: { $regex: searchTerm, $options: 'i' },
   });
-  res.json(products);
-};
+
+  if (!products) {
+    res.status(404);
+    throw new Error('Products not found');
+  }
+  res.status(200).json({
+    status: 'success',
+    data: {
+      products,
+    },
+  });
+});
 
 // move drug from inventory to pharmacy
-const moveDrugsToPharmacy = async (req, res) => {
+const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
   const { name, quantity, salePrice } = req.body;
-  try {
-    // Find the drug in the inventory
-    const product = await Product.findOne({ name: name });
 
-    if (!product || product.stock < quantity) {
-      return res
-        .status(400)
-        .json({ message: 'Insufficient quantity in inventory' });
-    }
-
-    // Update the inventory quantity
+  // Function to update inventory stock
+  const updateInventoryStock = async (product, quantity) => {
     product.stock -= quantity;
     await product.save();
+  };
 
-    // Check if the drug already exists in the pharmacy
+  // Function to add or update drug in pharmacy
+  const addOrUpdatePharmacyDrug = async (name, quantity, salePrice) => {
     let pharmacyDrug = await Pharmacy.findOne({ name });
 
     if (pharmacyDrug) {
-      // If exists, update the quantity
       pharmacyDrug.quantity += quantity;
-      pharmacyDrug.salePrice = salePrice; // Update sale price if necessary
+      pharmacyDrug.salePrice = salePrice; // Update sale price if needed
     } else {
-      // If not, add a new entry to the pharmacy
       pharmacyDrug = await Pharmacy.create({
         name,
         quantity,
@@ -112,8 +157,34 @@ const moveDrugsToPharmacy = async (req, res) => {
     }
 
     await pharmacyDrug.save();
+    return pharmacyDrug;
+  };
 
-    // 4. Record the movement in the drugMovement collection
+  try {
+    // Step 1: Find drug in the inventory
+    const product = await Product.findOne({ name });
+    if (!product) {
+      res.status(404);
+      throw new Error('Drug not found in inventory');
+    }
+
+    // Step 2: Validate available stock
+    if (product.stock < quantity) {
+      res.status(400);
+      throw new Error('Insufficient quantity in inventory');
+    }
+
+    // Step 3: Update inventory stock
+    await updateInventoryStock(product, quantity);
+
+    // Step 4: Add or update pharmacy drug record
+    const pharmacyDrug = await addOrUpdatePharmacyDrug(
+      name,
+      quantity,
+      salePrice
+    );
+
+    // Step 5: Record the movement in drug movement log
     await DrugMovement.create({
       inventory_id: product._id,
       pharmacy_id: pharmacyDrug._id,
@@ -121,13 +192,14 @@ const moveDrugsToPharmacy = async (req, res) => {
       moved_by: req.user._id, // Assuming user is available in req.user
     });
 
-    res.status(200).json({ message: "Drugs moved to pharmacy successfully!" });
-
+    // Step 6: Respond with success
+    res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
   } catch (error) {
+    // Centralized error handling
     res.status(500);
-    throw new Error(error);
+    throw new Error('Internal server error');
   }
-};
+});
 
 module.exports = {
   addProduct,

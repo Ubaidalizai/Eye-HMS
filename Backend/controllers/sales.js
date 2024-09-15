@@ -1,70 +1,137 @@
-const Sales = require("../models/sales");
-const soldStock = require("../controllers/soldStock");
+const Sales = require('../models/sales');
+const soldStock = require('../controllers/soldStock');
+const asyncHandler = require('../middlewares/asyncHandler');
+const validateMongoDBId = require('../utils/validateMongoDBId');
+const mongoose = require('mongoose');
 
 // Add Sales
-const addSales = (req, res) => {
-  const addSale = new Sales({
-    userID: req.body.userID,
-    ProductID: req.body.productID,
-    StoreID: req.body.storeID,
-    StockSold: req.body.stockSold,
-    SaleDate: req.body.saleDate,
-    TotalSaleAmount: req.body.totalSaleAmount,
-  });
+const addSales = asyncHandler(async (req, res) => {
+  const { _id: userID } = req.user;
+  validateMongoDBId(userID);
 
-  addSale
-    .save()
-    .then((result) => {
-      soldStock(req.body.productID, req.body.stockSold);
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(402).send(err);
+  const { productID, stockSold, saleDate, totalSaleAmount } = req.body;
+
+  // Validate required fields
+  if (!productID || !storeID || !stockSold || !saleDate || !totalSaleAmount) {
+    res.status(400);
+    throw new Error('All fields are required.');
+  }
+  try {
+    const sale = Sales.create({
+      userID,
+      ProductID: productID,
+      StockSold: stockSold,
+      SaleDate: saleDate,
+      TotalSaleAmount: totalSaleAmount,
     });
-};
+
+    await soldStock(productID, stockSold);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        sale,
+      },
+    });
+  } catch (error) {
+    res.status(402);
+    throw new Error('Product sale not completed!');
+  }
+});
 
 // Get All Sales Data
-const getSalesData = async (req, res) => {
-  const findAllSalesData = await Sales.find({"userID": req.params.userID})
-    .sort({ _id: -1 })
-    .populate("ProductID")
-    .populate("StoreID"); // -1 for descending order
-  res.json(findAllSalesData);
-};
+const getSalesData = asyncHandler(async (req, res) => {
+  const { _id: userID } = req.user;
+  validateMongoDBId(userID);
+  try {
+    const findAllSalesData = await Sales.find({ userID })
+      .sort({ _id: -1 }) // -1 for descending order
+      .populate('ProductID');
+
+    if (!findAllSalesData) {
+      res.status(404);
+      throw new Error('Not any sales done yet!');
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        findAllSalesData,
+      },
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error('some thing went wrong');
+  }
+});
 
 // Get total sales amount
-const getTotalSalesAmount = async(req,res) => {
-  let totalSaleAmount = 0;
-  const salesData = await Sales.find({"userID": req.params.userID});
-  salesData.forEach((sale)=>{
-    totalSaleAmount += sale.TotalSaleAmount;
-  })
-  res.json({totalSaleAmount});
+const getTotalSalesAmount = asyncHandler(async (req, res) => {
+  const { _id: userID } = req.user;
+  validateMongoDBId(userID);
 
-}
-
-const getMonthlySales = async (req, res) => {
   try {
-    const sales = await Sales.find();
+    const result = await Sales.aggregate([
+      { $match: { userID: mongoose.Types.ObjectId(userID) } },
+      {
+        $group: {
+          _id: null,
+          totalSaleAmount: { $sum: '$TotalSaleAmount' },
+        },
+      },
+    ]);
+    const totalSaleAmount = result.length > 0 ? result[0].totalSaleAmount : 0;
 
-    // Initialize array with 12 zeros
-    const salesAmount = [];
-    salesAmount.length = 12;
-    salesAmount.fill(0)
+    res.status(200).json({
+      status: 'success',
+      data: {
+        totalSaleAmount,
+      },
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error('Some thing went wrong');
+  }
+});
 
-    sales.forEach((sale) => {
-      const monthIndex = parseInt(sale.SaleDate.split("-")[1]) - 1;
+// Get monthly sales data by using MongoDB's aggregation framework
+const getMonthlySales = asyncHandler(async (req, res) => {
+  try {
+    // Aggregate monthly sales amount by using MongoDB's aggregation framework
+    const salesByMonth = await Sales.aggregate([
+      {
+        $group: {
+          _id: { $month: '$SaleDate' }, // Extract month from the SaleDate field
+          totalAmount: { $sum: '$TotalSaleAmount' }, // Sum up the TotalSaleAmount for each month
+        },
+      },
+    ]);
+    // Initialize an array with 12 zeros for each month
+    const salesAmount = Array(12).fill(0);
 
-      salesAmount[monthIndex] += sale.TotalSaleAmount;
+    // Populate the salesAmount array with the results from the aggregation
+    salesByMonth.forEach((sale) => {
+      const monthIndex = sale._id - 1; // Month index (0 for January, 11 for December)
+      salesAmount[monthIndex] = sale.totalAmount;
     });
 
-    res.status(200).json({ salesAmount });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        salesAmount,
+      },
+    });
+  } catch (error) {
+    res.status(500);
+    throw new Error(
+      'Something went wrong while retrieving monthly sales data.'
+    );
   }
+});
+
+module.exports = {
+  addSales,
+  getMonthlySales,
+  getSalesData,
+  getTotalSalesAmount,
 };
-
-
-
-module.exports = { addSales, getMonthlySales, getSalesData,  getTotalSalesAmount};

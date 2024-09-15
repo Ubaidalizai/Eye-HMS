@@ -20,6 +20,11 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
     description: String,
+    type: {
+      type: String,
+      enum: ['drug', 'sunglasses'],
+      required: true,
+    },
     // batchNumber: {
     //   type: Number,
     //   required: true,
@@ -32,5 +37,5 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Product = mongoose.model('product', ProductSchema);
+const Product = mongoose.model('Product', ProductSchema);
 module.exports = Product;

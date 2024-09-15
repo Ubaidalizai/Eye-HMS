@@ -1,15 +1,17 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const Product = require('../models/product');
+const User = require('../models/userModel');
 
 const PurchaseSchema = new mongoose.Schema(
   {
     userID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: 'User',
       required: true,
     },
     ProductID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "product",
+      ref: 'Product',
       required: true,
     },
     QuantityPurchased: {
@@ -28,5 +30,5 @@ const PurchaseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Purchase = mongoose.model("purchase", PurchaseSchema);
+const Purchase = mongoose.model('Purchase', PurchaseSchema);
 module.exports = Purchase;

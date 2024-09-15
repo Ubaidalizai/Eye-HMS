@@ -1,31 +1,31 @@
-import React, { useContext, useEffect, useState } from "react";
-import Chart from "react-apexcharts";
-import AuthContext from "../AuthContext";
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import React, { useContext, useEffect, useState } from 'react';
+import Chart from 'react-apexcharts';
+import AuthContext from '../AuthContext';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 export const data = {
-  labels: ["Apple", "Knorr", "Shoop", "Green", "Purple", "Orange"],
+  labels: ['Apple', 'Knorr', 'Shoop', 'Green', 'Purple', 'Orange'],
   datasets: [
     {
-      label: "# of Votes",
+      label: '# of Votes',
       data: [0, 1, 5, 8, 9, 15],
       backgroundColor: [
-        "rgba(255, 99, 132, 0.2)",
-        "rgba(54, 162, 235, 0.2)",
-        "rgba(255, 206, 86, 0.2)",
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(153, 102, 255, 0.2)",
-        "rgba(255, 159, 64, 0.2)",
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 159, 64, 0.2)',
       ],
       borderColor: [
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-        "rgba(255, 159, 64, 1)",
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)',
       ],
       borderWidth: 1,
     },
@@ -33,36 +33,36 @@ export const data = {
 };
 
 function Dashboard() {
-  const [saleAmount, setSaleAmount] = useState("");
-  const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [saleAmount, setSaleAmount] = useState('');
+  const [purchaseAmount, setPurchaseAmount] = useState('');
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
 
   const [chart, setChart] = useState({
     options: {
       chart: {
-        id: "basic-bar",
+        id: 'basic-bar',
       },
       xaxis: {
         categories: [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
         ],
       },
     },
     series: [
       {
-        name: "series",
+        name: 'series',
         data: [10, 20, 40, 50, 60, 20, 10, 35, 45, 70, 25, 70],
       },
     ],
@@ -74,7 +74,7 @@ function Dashboard() {
       ...chart,
       series: [
         {
-          name: "Monthly Sales Amount",
+          name: 'Monthly Sales Amount',
           data: [...salesData],
         },
       ],
@@ -94,7 +94,7 @@ function Dashboard() {
   // Fetching total sales amount
   const fetchTotalSaleAmount = () => {
     fetch(
-      `http://localhost:4000/api/sales/get/${authContext.user}/totalsaleamount`
+      `http://localhost:4000/api/v1/sales/get/${authContext.user}/totalsaleamount`
     )
       .then((response) => response.json())
       .then((datas) => setSaleAmount(datas.totalSaleAmount));
@@ -103,7 +103,7 @@ function Dashboard() {
   // Fetching total purchase amount
   const fetchTotalPurchaseAmount = () => {
     fetch(
-      `http://localhost:4000/api/purchase/get/${authContext.user}/totalpurchaseamount`
+      `http://localhost:4000/api/v1/purchase/get/${authContext.user}/totalpurchaseamount`
     )
       .then((response) => response.json())
       .then((datas) => setPurchaseAmount(datas.totalPurchaseAmount));
@@ -118,7 +118,7 @@ function Dashboard() {
 
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
+    fetch('http://localhost:4000/api/v1/product')
       .then((response) => response.json())
       .then((datas) => setProducts(datas))
       .catch((err) => console.log(err));
@@ -126,7 +126,7 @@ function Dashboard() {
 
   // Fetching Monthly Sales
   const fetchMonthlySalesData = () => {
-    fetch(`http://localhost:4000/api/sales/getmonthly`)
+    fetch(`http://localhost:4000/api/v1/sales/getmonthly`)
       .then((response) => response.json())
       .then((datas) => updateChartData(datas.salesAmount))
       .catch((err) => console.log(err));
@@ -197,8 +197,8 @@ function Dashboard() {
 
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                ${purchaseAmount}{" "}
+                {' '}
+                ${purchaseAmount}{' '}
               </span>
 
               <span className="text-xs text-gray-500"> from $404.32 </span>
@@ -232,8 +232,8 @@ function Dashboard() {
 
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                {products.length}{" "}
+                {' '}
+                {products.length}{' '}
               </span>
 
               {/* <span className="text-xs text-gray-500"> from $404.32 </span> */}
@@ -267,8 +267,8 @@ function Dashboard() {
 
             <p>
               <span className="text-2xl font-medium text-gray-900">
-                {" "}
-                {stores.length}{" "}
+                {' '}
+                {stores.length}{' '}
               </span>
 
               {/* <span className="text-xs text-gray-500"> from 0 </span> */}
