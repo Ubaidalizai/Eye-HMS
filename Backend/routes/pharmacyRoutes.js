@@ -7,12 +7,10 @@ const { authenticate } = require('../middlewares/authMiddleware');
 
 router.use(authenticate); // Enable authentication middleware for all routes in this file
 
-// Add Sales for
-router.post('/drugs/sell', authenticate, pharmacy.sellDrugs);
-router.get('/drugs', pharmacy.getAllDrugsInPharmacy);
+router.get('/', pharmacy.getAllDrugsInPharmacy);
 
 router
-  .route('/drugs/:id')
+  .route('/:id')
   .get(pharmacy.getDrug)
   .patch(pharmacy.updateDrug)
   .delete(pharmacy.deleteDrug);
