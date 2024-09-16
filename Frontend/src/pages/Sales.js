@@ -4,27 +4,45 @@ import AuthContext from '../AuthContext';
 
 function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
-  const [sales, setAllSalesData] = useState([]);
+  const [sales, setSales] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [stores, setAllStores] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [updatePage, setUpdatePage] = useState(true);
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
-    fetchSalesData();
+    fetchSales();
     fetchProductsData();
     fetchStoresData();
   }, [updatePage]);
 
-  // Fetching Data of All Sales
-  const fetchSalesData = () => {
-    fetch(`http://localhost:4000/api/v1/sales`, { credentials: 'include' })
-      .then((response) => response.json())
-      .then((data) => {
-        setAllSalesData(data.data.sales);
-      })
-      .catch((err) => console.log(err));
+  // Toggle sale modal
+  const addSaleModalSetting = () => setShowSaleModal(!showSaleModal);
+
+  // Handle page update (for re-fetching data after adding a sale)
+  const handlePageUpdate = () => {
+    fetchSales(currentPage);
+  };
+
+  // Fetch paginated sales data from the backend
+  const fetchSales = async (page) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/sales?page=${page}&limit=10`, // Adjust the limit as needed
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+      const data = await response.json();
+      setSales(data.data.sales); // Assuming `sales` is the key in the response
+      setTotalPages(data.totalPages); // Assuming the backend sends `totalPages`
+    } catch (err) {
+      console.error('Error fetching sales:', err);
+    }
   };
 
   // Fetching Data of All Products
@@ -50,19 +68,14 @@ function Sales() {
       });
   };
 
-  // Modal for Sale Add
-  const addSaleModalSetting = () => {
-    setShowSaleModal(!showSaleModal);
-  };
-
-  // Handle Page Update
-  const handlePageUpdate = () => {
-    setUpdatePage(!updatePage);
-  };
+  // Fetch sales on component mount and when currentPage changes
+  useEffect(() => {
+    fetchSales(currentPage);
+  }, [currentPage]);
 
   return (
-    <div className="col-span-12 lg:col-span-10  flex justify-center">
-      <div className=" flex flex-col gap-5 w-11/12">
+    <div className="col-span-12 lg:col-span-10 flex justify-center">
+      <div className="flex flex-col gap-5 w-11/12">
         {showSaleModal && (
           <AddSale
             addSaleModalSetting={addSaleModalSetting}
@@ -72,18 +85,17 @@ function Sales() {
             authContext={authContext}
           />
         )}
-        {/* Table  */}
-        <div className="overflow-x-auto rounded-lg border bg-white border-gray-200 ">
+        {/* Sales Table */}
+        <div className="overflow-x-auto rounded-lg border bg-white border-gray-200">
           <div className="flex justify-between pt-5 pb-3 px-3">
-            <div className="flex gap-4 justify-center items-center ">
+            <div className="flex gap-4 justify-center items-center">
               <span className="font-bold">Sales</span>
             </div>
             <div className="flex gap-4">
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs  rounded"
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs rounded"
                 onClick={addSaleModalSetting}
               >
-                {/* <Link to="/inventory/add-product">Add Product</Link> */}
                 Add Sales
               </button>
             </div>
@@ -111,10 +123,9 @@ function Sales() {
                 </th>
               </tr>
             </thead>
-
             <tbody className="divide-y divide-gray-200">
-              {sales.map((sale, index) => {
-                return sale.soldItems.map((item, itemIndex) => (
+              {sales.map((sale) =>
+                sale.soldItems.map((item) => (
                   <tr key={`${sale._id}-${item._id}`}>
                     <td className="whitespace-nowrap px-4 py-2 text-gray-900">
                       {item.drugId.name}
@@ -135,10 +146,35 @@ function Sales() {
                       ${item.income}
                     </td>
                   </tr>
-                ));
-              })}
+                ))
+              )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between mt-4">
+          <button
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+
+          <span className="flex items-center text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
