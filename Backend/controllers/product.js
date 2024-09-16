@@ -44,7 +44,7 @@ const getDrugs = asyncHandler(async (req, res) => {
 // GET /api/products/sunglasses
 const getSunglasses = asyncHandler(async (req, res) => {
   try {
-    const sunglasses = await Product.find({ type: 'sunglasses' });
+    const sunglasses = await Product.find({ category: 'sunglasses' });
     res.status(200).json({ status: 'success', data: { sunglasses } });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
@@ -58,6 +58,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
   const products = await Product.find({
     userID: _id,
   }).sort({ _id: -1 }); // -1 for descending;
+
   if (!products) {
     res.status(404);
     throw new Error('Products not found');
