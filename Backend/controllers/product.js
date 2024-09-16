@@ -1,6 +1,5 @@
 const Product = require('../models/product');
 const Purchase = require('../models/purchase');
-const Sales = require('../models/sales');
 const Pharmacy = require('../models/pharmacyModel');
 const DrugMovement = require('../models/drugMovmentModel');
 const validateMongoDBId = require('../utils/validateMongoDBId');
@@ -184,7 +183,7 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
 
   try {
     // Step 1: Find drug in the inventory
-    const product = await Product.findOne({ name });
+    const product = await Product.findOne({ name, category: 'drug' });
     if (!product) {
       res.status(404);
       throw new Error('Drug not found in inventory');
@@ -217,7 +216,6 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
     // Step 6: Respond with success
     res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
   } catch (error) {
-    // Centralized error handling
     res.status(500);
     throw new Error('Internal server error');
   }
