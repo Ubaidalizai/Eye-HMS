@@ -11,24 +11,25 @@ function Inventory() {
   const [searchTerm, setSearchTerm] = useState();
   const [updatePage, setUpdatePage] = useState(true);
   const [stores, setAllStores] = useState([]);
+  const [Url, setUrl] = useState(
+    `http://localhost:4000/api/v1/inventory/product`
+  );
 
   const authContext = useContext(AuthContext);
-  // console.log('====================================');
-  // console.log(authContext);
-  // console.log('====================================');
 
   useEffect(() => {
+    handleUrl();
     fetchProductsData();
     fetchSalesData();
   }, [updatePage]);
 
+  const handleUrl = (url) => {
+    setUrl(`http://localhost:4000/api/v1/inventory/product/${url}`);
+  };
+
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    fetch(
-      'http://localhost:4000/api/v1/inventory/product',
-      { credentials: 'include' },
-      { method: 'GET' }
-    )
+    fetch(Url, { credentials: 'include' }, { method: 'GET' })
       .then((response) => response.json())
       .then((data) => {
         setAllProducts(data.data.products);
@@ -216,6 +217,25 @@ function Inventory() {
                   onChange={handleSearchTerm}
                 />
               </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label
+                htmlFor="category"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Category
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={products.category}
+                onChange={(e) => handleUrl(e.target.value)}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+              >
+                <option value="">Select a category</option>
+                <option value="drugs">Drug</option>
+                <option value="sunglasses">Sunglasses</option>
+              </select>
             </div>
             <div className="flex gap-4">
               <button
