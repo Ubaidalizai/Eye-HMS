@@ -21,35 +21,56 @@ export default function AddSale({
   const cancelButtonRef = useRef(null);
 
   // Handling Input Change for input fields
-  const handleInputChange = (name, value) => {
-    setSale((prevSale) => ({
-      ...prevSale,
-      drugsSold: [
-        {
-          ...prevSale.drugsSold[0], // Update the first item in the array
-          [name]: value, // Update either drugId or quantity based on the name
-        },
-      ],
-    }));
+  const handleInputChange = (index, name, value) => {
+    const updatedDrugsSold = sale.drugsSold.map((item, i) =>
+      i === index ? { ...item, [name]: value } : item
+    );
+    setSale({ ...sale, drugsSold: updatedDrugsSold });
   };
 
-  // Update the sale date
-  const handleDateChange = (name, value) => {
+  // Handle date changes
+  const handleDateChange = (value) => {
     setSale({
       ...sale,
-      [name]: value, // This will update the date field
+      date: value, // Set the date field
     });
   };
 
+  // Add new drug
+  const addNewDrug = () => {
+    setSale((prevSale) => ({
+      ...prevSale,
+      drugsSold: [...prevSale.drugsSold, { drugId: '', quantity: 0 }],
+    }));
+  };
+
+  // Checking if all drugs are valid
+  const isSaleValid = sale.drugsSold.some(
+    (drug) => drug.drugId && drug.quantity > 0
+  );
+
   // POST Data
   const addSale = () => {
+    if (!sale.date) {
+      alert('Please specify a sale date.');
+      return false;
+    }
+
+    // Create the final sale object with valid products
+    const finalSale = {
+      ...sale,
+      drugsSold: sale.drugsSold.filter(
+        (drug) => drug.drugId && drug.quantity > 0
+      ),
+    };
+
     fetch('http://localhost:4000/api/v1/sales', {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(sale),
+      body: JSON.stringify(finalSale),
     })
       .then((result) => {
         alert('Sale ADDED');
@@ -107,71 +128,87 @@ export default function AddSale({
                       >
                         Add Sale
                       </Dialog.Title>
-                      <form action="#">
-                        <div className="grid gap-4 mb-4 sm:grid-cols-2">
-                          <div>
-                            <label
-                              htmlFor="drugId"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                            >
-                              Product Name
-                            </label>
-                            <select
-                              id="drugId"
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                              name="drugId"
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                            >
-                              <option selected="">Select Products</option>
-                              {products.map((element, index) => {
-                                return (
+                      <form>
+                        {sale.drugsSold.map((drug, index) => (
+                          <div
+                            key={index}
+                            className="grid gap-4 mb-4 sm:grid-cols-2"
+                          >
+                            <div>
+                              <label
+                                htmlFor={`drugId-${index}`}
+                                className="block mb-2 text-sm font-medium text-gray-900"
+                              >
+                                Product Name
+                              </label>
+                              <select
+                                id={`drugId-${index}`}
+                                name="drugId"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                                value={drug.drugId}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    index,
+                                    e.target.name,
+                                    e.target.value
+                                  )
+                                }
+                              >
+                                <option>Select Product</option>
+                                {products.map((element) => (
                                   <option key={element._id} value={element._id}>
                                     {element.name}
                                   </option>
-                                );
-                              })}
-                            </select>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label
+                                htmlFor={`quantity-${index}`}
+                                className="block mb-2 text-sm font-medium text-gray-900"
+                              >
+                                Quantity
+                              </label>
+                              <input
+                                type="number"
+                                name="quantity"
+                                id={`quantity-${index}`}
+                                value={drug.quantity}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    index,
+                                    e.target.name,
+                                    e.target.value
+                                  )
+                                }
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <label
-                              htmlFor="quantity"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                            >
-                              Stock Sold
-                            </label>
-                            <input
-                              type="number"
-                              name="quantity"
-                              id="quantity"
-                              value={sale.drugsSold[0].quantity}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                              placeholder="0 - 999"
-                            />
-                          </div>
+                        ))}
 
-                          <div className="h-fit w-fit">
-                            <label
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                              htmlFor="date"
-                            >
-                              Sales Date
-                            </label>
-                            <input
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              type="date"
-                              id="date"
-                              name="date"
-                              value={sale.date}
-                              onChange={(e) =>
-                                handleDateChange(e.target.name, e.target.value)
-                              }
-                            />
-                          </div>
+                        <button
+                          type="button"
+                          onClick={addNewDrug}
+                          className="mt-3 bg-blue-600 text-white px-3 py-2 rounded-md"
+                        >
+                          Add Another Product
+                        </button>
+                        <div className="mt-4">
+                          <label
+                            htmlFor="date"
+                            className="block mb-2 text-sm font-medium text-gray-900"
+                          >
+                            Sale Date
+                          </label>
+                          <input
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                            type="date"
+                            id="date"
+                            name="date"
+                            value={sale.date}
+                            onChange={(e) => handleDateChange(e.target.value)}
+                          />
                         </div>
                       </form>
                     </div>
@@ -180,7 +217,12 @@ export default function AddSale({
                 <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                    className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ml-1 ${
+                      isSaleValid
+                        ? 'bg-blue-600 text-white hover:bg-blue-500'
+                        : 'bg-gray-300 text-gray-500'
+                    }`}
+                    disabled={!isSaleValid}
                     onClick={addSale}
                   >
                     Add Sale
