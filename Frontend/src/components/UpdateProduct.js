@@ -1,6 +1,6 @@
-import { Fragment, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { Fragment, useRef, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 export default function UpdateProduct({
   updateProductData,
@@ -22,18 +22,36 @@ export default function UpdateProduct({
   };
 
   const updateProduct = () => {
-    fetch("http://localhost:4000/api/product/update", {
-      method: "POST",
+    // Ensure productID exists
+    if (!product || !product.productID) {
+      return alert('Product ID is missing');
+    }
+
+    const id = product.productID;
+
+    fetch(`http://localhost:4000/api/v1/inventory/product/${id}`, {
+      method: 'PATCH',
+      credentials: 'include',
       headers: {
-        "Content-type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(product),
     })
-      .then((result) => {
-        alert("Product Updated");
-        setOpen(false);
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to update product');
+        }
+        return response.json(); // Return the parsed JSON response
       })
-      .catch((err) => console.log(err));
+      .then((data) => {
+        alert('Product Updated Successfully');
+        setOpen(false); // Close any dialog or modal related to the update
+        return;
+      })
+      .catch((err) => {
+        console.error('Error:', err.message);
+        alert(`Failed to update product: ${err.message}`);
+      });
   };
 
   return (
