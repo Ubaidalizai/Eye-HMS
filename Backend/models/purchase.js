@@ -22,13 +22,25 @@ const PurchaseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    TotalPurchaseAmount: {
+    UnitPurchaseAmount: {
       type: Number,
+      required: true,
+    },
+    TotalPurchaseAmount: Number,
+    category: {
+      type: String,
+      enum: ['drug', 'sunglasses'],
       required: true,
     },
   },
   { timestamps: true }
 );
+
+PurchaseSchema.pre('save', async function (next) {
+  // Generate the total purchase amount
+  this.TotalPurchaseAmount = this.UnitPurchaseAmount * this.QuantityPurchased;
+  next();
+});
 
 const Purchase = mongoose.model('Purchase', PurchaseSchema);
 module.exports = Purchase;
