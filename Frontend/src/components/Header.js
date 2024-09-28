@@ -61,10 +61,10 @@ export default function Header() {
                         <img
                           className="h-8 w-8"
                           src={require('../assets/logo.png')}
-                          alt="Inventory Management System"
+                          alt="Al Sayed Eye HMS"
                         />
                         <span className="font-bold text-white italic">
-                          Inventory Management
+                          Al Sayed Eye HMS
                         </span>
                       </div>
                     </div>
