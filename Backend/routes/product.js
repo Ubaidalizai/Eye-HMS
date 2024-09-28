@@ -15,16 +15,11 @@ router.post('/product/move', product.moveDrugsToPharmacy);
 // Search Products
 router.get('/product/search', product.searchProduct);
 
-router.get('/product/drugs', product.getDrugs);
-router.get('/product/sunglasses', product.getSunglasses);
-
 router.route('/product').get(product.getAllProducts).post(product.addProduct);
 
 router
   .route('/product/:id')
   .patch(product.updateSelectedProduct)
   .delete(product.deleteSelectedProduct);
-
-// http://localhost:4000/api/product/search?searchTerm=fa
 
 module.exports = router;
