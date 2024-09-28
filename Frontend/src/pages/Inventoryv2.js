@@ -16,6 +16,9 @@ function Inventory() {
   const [products, setAllProducts] = useState([]);
   const authContext = useContext(AuthContext);
   const [stores, setAllStores] = useState([]);
+  const [Url, setUrl] = useState(
+    `http://localhost:4000/api/v1/inventory/product`
+  );
 
   useEffect(() => {
     fetchProductsData();
@@ -23,7 +26,7 @@ function Inventory() {
   }, [updatePage]);
 
   const fetchProductsData = () => {
-    fetch('http://localhost:4000/api/v1/inventory/product', {
+    fetch(Url, {
       credentials: 'include',
       method: 'GET',
     })
