@@ -14,11 +14,11 @@ const Move = () => {
     const fetchProductsData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/product/get/${authContext.user}`,
-          { credentials: "include" }
+          `http://localhost:4000/api/v1/inventory/product`,
+          { credentials: 'include' }
         );
         const data = await response.json();
-        setProducts(data);
+        setProducts(data.data.results);
       } catch (error) {
         setError('Failed to fetch products.');
       } finally {
