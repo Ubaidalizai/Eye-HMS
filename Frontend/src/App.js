@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -20,32 +19,11 @@ import Pharmacy from "./pages/Pharmacy";
 import { Provider } from "react-redux";
 import store from "./redux/store";
 import PrescriptionPage from "./pages/PrescriptionPage";
-=======
-import React from 'react';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import './index.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import Inventory from './pages/Inventory';
-import NoPageFound from './pages/NoPageFound';
-import AuthContext from './AuthContext';
-import ProtectedWrapper from './ProtectedWrapper';
-import { useEffect, useState } from 'react';
-import Store from './pages/Store';
-import Sales from './pages/Sales';
-import PurchaseDetails from './pages/PurchaseDetails';
-import Move from './pages/Move';
-import Pharmacy from './pages/Pharmacy';
-import { Provider } from 'react-redux';
-import store from './redux/store';
->>>>>>> 7f44dc65741ac889921b7751e7da1ad63d1821e7
 
 const App = () => {
-  const [user, setUser] = useState('');
+  const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
-  let myLoginUser = JSON.parse(localStorage.getItem('user'));
+  let myLoginUser = JSON.parse(localStorage.getItem("user"));
   // console.log("USER: ",user)
 
   useEffect(() => {
@@ -54,7 +32,7 @@ const App = () => {
       setLoader(false);
       // console.log("inside effect", myLoginUser)
     } else {
-      setUser('');
+      setUser("");
       setLoader(false);
     }
   }, [myLoginUser]);
@@ -66,7 +44,7 @@ const App = () => {
 
   const signout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
   };
 
   let value = { user, signin, signout };
@@ -76,9 +54,9 @@ const App = () => {
       <div
         style={{
           flex: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <h1>LOADING...</h1>
@@ -106,12 +84,11 @@ const App = () => {
               <Route path="/sales" element={<Sales />} />
               <Route path="/manage-store" element={<Store />} />
               <Route path="/move" element={<Move />} />
-<<<<<<< HEAD
+
               <Route path="/patient" element={<Patient />} />
               <Route path="/prescription/:id" element={<PrescriptionPage />} />
               <Route path="/*" element={<Move />} />
-=======
->>>>>>> 7f44dc65741ac889921b7751e7da1ad63d1821e7
+
               <Route path="/pharmacy" element={<Pharmacy />} />
             </Route>
             <Route path="*" element={<NoPageFound />} />
