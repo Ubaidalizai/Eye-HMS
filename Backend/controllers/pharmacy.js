@@ -1,19 +1,12 @@
 const Pharmacy = require('../models/pharmacyModel');
 const Product = require('../models/product');
 const Purchase = require('../models/purchase');
+const getAll = require('./handleFactory');
 
 const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
-// GET ALL DRUGS IN PHARMACY
-exports.getAllDrugsInPharmacy = asyncHandler(async (req, res) => {
-  try {
-    const drugs = await Pharmacy.find();
-    res.status(200).json(drugs);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
 // GET SINGLE DRUG
 exports.getDrug = asyncHandler(async (req, res) => {

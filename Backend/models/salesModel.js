@@ -30,7 +30,12 @@ const saleSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  soldBy: {
+  category: {
+    type: String,
+    enum: ['drug', 'sunglasses'],
+    required: [true, 'A sale must defend on a specific category'],
+  },
+  userID: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
   },

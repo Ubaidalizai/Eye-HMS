@@ -11,44 +11,74 @@ function Inventory() {
   const [searchTerm, setSearchTerm] = useState();
   const [updatePage, setUpdatePage] = useState(true);
   const [stores, setAllStores] = useState([]);
-  const [Url, setUrl] = useState(
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [category, setCategory] = useState('');
+  const [url, setUrl] = useState(
     `http://localhost:4000/api/v1/inventory/product`
   );
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
-    handleUrl();
     fetchProductsData();
     fetchSalesData();
-  }, [updatePage]);
+    constructUrl(currentPage, category);
+  }, [updatePage, url, currentPage, category]);
 
-  const handleUrl = (url) => {
-    setUrl(`http://localhost:4000/api/v1/inventory/product/${url}`);
+  // Handle category changes and reset page to 1
+  const handleCategoryChange = (e) => {
+    const selectedCategory = e.target.value;
+    setCategory(selectedCategory);
+    setCurrentPage(1); // Reset to page 1 when category changes
+  };
+
+  // Construct the API URL based on page and category
+  const constructUrl = (page, selectedCategory) => {
+    const baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${page}&limit=10`;
+    const updatedUrl = selectedCategory
+      ? `${baseUrl}&category=${selectedCategory}`
+      : baseUrl;
+    setUrl(updatedUrl);
   };
 
   // Fetching Data of All Products
-  const fetchProductsData = () => {
-    fetch(Url, { credentials: 'include' }, { method: 'GET' })
-      .then((response) => response.json())
-      .then((data) => {
-        setAllProducts(data.data.products);
-      })
-      .catch((err) => console.log(err));
+  const fetchProductsData = async () => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      setAllProducts(data.data.results);
+      setTotalPages(data.totalPages); // Check this too
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Fetching Data of Search Products
-  const fetchSearchData = () => {
-    fetch(
-      `http://localhost:4000/api/v1/inventory/product/search?searchTerm=${searchTerm}`,
-      { credentials: 'include' },
-      { method: 'GET' }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setAllProducts(data);
-      })
-      .catch((err) => console.log(err));
+  const fetchSearchData = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/inventory/product/search?searchTerm=${searchTerm}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(data);
+      setAllProducts(data.data.results);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Fetching all stores data
@@ -67,7 +97,6 @@ function Inventory() {
 
   // Modal for Product UPDATE
   const updateProductModalSetting = (selectedProductData) => {
-    console.log('Clicked: edit');
     setUpdateProduct(selectedProductData);
     setShowUpdateModal(!showUpdateModal);
   };
@@ -76,13 +105,16 @@ function Inventory() {
   const deleteItem = (id) => {
     console.log('Product ID: ', id);
     console.log(`http://localhost:4000/api/v1/inventory/product/${id}`);
-    fetch(
-      `http://localhost:4000/api/v1/inventory/product/${id}`,
-      { credentials: 'include' },
-      { method: 'DELETE' }
-    )
+    fetch(`http://localhost:4000/api/v1/inventory/product/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         setUpdatePage(!updatePage);
       });
   };
@@ -92,9 +124,13 @@ function Inventory() {
     setUpdatePage(!updatePage);
   };
 
-  // Handle Search Term
+  // Handle Search Term Input Change
   const handleSearchTerm = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  // Trigger Search Manually
+  const triggerSearch = () => {
     fetchSearchData();
   };
 
@@ -216,12 +252,18 @@ function Inventory() {
                   value={searchTerm}
                   onChange={handleSearchTerm}
                 />
+                <button
+                  onClick={triggerSearch}
+                  className="bg-blue-500 text-white p-2"
+                >
+                  Search
+                </button>
               </div>
             </div>
-            <div className="sm:col-span-2">
+            <div className="flex items-center sm:col-span-2">
               <label
                 htmlFor="category"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                className="font-bold mr-2 mb-2 text-sm text-gray-900 dark:text-white"
               >
                 Category
               </label>
@@ -229,11 +271,11 @@ function Inventory() {
                 id="category"
                 name="category"
                 value={products.category}
-                onChange={(e) => handleUrl(e.target.value)}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                onChange={handleCategoryChange}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full"
               >
                 <option value="">Select a category</option>
-                <option value="drugs">Drug</option>
+                <option value="drug">Drug</option>
                 <option value="sunglasses">Sunglasses</option>
               </select>
             </div>
@@ -309,6 +351,31 @@ function Inventory() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between mt-4">
+          <button
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1 || totalPages === 0}
+          >
+            Previous
+          </button>
+
+          <span className="flex items-center text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

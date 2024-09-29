@@ -1,16 +1,17 @@
 const Product = require('../models/product');
+const Sales = require('../models/salesModel');
 const Purchase = require('../models/purchase');
 const Pharmacy = require('../models/pharmacyModel');
 const DrugMovement = require('../models/drugMovmentModel');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const asyncHandler = require('../middlewares/asyncHandler');
+const getAll = require('./handleFactory');
 
 // Add Post
 const addProduct = asyncHandler((req, res) => {
   const { _id } = req.user;
   validateMongoDBId(_id); // Check if _id is valid
   const addProduct = new Product({
-    userID: _id,
     name: req.body.name,
     manufacturer: req.body.manufacturer,
     stock: 0,
@@ -31,83 +32,30 @@ const addProduct = asyncHandler((req, res) => {
     });
 });
 
-// GET /api/products/drugs
-const getDrugs = asyncHandler(async (req, res) => {
-  try {
-    const drugs = await Product.find({ category: 'drug' });
-    res.status(200).json({ status: 'success', data: { drugs } });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
-  }
-});
-
-// GET /api/products/sunglasses
-const getSunglasses = asyncHandler(async (req, res) => {
-  try {
-    const sunglasses = await Product.find({ category: 'sunglasses' });
-    res.status(200).json({ status: 'success', data: { sunglasses } });
-  } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
-  }
-});
-
-// Get All Products
-const getAllProducts = asyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  validateMongoDBId(_id); // Check if _id is valid
-  const products = await Product.find({
-    userID: _id,
-  }).sort({ _id: -1 }); // -1 for descending;
-
-  if (!products) {
-    res.status(404);
-    throw new Error('Products not found');
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      products,
-    },
-  });
-});
+const getAllProducts = getAll(Product);
 
 // Delete Selected Product
 const deleteSelectedProduct = asyncHandler(async (req, res) => {
-  try {
-    const productId = req.params.id;
+  const productId = req.params.id; // Get the product ID from the request parameters
+  validateMongoDBId(productId); // Check if product ID is valid
 
-    // Run all deletions in parallel for performance
-    const [deleteProduct, deletePurchaseProduct, deleteSaleProduct] =
-      await Promise.all([
-        Product.deleteOne({ _id: productId }),
-        Purchase.deleteOne({ ProductID: productId }),
-        Sales.deleteOne({ ProductID: productId }),
-      ]);
-
-    // Check if product was actually deleted, and respond accordingly
-    if (!deleteProduct.deletedCount) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // Send back the deletion results
-    res.status(200).json({
-      message: 'Product and related records deleted successfully',
-      deleteProduct,
-      deletePurchaseProduct,
-      deleteSaleProduct,
-    });
-  } catch (error) {
-    res.status(500);
-    throw new Error('Internal server error');
+  const productExist = await Product.findOne({ _id: productId });
+  if (!productExist) {
+    return res.status(404).json({ message: 'Product not found' });
   }
+
+  await Product.findByIdAndDelete({ _id: productId });
+
+  // Send back the deletion results
+  res.status(200).json({
+    message: `${productExist.name}  deleted successfully`,
+  });
 });
 
 // Update Selected Product
 const updateSelectedProduct = asyncHandler(async (req, res) => {
-  const { productID } = req.body;
+  const productID = req.params.id;
   validateMongoDBId(productID); // Check if ProductID is valid
-
   // Update Product
   try {
     const updatedResult = await Product.findByIdAndUpdate(
@@ -133,23 +81,7 @@ const updateSelectedProduct = asyncHandler(async (req, res) => {
 });
 
 // Search Products
-const searchProduct = asyncHandler(async (req, res) => {
-  const { searchTerm } = req.query;
-  const products = await Product.find({
-    name: { $regex: searchTerm, $options: 'i' },
-  });
-
-  if (!products) {
-    res.status(404);
-    throw new Error('Products not found');
-  }
-  res.status(200).json({
-    status: 'success',
-    data: {
-      products,
-    },
-  });
-});
+const searchProduct = getAll(Product, true);
 
 // move drug from inventory to pharmacy
 const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
@@ -224,8 +156,6 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
 
 module.exports = {
   addProduct,
-  getDrugs,
-  getSunglasses,
   getAllProducts,
   deleteSelectedProduct,
   updateSelectedProduct,

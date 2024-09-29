@@ -1,39 +1,42 @@
-import { Fragment, useEffect, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
-
   handlePageUpdate,
-  authContext,
 }) {
   const [products, setAllProducts] = useState([]);
-  const [productCatagory, setProductCatagory] = useState("");
+  const [productCatagory, setProductCatagory] = useState('');
   const [purchase, setPurchase] = useState({
-    userID: authContext.user,
-    productID: "",
-    quantityPurchased: "",
-    purchaseDate: "",
-    totalPurchaseAmount: "",
-    category: "", // New category field
+    productID: '',
+    quantityPurchased: 0,
+    purchaseDate: '',
+    unitPurchaseAmount: '',
+    category: '', // New category field
   });
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
-  console.log("PPu: ", purchase);
-  const fetchProductsData = ({ productCatagory }) => {
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
+  const fetchProductsData = (productCatagory) => {
+    let url = 'http://localhost:4000/api/v1/inventory/product';
+    if (productCatagory) {
+      url += `?category=${productCatagory}`;
+    }
+
+    fetch(url, {
+      credentials: 'include',
+    })
       .then((response) => response.json())
       .then((data) => {
-        setAllProducts(data);
+        setAllProducts(data.data.results);
       })
       .catch((err) => console.log(err));
   };
 
   useEffect(() => {
-    fetchProductsData(productCatagory);
-  }, [productCatagory]);
+    fetchProductsData('');
+  }, []);
   // Handling Input Change for input fields
   const handleInputChange = (key, value) => {
     setPurchase({ ...purchase, [key]: value });
@@ -41,16 +44,16 @@ export default function AddPurchaseDetails({
 
   // POST Data
   const addSale = () => {
-    fetch("http://localhost:4000/api/v1/purchase", {
-      credentials: "include",
-      method: "POST",
+    fetch('http://localhost:4000/api/v1/purchase', {
+      credentials: 'include',
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
       body: JSON.stringify(purchase),
     })
       .then((result) => {
-        alert("Purchase ADDED");
+        alert('Purchase ADDED');
         handlePageUpdate();
         addSaleModalSetting();
       })
@@ -117,9 +120,11 @@ export default function AddPurchaseDetails({
                               id="category"
                               name="category"
                               value={purchase.category}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
+                              onChange={(e) => {
+                                handleInputChange('category', e.target.value);
+                                setProductCatagory(e.target.value);
+                                fetchProductsData(e.target.value);
+                              }}
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
                             >
                               <option value="">Select Category</option>
@@ -177,18 +182,18 @@ export default function AddPurchaseDetails({
                               htmlFor="totalPurchaseAmount"
                               className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                             >
-                              Total Purchase Amount
+                              Unit Purchase Amount
                             </label>
                             <input
                               type="number"
-                              name="totalPurchaseAmount"
-                              id="totalPurchaseAmount"
-                              value={purchase.totalPurchaseAmount}
+                              name="unitPurchaseAmount"
+                              id="unitPurchaseAmount"
+                              value={purchase.unitPurchaseAmount}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                              placeholder="$299"
+                              placeholder="$20"
                             />
                           </div>
 

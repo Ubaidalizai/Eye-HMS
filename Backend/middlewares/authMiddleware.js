@@ -52,6 +52,14 @@ const authorizePharmacist = (req, res, next) => {
   }
 };
 
+const authorizeSunglassesSeller = (req, res, next) => {
+  if (req.user && req.user.role === 'sunglassesSeller') {
+    next();
+  } else {
+    res.status(401).send('Not authorized as an pharmacist.');
+  }
+};
+
 const authorizeDoctor = (req, res, next) => {
   if (req.user && req.user.role === 'doctor') {
     next();
