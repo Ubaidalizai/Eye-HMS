@@ -1,7 +1,7 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export const moveItemAPI = createAsyncThunk(
-  "inventory/moveItem",
+  'inventory/moveItem',
   async ({ item, quantity }) => {
     // Extract the required fields
     const { name } = item;
@@ -10,17 +10,20 @@ export const moveItemAPI = createAsyncThunk(
     const payload = { name, quantity, salePrice };
 
     // Send the request with the payload
-    const response = await fetch(`http://localhost:4000/api/product/move`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(payload), // Send only name, quantity, and salePrice
-    });
+    const response = await fetch(
+      `http://localhost:4000/api/v1/inventory/product/move`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload), // Send only name, quantity, and salePrice
+      }
+    );
 
     if (!response.ok) {
-      throw new Error("Failed to move item");
+      throw new Error('Failed to move item');
     }
 
     return { ...payload }; // Ensure this matches the expected API response
@@ -28,7 +31,7 @@ export const moveItemAPI = createAsyncThunk(
 );
 
 const inventorySlice = createSlice({
-  name: "inventory",
+  name: 'inventory',
   initialState: {
     products: [],
     movedItems: [],
