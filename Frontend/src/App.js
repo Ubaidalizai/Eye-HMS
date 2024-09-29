@@ -12,11 +12,13 @@ import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
 import Store from "./pages/Store";
 import Sales from "./pages/Sales";
+import Patient from "./pages/Patient";
 import PurchaseDetails from "./pages/PurchaseDetails";
 import Move from "./pages/Move";
 import Pharmacy from "./pages/Pharmacy";
 import { Provider } from "react-redux";
 import store from "./redux/store";
+import PrescriptionPage from "./pages/PrescriptionPage";
 
 const App = () => {
   const [user, setUser] = useState("");
@@ -82,6 +84,8 @@ const App = () => {
               <Route path="/sales" element={<Sales />} />
               <Route path="/manage-store" element={<Store />} />
               <Route path="/move" element={<Move />} />
+              <Route path="/patient" element={<Patient />} />
+              <Route path="/prescription/:id" element={<PrescriptionPage />} />
               <Route path="/*" element={<Move />} />
               <Route path="/pharmacy" element={<Pharmacy />} />
             </Route>
