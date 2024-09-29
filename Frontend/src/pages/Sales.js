@@ -10,6 +10,7 @@ function Sales() {
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // Number of items per page
   const [category, setCategory] = useState('');
 
   const authContext = useContext(AuthContext);
@@ -28,10 +29,9 @@ function Sales() {
   };
 
   // Fetch paginated sales data from the backend
-  // Fetch paginated sales data from the backend
   const fetchSales = async () => {
     try {
-      let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=10`;
+      let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
         baseUrl += '&category=sunglasses';
@@ -54,9 +54,10 @@ function Sales() {
       }
 
       const data = await response.json();
-      console.log(data);
       setSales(data.data.results);
-      setTotalPages(data.totalPages);
+      setTotalPages(
+        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
+      );
     } catch (err) {
       console.log(err);
     }
