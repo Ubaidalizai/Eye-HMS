@@ -7,71 +7,83 @@ function Sales() {
   const [sales, setSales] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [stores, setAllStores] = useState([]);
+  const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [updatePage, setUpdatePage] = useState(true);
+  const [category, setCategory] = useState('');
 
   const authContext = useContext(AuthContext);
+  const user = JSON.parse(localStorage.getItem('user'));
 
+  // Determine initial URL based on role
   useEffect(() => {
     fetchSales();
     fetchProductsData();
-    fetchStoresData();
-  }, [updatePage]);
+  }, [currentPage, category]);
 
-  // Toggle sale modal
-  const addSaleModalSetting = () => setShowSaleModal(!showSaleModal);
-
-  // Handle page update (for re-fetching data after adding a sale)
-  const handlePageUpdate = () => {
-    fetchSales(currentPage);
+  // Handle category change (only for admin)
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    setCurrentPage(1); // Reset to page 1 when category changes
   };
 
   // Fetch paginated sales data from the backend
-  const fetchSales = async (page) => {
+  // Fetch paginated sales data from the backend
+  const fetchSales = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/sales?page=${page}&limit=10`, // Adjust the limit as needed
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=10`;
+
+      if (user.role === 'sunglassesSeller') {
+        baseUrl += '&category=sunglasses';
+      } else if (user.role === 'pharmacist') {
+        baseUrl += '&category=drug';
+      }
+
+      // If admin selected a category
+      if (category) {
+        baseUrl += `&category=${category}`;
+      }
+
+      const response = await fetch(baseUrl, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
       const data = await response.json();
-      setSales(data.data.sales); // Assuming `sales` is the key in the response
-      setTotalPages(data.totalPages); // Assuming the backend sends `totalPages`
+      console.log(data);
+      setSales(data.data.results);
+      setTotalPages(data.totalPages);
     } catch (err) {
-      console.error('Error fetching sales:', err);
+      console.log(err);
     }
   };
 
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    fetch(
-      'http://localhost:4000/api/v1/pharmacy',
-      { credentials: 'include' },
-      { method: 'GET' }
-    )
+    fetch('http://localhost:4000/api/v1/pharmacy', {
+      credentials: 'include',
+      method: 'GET',
+    })
       .then((response) => response.json())
       .then((data) => {
-        setAllProducts(data);
+        setAllProducts(data.data.results);
       })
       .catch((err) => console.log(err));
   };
 
-  // Fetching Data of All Stores
-  const fetchStoresData = () => {
-    fetch(`http://localhost:4000/api/store/get/${authContext.user}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setAllStores(data);
-      });
+  // Modal for Sale Add
+  const addSaleModalSetting = () => {
+    setShowSaleModal(!showSaleModal);
   };
 
-  // Fetch sales on component mount and when currentPage changes
-  useEffect(() => {
-    fetchSales(currentPage);
-  }, [currentPage]);
+  // Handle Page Update
+  const handlePageUpdate = () => {
+    setUpdatePage(!updatePage);
+  };
 
   return (
     <div className="col-span-12 lg:col-span-10 flex justify-center">
@@ -85,12 +97,37 @@ function Sales() {
             authContext={authContext}
           />
         )}
+
         {/* Sales Table */}
         <div className="overflow-x-auto rounded-lg border bg-white border-gray-200">
           <div className="flex justify-between pt-5 pb-3 px-3">
             <div className="flex gap-4 justify-center items-center">
               <span className="font-bold">Sales</span>
             </div>
+
+            {/* Category Dropdown for Admin */}
+            {user.role === 'admin' && (
+              <div className="flex items-center">
+                <label
+                  htmlFor="category"
+                  className="mb-2 font-bold text-gray-900 dark:text-white mr-2"
+                >
+                  Category
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  value={category}
+                  onChange={handleCategoryChange}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pt-2 pb-2"
+                >
+                  <option value="">Select Category</option>
+                  <option value="drug">Drug</option>
+                  <option value="sunglasses">Sunglasses</option>
+                </select>
+              </div>
+            )}
+
             <div className="flex gap-4">
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs rounded"
@@ -100,6 +137,8 @@ function Sales() {
               </button>
             </div>
           </div>
+
+          {/* Table for Sales */}
           <table className="min-w-full divide-y-2 divide-gray-200 text-sm">
             <thead>
               <tr>
@@ -124,29 +163,35 @@ function Sales() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {sales.map((sale) =>
-                sale.soldItems.map((item) => (
-                  <tr key={`${sale._id}-${item._id}`}>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-900">
-                      {item.drugId.name}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {item.quantity}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      ${item.drugId.salePrice}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {new Date(sale.date).toLocaleDateString()}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      {sale.soldBy.firstName} {sale.soldBy.lastName}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                      ${item.income}
-                    </td>
-                  </tr>
-                ))
+              {sales.length > 0 ? (
+                sales.map((sale) =>
+                  sale.soldItems.map((item) => (
+                    <tr key={`${sale._id}-${item._id}`}>
+                      <td className="whitespace-nowrap px-4 py-2 text-gray-900">
+                        {item.drugId?.name}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                        {item.quantity}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                        ${item.drugId?.salePrice}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                        {new Date(sale.date).toLocaleDateString()}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                        {sale.userID?.firstName} {sale.userID?.lastName}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
+                        ${item.income}
+                      </td>
+                    </tr>
+                  ))
+                )
+              ) : (
+                <tr>
+                  <td colSpan="6">No sales available</td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -157,7 +202,7 @@ function Sales() {
           <button
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || totalPages === 0}
           >
             Previous
           </button>
@@ -171,7 +216,7 @@ function Sales() {
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
           >
             Next
           </button>

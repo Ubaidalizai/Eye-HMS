@@ -2,7 +2,7 @@ const Pharmacy = require('../models/pharmacyModel');
 const Sale = require('../models/salesModel');
 const Product = require('../models/product');
 const Purchase = require('../models/purchase');
-
+const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
@@ -64,8 +64,7 @@ const updateDrugStock = async (drug, quantity) => {
 
 // Main sellDrugs function
 const sellDrugs = asyncHandler(async (req, res) => {
-  const { drugsSold, date } = req.body;
-  console.log(req.body);
+  const { drugsSold, category, date } = req.body;
   let totalIncome = 0;
   let totalNetIncome = 0;
   const soldItems = [];
@@ -103,7 +102,8 @@ const sellDrugs = asyncHandler(async (req, res) => {
       totalIncome,
       totalNetIncome,
       date,
-      soldBy: req.user._id,
+      category,
+      userID: req.user._id,
     });
 
     res.status(201).json({
@@ -119,41 +119,10 @@ const sellDrugs = asyncHandler(async (req, res) => {
   }
 });
 
-// Get all sales data ( with pagination )
-const getAllSales = asyncHandler(async (req, res) => {
-  // Get page and limit from query params, set defaults if not provided
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
-
-  try {
-    // Fetch sales with pagination
-    const sales = await Sale.find()
-      .populate({ path: 'soldItems.drugId', select: 'name salePrice' })
-      .populate({ path: 'soldBy', select: 'firstName lastName' })
-      .sort({ date: -1 }) // Sort by date, newest first
-      .skip(skip)
-      .limit(limit);
-
-    // Get total count of sales for pagination metadata
-    const totalSales = await Sale.countDocuments();
-
-    res.status(200).json({
-      status: 'success',
-      results: sales.length,
-      currentPage: page,
-      totalPages: Math.ceil(totalSales / limit),
-      data: {
-        sales,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to retrieve sales: ${error.message}`,
-    });
-  }
-});
+const getAllSales = getAll(Sale, true, [
+  { path: 'soldItems.drugId', select: 'name salePrice' },
+  { path: 'userID', select: 'firstName lastName' },
+]);
 
 // Get monthly sales ( total income and total net income, total sold items )
 const getOneMonthSales = asyncHandler(async (req, res) => {

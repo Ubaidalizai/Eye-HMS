@@ -1,18 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
   const [drugs, setDrugs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Manage total pages from backend
+  const limit = 10; // Number of items per page
+  const user = JSON.parse(localStorage.getItem('user'));
 
+  // Fetch paginated data from the backend
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Set loading true before fetch
+
+      let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
+
+      if (user.role === 'sunglassesSeller') {
+        baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}&category=sunglasses`;
+      } else if (user.role === 'pharmacist') {
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
+      }
+
       try {
-        const res = await fetch("http://localhost:4000/api/v1/pharmacy/drugs", {
-          credentials: "include",
-          method: "GET",
+        const res = await fetch(baseUrl, {
+          credentials: 'include',
+          method: 'GET',
         });
 
         if (!res.ok) {
@@ -20,17 +35,18 @@ const Pharmacy = () => {
         }
 
         const data = await res.json();
-        console.log(data);
-        setDrugs(data);
+        console.log(baseUrl);
+        setDrugs(data.data.results); // Set drug data
+        setTotalPages(data.totalPages || Math.ceil(data.totalItems / limit)); // Calculate total pages if backend provides totalItems or totalPages
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading to false after fetch completes
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentPage]); // Re-fetch data when currentPage changes
 
   if (loading) {
     return (
@@ -51,7 +67,7 @@ const Pharmacy = () => {
   return (
     <div className="w-[80vw] h-full mx-auto p-12 bg-gray-200 rounded-lg shadow-lg">
       <h2 className="text-4xl font-extrabold mb-6 text-center text-blue-600">
-        Pharmacy
+        {user.role === 'sunglassesSeller' ? 'Sunglasses' : 'Pharmacy'}
       </h2>
 
       <h3 className="text-3xl font-semibold mb-4 text-gray-800">
@@ -66,7 +82,7 @@ const Pharmacy = () => {
             <div className="flex justify-between items-center">
               <span className="font-medium text-gray-800">{drug.name}</span>
               <span className="text-gray-600">
-                Quantity:{" "}
+                Quantity:{' '}
                 <span className="font-semibold text-gray-800">
                   {drug.quantity}
                 </span>
@@ -75,6 +91,31 @@ const Pharmacy = () => {
           </li>
         ))}
       </ul>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between mt-4">
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1 || totalPages === 0}
+        >
+          Previous
+        </button>
+
+        <span className="flex items-center text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages || totalPages === 0}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

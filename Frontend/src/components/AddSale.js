@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useRef, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 
@@ -14,11 +14,24 @@ export default function AddSale({
         quantity: 0, // Initialize quantity as a number
       },
     ],
-    date: null, // Initialize date as null for proper date type handling
+    date: Date.now(), // Initialize date with the current date
+    category: '', // Initialize category as empty
   });
 
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
+
+  // Get user role from localStorage
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // Set the category based on user role
+  useEffect(() => {
+    if (user.role === 'pharmacist') {
+      setSale((prevSale) => ({ ...prevSale, category: 'drug' }));
+    } else if (user.role === 'sunglassesSeller') {
+      setSale((prevSale) => ({ ...prevSale, category: 'sunglasses' }));
+    }
+  }, [user.role]);
 
   // Handling Input Change for input fields
   const handleInputChange = (index, name, value) => {
@@ -81,7 +94,6 @@ export default function AddSale({
   };
 
   return (
-    // Modal
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         as="div"
@@ -102,7 +114,7 @@ export default function AddSale({
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0 ">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -112,7 +124,7 @@ export default function AddSale({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg overflow-y-scroll">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -121,10 +133,10 @@ export default function AddSale({
                         aria-hidden="true"
                       />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left ">
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <Dialog.Title
                         as="h3"
-                        className="text-lg  py-4 font-semibold leading-6 text-gray-900 "
+                        className="text-lg font-semibold leading-6 text-gray-900"
                       >
                         Add Sale
                       </Dialog.Title>
@@ -202,7 +214,7 @@ export default function AddSale({
                             Sale Date
                           </label>
                           <input
-                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
                             type="date"
                             id="date"
                             name="date"
