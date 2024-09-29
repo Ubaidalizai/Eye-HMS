@@ -13,6 +13,7 @@ function Inventory() {
   const [stores, setAllStores] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // Number of items per page
   const [category, setCategory] = useState('');
   const [url, setUrl] = useState(
     `http://localhost:4000/api/v1/inventory/product`
@@ -35,7 +36,7 @@ function Inventory() {
 
   // Construct the API URL based on page and category
   const constructUrl = (page, selectedCategory) => {
-    const baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${page}&limit=10`;
+    const baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${page}&limit=${limit}`;
     const updatedUrl = selectedCategory
       ? `${baseUrl}&category=${selectedCategory}`
       : baseUrl;
@@ -54,7 +55,10 @@ function Inventory() {
       }
       const data = await response.json();
       setAllProducts(data.data.results);
-      setTotalPages(data.totalPages); // Check this too
+      console.log(data);
+      setTotalPages(
+        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
+      ); // Check this too
     } catch (err) {
       console.log(err);
     }
@@ -305,7 +309,7 @@ function Inventory() {
                   Description
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Availibility
+                  Availability
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
                   More
