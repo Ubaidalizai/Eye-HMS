@@ -1,0 +1,51 @@
+.container {
+  width: 80vw;
+  padding-bottom: 30px;
+}
+.reportContainer {
+  /* width: 950px; */
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+h2,
+h3 {
+  color: #333;
+}
+
+.transactionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.transactionsTable th,
+.transactionsTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.transactionsTable th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.transactionsTable tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.transactionsTable tr:hover {
+  background-color: #f1f1f1;
+}
+
+.chartContainer {
+  margin-top: 20px;
+}
+
+canvas {
+  max-width: 100%;
+  height: auto;
+}
