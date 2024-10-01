@@ -1,11 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 
 const Profile = () => {
-  const EMAIL = "Hmaid@gmail.com";
-
   const [user, setUser] = useState({
-    name: "Hamid ",
-    email: EMAIL,
+    firstName: "",
+    lastName: "",
+    email: "",
     bio: "Doctor and Professor of Eyes and ...",
     profilePic:
       "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
@@ -13,6 +13,33 @@ const Profile = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:4000/api/v1/user/profile",
+          { withCredentials: true }
+        );
+        if (response.status === 200) {
+          const { firstName, lastName, email, imageUrl } = response.data.data;
+          setUser({
+            ...user,
+            firstName,
+            lastName,
+            email,
+            profilePic: `http://localhost:4000/public/img/users/${imageUrl}`,
+          });
+        } else {
+          console.error("Failed to fetch user profile", response);
+        }
+      } catch (error) {
+        console.error("Error fetching user profile", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,11 +107,20 @@ const Profile = () => {
           <>
             <input
               type='text'
-              name='name'
-              value={user.name}
+              name='firstName'
+              value={user.firstName}
               onChange={handleChange}
               className='w-full p-2 border border-gray-300 rounded mb-4 text-center'
-              placeholder='Enter your name'
+              placeholder='Enter your first name'
+            />
+
+            <input
+              type='text'
+              name='lastName'
+              value={user.lastName}
+              onChange={handleChange}
+              className='w-full p-2 border border-gray-300 rounded mb-4 text-center'
+              placeholder='Enter your last name'
             />
 
             <p className='text-gray-600 mb-4 text-center'>
@@ -110,7 +146,7 @@ const Profile = () => {
         ) : (
           <>
             <h2 className='text-xl md:text-2xl font-semibold mb-2 text-center'>
-              {user.name}
+              {user.firstName} {user.lastName}
             </h2>
 
             <p className='text-gray-600 mb-4 text-center'>
