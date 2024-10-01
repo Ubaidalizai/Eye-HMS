@@ -8,7 +8,7 @@ const Profile = () => {
     email: "",
     bio: "Doctor and Professor of Eyes and ...",
     profilePic:
-      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png", // Default profile image
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -28,7 +28,9 @@ const Profile = () => {
             firstName,
             lastName,
             email,
-            profilePic: `http://localhost:4000/public/img/users/${imageUrl}`,
+            profilePic: imageUrl
+              ? `http://localhost:4000/public/img/users/${imageUrl}`
+              : user.profilePic, // Use default image if no imageUrl
           });
         } else {
           console.error("Failed to fetch user profile", response);
@@ -79,21 +81,12 @@ const Profile = () => {
       </h1>
       <div className='bg-white shadow-md rounded-lg p-4 md:p-6 lg:p-8'>
         <div className='flex flex-col items-center mb-4'>
-          {user.profilePic ? (
-            <img
-              src={user.profilePic}
-              alt='Profile'
-              onClick={handleProfilePicClick}
-              className='w-24 h-24 rounded-full object-cover mb-4 cursor-pointer'
-            />
-          ) : (
-            <div
-              onClick={handleProfilePicClick}
-              className='w-24 h-24 rounded-full bg-gray-200 mb-4 flex items-center justify-center cursor-pointer'
-            >
-              <span className='text-gray-400'>No Image</span>
-            </div>
-          )}
+          <img
+            src={user.profilePic}
+            alt='Profile'
+            onClick={handleProfilePicClick}
+            className='w-24 h-24 rounded-full object-cover mb-4 cursor-pointer'
+          />
           <input
             type='file'
             accept='image/*'
