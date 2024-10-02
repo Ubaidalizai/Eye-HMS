@@ -1,51 +1,81 @@
+/* Income.module.css */
+
 .container {
   width: 80vw;
-  padding-bottom: 30px;
-}
-.reportContainer {
-  /* width: 950px; */
-  margin-bottom: 30px;
   padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-h2,
-h3 {
-  color: #333;
+.buttonsContainer {
+  width: 950px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: #03a9f4;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+  background-color: #0288d1;
+  transform: translateY(-2px);
+}
+
+button:active {
+  background-color: #0277bd;
+  transform: translateY(0);
+}
+
+button.selected {
+  background-color: #ff5722;
+}
+
+.reportContainer {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .transactionsTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .transactionsTable th,
 .transactionsTable td {
+  padding: 12px;
   border: 1px solid #ddd;
-  padding: 8px;
-}
-
-.transactionsTable th {
-  background-color: #f2f2f2;
   text-align: left;
-}
-
-.transactionsTable tr:nth-child(even) {
-  background-color: #f9f9f9;
 }
 
 .transactionsTable tr:hover {
   background-color: #f1f1f1;
 }
-
-.chartContainer {
-  margin-top: 20px;
+.buttonsContainer {
+  display: flex;
+  gap: 10px;
 }
 
-canvas {
-  max-width: 100%;
-  height: auto;
+.monthButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.activeMonth {
+  background-color: #4caf50; /* Highlight color */
+  color: white;
 }
