@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import styles from '../components/sidemenu.module.css';
 
 function SideMenu() {
   const [userInfo, setUserInfo] = useState('');
@@ -81,25 +80,28 @@ function SideMenu() {
             className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
           >
             <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
-            <span className='text-sm font-medium'> Move</span>
+            <span className='text-sm font-medium'> Sales</span>
+          </Link>
+          <Link
+            to='/patient'
+            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+          >
+            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
+            <span className='text-sm font-medium'>Paitent</span>
           </Link>
           <Link
             to='/pharmacy'
             className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
           >
             <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
-            <span className='text-sm font-medium'> Pharmacy</span>
+            <span className='text-sm font-medium'> Move</span>
           </Link>
           <Link
             to='/incomeReports'
             className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
           >
-            <img
-              alt='report-icon'
-              src={require('../assets/report.png')}
-              className={styles.img}
-            />
-            <span className='text-sm font-medium'>Reports</span>
+            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
+            <span className='text-sm font-medium'> Pharmacy</span>
           </Link>
 
           <details className='group [&_summary::-webkit-details-marker]:hidden'>

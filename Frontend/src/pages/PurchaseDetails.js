@@ -8,6 +8,7 @@ function PurchaseDetails() {
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // Number of items per page
   const [category, setCategory] = useState('');
 
   const authContext = useContext(AuthContext);
@@ -26,7 +27,7 @@ function PurchaseDetails() {
   // Fetching Data of All Purchase items
   const fetchPurchaseData = async () => {
     try {
-      const baseUrl = `http://localhost:4000/api/v1/purchase?page=${currentPage}&limit=10`;
+      const baseUrl = `http://localhost:4000/api/v1/purchase?page=${currentPage}&limit=${limit}`;
       const finalUrl = category ? `${baseUrl}&category=${category}` : baseUrl;
 
       const response = await fetch(finalUrl, {
@@ -38,7 +39,9 @@ function PurchaseDetails() {
       }
       const data = await response.json();
       setAllPurchasesData(data.data.results);
-      setTotalPages(data.totalPages);
+      setTotalPages(
+        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
+      );
     } catch (err) {
       console.log(err);
     }
