@@ -8,15 +8,12 @@ function SideMenu() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Send a GET request to the server to fetch the user profile
         const res = await axios.get(
           "http://localhost:4000/api/v1/user/profile",
           { withCredentials: true }
         );
 
-        // Check if the response is valid
         if (res.status === 200) {
-          // Update the user info state with the response data
           setUserInfo(res?.data?.data);
         } else {
           console.error("Failed to fetch user profile", res);
@@ -29,134 +26,93 @@ function SideMenu() {
     fetchData();
   }, []);
 
-  return (
-    <div className="h-full flex-col justify-between  bg-white hidden lg:flex ">
-      <div className="px-4 py-6">
-        <nav aria-label="Main Nav" className="mt-6 flex flex-col space-y-1">
-          <Link
-            to="/"
-            className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700"
-          >
-            <img
-              alt="dashboard-icon"
-              src={require("../assets/dashboard-icon.png")}
-            />
-            <span className="text-sm font-medium"> Dashboard </span>
-          </Link>
+  const MenuItem = ({ to, imgSrc, label }) => (
+    <Link
+      to={to}
+      className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+    >
+      <img alt={label} src={imgSrc} />
+      <span className='text-sm font-medium'>{label}</span>
+    </Link>
+  );
 
-          <details className="group [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-              <Link to="/inventory">
-                <div className="flex items-center gap-2">
-                  <img
-                    alt="inventory-icon"
-                    src={require("../assets/inventory-icon.png")}
-                  />
-                  <span className="text-sm font-medium"> Inventory </span>
-                </div>
-              </Link>
+  return (
+    <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
+      <div className='px-4 py-6'>
+        <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
+          <MenuItem
+            to='/'
+            imgSrc={require("../assets/dashboard-icon.png")}
+            label='Dashboard'
+          />
+
+          <details className='group [&_summary::-webkit-details-marker]:hidden'>
+            <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
+              <MenuItem
+                to='/inventory'
+                imgSrc={require("../assets/inventory-icon.png")}
+                label='Inventory'
+              />
             </summary>
           </details>
 
-          <Link
-            to="/purchase-details"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img
-              alt="purchase-icon"
-              src={require("../assets/supplier-icon.png")}
-            />
-            <span className="text-sm font-medium"> Purchase Details</span>
-          </Link>
-          <Link
-            to="/sales"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
-            <span className="text-sm font-medium"> Sales</span>
-          </Link>
-          <Link
-            to="/move"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-<<<<<<< HEAD
-            <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
-            <span className="text-sm font-medium"> Sales</span>
-=======
-            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
-            <span className='text-sm font-medium'>Move</span>
->>>>>>> fe85cb9980a49a2814ff072661e84d218aa3a1e7
-          </Link>
-          <Link
-            to="/patient"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-<<<<<<< HEAD
-            <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
-            <span className="text-sm font-medium">Paitent</span>
-=======
-            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
-            <span className='text-sm font-medium'>Patient</span>
->>>>>>> fe85cb9980a49a2814ff072661e84d218aa3a1e7
-          </Link>
-          <Link
-            to="/move"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-<<<<<<< HEAD
-            <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
-            <span className="text-sm font-medium"> Move</span>
-          </Link>
-          <Link
-            to="/pharmacy"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
-            <span className="text-sm font-medium"> Pharmacy</span>
-=======
-            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
-            <span className='text-sm font-medium'>Pharmacy</span>
-          </Link>
-          <Link
+          <MenuItem
+            to='/purchase-details'
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Purchase Details'
+          />
+          <MenuItem
+            to='/sales'
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Sales'
+          />
+          <MenuItem
+            to='/move'
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Move'
+          />
+          <MenuItem
+            to='/patient'
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Patient'
+          />
+          <MenuItem
+            to='/pharmacy'
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Pharmacy'
+          />
+          <MenuItem
             to='/incomeReport'
-            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-          >
-            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
-            <span className='text-sm font-medium'>Income</span>
->>>>>>> fe85cb9980a49a2814ff072661e84d218aa3a1e7
-          </Link>
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Income'
+          />
 
-          <details className="group [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-              <Link to="/manage-store">
-                <div className="flex items-center gap-2">
-                  <img
-                    alt="store-icon"
-                    src={require("../assets/order-icon.png")}
-                  />
-                  <span className="text-sm font-medium"> Manage Store </span>
-                </div>
-              </Link>
+          <details className='group [&_summary::-webkit-details-marker]:hidden'>
+            <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
+              <MenuItem
+                to='/manage-store'
+                imgSrc={require("../assets/order-icon.png")}
+                label='Manage Store'
+              />
             </summary>
           </details>
         </nav>
       </div>
 
-      <div className="sticky inset-x-0 bottom-0 border-t border-gray-100">
-        <div className="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
+      <div className='sticky inset-x-0 bottom-0 border-t border-gray-100'>
+        <div className='flex items-center gap-2 bg-white p-4 hover:bg-gray-50'>
           <img
-            alt="Profile"
+            alt='Profile'
             src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
-            className="h-10 w-10 rounded-full object-cover"
+            className='h-10 w-10 rounded-full object-cover'
           />
 
           <div>
-            <p className="text-xs">
-              <strong className="block font-medium">
+            <p className='text-xs'>
+              <strong className='block font-medium'>
                 {userInfo.firstName + " " + userInfo.lastName}
               </strong>
-
-              <span> {userInfo.email} </span>
+              <span>{userInfo.email}</span>
             </p>
           </div>
         </div>
