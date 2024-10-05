@@ -1,0 +1,81 @@
+/* Income.module.css */
+
+.container {
+  width: 80vw;
+  padding: 20px;
+}
+
+.buttonsContainer {
+  width: 950px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: #03a9f4;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+  background-color: #0288d1;
+  transform: translateY(-2px);
+}
+
+button:active {
+  background-color: #0277bd;
+  transform: translateY(0);
+}
+
+button.selected {
+  background-color: #ff5722;
+}
+
+.reportContainer {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.transactionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.transactionsTable th,
+.transactionsTable td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.transactionsTable tr:hover {
+  background-color: #f1f1f1;
+}
+.buttonsContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.monthButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.activeMonth {
+  background-color: #4caf50; /* Highlight color */
+  color: white;
+}
