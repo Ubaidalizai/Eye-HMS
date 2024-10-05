@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
+import React, { useState } from 'react';
+import { Modal, Button } from 'react-bootstrap';
 
 const PrescriptionModal = ({ show, onClose, onSave, patient }) => {
   const [prescriptionData, setPrescriptionData] = useState({
-    medication: "",
-    dosage: "",
-    frequency: "",
-    duration: "",
+    medication: '',
+    dosage: '',
+    frequency: '',
+    duration: '',
   });
 
   const handleInputChange = (e) => {

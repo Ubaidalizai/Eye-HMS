@@ -1,21 +1,25 @@
 // saleModel.js
 const mongoose = require('mongoose');
 const Pharmacy = require('./pharmacyModel');
+const Product = require('./pharmacyModel');
 const User = require('./userModel');
 
 const saleSchema = new mongoose.Schema({
-  soldItems: [
+  soldDetails: [
     {
-      drugId: {
+      productRefId: {
         type: mongoose.Schema.ObjectId,
-        ref: 'Pharmacy',
-        required: true,
+        required: [true, 'Each sold item must reference a product or drug'],
+        refPath: 'category', // Dynamic reference based on category ('Pharmacy' or 'Product')
       },
       quantity: {
         type: Number,
-        required: [true, 'A sale must have a total income'],
+        required: [true, 'A sold item must have a quantity'],
       },
-      income: Number,
+      income: {
+        type: Number,
+        required: [true, 'A sold item must have an income'],
+      },
     },
   ],
   totalIncome: {
@@ -32,8 +36,8 @@ const saleSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['drug', 'sunglasses'],
-    required: [true, 'A sale must defend on a specific category'],
+    enum: ['Pharmacy', 'Product'], // Pharmacy for drugs, Product for sunglasses or other products
+    required: [true, 'A sale must have a category (either drug or product)'],
   },
   userID: {
     type: mongoose.Schema.ObjectId,

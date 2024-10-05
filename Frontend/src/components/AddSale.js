@@ -26,7 +26,7 @@ export default function AddSale({
 
   // Set the category based on user role
   useEffect(() => {
-    if (user.role === 'pharmacist') {
+    if (user.role === 'pharmacist' || user.role === 'admin') {
       setSale((prevSale) => ({ ...prevSale, category: 'drug' }));
     } else if (user.role === 'sunglassesSeller') {
       setSale((prevSale) => ({ ...prevSale, category: 'sunglasses' }));

@@ -6,40 +6,77 @@ const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
-// Helper function to validate and retrieve drugs from the pharmacy
-const getValidDrugsFromPharmacy = async (drugsSold) => {
-  const drugIds = drugsSold.map((item) => item.drugId);
-  const drugsInPharmacy = await Pharmacy.find({ _id: { $in: drugIds } });
+// Helper function to retrieve products from inventory or pharmacy
+const getValidProducts = async (productsSold, category) => {
+  const productIds = productsSold.map((item) => item.drugId);
 
-  if (drugsInPharmacy.length !== drugsSold.length) {
-    const missingDrugs = drugsSold.filter(
-      (item) => !drugsInPharmacy.some((drug) => drug._id.equals(item.drugId))
-    );
-    throw new Error(
-      `Some drugs not found: ${missingDrugs.map((d) => d.drugId)}`
-    );
+  if (category === 'Pharmacy') {
+    const productsInPharmacy = await Pharmacy.find({
+      _id: { $in: productIds },
+    });
+    if (productsInPharmacy.length !== productsSold.length) {
+      const missingProducts = productsSold.filter(
+        (item) =>
+          !productsInPharmacy.some((product) => product._id.equals(item.drugId))
+      );
+      throw new Error(
+        `Some drugs not found in pharmacy: ${missingProducts.map(
+          (d) => d.drugId
+        )}`
+      );
+    }
+    return productsInPharmacy;
+  } else if (category === 'Product') {
+    const productsInInventory = await Product.find({
+      _id: { $in: productIds },
+    });
+    if (productsInInventory.length !== productsSold.length) {
+      const missingProducts = productsSold.filter(
+        (item) =>
+          !productsInInventory.some((product) =>
+            product._id.equals(item.drugId)
+          )
+      );
+      throw new Error(
+        `Some products not found in inventory: ${missingProducts.map(
+          (d) => d.drugId
+        )}`
+      );
+    }
+    return productsInInventory;
+  } else {
+    throw new Error(`Unknown category: ${category}`);
   }
-
-  return drugsInPharmacy;
 };
 
 // Helper function to validate stock and calculate income
 const validateDrugAndCalculateIncome = async (drug, soldItem) => {
-  if (drug.quantity < soldItem.quantity) {
+  const product = await Purchase.findOne({
+    ProductID: drug._id,
+  }).sort({ _id: -1 }); // Get the latest sale price
+  console.log(product);
+  if (
+    drug?.quantity < soldItem.quantity &&
+    product?.stock < soldItem.quantity
+  ) {
     throw new Error(`Insufficient stock for drug: ${drug.name}`);
   }
 
-  if (isNaN(drug.salePrice) || isNaN(soldItem.quantity)) {
+  if (
+    (isNaN(drug.salePrice) && isNaN(drug.stock)) ||
+    isNaN(soldItem.quantity)
+  ) {
     throw new Error(`Invalid sale price or quantity for drug: ${drug.name}`);
   }
-
-  return drug.salePrice * soldItem.quantity; // Returns the income
+  let salePrice = drug?.salePrice || product?.UnitPurchaseAmount;
+  console.log(salePrice);
+  return salePrice * soldItem.quantity; // Returns the income
 };
 
 // Helper function to calculate net income
 const calculateNetIncome = async (drug, soldItem) => {
   const productInInventory = await Product.findOne({ name: drug.name });
-
+  console.log(productInInventory);
   if (!productInInventory) {
     throw new Error(`Product with name ${drug.name} not found in inventory`);
   }
@@ -52,45 +89,51 @@ const calculateNetIncome = async (drug, soldItem) => {
     throw new Error(`No purchase record found for drug: ${drug.name}`);
   }
 
-  const purchaseCost = purchaseRecord.TotalPurchaseAmount * soldItem.quantity;
+  const purchaseCost = purchaseRecord.UnitPurchaseAmount * soldItem.quantity;
   return purchaseCost; // Return the purchase cost for net income calculation
 };
 
 // Helper function to update drug quantity in the pharmacy
-const updateDrugStock = async (drug, quantity) => {
-  drug.quantity -= quantity;
+const updateDrugStock = async (drug, category, quantity) => {
+  if (category === 'Product') {
+    drug.quantity -= quantity;
+  } else {
+    drug.stock -= quantity;
+  }
+
   await drug.save();
 };
 
-// Main sellDrugs function
-const sellDrugs = asyncHandler(async (req, res) => {
-  const { drugsSold, category, date } = req.body;
+// Main sellItems function
+// Updated sellItems function to handle both pharmacy and inventory products
+const sellItems = asyncHandler(async (req, res) => {
+  const { soldItems, category, date } = req.body;
   let totalIncome = 0;
   let totalNetIncome = 0;
-  const soldItems = [];
+  const soldDetails = [];
 
   try {
-    // Step 1: Get valid drugs from pharmacy
-    const drugsInPharmacy = await getValidDrugsFromPharmacy(drugsSold);
+    // Step 1: Get valid products (pharmacy or inventory)
+    const validProducts = await getValidProducts(soldItems, category);
 
-    // Step 2: Loop through sold items to process each drug sale
-    for (const soldItem of drugsSold) {
-      const drug = drugsInPharmacy.find((d) => d._id.equals(soldItem.drugId));
+    // Step 2: Loop through sold items to process each product sale
+    for (const soldItem of soldItems) {
+      const product = validProducts.find((p) => p._id.equals(soldItem.drugId));
 
-      // Step 3: Validate stock and calculate income for each drug
-      const income = await validateDrugAndCalculateIncome(drug, soldItem);
+      // Step 3: Validate stock and calculate income for each product
+      const income = await validateDrugAndCalculateIncome(product, soldItem);
       totalIncome += income;
 
       // Step 4: Calculate net income
-      const purchaseCost = await calculateNetIncome(drug, soldItem);
+      const purchaseCost = await calculateNetIncome(product, soldItem);
       totalNetIncome += income - purchaseCost;
 
-      // Step 5: Update drug quantity in pharmacy
-      await updateDrugStock(drug, soldItem.quantity);
+      // Step 5: Update product quantity in the correct location (pharmacy or inventory)
+      await updateDrugStock(product, category, soldItem.quantity);
 
-      // Step 6: Push sold item details to soldItems array
-      soldItems.push({
-        drugId: drug._id,
+      // Step 6: Push sold item details to soldDetails array
+      soldDetails.push({
+        productRefId: product._id,
         quantity: soldItem.quantity,
         income,
       });
@@ -98,7 +141,7 @@ const sellDrugs = asyncHandler(async (req, res) => {
 
     // Step 7: Create a sale record
     const sale = await Sale.create({
-      soldItems,
+      soldDetails,
       totalIncome,
       totalNetIncome,
       date,
@@ -120,7 +163,7 @@ const sellDrugs = asyncHandler(async (req, res) => {
 });
 
 const getAllSales = getAll(Sale, true, [
-  { path: 'soldItems.drugId', select: 'name salePrice' },
+  { path: 'soldDetails.productRefId', select: 'name' },
   { path: 'userID', select: 'firstName lastName' },
 ]);
 
@@ -148,7 +191,7 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
           _id: null,
           totalIncome: { $sum: '$totalIncome' },
           totalNetIncome: { $sum: '$totalNetIncome' },
-          totalSoldItems: { $sum: { $size: '$soldItems' } },
+          totalSoldItems: { $sum: { $size: '$soldDetails' } },
         },
       },
     ]);
@@ -201,10 +244,11 @@ const getMonthlySales = asyncHandler(async (req, res) => {
     });
   } catch (error) {
     res.status(500);
+    console.log(error);
     throw new Error(
       'Something went wrong while retrieving monthly sales data.'
     );
   }
 });
 
-module.exports = { sellDrugs, getAllSales, getOneMonthSales, getMonthlySales };
+module.exports = { sellItems, getAllSales, getOneMonthSales, getMonthlySales };

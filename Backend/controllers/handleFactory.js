@@ -3,21 +3,22 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 
 const getAll = (Model, userID = false, popOptions = null) =>
   asyncHandler(async (req, res) => {
-    const { page, limit, category, searchTerm } = req.query;
+    const { page, limit, checkQuantity, category, searchTerm } = req.query;
     const query = {};
-
     if (userID) {
       const userID = req.user._id;
       validateMongoDBId(userID);
       query.userID = userID; // Add userID filter
     }
-
+    if (checkQuantity) {
+      query.stock = { stock: { $gt: 0 } };
+      query.quantity = { quantity: { $gt: 0 } };
+    }
     if (category && category.trim()) {
       query.category = category.trim(); // Add category filter
     }
-
-    // If searchTerm is provided, add an exact match filter
     if (searchTerm && searchTerm.trim()) {
+      // If searchTerm is provided, add an exact match filter
       query.name = { $regex: searchTerm, $options: 'i' }; // Exact match on 'name' field
     }
 
@@ -25,6 +26,7 @@ const getAll = (Model, userID = false, popOptions = null) =>
       let queryBuilder = Model.find(query).sort({ date: -1 }); // Sort by date
 
       if (popOptions) {
+        console.log(popOptions);
         queryBuilder = queryBuilder.populate(popOptions); // Apply population if provided
       }
 
