@@ -85,16 +85,13 @@ const App = () => {
               <Route path="/sales" element={<Sales />} />
               <Route path="/manage-store" element={<Store />} />
               <Route path="/move" element={<Move />} />
-
-              <Route path="/patient" element={<Patient />} />
-              <Route path="/prescription/:id" element={<PrescriptionPage />} />
-              <Route path="/*" element={<Move />} />
-
               <Route path="/pharmacy" element={<Pharmacy />} />
+
               <Route
                 path="/expenceManegement"
                 element={<ExpenseManagement />}
               />
+
             </Route>
             <Route path="*" element={<NoPageFound />} />
           </Routes>
