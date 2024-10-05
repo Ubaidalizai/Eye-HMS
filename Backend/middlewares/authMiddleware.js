@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel.js');
 const asyncHandler = require('./asyncHandler.js');
+=======
+const jwt = require("jsonwebtoken");
+const User = require("../models/userModel.js");
+const asyncHandler = require("./asyncHandler.js");
+>>>>>>> origin/master
 
 const authenticate = asyncHandler(async (req, res, next) => {
   let token;
@@ -15,36 +21,60 @@ const authenticate = asyncHandler(async (req, res, next) => {
       const currentUser = await User.findById(decoded.userId);
       if (!currentUser) {
         res.status(401);
+<<<<<<< HEAD
         throw new Error('The user belonging to this token no longer exist!');
+=======
+        throw new Error("The user belonging to this token no longer exist!");
+>>>>>>> origin/master
       }
       // 4) Check if the user changed password after token was issued
       if (currentUser.changedPasswordAfter(decoded.iat)) {
         res.status(401);
         throw new Error(
+<<<<<<< HEAD
           'User recently changed the password, please try again!'
+=======
+          "User recently changed the password, please try again!"
+>>>>>>> origin/master
         );
       }
       req.user = currentUser;
       next();
     } catch (error) {
       res.status(401);
+<<<<<<< HEAD
       throw new Error('Not authorized, token failed.');
     }
   } else {
     res.status(401);
     throw new Error('Not authorized, no token.');
+=======
+      throw new Error("Not authorized, token failed.");
+    }
+  } else {
+    res.status(401);
+    throw new Error("Not authorized, no token.");
+>>>>>>> origin/master
   }
 });
 
 const authorizeAdmin = (req, res, next) => {
+<<<<<<< HEAD
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
     res.status(401).send('Not authorized as an admin.');
+=======
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(401).send("Not authorized as an admin.");
+>>>>>>> origin/master
   }
 };
 
 const authorizePharmacist = (req, res, next) => {
+<<<<<<< HEAD
   if (req.user && req.user.role === 'pharmacist') {
     next();
   } else {
@@ -57,14 +87,27 @@ const authorizeSunglassesSeller = (req, res, next) => {
     next();
   } else {
     res.status(401).send('Not authorized as an pharmacist.');
+=======
+  if (req.user && req.user.role === "pharmacist") {
+    next();
+  } else {
+    res.status(401).send("Not authorized as an pharmacist.");
+>>>>>>> origin/master
   }
 };
 
 const authorizeDoctor = (req, res, next) => {
+<<<<<<< HEAD
   if (req.user && req.user.role === 'doctor') {
     next();
   } else {
     res.status(401).send('Not authorized as an doctor.');
+=======
+  if (req.user && req.user.role === "doctor") {
+    next();
+  } else {
+    res.status(401).send("Not authorized as an doctor.");
+>>>>>>> origin/master
   }
 };
 

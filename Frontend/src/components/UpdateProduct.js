@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import { Fragment, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
+=======
+import { Fragment, useRef, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { PlusIcon } from "@heroicons/react/24/outline";
+>>>>>>> origin/master
 
 export default function UpdateProduct({
   updateProductData,
@@ -22,6 +28,7 @@ export default function UpdateProduct({
   };
 
   const updateProduct = () => {
+<<<<<<< HEAD
     // Ensure productID exists
     if (!product || !product.productID) {
       return alert('Product ID is missing');
@@ -52,6 +59,20 @@ export default function UpdateProduct({
         console.error('Error:', err.message);
         alert(`Failed to update product: ${err.message}`);
       });
+=======
+    fetch("http://localhost:4000/api/product/update", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(product),
+    })
+      .then((result) => {
+        alert("Product Updated");
+        setOpen(false);
+      })
+      .catch((err) => console.log(err));
+>>>>>>> origin/master
   };
 
   return (

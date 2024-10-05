@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 
 import IncomeReport from './pages/IncomeReport';
 
+=======
+>>>>>>> origin/master
 import React from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -19,6 +22,7 @@ import PurchaseDetails from "./pages/PurchaseDetails";
 import Move from "./pages/Move";
 import Pharmacy from "./pages/Pharmacy";
 import { Provider } from "react-redux";
+<<<<<<< HEAD
 import ExpenseManagement from "./pages/expence manegement";
 import PrescriptionPage from "./pages/PrescriptionPage";
 import Patient from "./pages/Patient";
@@ -30,6 +34,15 @@ const App = () => {
   const [user, setUser] = useState('');
   const [loader, setLoader] = useState(true);
   let myLoginUser = JSON.parse(localStorage.getItem('user'));
+=======
+import store from "./redux/store";
+import Profile from "./pages/Profile";
+
+const App = () => {
+  const [user, setUser] = useState("");
+  const [loader, setLoader] = useState(true);
+  let myLoginUser = JSON.parse(localStorage.getItem("user"));
+>>>>>>> origin/master
   // console.log("USER: ",user)
 
   useEffect(() => {
@@ -38,7 +51,11 @@ const App = () => {
       setLoader(false);
       // console.log("inside effect", myLoginUser)
     } else {
+<<<<<<< HEAD
       setUser('');
+=======
+      setUser("");
+>>>>>>> origin/master
       setLoader(false);
     }
   }, [myLoginUser]);
@@ -50,7 +67,11 @@ const App = () => {
 
   const signout = () => {
     setUser(null);
+<<<<<<< HEAD
     localStorage.removeItem('user');
+=======
+    localStorage.removeItem("user");
+>>>>>>> origin/master
   };
 
   let value = { user, signin, signout };
@@ -60,9 +81,15 @@ const App = () => {
       <div
         style={{
           flex: 1,
+<<<<<<< HEAD
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+=======
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+>>>>>>> origin/master
         }}
       >
         <h1>LOADING...</h1>
@@ -74,10 +101,17 @@ const App = () => {
       <AuthContext.Provider value={value}>
         <BrowserRouter>
           <Routes>
+<<<<<<< HEAD
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
               path="/"
+=======
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
+            <Route
+              path='/'
+>>>>>>> origin/master
               element={
                 <ProtectedWrapper>
                   <Layout />
@@ -85,21 +119,32 @@ const App = () => {
               }
             >
               <Route index element={<Dashboard />} />
+<<<<<<< HEAD
               <Route
                 path="/expenceManegement"
                 element={<ExpenseManagement />}
               />
               <Route path="/patient" element={<Patient />} />
 
+=======
+>>>>>>> origin/master
               <Route path='/inventory' element={<Inventory />} />
               <Route path='/purchase-details' element={<PurchaseDetails />} />
               <Route path='/sales' element={<Sales />} />
               <Route path='/manage-store' element={<Store />} />
               <Route path='/move' element={<Move />} />
+<<<<<<< HEAD
               <Route path='/pharmacy' element={<Pharmacy />} />
               <Route path='/incomeReport' element={<IncomeReport />} />
             </Route>
             <Route path="*" element={<NoPageFound />} />
+=======
+              <Route path='/*' element={<Move />} />
+              <Route path='/pharmacy' element={<Pharmacy />} />
+              <Route path='/profile' element={<Profile />} />
+            </Route>
+            <Route path='*' element={<NoPageFound />} />
+>>>>>>> origin/master
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>
