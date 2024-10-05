@@ -19,7 +19,7 @@ const Pharmacy = () => {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}&category=sunglasses`;
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=sunglasses`;
       } else if (user.role === 'pharmacist') {
         baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
       }
@@ -35,9 +35,8 @@ const Pharmacy = () => {
         }
 
         const data = await res.json();
-        console.log(baseUrl);
         setDrugs(data.data.results); // Set drug data
-        setTotalPages(data.totalPages || Math.ceil(data.totalItems / limit)); // Calculate total pages if backend provides totalItems or totalPages
+        setTotalPages(data.totalPages || Math.ceil(data.results / limit)); // Calculate total pages if backend provides results or totalPages
       } catch (err) {
         setError(err.message);
       } finally {

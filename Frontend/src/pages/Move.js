@@ -8,17 +8,23 @@ const Move = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Manage total pages from backend
+  const limit = 10; // Number of items per page
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     const fetchProductsData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/v1/inventory/product`,
+          `http://localhost:4000/api/v1/inventory/product?category=drug&page=${currentPage}&limit=${limit}`,
           { credentials: 'include' }
         );
         const data = await response.json();
         setProducts(data.data.results);
+        setTotalPages(
+          data.totalPages || Math.ceil(Math.ceil(data.results / limit))
+        );
       } catch (error) {
         setError('Failed to fetch products.');
       } finally {
@@ -63,7 +69,7 @@ const Move = () => {
   return (
     <div className="p-8 w-[70vw] sm:p-16 bg-gray-50 min-h-screen">
       <h2 className="text-3xl font-extrabold text-gray-800 mb-8 text-center">
-        Move Products
+        Move Drugs To Pharmacy
       </h2>
       <ul className="space-y-6 max-w-4xl mx-auto">
         {products.map((item) => (
@@ -86,6 +92,31 @@ const Move = () => {
           </li>
         ))}
       </ul>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between mt-4">
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1 || totalPages === 0}
+        >
+          Previous
+        </button>
+
+        <span className="flex items-center text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages || totalPages === 0}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };
