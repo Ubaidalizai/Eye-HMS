@@ -79,20 +79,31 @@ function SideMenu() {
             to="/move"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           >
+<<<<<<< HEAD
             <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
             <span className="text-sm font-medium"> Sales</span>
+=======
+            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
+            <span className='text-sm font-medium'>Move</span>
+>>>>>>> fe85cb9980a49a2814ff072661e84d218aa3a1e7
           </Link>
           <Link
             to="/patient"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           >
+<<<<<<< HEAD
             <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
             <span className="text-sm font-medium">Paitent</span>
+=======
+            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
+            <span className='text-sm font-medium'>Patient</span>
+>>>>>>> fe85cb9980a49a2814ff072661e84d218aa3a1e7
           </Link>
           <Link
             to="/move"
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           >
+<<<<<<< HEAD
             <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
             <span className="text-sm font-medium"> Move</span>
           </Link>
@@ -102,6 +113,17 @@ function SideMenu() {
           >
             <img alt="sale-icon" src={require("../assets/supplier-icon.png")} />
             <span className="text-sm font-medium"> Pharmacy</span>
+=======
+            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
+            <span className='text-sm font-medium'>Pharmacy</span>
+          </Link>
+          <Link
+            to='/incomeReport'
+            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+          >
+            <img alt='sale-icon' src={require('../assets/supplier-icon.png')} />
+            <span className='text-sm font-medium'>Income</span>
+>>>>>>> fe85cb9980a49a2814ff072661e84d218aa3a1e7
           </Link>
 
           <details className="group [&_summary::-webkit-details-marker]:hidden">

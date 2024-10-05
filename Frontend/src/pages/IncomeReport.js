@@ -56,6 +56,21 @@ const initialTransactions = [
   },
 ];
 
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
 const IncomeReport = () => {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [selectedReport, setSelectedReport] = useState('Daily');
@@ -67,7 +82,7 @@ const IncomeReport = () => {
     description: '',
   });
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); //
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // Function to get last 5 years
   const getLastFiveYears = () => {
@@ -78,7 +93,7 @@ const IncomeReport = () => {
   // Function to handle year selection
   const handleYearClick = (year) => {
     setSelectedYear(year);
-    setSelectedReport('Yearly'); // Switch to yearly report view
+    setSelectedReport('Annual'); // Switch to yearly report view
   };
 
   // Helper function to filter transactions based on date range
@@ -89,7 +104,7 @@ const IncomeReport = () => {
     });
   }
 
-  // Calculate Daily Income
+  // Calculate Daily Income (for a specific date)
   function calculateDailyIncome(transactions, targetDate = new Date()) {
     const today = new Date(targetDate);
     today.setHours(0, 0, 0, 0);
@@ -103,7 +118,7 @@ const IncomeReport = () => {
     return generateReport(dailyTransactions, 'Daily');
   }
 
-  // Calculate Monthly Income
+  // Calculate Monthly Income (aggregate income for each day in the selected month)
   function calculateMonthlyIncome(transactions, year, month) {
     const startOfMonth = new Date(year, month - 1, 1);
     const endOfMonth = new Date(year, month, 0);
@@ -112,10 +127,17 @@ const IncomeReport = () => {
       startOfMonth,
       endOfMonth
     );
-    return generateReport(monthlyTransactions, 'Monthly');
+    const incomeByDay = Array.from({ length: endOfMonth.getDate() }, (_, i) => {
+      const day = i + 1;
+      const dailyIncome = monthlyTransactions
+        .filter((tx) => new Date(tx.date).getDate() === day)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+      return dailyIncome;
+    });
+    return generateReport(monthlyTransactions, 'Monthly', incomeByDay);
   }
 
-  // Calculate Annual Income
+  // Calculate Annual Income (aggregate income for each month)
   function calculateAnnualIncome(transactions, year) {
     const startOfYear = new Date(year, 0, 1);
     const endOfYear = new Date(year, 11, 31);
@@ -124,11 +146,17 @@ const IncomeReport = () => {
       startOfYear,
       endOfYear
     );
-    return generateReport(annualTransactions, 'Annual');
+    const incomeByMonth = monthNames.map((_, monthIndex) => {
+      const monthlyIncome = annualTransactions
+        .filter((tx) => new Date(tx.date).getMonth() === monthIndex)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+      return monthlyIncome;
+    });
+    return generateReport(annualTransactions, 'Annual', incomeByMonth);
   }
 
   // Generate Report based on the filtered transactions
-  function generateReport(transactions, reportType) {
+  function generateReport(transactions, reportType, incomeData = []) {
     const totalIncome = transactions.reduce((sum, tx) => sum + tx.amount, 0);
     const sourcesBreakdown = transactions.reduce((sources, tx) => {
       sources[tx.source] = (sources[tx.source] || 0) + tx.amount;
@@ -139,6 +167,7 @@ const IncomeReport = () => {
       totalIncome,
       transactionsCount: transactions.length,
       sourcesBreakdown,
+      incomeData,
       transactions,
     };
   }
@@ -161,11 +190,12 @@ const IncomeReport = () => {
   }
 
   // Component for displaying the report
-  const IncomeDetailReport = ({ report, title }) => {
+  const IncomeDetailReport = ({ report, title, selectedReport }) => {
     const {
       totalIncome,
       transactionsCount,
       sourcesBreakdown = {},
+      incomeData,
       transactions,
     } = report;
 
@@ -181,11 +211,16 @@ const IncomeReport = () => {
     };
 
     const lineData = {
-      labels: transactions.map((tx) => tx.date),
+      labels:
+        selectedReport === 'Daily'
+          ? [new Date().toDateString()]
+          : selectedReport === 'Monthly'
+          ? Array.from({ length: incomeData.length }, (_, i) => i + 1) // Days of the month
+          : monthNames, // Months of the year
       datasets: [
         {
-          label: 'Income Over Time',
-          data: transactions.map((tx) => tx.amount),
+          label: `Income Over Time (${selectedReport})`,
+          data: incomeData,
           fill: false,
           backgroundColor: '#03a9f4',
           borderColor: '#03a9f4',
@@ -204,12 +239,16 @@ const IncomeReport = () => {
         </p>
 
         <h3>Income by Source</h3>
-        {Object.keys(sourcesBreakdown).length > 0 ? (
-          <Bar data={barData} options={{ responsive: true }} />
-        ) : (
-          <p>No data available for income by source.</p>
-        )}
-
+        <div className={styles.chartContainer}>
+          {Object.keys(sourcesBreakdown).length > 0 ? (
+            <Bar
+              data={barData}
+              options={{ responsive: true, maintainAspectRatio: false }}
+            />
+          ) : (
+            <p>No data available for income by source.</p>
+          )}
+        </div>
         <h3>Transactions</h3>
         <table className={styles.transactionsTable}>
           <thead>
@@ -223,17 +262,22 @@ const IncomeReport = () => {
           <tbody>
             {transactions.map((tx) => (
               <tr key={tx.id}>
-                <td>{tx.date}</td>
-                <td>${tx.amount}</td>
-                <td>{tx.source}</td>
-                <td>{tx.description}</td>
+                <td data-label='Date'>{tx.date}</td>
+                <td data-label='Amount'>${tx.amount}</td>
+                <td data-label='Source'>{tx.source}</td>
+                <td data-label='Description'>{tx.description}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <h3>Income Over Time</h3>
-        <Line data={lineData} />
+        <div className={styles.chartContainer}>
+          <Line
+            data={lineData}
+            options={{ responsive: true, maintainAspectRatio: false }}
+          />
+        </div>
       </div>
     );
   };
@@ -253,152 +297,121 @@ const IncomeReport = () => {
   const handleAddTransaction = (e) => {
     e.preventDefault();
     const newTx = {
+      ...newTransaction,
       id: transactions.length + 1,
-      date: newTransaction.date,
       amount: parseFloat(newTransaction.amount),
-      source: newTransaction.source,
-      description: newTransaction.description,
     };
-
-    // Update transactions state
     setTransactions([...transactions, newTx]);
-
-    // Reset newTransaction state for the form inputs
-    setNewTransaction({
-      date: '',
-      amount: '',
-      source: '',
-      description: '',
-    });
+    setNewTransaction({ date: '', amount: '', source: '', description: '' });
   };
-
-  // Handle month button click
-  const handleMonthClick = (month) => {
-    setSelectedMonth(month);
-    setSelectedReport('Monthly'); // Switch to monthly report
-  };
-
-  // Array of month names
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
 
   return (
     <div className={styles.container}>
-      <div className={styles.buttonsContainer}>
-        <button onClick={() => setSelectedReport('Daily')}>Daily Report</button>
-        <button onClick={() => setSelectedReport('Monthly')}>
-          Monthly Report
-        </button>
-        <button onClick={() => setSelectedReport('Annual')}>
-          Annual Report
-        </button>
+      <h1>Income Report</h1>
+
+      <div className={styles.buttonContainer}>
+        <button onClick={() => setSelectedReport('Daily')}>Daily</button>
+        <button onClick={() => setSelectedReport('Monthly')}>Monthly</button>
+        <button onClick={() => setSelectedReport('Annual')}>Annual</button>
+      </div>
+      <div className={styles.addTransaction}>
+        <h2>Add New Transaction</h2>
+        <form onSubmit={handleAddTransaction}>
+          <input
+            type='date'
+            value={newTransaction.date}
+            onChange={(e) =>
+              setNewTransaction({ ...newTransaction, date: e.target.value })
+            }
+            required
+          />
+          <input
+            type='number'
+            value={newTransaction.amount}
+            onChange={(e) =>
+              setNewTransaction({ ...newTransaction, amount: e.target.value })
+            }
+            placeholder='Amount'
+            required
+          />
+          <input
+            type='text'
+            value={newTransaction.source}
+            onChange={(e) =>
+              setNewTransaction({ ...newTransaction, source: e.target.value })
+            }
+            placeholder='Source'
+            required
+          />
+          <input
+            type='text'
+            value={newTransaction.description}
+            onChange={(e) =>
+              setNewTransaction({
+                ...newTransaction,
+                description: e.target.value,
+              })
+            }
+            placeholder='Description'
+            required
+          />
+          <button type='submit'>Add Transaction</button>
+        </form>
       </div>
 
-      {/* Month buttons for the monthly report */}
-      {selectedReport === 'Monthly' && (
-        <div className={styles.monthButtons}>
-          {monthNames.map((month, index) => (
+      {selectedReport === 'Daily' && reportData && (
+        <IncomeDetailReport
+          report={reportData.dailyReport}
+          title='Daily'
+          selectedReport='Daily'
+        />
+      )}
+
+      {selectedReport === 'Monthly' && reportData && (
+        <div>
+          <h3>Monthly Income Report for {monthNames[selectedMonth - 1]}</h3>
+          <div className={styles.monthNavigation}>
             <button
-              key={index}
-              onClick={() => handleMonthClick(index + 1)}
-              className={selectedMonth === index + 1 ? styles.activeMonth : ''}
+              onClick={() => setSelectedMonth((prev) => Math.max(1, prev - 1))}
+              disabled={selectedMonth === 1}
             >
-              {month}
+              Previous Month
             </button>
-          ))}
+            <button
+              onClick={() => setSelectedMonth((prev) => Math.min(12, prev + 1))}
+              disabled={selectedMonth === 12}
+            >
+              Next Month
+            </button>
+          </div>
+          <IncomeDetailReport
+            report={calculateMonthlyIncome(
+              transactions,
+              selectedYear,
+              selectedMonth
+            )}
+            title='Monthly'
+            selectedReport='Monthly'
+          />
         </div>
       )}
 
-      {/* Year buttons for the annual report */}
-      {selectedReport === 'Annual' && (
-        <div className={styles.yearButtons}>
-          {getLastFiveYears().map((year) => (
-            <button
-              key={year}
-              onClick={() => handleYearClick(year)}
-              className={selectedYear === year ? styles.activeYear : ''}
-            >
-              {year}
-            </button>
-          ))}
+      {selectedReport === 'Annual' && reportData && (
+        <div>
+          <h3>Annual Income Report for {selectedYear}</h3>
+          <div className={styles.yearNavigation}>
+            {getLastFiveYears().map((year) => (
+              <button key={year} onClick={() => handleYearClick(year)}>
+                {year}
+              </button>
+            ))}
+          </div>
+          <IncomeDetailReport
+            report={calculateAnnualIncome(transactions, selectedYear)}
+            title='Annual'
+            selectedReport='Annual'
+          />
         </div>
-      )}
-
-      <form onSubmit={handleAddTransaction}>
-        <input
-          type='date'
-          value={newTransaction.date}
-          onChange={(e) =>
-            setNewTransaction({ ...newTransaction, date: e.target.value })
-          }
-        />
-        <input
-          type='number'
-          value={newTransaction.amount}
-          onChange={(e) =>
-            setNewTransaction({ ...newTransaction, amount: e.target.value })
-          }
-        />
-        <input
-          type='text'
-          value={newTransaction.source}
-          onChange={(e) =>
-            setNewTransaction({ ...newTransaction, source: e.target.value })
-          }
-        />
-        <input
-          type='text'
-          value={newTransaction.description}
-          onChange={(e) =>
-            setNewTransaction({
-              ...newTransaction,
-              description: e.target.value,
-            })
-          }
-        />
-        <button type='submit'>Add Transaction</button>
-      </form>
-
-      {reportData && (
-        <>
-          {selectedReport === 'Daily' && (
-            <IncomeDetailReport report={reportData.dailyReport} title='Daily' />
-          )}
-          {selectedReport === 'Monthly' && (
-            <IncomeDetailReport
-              report={calculateMonthlyIncome(
-                transactions,
-                new Date().getFullYear(),
-                selectedMonth
-              )}
-              title='Monthly'
-            />
-          )}
-          {selectedReport === 'Annual' && (
-            <IncomeDetailReport
-              report={reportData.annualReport}
-              title='Annual'
-            />
-          )}
-          {selectedReport === 'Yearly' && (
-            <IncomeDetailReport
-              report={calculateAnnualIncome(transactions, selectedYear)}
-              title={`Monthly Report for ${selectedYear}`}
-            />
-          )}
-        </>
       )}
     </div>
   );
