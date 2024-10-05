@@ -3,11 +3,10 @@ import axios from "axios";
 
 const Profile = () => {
   const [user, setUser] = useState({
-    id: "", // Add user ID here
+    id: "",
     firstName: "",
     lastName: "",
     email: "",
-    bio: "Doctor and Professor of Eyes and ...",
     profilePic:
       "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png", // Default profile image
   });
@@ -27,7 +26,7 @@ const Profile = () => {
           response.data.data;
         setUser((prevUser) => ({
           ...prevUser,
-          id: _id, // Set user ID here
+          id: _id,
           firstName,
           lastName,
           email,
@@ -82,7 +81,7 @@ const Profile = () => {
         {
           firstName: user.firstName,
           lastName: user.lastName,
-          email: user.email,
+          email: user.email, // Editable email field
         },
         { withCredentials: true }
       );
@@ -140,17 +139,13 @@ const Profile = () => {
               placeholder='Enter your last name'
             />
 
-            <p className='text-gray-600 mb-4 text-center'>
-              Email: {user.email}
-            </p>
-
-            <textarea
-              name='bio'
-              value={user.bio}
+            <input
+              type='email'
+              name='email' // Editable email field
+              value={user.email} // Use email here
               onChange={handleChange}
-              rows='4'
               className='w-full p-2 border border-gray-300 rounded mb-4 text-center'
-              placeholder='Update your bio'
+              placeholder='Enter your email'
             />
 
             <button
@@ -169,8 +164,6 @@ const Profile = () => {
             <p className='text-gray-600 mb-4 text-center'>
               Email: {user.email}
             </p>
-
-            <p className='text-gray-600 mb-4 text-center'>{user.bio}</p>
 
             <button
               onClick={toggleEdit}
