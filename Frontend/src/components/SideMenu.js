@@ -61,6 +61,12 @@ function SideMenu() {
             imgSrc={require("../assets/supplier-icon.png")}
             label='Purchase Details'
           />
+
+          <MenuItem
+            to='/expenceManegement'
+            imgSrc={require("../assets/supplier-icon.png")}
+            label='Expense Mangement'
+          />
           <MenuItem
             to='/sales'
             imgSrc={require("../assets/supplier-icon.png")}
