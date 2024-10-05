@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel.js');
-const asyncHandler = require('./asyncHandler.js');
+const jwt = require("jsonwebtoken");
+const User = require("../models/userModel.js");
+const asyncHandler = require("./asyncHandler.js");
 
 const authenticate = asyncHandler(async (req, res, next) => {
   let token;
@@ -15,48 +15,48 @@ const authenticate = asyncHandler(async (req, res, next) => {
       const currentUser = await User.findById(decoded.userId);
       if (!currentUser) {
         res.status(401);
-        throw new Error('The user belonging to this token no longer exist!');
+        throw new Error("The user belonging to this token no longer exist!");
       }
       // 4) Check if the user changed password after token was issued
       if (currentUser.changedPasswordAfter(decoded.iat)) {
         res.status(401);
         throw new Error(
-          'User recently changed the password, please try again!'
+          "User recently changed the password, please try again!"
         );
       }
       req.user = currentUser;
       next();
     } catch (error) {
       res.status(401);
-      throw new Error('Not authorized, token failed.');
+      throw new Error("Not authorized, token failed.");
     }
   } else {
     res.status(401);
-    throw new Error('Not authorized, no token.');
+    throw new Error("Not authorized, no token.");
   }
 });
 
 const authorizeAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && req.user.role === "admin") {
     next();
   } else {
-    res.status(401).send('Not authorized as an admin.');
+    res.status(401).send("Not authorized as an admin.");
   }
 };
 
 const authorizePharmacist = (req, res, next) => {
-  if (req.user && req.user.role === 'pharmacist') {
+  if (req.user && req.user.role === "pharmacist") {
     next();
   } else {
-    res.status(401).send('Not authorized as an pharmacist.');
+    res.status(401).send("Not authorized as an pharmacist.");
   }
 };
 
 const authorizeDoctor = (req, res, next) => {
-  if (req.user && req.user.role === 'doctor') {
+  if (req.user && req.user.role === "doctor") {
     next();
   } else {
-    res.status(401).send('Not authorized as an doctor.');
+    res.status(401).send("Not authorized as an doctor.");
   }
 };
 

@@ -3,6 +3,7 @@ import axios from "axios";
 
 const Profile = () => {
   const [user, setUser] = useState({
+    id: "", // Add user ID here
     firstName: "",
     lastName: "",
     email: "",
@@ -14,38 +15,41 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:4000/api/v1/user/profile",
-          { withCredentials: true }
-        );
-        if (response.status === 200) {
-          const { firstName, lastName, email, imageUrl } = response.data.data;
-          setUser({
-            ...user,
-            firstName,
-            lastName,
-            email,
-            profilePic: imageUrl
-              ? `http://localhost:4000/public/img/users/${imageUrl}`
-              : user.profilePic, // Use default image if no imageUrl
-          });
-        } else {
-          console.error("Failed to fetch user profile", response);
-        }
-      } catch (error) {
-        console.error("Error fetching user profile", error);
+  // Fetch user data function
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/v1/user/profile",
+        { withCredentials: true }
+      );
+      if (response.status === 200) {
+        const { _id, firstName, lastName, email, imageUrl } =
+          response.data.data;
+        setUser((prevUser) => ({
+          ...prevUser,
+          id: _id, // Set user ID here
+          firstName,
+          lastName,
+          email,
+          profilePic: imageUrl
+            ? `http://localhost:4000/public/img/users/${imageUrl}`
+            : prevUser.profilePic,
+        }));
+      } else {
+        console.error("Failed to fetch user profile", response);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching user profile", error);
+    }
+  };
 
-    fetchUserData();
+  useEffect(() => {
+    fetchUserData(); // Call the fetch function on mount
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser({ ...user, [name]: value });
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
   };
 
   const handleFileChange = (e) => {
@@ -66,12 +70,32 @@ const Profile = () => {
   };
 
   const toggleEdit = () => {
-    setIsEditing(!isEditing);
+    setIsEditing((prev) => !prev);
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     setIsEditing(false);
-    alert("Profile updated!");
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:4000/api/v1/user/updateCurrentUserProfile`,
+        {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        alert("Profile updated successfully!");
+        // Refresh user data to get the latest data
+        fetchUserData();
+      }
+    } catch (error) {
+      console.error("Error updating profile", error);
+      alert("Failed to update profile. Please try again.");
+    }
   };
 
   return (

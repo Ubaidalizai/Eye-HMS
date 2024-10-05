@@ -14,7 +14,7 @@ const navigation = [
 ];
 
 const userNavigation = [
-  { name: "Profile", href: "/profile" }, 
+  { name: "Profile", href: "/profile" },
   { name: "Sign out", href: "./login" },
 ];
 
@@ -29,15 +29,12 @@ export default function Header() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Send a GET request to the server to fetch the user profile
         const res = await axios.get(
           "http://localhost:4000/api/v1/user/profile",
           { withCredentials: true }
         );
 
-        // Check if the response is valid
         if (res.status === 200) {
-          // Update the user info state with the response data
           setUserInfo(res?.data?.data);
         } else {
           console.error("Failed to fetch user profile", res);
@@ -49,6 +46,8 @@ export default function Header() {
 
     fetchData();
   }, []);
+
+  const defaultProfilePic = "http://localhost:4000/default-profile-pic.png"; // Add your default profile pic URL here
 
   return (
     <>
@@ -89,7 +88,7 @@ export default function Header() {
                             <span className='sr-only'>Open user menu</span>
                             <img
                               className='h-8 w-8 rounded-full'
-                              src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
+                              src={userInfo.imageUrl ? `http://localhost:4000/public/img/users/${userInfo.imageUrl}` : defaultProfilePic}
                               alt='profile'
                             />
                           </Menu.Button>
@@ -177,7 +176,7 @@ export default function Header() {
                     <div className='flex-shrink-0'>
                       <img
                         className='h-10 w-10 rounded-full'
-                        src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
+                        src={userInfo.imageUrl ? `http://localhost:4000/public/img/users/${userInfo.imageUrl}` : defaultProfilePic}
                         alt='profile'
                       />
                     </div>
