@@ -3,7 +3,7 @@ const app = express();
 
 const router = express.Router();
 const {
-  sellDrugs,
+  sellItems,
   getAllSales,
   getOneMonthSales,
   getMonthlySales,
@@ -17,6 +17,6 @@ router.get('/one-month-sales/:year/:month', getOneMonthSales);
 router.get('/monthly-sales/', getMonthlySales);
 
 // Add Sales
-router.route('/').get(getAllSales).post(sellDrugs);
+router.route('/').get(getAllSales).post(sellItems);
 
 module.exports = router;

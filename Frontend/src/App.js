@@ -15,15 +15,16 @@ import Sales from './pages/Sales';
 import PurchaseDetails from './pages/PurchaseDetails';
 import Move from './pages/Move';
 import Pharmacy from './pages/Pharmacy';
+import Patient from './pages/Patient';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import ExpenseManagement from './pages/expence manegement';
-import PrescriptionPage from "./pages/PrescriptionPage";
+import PrescriptionPage from './pages/PrescriptionPage';
 
 const App = () => {
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState('');
   const [loader, setLoader] = useState(true);
-  let myLoginUser = JSON.parse(localStorage.getItem("user"));
+  let myLoginUser = JSON.parse(localStorage.getItem('user'));
   // console.log("USER: ",user)
 
   useEffect(() => {
@@ -32,7 +33,7 @@ const App = () => {
       setLoader(false);
       // console.log("inside effect", myLoginUser)
     } else {
-      setUser("");
+      setUser('');
       setLoader(false);
     }
   }, [myLoginUser]);
@@ -44,7 +45,7 @@ const App = () => {
 
   const signout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem('user');
   };
 
   let value = { user, signin, signout };
@@ -54,9 +55,9 @@ const App = () => {
       <div
         style={{
           flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <h1>LOADING...</h1>
@@ -90,7 +91,10 @@ const App = () => {
               <Route path="/*" element={<Move />} />
 
               <Route path="/pharmacy" element={<Pharmacy />} />
-              <Route path='/expenceManegement' element={<ExpenseManagement />}/>
+              <Route
+                path="/expenceManegement"
+                element={<ExpenseManagement />}
+              />
             </Route>
             <Route path="*" element={<NoPageFound />} />
           </Routes>
