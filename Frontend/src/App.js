@@ -19,7 +19,6 @@ import { Provider } from "react-redux";
 import ExpenseManagement from "./pages/expence manegement";
 import PrescriptionPage from "./pages/PrescriptionPage";
 import Patient from "./pages/Patient";
-import store from "./redux/store";
 
 const App = () => {
   const [user, setUser] = useState("");
