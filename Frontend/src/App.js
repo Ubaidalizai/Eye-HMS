@@ -1,30 +1,28 @@
-
 import IncomeReport from './pages/IncomeReport';
 
-import React from "react";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import "./index.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Inventory from "./pages/Inventory";
-import NoPageFound from "./pages/NoPageFound";
-import AuthContext from "./AuthContext";
-import ProtectedWrapper from "./ProtectedWrapper";
-import { useEffect, useState } from "react";
-import Store from "./pages/Store";
-import Sales from "./pages/Sales";
-import PurchaseDetails from "./pages/PurchaseDetails";
-import Move from "./pages/Move";
-import Pharmacy from "./pages/Pharmacy";
-import { Provider } from "react-redux";
-import ExpenseManagement from "./pages/expence manegement";
-import PrescriptionPage from "./pages/PrescriptionPage";
-import Patient from "./pages/Patient";
+import React from 'react';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import './index.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import Inventory from './pages/Inventory';
+import NoPageFound from './pages/NoPageFound';
+import AuthContext from './AuthContext';
+import ProtectedWrapper from './ProtectedWrapper';
+import { useEffect, useState } from 'react';
+import Store from './pages/Store';
+import Sales from './pages/Sales';
+import PurchaseDetails from './pages/PurchaseDetails';
+import Move from './pages/Move';
+import Pharmacy from './pages/Pharmacy';
+import { Provider } from 'react-redux';
+import ExpenseManagement from './pages/expence manegement';
+import PrescriptionPage from './pages/PrescriptionPage';
+import Patient from './pages/Patient';
 
-import store from "./redux/store";
-
+import store from './redux/store';
 
 const App = () => {
   const [user, setUser] = useState('');
@@ -89,15 +87,16 @@ const App = () => {
                 path="/expenceManegement"
                 element={<ExpenseManagement />}
               />
+
               <Route path="/patient" element={<Patient />} />
 
-              <Route path='/inventory' element={<Inventory />} />
-              <Route path='/purchase-details' element={<PurchaseDetails />} />
-              <Route path='/sales' element={<Sales />} />
-              <Route path='/manage-store' element={<Store />} />
-              <Route path='/move' element={<Move />} />
-              <Route path='/pharmacy' element={<Pharmacy />} />
-              <Route path='/incomeReport' element={<IncomeReport />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/purchase-details" element={<PurchaseDetails />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/manage-store" element={<Store />} />
+              <Route path="/move" element={<Move />} />
+              <Route path="/pharmacy" element={<Pharmacy />} />
+              <Route path="/incomeReport" element={<IncomeReport />} />
             </Route>
             <Route path="*" element={<NoPageFound />} />
           </Routes>
