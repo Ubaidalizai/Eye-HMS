@@ -19,9 +19,9 @@ const Pharmacy = () => {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}&category=sunglasses`;
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=sunglasses`;
       } else if (user.role === 'pharmacist') {
-        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=drug`;
       }
 
       try {
@@ -83,7 +83,7 @@ const Pharmacy = () => {
               <span className="text-gray-600">
                 Quantity:{' '}
                 <span className="font-semibold text-gray-800">
-                  {drug?.quantity || drug?.stock}
+                  {drug.quantity}
                 </span>
               </span>
             </div>

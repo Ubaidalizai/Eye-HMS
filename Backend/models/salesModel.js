@@ -10,7 +10,7 @@ const saleSchema = new mongoose.Schema({
       productRefId: {
         type: mongoose.Schema.ObjectId,
         required: [true, 'Each sold item must reference a product or drug'],
-        refPath: 'category', // Dynamic reference based on category ('Pharmacy' or 'Product')
+        ref: 'Pharmacy',
       },
       quantity: {
         type: Number,
@@ -36,8 +36,8 @@ const saleSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['Pharmacy', 'Product'], // Pharmacy for drugs, Product for sunglasses or other products
-    required: [true, 'A sale must have a category (either drug or product)'],
+    enum: ['drug', 'sunglasses'],
+    required: [true, 'A sale must have a category (either drug or sunglasses)'],
   },
   userID: {
     type: mongoose.Schema.ObjectId,

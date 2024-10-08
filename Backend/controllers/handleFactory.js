@@ -11,8 +11,7 @@ const getAll = (Model, userID = false, popOptions = null) =>
       query.userID = userID; // Add userID filter
     }
     if (checkQuantity) {
-      query.stock = { stock: { $gt: 0 } };
-      query.quantity = { quantity: { $gt: 0 } };
+      query.quantity = { $gte: 1 };
     }
     if (category && category.trim()) {
       query.category = category.trim(); // Add category filter

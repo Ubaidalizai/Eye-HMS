@@ -8,9 +8,9 @@ export default function AddSale({
   handlePageUpdate,
 }) {
   const [sale, setSale] = useState({
-    drugsSold: [
+    soldItems: [
       {
-        drugId: '',
+        productRefId: '',
         quantity: 0, // Initialize quantity as a number
       },
     ],
@@ -35,10 +35,10 @@ export default function AddSale({
 
   // Handling Input Change for input fields
   const handleInputChange = (index, name, value) => {
-    const updatedDrugsSold = sale.drugsSold.map((item, i) =>
+    const updatedDrugsSold = sale.soldItems.map((item, i) =>
       i === index ? { ...item, [name]: value } : item
     );
-    setSale({ ...sale, drugsSold: updatedDrugsSold });
+    setSale({ ...sale, soldItems: updatedDrugsSold });
   };
 
   // Handle date changes
@@ -53,13 +53,13 @@ export default function AddSale({
   const addNewDrug = () => {
     setSale((prevSale) => ({
       ...prevSale,
-      drugsSold: [...prevSale.drugsSold, { drugId: '', quantity: 0 }],
+      soldItems: [...prevSale.soldItems, { productRefId: '', quantity: 0 }],
     }));
   };
 
   // Checking if all drugs are valid
-  const isSaleValid = sale.drugsSold.some(
-    (drug) => drug.drugId && drug.quantity > 0
+  const isSaleValid = sale.soldItems.some(
+    (drug) => drug.productRefId && drug.quantity > 0
   );
 
   // POST Data
@@ -72,8 +72,8 @@ export default function AddSale({
     // Create the final sale object with valid products
     const finalSale = {
       ...sale,
-      drugsSold: sale.drugsSold.filter(
-        (drug) => drug.drugId && drug.quantity > 0
+      soldItems: sale.soldItems.filter(
+        (drug) => drug.productRefId && drug.quantity > 0
       ),
     };
 
@@ -141,23 +141,23 @@ export default function AddSale({
                         Add Sale
                       </Dialog.Title>
                       <form>
-                        {sale.drugsSold.map((drug, index) => (
+                        {sale.soldItems.map((drug, index) => (
                           <div
                             key={index}
                             className="grid gap-4 mb-4 sm:grid-cols-2"
                           >
                             <div>
                               <label
-                                htmlFor={`drugId-${index}`}
+                                htmlFor={`productRefId-${index}`}
                                 className="block mb-2 text-sm font-medium text-gray-900"
                               >
                                 Product Name
                               </label>
                               <select
-                                id={`drugId-${index}`}
-                                name="drugId"
+                                id={`productRefId-${index}`}
+                                name="productRefId"
                                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
-                                value={drug.drugId}
+                                value={drug.productRefId}
                                 onChange={(e) =>
                                   handleInputChange(
                                     index,

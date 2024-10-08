@@ -34,9 +34,9 @@ function Sales() {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=Product';
+        baseUrl += '&category=sunglasses';
       } else if (user.role === 'pharmacist') {
-        baseUrl += '&category=Pharmacy';
+        baseUrl += '&category=drug';
       }
 
       // If admin selected a category
@@ -54,7 +54,6 @@ function Sales() {
       }
 
       const data = await response.json();
-      console.log(data.data.results);
       setSales(data.data.results);
       setTotalPages(
         data.totalPages || Math.ceil(Math.ceil(data.results / limit))
@@ -69,8 +68,9 @@ function Sales() {
     let baseUrl = `http://localhost:4000/api/v1/pharmacy`;
 
     if (user.role === 'sunglassesSeller') {
-      baseUrl =
-        'http://localhost:4000/api/v1/inventory/product?category=sunglasses';
+      baseUrl += `?category=sunglasses&checkQuantity=true`;
+    } else if (user.role === 'pharmacist') {
+      baseUrl += `?category=drug&checkQuantity=true`;
     }
 
     fetch(baseUrl, {
