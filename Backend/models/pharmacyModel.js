@@ -19,10 +19,10 @@ const pharmacySchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['drug', 'sunglasses'],
+    enum: ['drug', 'sunglasses', 'frame'],
     required: [
       true,
-      'Pharmacy product must have a category (either drug or sunglasses)',
+      'Pharmacy product must have a category (either drug, sunglasses or frame)',
     ],
   },
 });

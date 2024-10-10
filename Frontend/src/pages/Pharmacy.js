@@ -19,7 +19,7 @@ const Pharmacy = () => {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=sunglasses`;
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=sunglasses,frame`;
       } else if (user.role === 'pharmacist') {
         baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=drug`;
       }

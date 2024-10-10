@@ -14,7 +14,8 @@ const getAll = (Model, userID = false, popOptions = null) =>
       query.quantity = { $gte: 1 };
     }
     if (category && category.trim()) {
-      query.category = category.trim(); // Add category filter
+      const categories = category.split(',').map((cat) => cat.trim());
+      query.category = { $in: categories }; // Add category filter if provided
     }
     if (searchTerm && searchTerm.trim()) {
       // If searchTerm is provided, add an exact match filter

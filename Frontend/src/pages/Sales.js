@@ -34,7 +34,7 @@ function Sales() {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses';
+        baseUrl += '&category=sunglasses,frame';
       } else if (user.role === 'pharmacist') {
         baseUrl += '&category=drug';
       }
@@ -68,7 +68,7 @@ function Sales() {
     let baseUrl = `http://localhost:4000/api/v1/pharmacy`;
 
     if (user.role === 'sunglassesSeller') {
-      baseUrl += `?category=sunglasses&checkQuantity=true`;
+      baseUrl += `?category=sunglasses,frame&checkQuantity=true`;
     } else if (user.role === 'pharmacist') {
       baseUrl += `?category=drug&checkQuantity=true`;
     }
@@ -133,6 +133,7 @@ function Sales() {
                   <option value="">Select Category</option>
                   <option value="drug">Drug</option>
                   <option value="sunglasses">Sunglasses</option>
+                  <option value="frame">frame</option>
                 </select>
               </div>
             )}
