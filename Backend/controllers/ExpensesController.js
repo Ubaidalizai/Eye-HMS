@@ -114,10 +114,10 @@ const getExpenses = asyncHandler(async (req, res) => {
 
 // Add a new expense
 const addExpense = asyncHandler(async (req, res) => {
-  const { amount, date, reasons, action } = req.body;
+  const { amount, date, reasons, category } = req.body;
 
   try {
-    const newExpense = new Expense({ amount, date, reasons, action });
+    const newExpense = new Expense({ amount, date, reasons, category });
     const savedExpense = await newExpense.save();
     res.status(201).json(savedExpense);
   } catch (error) {
@@ -130,12 +130,12 @@ const addExpense = asyncHandler(async (req, res) => {
 // Update an expense by ID
 const updateExpense = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { amount, date, reasons, action } = req.body;
+  const { amount, date, reasons, category } = req.body;
 
   try {
     const updatedExpense = await Expense.findByIdAndUpdate(
       id,
-      { amount, date, reasons, action },
+      { amount, date, reasons, category },
       { new: true }
     );
 
