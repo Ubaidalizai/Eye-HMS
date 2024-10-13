@@ -162,12 +162,21 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
     throw new Error('Internal server error');
   }
 });
-const checkProductExpiry = async (req, res) => {
-  const Product = require('../models/product'); // Import the Product model
+const checkProductExpiry = asyncHandler(async (req, res) => {
+  const beforeThirtyDays = new Date();
+  beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);
+
   const expireProducts = await Product.find({
-    expireDate: { $lte: new Date() },
-  }); // Find products with an expiry date less than or equal to the current date
-};
+    expiryDate: { $lte: new Date() },
+    stock: { $gt: 0 },
+  }); // Find products with an expiry date before 30 days
+
+  if (expireProducts.length === 0) {
+    return res.status(200).json({ message: 'No expired products found' });
+  }
+
+  res.status(200).json({ expireProducts });
+});
 
 module.exports = {
   addProduct,
@@ -176,4 +185,5 @@ module.exports = {
   updateSelectedProduct,
   searchProduct,
   moveDrugsToPharmacy,
+  checkProductExpiry,
 };
