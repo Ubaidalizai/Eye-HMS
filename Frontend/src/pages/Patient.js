@@ -1,295 +1,253 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from 'react';
-import { Toaster, toast } from 'react-hot-toast';
-import PatientForm from '../components/PatientForm';
-import ReportGenerator from '../components/ReportGenerator';
-import PatientList from '../components/PatientList';
-import { useNavigate } from 'react-router-dom';
-import PrescriptionModal from '../components/PrescriptionModal';
+import React, { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-export default function Patient() {
-  const navigate = useNavigate();
-  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
-  const [currentPatient, setCurrentPatient] = useState(null);
-  const [searchTerm, setSearchTerm] = useState();
+const API_BASE_URL = "http://localhost:4000/api/v1/patient";
+
+export default function PatientManagement() {
   const [patients, setPatients] = useState([]);
-  const [patientData, setPatientData] = useState({
-    name: '',
-    age: '',
-    contact: '',
-    patientID: '',
-    patientGender: '',
-    insuranceContact: '',
-  });
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
+  const [currentPatient, setCurrentPatient] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    age: "",
+    contact: "",
+    patientID: "",
+    patientGender: "",
+    insuranceContact: "",
+  });
 
   useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const response = await fetch(API_BASE_URL, {
-          credentials: 'include', // Send cookies
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch patients: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log(data);
-        setPatients(data.data.results);
-      } catch (error) {
-        console.error('Error fetching patients:', error);
-        toast.error('Failed to fetch patients.');
-      }
-    };
-
     fetchPatients();
   }, []);
 
-  // Fetch patients based on search term
-  useEffect(() => {
-    const fetchFilteredPatients = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}?searchTerm=${searchTerm}`,
-          {
-            credentials: 'include',
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch patients: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log(data);
-        setPatients(data.data.results); // Assuming the API returns the filtered patients
-      } catch (error) {
-        console.error('Error fetching filtered patients:', error);
-        toast.error('Failed to fetch filtered patients.');
-      }
-    };
-
-    // Fetch patients if the filter is not empty
-    if (searchTerm) {
-      fetchFilteredPatients();
-    } else {
-      setPatients([]); // Clear the list if filter is empty
-    }
-  }, [searchTerm]); // Dependency array includes 'filter' to trigger when it changes
-
-  const handlePatientChange = (e) => {
-    const { name, value } = e.target;
-    setPatientData({ ...patientData, [name]: value });
-  };
-
-  const handlePatientSubmit = async (e) => {
-    e.preventDefault();
-    console.log(patientData);
-    if (
-      !patientData.name ||
-      !patientData.age ||
-      !patientData.contact ||
-      !patientData.patientID ||
-      !patientData.patientGender
-    ) {
-      toast.error('Please fill in all required fields.');
-      return;
-    }
-
-    const newPatient = { ...patientData, prescriptions: [] };
-
+  const fetchPatients = async () => {
     try {
-      if (isEditing) {
-        await fetch(`${API_BASE_URL}/${editingId}`, {
-          credentials: 'include',
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newPatient),
-        });
-        toast.success('Patient updated successfully!');
-      } else {
-        await fetch(API_BASE_URL, {
-          credentials: 'include',
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newPatient),
-        });
-        toast.success('Patient added successfully!');
-      }
-      const updatedPatients = await fetch(API_BASE_URL);
-      const data = await updatedPatients.json();
-      setPatients(data);
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error('Error saving patient:', error);
-      toast.error('Failed to save patient.');
-    }
-  };
-
-  const handleAddPrescription = (patient) => {
-    setCurrentPatient(patient);
-    setShowPrescriptionModal(true);
-  };
-
-  const handleSavePrescription = async (prescriptionData) => {
-    try {
-      await fetch(`${API_BASE_URL}/${currentPatient.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prescriptions: [...currentPatient.prescriptions, prescriptionData],
-        }),
+      const response = await fetch(`${API_BASE_URL}?searchTerm=${searchTerm}`, {
+        credentials: "include",
       });
-      toast.success('Prescription added successfully!');
-      setShowPrescriptionModal(false);
-
-      const updatedPatients = await fetch(API_BASE_URL);
-      const data = await updatedPatients.json();
-      setPatients(data);
+      if (!response.ok) throw new Error("Failed to fetch patients");
+      const data = await response.json();
+      setPatients(data.data.results);
     } catch (error) {
-      console.error('Error adding prescription:', error);
-      toast.error('Failed to add prescription.');
+      toast.error("Failed to fetch patients");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const method = currentPatient ? "PATCH" : "POST";
+      const url = currentPatient
+        ? `${API_BASE_URL}/${currentPatient._id}`
+        : API_BASE_URL;
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to save patient");
+
+      toast.success(
+        `Patient ${currentPatient ? "updated" : "added"} successfully!`
+      );
+      setIsModalOpen(false);
+      fetchPatients();
+    } catch (error) {
+      toast.error("Failed to save patient");
     }
   };
 
   const handleEdit = (patient) => {
+    setCurrentPatient(patient);
+    setFormData(patient);
     setIsModalOpen(true);
-    setIsEditing(true);
-    setPatientData(patient);
-    setEditingId(patient._id);
   };
 
   const handleDelete = async (id) => {
-    console.log(id);
-    try {
-      await fetch(`${API_BASE_URL}/${id}`, {
-        credentials: 'include',
-        method: 'DELETE',
-      });
-      toast.success('Patient deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting patient:', error);
-      toast.error('Failed to delete patient.');
+    if (window.confirm("Are you sure you want to delete this patient?")) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error("Failed to delete patient");
+        toast.success("Patient deleted successfully!");
+        fetchPatients();
+      } catch (error) {
+        toast.error("Failed to delete patient");
+      }
     }
   };
 
-  const columns = React.useMemo(
-    () => [
-      { Header: 'Patient Name', accessor: 'name' },
-      { Header: 'Age', accessor: 'age' },
-      { Header: 'Insurance', accessor: 'insuranceContact' },
-      { Header: 'Contact', accessor: 'contact' },
-      { Header: 'Unique ID', accessor: 'patientID' },
-      { Header: 'Gender', accessor: 'patientGender' },
-      {
-        Header: 'Prescriptions',
-        accessor: 'prescriptions',
-        Cell: ({ row }) => (
-          <ul>
-            {row.original.prescriptions.map((prescription, index) => (
-              <li key={index}>
-                <a
-                  href="#"
-                  onClick={() => navigate(`/prescription/${row.original.id}`)}
-                  style={{ color: '#2196F3', textDecoration: 'underline' }}
-                >
-                  {prescription}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ),
-      },
-      {
-        Header: 'Actions',
-        accessor: 'actions',
-        Cell: ({ row }) => (
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handleEdit(row.original)}
-              className="text-blue-600 hover:underline"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDelete(row.original._id)}
-              className="text-red-600 hover:underline"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => handleAddPrescription(row.original)}
-              className="text-green-600 hover:underline"
-            >
-              Add Prescription
-            </button>
-          </div>
-        ),
-      },
-    ],
-    [navigate]
-  );
-
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <Toaster />
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
+    <div className='max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg'>
+      <ToastContainer />
+      <h1 className='text-3xl font-bold text-center mb-8 text-gray-800'>
         Patient Management
       </h1>
-      <input
-        type="text"
-        placeholder="Filter by name..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-4 p-2 border border-gray-300 rounded"
-      />
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mb-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
-      >
-        {isEditing ? 'Edit Patient' : 'Add Patient'}
-      </button>
-      {patients.length > 0 ? (
-        <PatientList patients={patients} columns={columns} />
-      ) : (
-        <p className="text-center text-gray-500">No patients registered.</p>
-      )}
-      <ReportGenerator />
+
+      <div className='mb-4 flex justify-between items-center'>
+        <input
+          type='text'
+          placeholder='Search patients...'
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className='p-2 border border-gray-300 rounded w-64'
+        />
+        <button
+          onClick={() => {
+            setCurrentPatient(null);
+            setFormData({
+              name: "",
+              age: "",
+              contact: "",
+              patientID: "",
+              patientGender: "",
+              insuranceContact: "",
+            });
+            setIsModalOpen(true);
+          }}
+          className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition'
+        >
+          Add New Patient
+        </button>
+      </div>
+
+      <div className='overflow-x-auto'>
+        <table className='min-w-full bg-white'>
+          <thead className='bg-gray-100'>
+            <tr>
+              <th className='py-2 px-4 border-b'>Name</th>
+              <th className='py-2 px-4 border-b'>Age</th>
+              <th className='py-2 px-4 border-b'>Contact</th>
+              <th className='py-2 px-4 border-b'>Patient ID</th>
+              <th className='py-2 px-4 border-b'>Gender</th>
+              <th className='py-2 px-4 border-b'>Insurance</th>
+              <th className='py-2 px-4 border-b'>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient) => (
+              <tr key={patient._id} className='hover:bg-gray-50'>
+                <td className='py-2 px-4 border-b'>{patient.name}</td>
+                <td className='py-2 px-4 border-b'>{patient.age}</td>
+                <td className='py-2 px-4 border-b'>{patient.contact}</td>
+                <td className='py-2 px-4 border-b'>{patient.patientID}</td>
+                <td className='py-2 px-4 border-b'>{patient.patientGender}</td>
+                <td className='py-2 px-4 border-b'>
+                  {patient.insuranceContact}
+                </td>
+                <td className='py-2 px-4 border-b'>
+                  <button
+                    onClick={() => handleEdit(patient)}
+                    className='text-blue-600 hover:underline mr-2'
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(patient._id)}
+                    className='text-red-600 hover:underline'
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-75 flex justify-center items-center z-50 transition-opacity duration-300 ease-in-out">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                {isEditing ? 'Edit Patient' : 'Add Patient'}
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center'>
+          <div className='bg-white p-6 rounded-lg w-96'>
+            <h2 className='text-2xl font-bold mb-4'>
+              {currentPatient ? "Edit Patient" : "Add New Patient"}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <input
+                type='text'
+                name='name'
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder='Name'
+                className='w-full p-2 mb-2 border rounded'
+                required
+              />
+              <input
+                type='number'
+                name='age'
+                value={formData.age}
+                onChange={handleInputChange}
+                placeholder='Age'
+                className='w-full p-2 mb-2 border rounded'
+                required
+              />
+              <input
+                type='tel'
+                name='contact'
+                value={formData.contact}
+                onChange={handleInputChange}
+                placeholder='Contact'
+                className='w-full p-2 mb-2 border rounded'
+                required
+              />
+              <input
+                type='text'
+                name='patientID'
+                value={formData.patientID}
+                onChange={handleInputChange}
+                placeholder='Patient ID'
+                className='w-full p-2 mb-2 border rounded'
+                required
+              />
+              <select
+                name='patientGender'
+                value={formData.patientGender}
+                onChange={handleInputChange}
+                className='w-full p-2 mb-2 border rounded'
+                required
               >
-                ✖
-              </button>
-            </div>
-            <PatientForm
-              patientData={patientData}
-              handlePatientChange={handlePatientChange}
-              handlePatientSubmit={handlePatientSubmit}
-            />
+                <option value=''>Select Gender</option>
+                <option value='Male'>Male</option>
+                <option value='Female'>Female</option>
+                <option value='Other'>Other</option>
+              </select>
+              <input
+                type='text'
+                name='insuranceContact'
+                value={formData.insuranceContact}
+                onChange={handleInputChange}
+                placeholder='Insurance Contact'
+                className='w-full p-2 mb-4 border rounded'
+              />
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  onClick={() => setIsModalOpen(false)}
+                  className='px-4 py-2 bg-gray-300 text-gray-800 rounded mr-2 hover:bg-gray-400 transition'
+                >
+                  Cancel
+                </button>
+                <button
+                  type='submit'
+                  className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition'
+                >
+                  {currentPatient ? "Update" : "Add"} Patient
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      )}
-
-      {showPrescriptionModal && (
-        <PrescriptionModal
-          show={showPrescriptionModal}
-          onClose={() => setShowPrescriptionModal(false)}
-          onSave={handleSavePrescription}
-          patient={currentPatient}
-        />
       )}
     </div>
   );
