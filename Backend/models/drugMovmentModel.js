@@ -21,6 +21,11 @@ const drugMovementSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  category: {
+    type: String,
+    enum: ['drug', 'sunglasses', 'frame'],
+    required: true,
+  },
 });
 
 const DrugMovement = mongoose.model('DrugMovement', drugMovementSchema);

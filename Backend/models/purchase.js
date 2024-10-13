@@ -29,7 +29,7 @@ const PurchaseSchema = new mongoose.Schema(
     TotalPurchaseAmount: Number,
     category: {
       type: String,
-      enum: ['drug', 'sunglasses'],
+      enum: ['drug', 'sunglasses', 'frame'],
       required: true,
     },
   },

@@ -61,12 +61,7 @@ exports.deleteDrug = async (req, res) => {
   try {
     const { id } = req.params;
     validateMongoDBId(id);
-    const drug = await Pharmacy.findByIdAndDelete(id);
-
-    if (!drug) {
-      res.status(404);
-      throw new Error('Drug not found');
-    }
+    await Pharmacy.findByIdAndDelete(id);
 
     res.status(204).json({
       status: 'success',

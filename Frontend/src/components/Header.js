@@ -60,7 +60,7 @@ export default function Header() {
                       <div className="flex justify-center items-center gap-2">
                         <img
                           className="h-8 w-8"
-                          src={require('../assets/logo.png')}
+                          src={require('../assets/logo.jpg')}
                           alt="Al Sayed Eye HMS"
                         />
                         <span className="font-bold text-white italic">
