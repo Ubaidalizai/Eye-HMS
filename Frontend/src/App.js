@@ -18,6 +18,7 @@ import PurchaseDetails from './pages/PurchaseDetails';
 import Move from './pages/Move';
 import Pharmacy from './pages/Pharmacy';
 import { Provider } from 'react-redux';
+import store from './redux/store';
 import ExpenseManagement from './pages/expence manegement';
 import PrescriptionPage from './pages/PrescriptionPage';
 import Patient from './pages/Patient';
