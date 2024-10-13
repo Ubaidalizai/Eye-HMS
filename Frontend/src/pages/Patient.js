@@ -1,103 +1,193 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from "react";
-import { Toaster, toast } from "react-hot-toast";
-import { v4 as uuidv4 } from "uuid";
-import PatientForm from "../components/PatientForm";
-import ReportGenerator from "../components/ReportGenerator";
-import PatientList from "../components/PatientList";
-import { useNavigate } from "react-router-dom";
-import PrescriptionModal from "../components/PrescriptionModal";
+import React, { useState, useEffect } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
+import PatientForm from '../components/PatientForm';
+import ReportGenerator from '../components/ReportGenerator';
+import PatientList from '../components/PatientList';
+import { useNavigate } from 'react-router-dom';
+import PrescriptionModal from '../components/PrescriptionModal';
 
 export default function Patient() {
   const navigate = useNavigate();
-  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false); // For prescription modal
-  const [currentPatient, setCurrentPatient] = useState(null); // Patient to add prescription to
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState(null);
+  const [searchTerm, setSearchTerm] = useState();
+  const [patients, setPatients] = useState([]);
+  const [patientData, setPatientData] = useState({
+    name: '',
+    age: '',
+    contact: '',
+    patientID: '',
+    patientGender: '',
+    insuranceContact: '',
+  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
-  const [filter, setFilter] = useState("");
-  const [isInitialMount, setIsInitialMount] = useState(true);
-  const handleAddPrescription = (patient) => {
-    setCurrentPatient(patient); // Set current patient
-    setShowPrescriptionModal(true); // Open prescription modal
-  };
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await fetch(API_BASE_URL, {
+          credentials: 'include', // Send cookies
+        });
 
-  const handleSavePrescription = (prescriptionData) => {
-    setPatients((prevPatients) =>
-      prevPatients.map((patient) => {
-        if (patient.id === currentPatient.id) {
-          return {
-            ...patient,
-            prescriptions: [
-              ...patient.prescriptions,
-              `Prescription ${
-                patient.prescriptions.length + 1
-              }: ${prescriptionData}`,
-            ], // Append prescription
-          };
+        if (!response.ok) {
+          throw new Error(`Failed to fetch patients: ${response.statusText}`);
         }
-        return patient;
-      })
-    );
-    setShowPrescriptionModal(false); // Close modal after saving
-    toast.success("Prescription added successfully!");
+
+        const data = await response.json();
+        console.log(data);
+        setPatients(data.data.results);
+      } catch (error) {
+        console.error('Error fetching patients:', error);
+        toast.error('Failed to fetch patients.');
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  // Fetch patients based on search term
+  useEffect(() => {
+    const fetchFilteredPatients = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}?searchTerm=${searchTerm}`,
+          {
+            credentials: 'include',
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch patients: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        setPatients(data.data.results); // Assuming the API returns the filtered patients
+      } catch (error) {
+        console.error('Error fetching filtered patients:', error);
+        toast.error('Failed to fetch filtered patients.');
+      }
+    };
+
+    // Fetch patients if the filter is not empty
+    if (searchTerm) {
+      fetchFilteredPatients();
+    } else {
+      setPatients([]); // Clear the list if filter is empty
+    }
+  }, [searchTerm]); // Dependency array includes 'filter' to trigger when it changes
+
+  const handlePatientChange = (e) => {
+    const { name, value } = e.target;
+    setPatientData({ ...patientData, [name]: value });
   };
 
-  // const columns = React.useMemo(
-  //   () => [
-  //     { Header: "Patient Name", accessor: "name" },
-  //     { Header: "Date of Birth", accessor: "dob" },
-  //     { Header: "Insurance", accessor: "insurance" },
-  //     { Header: "Contact", accessor: "contact" },
-  //     {
-  //       Header: "Prescriptions",
-  //       accessor: "prescriptions",
-  //       Cell: ({ row }) => (
-  //         <ul>
-  //           {row.original.prescriptions.map((prescription, index) => (
-  //             <li key={index}>
-  //               <a
-  //                 href="#"
-  //                 onClick={() => navigate(`/prescription/${row.original.id}`)}
-  //                 style={{ color: "#2196F3", textDecoration: "underline" }}
-  //               >
-  //                 {prescription}
-  //               </a>
-  //             </li>
-  //           ))}
-  //         </ul>
-  //       ),
-  //     },
-  //     {
-  //       Header: "Actions",
-  //       accessor: "actions",
-  //       Cell: ({ row }) => (
-  //         <div className="flex space-x-2">
-  //           <button
-  //             onClick={() => handleEdit(row.original)}
-  //             className="text-blue-600 hover:underline"
-  //           >
-  //             Edit
-  //           </button>
-  //           <button
-  //             onClick={() => handleDelete(row.original.id)}
-  //             className="text-red-600 hover:underline"
-  //           >
-  //             Delete
-  //           </button>
-  //         </div>
-  //       ),
-  //     },
-  //   ],
-  //   [navigate]
-  // );
+  const handlePatientSubmit = async (e) => {
+    e.preventDefault();
+    console.log(patientData);
+    if (
+      !patientData.name ||
+      !patientData.age ||
+      !patientData.contact ||
+      !patientData.patientID ||
+      !patientData.patientGender
+    ) {
+      toast.error('Please fill in all required fields.');
+      return;
+    }
+
+    const newPatient = { ...patientData, prescriptions: [] };
+
+    try {
+      if (isEditing) {
+        await fetch(`${API_BASE_URL}/${editingId}`, {
+          credentials: 'include',
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPatient),
+        });
+        toast.success('Patient updated successfully!');
+      } else {
+        await fetch(API_BASE_URL, {
+          credentials: 'include',
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newPatient),
+        });
+        toast.success('Patient added successfully!');
+      }
+      const updatedPatients = await fetch(API_BASE_URL);
+      const data = await updatedPatients.json();
+      setPatients(data);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error saving patient:', error);
+      toast.error('Failed to save patient.');
+    }
+  };
+
+  const handleAddPrescription = (patient) => {
+    setCurrentPatient(patient);
+    setShowPrescriptionModal(true);
+  };
+
+  const handleSavePrescription = async (prescriptionData) => {
+    try {
+      await fetch(`${API_BASE_URL}/${currentPatient.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prescriptions: [...currentPatient.prescriptions, prescriptionData],
+        }),
+      });
+      toast.success('Prescription added successfully!');
+      setShowPrescriptionModal(false);
+
+      const updatedPatients = await fetch(API_BASE_URL);
+      const data = await updatedPatients.json();
+      setPatients(data);
+    } catch (error) {
+      console.error('Error adding prescription:', error);
+      toast.error('Failed to add prescription.');
+    }
+  };
+
+  const handleEdit = (patient) => {
+    setIsModalOpen(true);
+    setIsEditing(true);
+    setPatientData(patient);
+    setEditingId(patient._id);
+  };
+
+  const handleDelete = async (id) => {
+    console.log(id);
+    try {
+      await fetch(`${API_BASE_URL}/${id}`, {
+        credentials: 'include',
+        method: 'DELETE',
+      });
+      toast.success('Patient deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting patient:', error);
+      toast.error('Failed to delete patient.');
+    }
+  };
+
   const columns = React.useMemo(
     () => [
-      { Header: "Patient Name", accessor: "name" },
-      { Header: "Date of Birth", accessor: "dob" },
-      { Header: "Insurance", accessor: "insurance" },
-      { Header: "Contact", accessor: "contact" },
+      { Header: 'Patient Name', accessor: 'name' },
+      { Header: 'Age', accessor: 'age' },
+      { Header: 'Insurance', accessor: 'insuranceContact' },
+      { Header: 'Contact', accessor: 'contact' },
+      { Header: 'Unique ID', accessor: 'patientID' },
+      { Header: 'Gender', accessor: 'patientGender' },
       {
-        Header: "Prescriptions",
-        accessor: "prescriptions",
+        Header: 'Prescriptions',
+        accessor: 'prescriptions',
         Cell: ({ row }) => (
           <ul>
             {row.original.prescriptions.map((prescription, index) => (
@@ -105,7 +195,7 @@ export default function Patient() {
                 <a
                   href="#"
                   onClick={() => navigate(`/prescription/${row.original.id}`)}
-                  style={{ color: "#2196F3", textDecoration: "underline" }}
+                  style={{ color: '#2196F3', textDecoration: 'underline' }}
                 >
                   {prescription}
                 </a>
@@ -115,8 +205,8 @@ export default function Patient() {
         ),
       },
       {
-        Header: "Actions",
-        accessor: "actions",
+        Header: 'Actions',
+        accessor: 'actions',
         Cell: ({ row }) => (
           <div className="flex space-x-2">
             <button
@@ -126,13 +216,13 @@ export default function Patient() {
               Edit
             </button>
             <button
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDelete(row.original._id)}
               className="text-red-600 hover:underline"
             >
               Delete
             </button>
             <button
-              onClick={() => handleAddPrescription(row.original)} // New button to add prescription
+              onClick={() => handleAddPrescription(row.original)}
               className="text-green-600 hover:underline"
             >
               Add Prescription
@@ -144,110 +234,6 @@ export default function Patient() {
     [navigate]
   );
 
-  const [patientData, setPatientData] = useState({
-    name: "",
-    dob: "",
-    contact: "",
-    insurance: "",
-  });
-
-  const [patients, setPatients] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [storageData, SetStoragedar] = useState([]);
-  // Load patients from local storage when the component mounts
-  // Load patients from local storage when the component mounts
-  useEffect(() => {
-    const storedPatients = JSON.parse(localStorage.getItem("patients")) || [];
-    setPatients(storedPatients);
-    setIsInitialMount(false); // Mark initial mount as complete
-  }, []);
-
-  // Update local storage whenever the patients state changes (but not on initial mount)
-  useEffect(() => {
-    if (!isInitialMount) {
-      localStorage.setItem("patients", JSON.stringify(patients));
-      console.log("Updated local storage with patients:", patients);
-    }
-  }, [patients, isInitialMount]); // Add isInitialMount to the dependency array
-
-  const handlePatientChange = (e) => {
-    const { name, value } = e.target;
-    setPatientData({ ...patientData, [name]: value });
-  };
-
-  const handlePatientSubmit = (e) => {
-    e.preventDefault();
-    if (!patientData.name || !patientData.dob || !patientData.contact) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-
-    const newPatient = {
-      id: uuidv4(),
-      ...patientData,
-      prescriptions: [],
-    };
-
-    if (isEditing) {
-      setPatients((prevPatients) =>
-        prevPatients.map((patient) =>
-          patient.id === editingId
-            ? {
-                ...patientData,
-                id: editingId,
-                prescriptions: patient.prescriptions,
-              }
-            : patient
-        )
-      );
-      toast.success("Patient updated successfully!");
-      setIsEditing(false);
-      setEditingId(null);
-    } else {
-      setPatients((prevPatients) => [...prevPatients, newPatient]);
-      toast.success("Patient registered successfully!");
-    }
-
-    setPatientData({ name: "", dob: "", contact: "", insurance: "" });
-    setIsModalOpen(false);
-  };
-
-  const handleEdit = (patient) => {
-    setIsModalOpen(true);
-    setIsEditing(true);
-    setPatientData(patient);
-    setEditingId(patient.id);
-  };
-
-  const handleDelete = (id) => {
-    setPatients((prevPatients) =>
-      prevPatients.filter((patient) => patient.id !== id)
-    );
-    toast.success("Patient deleted successfully!");
-  };
-  const addPrescription = (patientId) => {
-    setPatients((prevPatients) =>
-      prevPatients.map((patient) => {
-        if (patient.id === patientId) {
-          const newPrescription = `Prescription ${
-            patient.prescriptions.length + 1
-          }`;
-          return {
-            ...patient,
-            prescriptions: [...patient.prescriptions, newPrescription],
-          };
-        }
-        return patient;
-      })
-    );
-    toast.success("Prescription added successfully!");
-  };
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <Toaster />
@@ -257,23 +243,18 @@ export default function Patient() {
       <input
         type="text"
         placeholder="Filter by name..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
         className="mb-4 p-2 border border-gray-300 rounded"
       />
       <button
         onClick={() => setIsModalOpen(true)}
         className="mb-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
       >
-        {isEditing ? "Edit Patient" : "Add Patient"}
+        {isEditing ? 'Edit Patient' : 'Add Patient'}
       </button>
-      {filteredPatients.length > 0 ? (
-        <PatientList
-          patients={filteredPatients}
-          columns={columns}
-          handleEdit={handleEdit}
-          addPrescription={addPrescription}
-        />
+      {patients.length > 0 ? (
+        <PatientList patients={patients} columns={columns} />
       ) : (
         <p className="text-center text-gray-500">No patients registered.</p>
       )}
@@ -284,7 +265,7 @@ export default function Patient() {
           <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold text-gray-800">
-                {isEditing ? "Edit Patient" : "Add Patient"}
+                {isEditing ? 'Edit Patient' : 'Add Patient'}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -302,7 +283,6 @@ export default function Patient() {
         </div>
       )}
 
-      {/* Prescription Modal */}
       {showPrescriptionModal && (
         <PrescriptionModal
           show={showPrescriptionModal}

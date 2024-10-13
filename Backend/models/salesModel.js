@@ -1,21 +1,25 @@
 // saleModel.js
 const mongoose = require('mongoose');
 const Pharmacy = require('./pharmacyModel');
+const Product = require('./pharmacyModel');
 const User = require('./userModel');
 
 const saleSchema = new mongoose.Schema({
-  soldItems: [
+  soldDetails: [
     {
-      drugId: {
+      productRefId: {
         type: mongoose.Schema.ObjectId,
+        required: [true, 'Each sold item must reference a product or drug'],
         ref: 'Pharmacy',
-        required: true,
       },
       quantity: {
         type: Number,
-        required: [true, 'A sale must have a total income'],
+        required: [true, 'A sold item must have a quantity'],
       },
-      income: Number,
+      income: {
+        type: Number,
+        required: [true, 'A sold item must have an income'],
+      },
     },
   ],
   totalIncome: {
@@ -32,8 +36,8 @@ const saleSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['drug', 'sunglasses'],
-    required: [true, 'A sale must defend on a specific category'],
+    enum: ['drug', 'sunglasses', 'frame'],
+    required: [true, 'A sale must have a category (either drug or sunglasses)'],
   },
   userID: {
     type: mongoose.Schema.ObjectId,

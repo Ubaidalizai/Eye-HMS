@@ -1,7 +1,7 @@
-import { Fragment, useContext, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
-import AuthContext from "../AuthContext";
+import { Fragment, useContext, useRef, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import AuthContext from '../AuthContext';
 
 export default function AddProduct({
   addProductModalSetting,
@@ -10,10 +10,10 @@ export default function AddProduct({
   const authContext = useContext(AuthContext);
   const [product, setProduct] = useState({
     userId: authContext.user,
-    name: "",
-    manufacturer: "",
-    description: "",
-    category: "", // New category field
+    name: '',
+    manufacturer: '',
+    description: '',
+    category: '', // New category field
   });
 
   const [open, setOpen] = useState(true);
@@ -24,16 +24,16 @@ export default function AddProduct({
   };
 
   const addProduct = () => {
-    fetch("http://localhost:4000/api/v1/inventory/product", {
-      method: "POST",
+    fetch('http://localhost:4000/api/v1/inventory/product', {
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
-      credentials: "include",
+      credentials: 'include',
       body: JSON.stringify(product),
     })
       .then((result) => {
-        alert("Product ADDED");
+        alert('Product ADDED');
         handlePageUpdate();
         addProductModalSetting();
       })
@@ -165,6 +165,7 @@ export default function AddProduct({
                               <option value="">Select a category</option>
                               <option value="drug">Drug</option>
                               <option value="sunglasses">Sunglasses</option>
+                              <option value="frame">frame</option>
                             </select>
                           </div>
                         </div>

@@ -1,3 +1,5 @@
+import IncomeReport from './pages/IncomeReport';
+
 import React from 'react';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -17,14 +19,14 @@ import Move from './pages/Move';
 import Pharmacy from './pages/Pharmacy';
 import { Provider } from 'react-redux';
 import store from './redux/store';
-import ExpenseManagement from './pages/expenceManegement';
+import ExpenseManagement from './pages/expence manegement';
 import PrescriptionPage from "./pages/PrescriptionPage";
 import Patient from "./pages/Patient";
 
 const App = () => {
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState('');
   const [loader, setLoader] = useState(true);
-  let myLoginUser = JSON.parse(localStorage.getItem("user"));
+  let myLoginUser = JSON.parse(localStorage.getItem('user'));
   // console.log("USER: ",user)
 
   useEffect(() => {
@@ -33,7 +35,7 @@ const App = () => {
       setLoader(false);
       // console.log("inside effect", myLoginUser)
     } else {
-      setUser("");
+      setUser('');
       setLoader(false);
     }
   }, [myLoginUser]);
@@ -45,7 +47,7 @@ const App = () => {
 
   const signout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem('user');
   };
 
   let value = { user, signin, signout };
@@ -55,9 +57,9 @@ const App = () => {
       <div
         style={{
           flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <h1>LOADING...</h1>
@@ -69,10 +71,10 @@ const App = () => {
       <AuthContext.Provider value={value}>
         <BrowserRouter>
           <Routes>
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route
-              path='/'
+              path="/"
               element={
                 <ProtectedWrapper>
                   <Layout />
@@ -80,15 +82,20 @@ const App = () => {
               }
             >
               <Route index element={<Dashboard />} />
+              <Route
+                path="/expenceManegement"
+                element={<ExpenseManagement />}
+              />
+
+              <Route path="/patient" element={<Patient />} />
+
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/purchase-details" element={<PurchaseDetails />} />
               <Route path="/sales" element={<Sales />} />
               <Route path="/manage-store" element={<Store />} />
               <Route path="/move" element={<Move />} />
               <Route path="/pharmacy" element={<Pharmacy />} />
-              <Route path="/expence" element={<ExpenseManagement />} />
             </Route>
-
             <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>

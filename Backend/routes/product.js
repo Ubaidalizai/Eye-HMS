@@ -9,6 +9,9 @@ const {
 // Enable authentication middleware and admin authorization for all routes in this file
 router.use(authenticate);
 
+// Check for expired products
+router.get('/product/expire', product.checkProductExpiry);
+
 // Move Drugs From Inventory to pharmacy
 router.post('/product/move', product.moveDrugsToPharmacy);
 

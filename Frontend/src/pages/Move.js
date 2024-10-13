@@ -17,7 +17,7 @@ const Move = () => {
     const fetchProductsData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/v1/inventory/product?category=drug&page=${currentPage}&limit=${limit}`,
+          `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}`,
           { credentials: 'include' }
         );
         const data = await response.json();
@@ -82,6 +82,7 @@ const Move = () => {
                 {item.name}
               </h3>
               <p className="text-gray-600 mt-2">Stock: {item.stock}</p>
+              <p className="text-gray-600 mt-2">category: {item.category}</p>
             </div>
             <button
               onClick={() => handleMoveItem(item)}

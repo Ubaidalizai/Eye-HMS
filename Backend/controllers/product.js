@@ -27,7 +27,6 @@ const addProduct = asyncHandler((req, res) => {
       res.status(200).send(result);
     })
     .catch((err) => {
-      console.log(err);
       res.status(402).send(err);
     });
 });
@@ -75,7 +74,6 @@ const updateSelectedProduct = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
     res.status(402).send('Error');
   }
 });
@@ -85,8 +83,6 @@ const searchProduct = getAll(Product, true);
 
 // move drug from inventory to pharmacy
 const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
-  const { name, quantity, salePrice } = req.body;
-
   // Function to update inventory stock
   const updateInventoryStock = async (product, quantity) => {
     product.stock -= quantity;
@@ -94,8 +90,14 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
   };
 
   // Function to add or update drug in pharmacy
-  const addOrUpdatePharmacyDrug = async (name, quantity, salePrice) => {
-    let pharmacyDrug = await Pharmacy.findOne({ name });
+  const addOrUpdatePharmacyDrug = async (
+    name,
+    manufacturer,
+    quantity,
+    salePrice,
+    category
+  ) => {
+    let pharmacyDrug = await Pharmacy.findOne({ name, manufacturer });
 
     if (pharmacyDrug) {
       pharmacyDrug.quantity += quantity;
@@ -103,8 +105,10 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
     } else {
       pharmacyDrug = await Pharmacy.create({
         name,
+        manufacturer,
         quantity,
         salePrice,
+        category,
         // batchNumber: product.batchNumber,
         // expiryDate: product.expiryDate,
       });
@@ -115,13 +119,14 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
   };
 
   try {
+    const { name, manufacturer, quantity, salePrice, category } = req.body;
+
     // Step 1: Find drug in the inventory
-    const product = await Product.findOne({ name, category: 'drug' });
+    const product = await Product.findOne({ name, manufacturer });
     if (!product) {
       res.status(404);
       throw new Error('Drug not found in inventory');
     }
-
     // Step 2: Validate available stock
     if (product.stock < quantity) {
       res.status(400);
@@ -134,8 +139,10 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
     // Step 4: Add or update pharmacy drug record
     const pharmacyDrug = await addOrUpdatePharmacyDrug(
       name,
+      manufacturer,
       quantity,
-      salePrice
+      salePrice,
+      category
     );
 
     // Step 5: Record the movement in drug movement log
@@ -144,14 +151,31 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
       pharmacy_id: pharmacyDrug._id,
       quantity_moved: quantity,
       moved_by: req.user._id, // Assuming user is available in req.user
+      category,
     });
 
     // Step 6: Respond with success
     res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
   } catch (error) {
     res.status(500);
+    console.log(error);
     throw new Error('Internal server error');
   }
+});
+const checkProductExpiry = asyncHandler(async (req, res) => {
+  const beforeThirtyDays = new Date();
+  beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);
+
+  const expireProducts = await Product.find({
+    expiryDate: { $lte: new Date() },
+    stock: { $gt: 0 },
+  }); // Find products with an expiry date before 30 days
+
+  if (expireProducts.length === 0) {
+    return res.status(200).json({ message: 'No expired products found' });
+  }
+
+  res.status(200).json({ expireProducts });
 });
 
 module.exports = {
@@ -161,4 +185,5 @@ module.exports = {
   updateSelectedProduct,
   searchProduct,
   moveDrugsToPharmacy,
+  checkProductExpiry,
 };
