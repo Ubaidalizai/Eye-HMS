@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -20,9 +19,9 @@ const Pharmacy = () => {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}&category=sunglasses`;
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=sunglasses,frame`;
       } else if (user.role === 'pharmacist') {
-        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
+        baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}&category=drug`;
       }
 
       try {
@@ -84,7 +83,7 @@ const Pharmacy = () => {
               <span className="text-gray-600">
                 Quantity:{' '}
                 <span className="font-semibold text-gray-800">
-                  {drug?.quantity || drug?.stock}
+                  {drug.quantity}
                 </span>
               </span>
             </div>
@@ -116,24 +115,6 @@ const Pharmacy = () => {
           Next
         </button>
       </div>
-=======
-import React from "react";
-import { useSelector } from "react-redux";
-
-const Pharmacy = () => {
-  const movedItems = useSelector((state) => state.inventory.movedItems);
-
-  return (
-    <div className="p-16">
-      <h2 className="text-2xl font-bold mb-6">Pharmacy</h2>
-      <ul className="space-y-4">
-        {movedItems.map((item, index) => (
-          <li key={index} className="border p-4 rounded shadow">
-            {item.name} (Quantity: {item.quantity})
-          </li>
-        ))}
-      </ul>
->>>>>>> origin/master
     </div>
   );
 };

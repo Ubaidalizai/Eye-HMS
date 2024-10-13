@@ -2,14 +2,6 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema(
   {
-<<<<<<< HEAD
-=======
-    userID: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
-      required: true,
-    },
->>>>>>> origin/master
     name: {
       type: String,
       required: true,
@@ -23,29 +15,24 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
     description: String,
-<<<<<<< HEAD
     category: {
       type: String,
-      enum: ['drug', 'sunglasses'],
+      enum: ['drug', 'sunglasses', 'frame'],
       required: true,
     },
-=======
->>>>>>> origin/master
-    // batchNumber: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // expiryDate: {
-    //   type: Date,
-    //   required: true,
-    // },
+    expiryDate: {
+      type: Date,
+      validate: {
+        validator: function (value) {
+          // Make expiryDate required only for drugs
+          return this.category === 'drug' ? !!value : true;
+        },
+        message: 'Expiry date is required for drugs.',
+      },
+    },
   },
   { timestamps: true }
 );
 
-<<<<<<< HEAD
 const Product = mongoose.model('Product', ProductSchema);
-=======
-const Product = mongoose.model('product', ProductSchema);
->>>>>>> origin/master
 module.exports = Product;

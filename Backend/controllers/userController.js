@@ -79,11 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const userExists = await User.findOne({ email });
   if (userExists) {
-<<<<<<< HEAD
     res.status(409);
-=======
-    res.status(400);
->>>>>>> origin/master
     throw new Error('User already exists');
   }
 
@@ -115,10 +111,7 @@ const registerUser = asyncHandler(async (req, res) => {
 // Login user
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-<<<<<<< HEAD
   console.log(req.body);
-=======
->>>>>>> origin/master
   // 1) Check if email and password is exist!
   if (!email || !password) {
     res.status(400);
@@ -135,10 +128,7 @@ const loginUser = asyncHandler(async (req, res) => {
       firstName: existingUser.firstName,
       lastName: existingUser.lastName,
       email: existingUser.email,
-<<<<<<< HEAD
       role: existingUser.role,
-=======
->>>>>>> origin/master
       token,
     });
   } else {

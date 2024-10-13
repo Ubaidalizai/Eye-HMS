@@ -1,18 +1,9 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AddProduct from '../components/AddProduct';
 import UpdateProduct from '../components/UpdateProduct';
 import AuthContext from '../AuthContext';
 import { moveItemAPI, fetchDrugs } from '../redux/inventorySlice';
-=======
-import React, { useState, useEffect, useContext } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import AddProduct from "../components/AddProduct";
-import UpdateProduct from "../components/UpdateProduct";
-import AuthContext from "../AuthContext";
-import { moveItemAPI, fetchDrugs } from "../redux/inventorySlice";
->>>>>>> origin/master
 
 function Inventory() {
   const dispatch = useDispatch();
@@ -20,21 +11,14 @@ function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateProduct, setUpdateProduct] = useState(null);
-<<<<<<< HEAD
   const [searchTerm, setSearchTerm] = useState('');
-=======
-  const [searchTerm, setSearchTerm] = useState("");
->>>>>>> origin/master
   const [updatePage, setUpdatePage] = useState(true);
   const [products, setAllProducts] = useState([]);
   const authContext = useContext(AuthContext);
   const [stores, setAllStores] = useState([]);
-<<<<<<< HEAD
   const [Url, setUrl] = useState(
     `http://localhost:4000/api/v1/inventory/product`
   );
-=======
->>>>>>> origin/master
 
   useEffect(() => {
     fetchProductsData();
@@ -42,14 +26,10 @@ function Inventory() {
   }, [updatePage]);
 
   const fetchProductsData = () => {
-<<<<<<< HEAD
     fetch(Url, {
       credentials: 'include',
       method: 'GET',
     })
-=======
-    fetch(`http://localhost:4000/api/product/get/${authContext.user}`)
->>>>>>> origin/master
       .then((response) => response.json())
       .then((data) => {
         setAllProducts(data);
@@ -79,7 +59,6 @@ function Inventory() {
   };
 
   const deleteItem = (id) => {
-<<<<<<< HEAD
     fetch(
       `http://localhost:4000/api/inventory/product/${id}`,
       {
@@ -89,11 +68,6 @@ function Inventory() {
         method: 'DELETE',
       }
     )
-=======
-    fetch(`http://localhost:4000/api/product/delete/${id}`, {
-      method: "DELETE",
-    })
->>>>>>> origin/master
       .then((response) => response.json())
       .then((data) => {
         setUpdatePage(!updatePage);
@@ -218,11 +192,7 @@ function Inventory() {
                 <img
                   alt="search-icon"
                   className="w-5 h-5"
-<<<<<<< HEAD
                   src={require('../assets/search-icon.png')}
-=======
-                  src={require("../assets/search-icon.png")}
->>>>>>> origin/master
                 />
                 <input
                   className="border-none outline-none focus:border-none text-xs"
@@ -282,22 +252,14 @@ function Inventory() {
                     {element.description}
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-<<<<<<< HEAD
                     {element.stock > 0 ? 'In Stock' : 'Not in Stock'}
-=======
-                    {element.stock > 0 ? "In Stock" : "Not in Stock"}
->>>>>>> origin/master
                   </td>
                   <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                     <span
                       className="text-green-700 cursor-pointer"
                       onClick={() => updateProductModalSetting(element)}
                     >
-<<<<<<< HEAD
                       Edit{' '}
-=======
-                      Edit{" "}
->>>>>>> origin/master
                     </span>
                     <span
                       className="text-red-600 px-2 cursor-pointer"

@@ -1,9 +1,30 @@
 const mongoose = require('mongoose');
 
 const pharmacySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  quantity: { type: Number, required: true },
-  salePrice: { type: Number, required: true },
+  name: {
+    type: String,
+    required: [true, 'Pharmacy product must have a name'],
+  },
+  manufacturer: {
+    type: String,
+    required: [true, 'Pharmacy product must have a manufacturer'],
+  },
+  quantity: {
+    type: Number,
+    required: [true, 'Pharmacy product must have a quantity'],
+  },
+  salePrice: {
+    type: Number,
+    required: [true, 'Pharmacy product must have a sale price'],
+  },
+  category: {
+    type: String,
+    enum: ['drug', 'sunglasses', 'frame'],
+    required: [
+      true,
+      'Pharmacy product must have a category (either drug, sunglasses or frame)',
+    ],
+  },
 });
 
 const Pharmacy = mongoose.model('Pharmacy', pharmacySchema);

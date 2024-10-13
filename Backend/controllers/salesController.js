@@ -7,76 +7,45 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
 // Helper function to retrieve products from inventory or pharmacy
-const getValidProducts = async (productsSold, category) => {
-  const productIds = productsSold.map((item) => item.drugId);
+const getValidProducts = async (productsSold) => {
+  const productIds = productsSold.map((item) => item.productRefId);
 
-  if (category === 'Pharmacy') {
-    const productsInPharmacy = await Pharmacy.find({
-      _id: { $in: productIds },
-    });
-    if (productsInPharmacy.length !== productsSold.length) {
-      const missingProducts = productsSold.filter(
-        (item) =>
-          !productsInPharmacy.some((product) => product._id.equals(item.drugId))
-      );
-      throw new Error(
-        `Some drugs not found in pharmacy: ${missingProducts.map(
-          (d) => d.drugId
-        )}`
-      );
-    }
-    return productsInPharmacy;
-  } else if (category === 'Product') {
-    const productsInInventory = await Product.find({
-      _id: { $in: productIds },
-    });
-    if (productsInInventory.length !== productsSold.length) {
-      const missingProducts = productsSold.filter(
-        (item) =>
-          !productsInInventory.some((product) =>
-            product._id.equals(item.drugId)
-          )
-      );
-      throw new Error(
-        `Some products not found in inventory: ${missingProducts.map(
-          (d) => d.drugId
-        )}`
-      );
-    }
-    return productsInInventory;
-  } else {
-    throw new Error(`Unknown category: ${category}`);
+  const productsInPharmacy = await Pharmacy.find({
+    _id: { $in: productIds },
+  });
+  if (productsInPharmacy.length !== productsSold.length) {
+    const missingProducts = productsSold.filter(
+      (item) =>
+        !productsInPharmacy.some((product) =>
+          product._id.equals(item.productRefId)
+        )
+    );
+    throw new Error(
+      `Some drugs not found in pharmacy: ${missingProducts.map(
+        (d) => d.productRefId
+      )}`
+    );
   }
+  return productsInPharmacy;
 };
 
 // Helper function to validate stock and calculate income
 const validateDrugAndCalculateIncome = async (drug, soldItem) => {
-  const product = await Purchase.findOne({
-    ProductID: drug._id,
-  }).sort({ _id: -1 }); // Get the latest sale price
-  console.log(product);
-  if (
-    drug?.quantity < soldItem.quantity &&
-    product?.stock < soldItem.quantity
-  ) {
+  if (drug.quantity < soldItem.quantity) {
     throw new Error(`Insufficient stock for drug: ${drug.name}`);
   }
 
-  if (
-    (isNaN(drug.salePrice) && isNaN(drug.stock)) ||
-    isNaN(soldItem.quantity)
-  ) {
+  if (isNaN(drug.salePrice) || isNaN(soldItem.quantity)) {
     throw new Error(`Invalid sale price or quantity for drug: ${drug.name}`);
   }
-  let salePrice = drug?.salePrice || product?.UnitPurchaseAmount;
-  console.log(salePrice);
-  return salePrice * soldItem.quantity; // Returns the income
+
+  return drug.salePrice * soldItem.quantity; // Returns the income
 };
 
 // Helper function to calculate net income
 const calculateNetIncome = async (drug, soldItem) => {
   const productInInventory = await Product.findOne({ name: drug.name });
-  console.log(productInInventory);
+
   if (!productInInventory) {
     throw new Error(`Product with name ${drug.name} not found in inventory`);
   }
@@ -94,12 +63,8 @@ const calculateNetIncome = async (drug, soldItem) => {
 };
 
 // Helper function to update drug quantity in the pharmacy
-const updateDrugStock = async (drug, category, quantity) => {
-  if (category === 'Product') {
-    drug.quantity -= quantity;
-  } else {
-    drug.stock -= quantity;
-  }
+const updateDrugStock = async (drug, quantity) => {
+  drug.quantity -= quantity;
 
   await drug.save();
 };
@@ -118,7 +83,9 @@ const sellItems = asyncHandler(async (req, res) => {
 
     // Step 2: Loop through sold items to process each product sale
     for (const soldItem of soldItems) {
-      const product = validProducts.find((p) => p._id.equals(soldItem.drugId));
+      const product = validProducts.find((p) =>
+        p._id.equals(soldItem.productRefId)
+      );
 
       // Step 3: Validate stock and calculate income for each product
       const income = await validateDrugAndCalculateIncome(product, soldItem);
@@ -129,7 +96,7 @@ const sellItems = asyncHandler(async (req, res) => {
       totalNetIncome += income - purchaseCost;
 
       // Step 5: Update product quantity in the correct location (pharmacy or inventory)
-      await updateDrugStock(product, category, soldItem.quantity);
+      await updateDrugStock(product, soldItem.quantity);
 
       // Step 6: Push sold item details to soldDetails array
       soldDetails.push({
@@ -162,8 +129,8 @@ const sellItems = asyncHandler(async (req, res) => {
   }
 });
 
-const getAllSales = getAll(Sale, true, [
-  { path: 'soldDetails.productRefId', select: 'name' },
+const getAllSales = getAll(Sale, false, [
+  { path: 'soldDetails.productRefId', select: 'name salePrice' },
   { path: 'userID', select: 'firstName lastName' },
 ]);
 
@@ -176,7 +143,7 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
 
-    // Aggregate sales data for the specified month
+    // Aggregate sales data for the specified month, grouped by day
     const sales = await Sale.aggregate([
       {
         $match: {
@@ -188,11 +155,13 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
       },
       {
         $group: {
-          _id: null,
+          _id: { $dayOfMonth: '$date' }, // Group by day of the month
           totalIncome: { $sum: '$totalIncome' },
           totalNetIncome: { $sum: '$totalNetIncome' },
-          totalSoldItems: { $sum: { $size: '$soldDetails' } },
         },
+      },
+      {
+        $sort: { _id: 1 }, // Sort by day in ascending order
       },
     ]);
 
@@ -204,9 +173,10 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
       });
     }
 
+    // Return daily sales
     res.status(200).json({
       status: 'success',
-      data: sales[0],
+      data: sales, // Array of sales grouped by day
     });
   } catch (error) {
     res.status(500).json({
@@ -216,39 +186,63 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
   }
 });
 
-const getMonthlySales = asyncHandler(async (req, res) => {
+const getOneYearSales = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  // Define the start and end of the year
+  const startOfYear = new Date(`${year}-01-01`);
+  const endOfYear = new Date(`${year}-12-31`);
+
   try {
-    // Aggregate monthly sales amount by using MongoDB's aggregation framework
-    const salesByMonth = await Sale.aggregate([
+    // Aggregate sales data grouped by month
+    const incomeByMonth = await Sale.aggregate([
       {
-        $group: {
-          _id: { $month: '$date' }, // Extract month from the date field
-          totalIncome: { $sum: '$totalIncome' }, // Sum up the totalIncome for each month
+        $match: {
+          date: { $gte: startOfYear, $lte: endOfYear },
         },
       },
+      {
+        $group: {
+          _id: { $month: '$date' }, // Group by month
+          totalIncome: { $sum: '$totalIncome' },
+          totalNetIncome: { $sum: '$totalNetIncome' },
+        },
+      },
+      {
+        $sort: { _id: 1 }, // Sort by month (ascending)
+      },
     ]);
-    // Initialize an array with 12 zeros for each month
-    const salesAmount = Array(12).fill(0);
 
-    // Populate the salesAmount array with the results from the aggregation
-    salesByMonth.forEach((sale) => {
-      const monthIndex = sale._id - 1; // Month index (0 for January, 11 for December)
-      salesAmount[monthIndex] = sale.totalIncome;
+    // Create arrays for income and net income, each with 12 slots (one for each month)
+    const incomeResult = new Array(12).fill(0);
+    const netIncomeResult = new Array(12).fill(0);
+
+    // Map the aggregated data to the arrays
+    incomeByMonth.forEach((item) => {
+      const monthIndex = item._id - 1; // Month is 1-indexed, array is 0-indexed
+      incomeResult[monthIndex] = item.totalIncome;
+      netIncomeResult[monthIndex] = item.totalNetIncome;
     });
 
+    // Respond with both income and net income arrays
     res.status(200).json({
       status: 'success',
       data: {
-        salesAmount,
+        incomeByMonth: incomeResult,
+        netIncomeByMonth: netIncomeResult,
       },
     });
   } catch (error) {
-    res.status(500);
-    console.log(error);
-    throw new Error(
-      'Something went wrong while retrieving monthly sales data.'
-    );
+    res.status(500).json({
+      status: 'error',
+      message: `Failed to retrieve yearly sales: ${error.message}`,
+    });
   }
 });
 
-module.exports = { sellItems, getAllSales, getOneMonthSales, getMonthlySales };
+module.exports = {
+  sellItems,
+  getAllSales,
+  getOneYearSales,
+  getOneMonthSales,
+};
