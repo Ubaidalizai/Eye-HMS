@@ -143,7 +143,7 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
 
-    // Aggregate sales data for the specified month
+    // Aggregate sales data for the specified month, grouped by day
     const sales = await Sale.aggregate([
       {
         $match: {
@@ -155,11 +155,13 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
       },
       {
         $group: {
-          _id: null,
+          _id: { $dayOfMonth: '$date' }, // Group by day of the month
           totalIncome: { $sum: '$totalIncome' },
           totalNetIncome: { $sum: '$totalNetIncome' },
-          totalSoldItems: { $sum: { $size: '$soldDetails' } },
         },
+      },
+      {
+        $sort: { _id: 1 }, // Sort by day in ascending order
       },
     ]);
 
@@ -171,9 +173,10 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
       });
     }
 
+    // Return daily sales
     res.status(200).json({
       status: 'success',
-      data: sales[0],
+      data: sales, // Array of sales grouped by day
     });
   } catch (error) {
     res.status(500).json({
@@ -183,39 +186,63 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
   }
 });
 
-const getMonthlySales = asyncHandler(async (req, res) => {
+const getOneYearSales = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  // Define the start and end of the year
+  const startOfYear = new Date(`${year}-01-01`);
+  const endOfYear = new Date(`${year}-12-31`);
+
   try {
-    // Aggregate monthly sales amount by using MongoDB's aggregation framework
-    const salesByMonth = await Sale.aggregate([
+    // Aggregate sales data grouped by month
+    const incomeByMonth = await Sale.aggregate([
       {
-        $group: {
-          _id: { $month: '$date' }, // Extract month from the date field
-          totalIncome: { $sum: '$totalIncome' }, // Sum up the totalIncome for each month
+        $match: {
+          date: { $gte: startOfYear, $lte: endOfYear },
         },
       },
+      {
+        $group: {
+          _id: { $month: '$date' }, // Group by month
+          totalIncome: { $sum: '$totalIncome' },
+          totalNetIncome: { $sum: '$totalNetIncome' },
+        },
+      },
+      {
+        $sort: { _id: 1 }, // Sort by month (ascending)
+      },
     ]);
-    // Initialize an array with 12 zeros for each month
-    const salesAmount = Array(12).fill(0);
 
-    // Populate the salesAmount array with the results from the aggregation
-    salesByMonth.forEach((sale) => {
-      const monthIndex = sale._id - 1; // Month index (0 for January, 11 for December)
-      salesAmount[monthIndex] = sale.totalIncome;
+    // Create arrays for income and net income, each with 12 slots (one for each month)
+    const incomeResult = new Array(12).fill(0);
+    const netIncomeResult = new Array(12).fill(0);
+
+    // Map the aggregated data to the arrays
+    incomeByMonth.forEach((item) => {
+      const monthIndex = item._id - 1; // Month is 1-indexed, array is 0-indexed
+      incomeResult[monthIndex] = item.totalIncome;
+      netIncomeResult[monthIndex] = item.totalNetIncome;
     });
 
+    // Respond with both income and net income arrays
     res.status(200).json({
       status: 'success',
       data: {
-        salesAmount,
+        incomeByMonth: incomeResult,
+        netIncomeByMonth: netIncomeResult,
       },
     });
   } catch (error) {
-    res.status(500);
-    console.log(error);
-    throw new Error(
-      'Something went wrong while retrieving monthly sales data.'
-    );
+    res.status(500).json({
+      status: 'error',
+      message: `Failed to retrieve yearly sales: ${error.message}`,
+    });
   }
 });
 
-module.exports = { sellItems, getAllSales, getOneMonthSales, getMonthlySales };
+module.exports = {
+  sellItems,
+  getAllSales,
+  getOneYearSales,
+  getOneMonthSales,
+};
