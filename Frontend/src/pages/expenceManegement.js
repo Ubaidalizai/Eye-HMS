@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import './newManagement.css';
 
 // Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const categories = [
     'Operational Costs',
@@ -13,17 +13,20 @@ const categories = [
     'Marketing',
 ];
 
+const monthLabels = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 const ExpenseManagement = () => {
     const [expenses, setExpenses] = useState([]);
     const [newExpense, setNewExpense] = useState({ amount: '', date: '', reason: '', category: '', id: null });
     const [summaryType, setSummaryType] = useState('monthly');
-    const [summary, setSummary] = useState({});
-    const [selectedCategory, setSelectedCategory] = useState('All Categories'); // New state for category selection
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [summary, setSummary] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('All Categories');
     const [showForm, setShowForm] = useState(false);
-    const [itemsPerPage, setItemsPerPage] = useState(5);
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const totalPages = Math.ceil(expenses.length / itemsPerPage);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -32,15 +35,18 @@ const ExpenseManagement = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const formattedDate = newExpense.date;
+
         if (newExpense.id) {
             setExpenses(expenses.map(expense =>
-                expense.id === newExpense.id ? { ...newExpense } : expense
+                expense.id === newExpense.id ? { ...newExpense, date: formattedDate } : expense
             ));
         } else {
-            setExpenses([...expenses, { ...newExpense, id: Date.now() }]);
+            setExpenses([...expenses, { ...newExpense, date: formattedDate, id: Date.now() }]);
         }
         setNewExpense({ amount: '', date: '', reason: '', category: '', id: null });
         setShowForm(false);
+        updateSummary();
     };
 
     const editExpense = (expense) => {
@@ -50,62 +56,84 @@ const ExpenseManagement = () => {
 
     const deleteExpense = (id) => {
         setExpenses(expenses.filter(expense => expense.id !== id));
+        updateSummary();
     };
 
-    const getSummary = (type, category = 'All Categories') => {
-        const summary = {};
-        const filteredExpenses = category === 'All Categories' ? expenses : expenses.filter(expense => expense.category === category);
+    const aggregateExpenses = () => {
+        const monthlyData = Array(12).fill(0);
+        const yearlyData = {};
 
-        filteredExpenses.forEach(expense => {
+        expenses.forEach(expense => {
             const date = new Date(expense.date);
-            let key;
-
-            if (type === 'daily') {
-                key = date.toLocaleDateString();
-            } else if (type === 'weekly') {
-                const week = `${date.getFullYear()}-W${Math.ceil((date.getDate() + 1 - date.getDay()) / 7)}`;
-                key = week;
-            } else {
-                const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-                key = month;
-            }
-
-            const category = expense.category;
             const amount = parseFloat(expense.amount);
+            const month = date.getMonth(); // Zero-based index
+            const year = date.getFullYear();
 
-            if (!summary[key]) {
-                summary[key] = {};
+            // Aggregate for yearly summary
+            if (summaryType === 'yearly') {
+                if (!yearlyData[year]) {
+                    yearlyData[year] = Array(12).fill(0); // Initialize months for the year
+                }
+                yearlyData[year][month] += amount; // Sum amount for the respective month
             }
-            if (!summary[key][category]) {
-                summary[key][category] = 0;
+
+            // Aggregate for monthly summary
+            if (summaryType === 'monthly' && month + 1 === selectedMonth && year === selectedYear) {
+                monthlyData[month] += amount; // Sum amount for the respective day
             }
-            summary[key][category] += amount;
         });
 
-        return summary;
+        return summaryType === 'yearly' ? yearlyData : monthlyData;
     };
 
-    const handleShowSummary = () => {
-        const newSummary = getSummary(summaryType, selectedCategory);
+    const updateSummary = () => {
+        const newSummary = aggregateExpenses();
         setSummary(newSummary);
     };
 
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
+    const handleCategoryChange = (e) => {
+        setSelectedCategory(e.target.value);
+        updateSummary();
     };
 
-    const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(parseInt(e.target.value));
-        setCurrentPage(1);
+    const handleSummaryTypeChange = (e) => {
+        setSummaryType(e.target.value);
+        updateSummary();
     };
 
-    const indexOfLastExpense = currentPage * itemsPerPage;
-    const indexOfFirstExpense = indexOfLastExpense - itemsPerPage;
-    const currentExpenses = expenses.slice(indexOfFirstExpense, indexOfLastExpense);
+    const handleMonthChange = (e) => {
+        const month = Number(e.target.value);
+        setSelectedMonth(month);
+        updateSummary();
+    };
 
-    // Function to calculate total expenses
-    const calculateTotal = () => {
-        return expenses.reduce((total, expense) => total + parseFloat(expense.amount), 0).toFixed(2);
+    const handleYearChange = (e) => {
+        const year = Number(e.target.value);
+        setSelectedYear(year);
+        updateSummary();
+    };
+
+    const getBarChartData = () => {
+        let labels, data;
+
+        if (summaryType === 'yearly') {
+            labels = monthLabels; // Month names for the x-axis
+            data = summary[selectedYear] || Array(12).fill(0); // Use data for the selected year or zeros
+        } else {
+            labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`); // Days of the month
+            data = summary; // Expenses for days
+        }
+
+        return {
+            labels,
+            datasets: [{
+                label: 'Expenses',
+                data,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+            }],
+        };
     };
 
     return (
@@ -146,7 +174,7 @@ const ExpenseManagement = () => {
                             <option key={index} value={category}>{category}</option>
                         ))}
                     </select>
-                    <button type="submit">{newExpense.id ? 'Update Expense' : 'Add Expense'}</button>
+                    <button className='UpdateBtn' type="submit">{newExpense.id ? 'Update Expense' : 'Add Expense'}</button>
                 </form>
             )}
 
@@ -164,12 +192,12 @@ const ExpenseManagement = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {currentExpenses.length === 0 ? (
+                            {expenses.length === 0 ? (
                                 <tr>
                                     <td colSpan="5">No expenses added yet.</td>
                                 </tr>
                             ) : (
-                                currentExpenses.map(expense => (
+                                expenses.map(expense => (
                                     <tr key={expense.id}>
                                         <td>{expense.amount}</td>
                                         <td>{new Date(expense.date).toLocaleDateString()}</td>
@@ -183,20 +211,13 @@ const ExpenseManagement = () => {
                                 ))
                             )}
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan="4" style={{textAlign:"center"}}><strong>Total:</strong> {parseFloat(calculateTotal())}</td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
 
-                {/* General div for summary controls */}
                 <div className='general-div'>
-                    {/* Summary Category Filter */}
                     <div className='filter-category'>
                         <h2>Filter by Category</h2>
-                        <select onChange={(e) => setSelectedCategory(e.target.value)} value={selectedCategory}>
+                        <select onChange={handleCategoryChange} value={selectedCategory}>
                             <option value="All Categories">All Categories</option>
                             {categories.map((category, index) => (
                                 <option key={index} value={category}>{category}</option>
@@ -204,51 +225,58 @@ const ExpenseManagement = () => {
                         </select>
                     </div>
 
-                    {/* Summary Controls and Display */}
                     <div className='summery-type'>
                         <h2>Summary Type</h2>
-                        <select onChange={(e) => setSummaryType(e.target.value)} value={summaryType}>
+                        <select onChange={handleSummaryTypeChange} value={summaryType}>
                             <option value="monthly">Monthly Summary</option>
-                            <option value="weekly">Weekly Summary</option>
-                            <option value="daily">Daily Summary</option>
+                            <option value="yearly">Yearly Summary</option>
                         </select>
-                        <button onClick={handleShowSummary}>
-                            Show {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
-                        </button>
                     </div>
+                    
+                    {summaryType === 'monthly' && (
+                        <div>
+                            <h2>Select Month</h2>
+                            <select onChange={handleMonthChange} value={selectedMonth}>
+                                {monthLabels.map((label, index) => (
+                                    <option key={index} value={index + 1}>{label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {summaryType === 'yearly' && (
+                        <div>
+                            <h2>Select Year</h2>
+                            <input
+                                type="number"
+                                value={selectedYear}
+                                onChange={handleYearChange}
+                                min="2000"
+                                max={new Date().getFullYear()}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className='summary-display'>
                     <h2>{summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary for {selectedCategory}</h2>
-                    <table className="summary-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {Object.keys(summary).length === 0 ? (
-                                <tr>
-                                    <td colSpan="3">No summary data available yet.</td>
-                                </tr>
-                            ) : (
-                                Object.keys(summary).map(dateKey => (
-                                    Object.keys(summary[dateKey]).map(category => (
-                                        <tr key={`${dateKey}-${category}`}>
-                                            <td>{dateKey}</td>
-                                            <td>{category}</td>
-                                            <td>{parseFloat(summary[dateKey][category]).toFixed(2)}</td>
-                                        </tr>
-                                    ))
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                    <Bar
+                        data={getBarChartData()}
+                        options={{
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                title: {
+                                    display: true,
+                                    text: `${summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary for ${selectedCategory}`,
+                                },
+                            },
+                        }}
+                    />
                 </div>
 
-                {/* Chart Section */}
                 <div className='chart'>
                     <h2>Expense by Category</h2>
                     <div className='graph'>
