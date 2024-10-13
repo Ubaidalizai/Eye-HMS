@@ -20,10 +20,8 @@ import Pharmacy from './pages/Pharmacy';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import ExpenseManagement from './pages/expence manegement';
-import PrescriptionPage from './pages/PrescriptionPage';
-import Patient from './pages/Patient';
-
-import store from './redux/store';
+import PrescriptionPage from "./pages/PrescriptionPage";
+import Patient from "./pages/Patient";
 
 const App = () => {
   const [user, setUser] = useState('');
@@ -97,9 +95,8 @@ const App = () => {
               <Route path="/manage-store" element={<Store />} />
               <Route path="/move" element={<Move />} />
               <Route path="/pharmacy" element={<Pharmacy />} />
-              <Route path="/incomeReport" element={<IncomeReport />} />
             </Route>
-            <Route path="*" element={<NoPageFound />} />
+            <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>
