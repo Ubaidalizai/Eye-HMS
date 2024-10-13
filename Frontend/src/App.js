@@ -95,6 +95,7 @@ const App = () => {
               <Route path='/manage-store' element={<Store />} />
               <Route path='/move' element={<Move />} />
               <Route path='/pharmacy' element={<Pharmacy />} />
+              <Route path='/incomeReport' element={<IncomeReport />} />
             </Route>
             <Route path='*' element={<NoPageFound />} />
           </Routes>
