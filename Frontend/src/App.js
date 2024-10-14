@@ -1,8 +1,10 @@
 import IncomeReport from "./pages/IncomeReport";
+
 import PatientList from "./components/PatientList";
 import { PrescriptionList } from "./components/PrescriptionList";
 import { PrescriptionDetail } from "./components/PrescriptionDetail";
 import { PrescriptionForm } from "./components/PrescriptionForm";
+
 import React from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
