@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { HiMenu } from "react-icons/hi";
 
 const API_BASE_URL = "http://localhost:4000/api/v1/patient";
 
@@ -9,6 +11,7 @@ export default function PatientManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPatient, setCurrentPatient] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null); // For toggling dropdown
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -21,6 +24,7 @@ export default function PatientManagement() {
   useEffect(() => {
     fetchPatients();
   }, []);
+  const navigate = useNavigate();
 
   const fetchPatients = async () => {
     try {
@@ -88,6 +92,9 @@ export default function PatientManagement() {
       }
     }
   };
+  const toggleDropdown = (id) => {
+    setActiveDropdown(activeDropdown === id ? null : id); // Toggle the dropdown for specific patient
+  };
 
   return (
     <div className='max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg'>
@@ -117,7 +124,7 @@ export default function PatientManagement() {
             });
             setIsModalOpen(true);
           }}
-          className='px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition'
+          className='px-4 py-2  text-[#555] rounded  transition'
         >
           Add New Patient
         </button>
@@ -147,19 +154,43 @@ export default function PatientManagement() {
                 <td className='py-2 px-4 border-b'>
                   {patient.insuranceContact}
                 </td>
-                <td className='py-2 px-4 border-b'>
+                <td className='py-2 px-4 border-b relative'>
+                  {/* Menu Icon */}
                   <button
-                    onClick={() => handleEdit(patient)}
-                    className='text-blue-600 hover:underline mr-2'
+                    onClick={() => toggleDropdown(patient._id)}
+                    className='focus:outline-none bg-slate-200 hover:bg-slate-100 '
                   >
-                    Edit
+                    <HiMenu
+                      size={24}
+                      className='text-gray-600 hover:text-gray-800 transition-colors duration-200'
+                    />
                   </button>
-                  <button
-                    onClick={() => handleDelete(patient._id)}
-                    className='text-red-600 hover:underline'
-                  >
-                    Delete
-                  </button>
+
+                  {/* Dropdown Menu */}
+                  {activeDropdown === patient._id && (
+                    <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-10'>
+                      <button
+                        onClick={() => handleEdit(patient)}
+                        className='block px-4 py-2 text-left bg-slate-200  text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-150'
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(patient._id)}
+                        className='block px-4 py-2 text-left text-gray-700 bg-slate-200 hover:bg-gray-50 hover:text-red-600 transition-colors duration-150'
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(`/patients/${patient.name}/prescriptions`)
+                        }
+                        className='block px-4 py-2 text-left text-gray-700 bg-slate-200 hover:bg-gray-50 hover:text-green-600 transition-colors duration-150'
+                      >
+                        Add Prescription
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
