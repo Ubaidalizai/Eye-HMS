@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Bar, Line } from 'react-chartjs-2';
+import React, { useEffect, useState } from "react";
+import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,8 +10,8 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import styles from './Income.module.css';
+} from "chart.js";
+import styles from "./Income.module.css";
 
 ChartJS.register(
   CategoryScale,
@@ -28,58 +28,58 @@ ChartJS.register(
 const initialTransactions = [
   {
     id: 1,
-    date: '2024-09-29',
+    date: "2024-09-29",
     amount: 600,
-    source: 'Sales',
-    description: 'Sale A',
+    source: "Sales",
+    description: "Sale A",
   },
   {
     id: 2,
-    date: '2024-09-29',
+    date: "2024-09-29",
     amount: 150,
-    source: 'Service',
-    description: 'Consulting',
+    source: "Service",
+    description: "Consulting",
   },
   {
     id: 3,
-    date: '2024-09-01',
+    date: "2024-09-01",
     amount: 300,
-    source: 'Sales',
-    description: 'Sale B',
+    source: "Sales",
+    description: "Sale B",
   },
   {
     id: 4,
-    date: '2024-08-15',
+    date: "2024-08-15",
     amount: 400,
-    source: 'Service',
-    description: 'Maintenance',
+    source: "Service",
+    description: "Maintenance",
   },
 ];
 
 const monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const IncomeReport = () => {
   const [transactions, setTransactions] = useState(initialTransactions);
-  const [selectedReport, setSelectedReport] = useState('Daily');
+  const [selectedReport, setSelectedReport] = useState("Daily");
   const [reportData, setReportData] = useState(null);
   const [newTransaction, setNewTransaction] = useState({
-    date: '',
-    amount: '',
-    source: '',
-    description: '',
+    date: "",
+    amount: "",
+    source: "",
+    description: "",
   });
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -93,7 +93,7 @@ const IncomeReport = () => {
   // Function to handle year selection
   const handleYearClick = (year) => {
     setSelectedYear(year);
-    setSelectedReport('Annual'); // Switch to yearly report view
+    setSelectedReport("Annual"); // Switch to yearly report view
   };
 
   // Helper function to filter transactions based on date range
@@ -115,7 +115,7 @@ const IncomeReport = () => {
       today,
       tomorrow
     );
-    return generateReport(dailyTransactions, 'Daily');
+    return generateReport(dailyTransactions, "Daily");
   }
 
   // Calculate Monthly Income (aggregate income for each day in the selected month)
@@ -134,7 +134,7 @@ const IncomeReport = () => {
         .reduce((sum, tx) => sum + tx.amount, 0);
       return dailyIncome;
     });
-    return generateReport(monthlyTransactions, 'Monthly', incomeByDay);
+    return generateReport(monthlyTransactions, "Monthly", incomeByDay);
   }
 
   // Calculate Annual Income (aggregate income for each month)
@@ -152,7 +152,7 @@ const IncomeReport = () => {
         .reduce((sum, tx) => sum + tx.amount, 0);
       return monthlyIncome;
     });
-    return generateReport(annualTransactions, 'Annual', incomeByMonth);
+    return generateReport(annualTransactions, "Annual", incomeByMonth);
   }
 
   // Generate Report based on the filtered transactions
@@ -203,18 +203,18 @@ const IncomeReport = () => {
       labels: Object.keys(sourcesBreakdown),
       datasets: [
         {
-          label: 'Income by Source',
+          label: "Income by Source",
           data: Object.values(sourcesBreakdown),
-          backgroundColor: ['#4caf50', '#ff5722', '#03a9f4', '#e91e63'],
+          backgroundColor: ["#4caf50", "#ff5722", "#03a9f4", "#e91e63"],
         },
       ],
     };
 
     const lineData = {
       labels:
-        selectedReport === 'Daily'
+        selectedReport === "Daily"
           ? [new Date().toDateString()]
-          : selectedReport === 'Monthly'
+          : selectedReport === "Monthly"
           ? Array.from({ length: incomeData.length }, (_, i) => i + 1) // Days of the month
           : monthNames, // Months of the year
       datasets: [
@@ -222,8 +222,8 @@ const IncomeReport = () => {
           label: `Income Over Time (${selectedReport})`,
           data: incomeData,
           fill: false,
-          backgroundColor: '#03a9f4',
-          borderColor: '#03a9f4',
+          backgroundColor: "#03a9f4",
+          borderColor: "#03a9f4",
         },
       ],
     };
@@ -302,7 +302,7 @@ const IncomeReport = () => {
       amount: parseFloat(newTransaction.amount),
     };
     setTransactions([...transactions, newTx]);
-    setNewTransaction({ date: '', amount: '', source: '', description: '' });
+    setNewTransaction({ date: "", amount: "", source: "", description: "" });
   };
 
   return (
@@ -310,9 +310,9 @@ const IncomeReport = () => {
       <h1>Income Report</h1>
 
       <div className={styles.buttonContainer}>
-        <button onClick={() => setSelectedReport('Daily')}>Daily</button>
-        <button onClick={() => setSelectedReport('Monthly')}>Monthly</button>
-        <button onClick={() => setSelectedReport('Annual')}>Annual</button>
+        <button onClick={() => setSelectedReport("Daily")}>Daily</button>
+        <button onClick={() => setSelectedReport("Monthly")}>Monthly</button>
+        <button onClick={() => setSelectedReport("Annual")}>Annual</button>
       </div>
       <div className={styles.addTransaction}>
         <h2>Add New Transaction</h2>
@@ -359,7 +359,7 @@ const IncomeReport = () => {
         </form>
       </div>
 
-      {selectedReport === 'Daily' && reportData && (
+      {selectedReport === "Daily" && reportData && (
         <IncomeDetailReport
           report={reportData.dailyReport}
           title='Daily'
@@ -367,7 +367,7 @@ const IncomeReport = () => {
         />
       )}
 
-      {selectedReport === 'Monthly' && reportData && (
+      {selectedReport === "Monthly" && reportData && (
         <div>
           <h3>Monthly Income Report for {monthNames[selectedMonth - 1]}</h3>
           <div className={styles.monthNavigation}>
@@ -396,7 +396,7 @@ const IncomeReport = () => {
         </div>
       )}
 
-      {selectedReport === 'Annual' && reportData && (
+      {selectedReport === "Annual" && reportData && (
         <div>
           <h3>Annual Income Report for {selectedYear}</h3>
           <div className={styles.yearNavigation}>
