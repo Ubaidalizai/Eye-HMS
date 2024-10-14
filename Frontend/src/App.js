@@ -1,5 +1,4 @@
 import IncomeReport from "./pages/IncomeReport";
-
 import React from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
