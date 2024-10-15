@@ -15,6 +15,7 @@ const salesRoute = require('./routes/salesRoutes');
 const pharmacyRoute = require('./routes/pharmacyRoutes');
 const patientRoute = require('./routes/patientsRoutes');
 const expensesRoute = require('./routes/ExpensesRoute');
+const incomeRoute = require('./routes/incomeRoute');
 
 const app = express();
 const PORT = 4000;
@@ -44,6 +45,7 @@ app.use('/api/v1/sales', salesRoute); // Sales API
 app.use('/api/v1/pharmacy', pharmacyRoute); // Pharmacy API
 app.use('/api/v1/patient', patientRoute); // Patient API
 app.use('/api/v1/expense', expensesRoute); // Expenses API
+app.use('/api/v1/income', incomeRoute); // Income API
 
 // ------------- Signin --------------
 let userAuthCheck;
