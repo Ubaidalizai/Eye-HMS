@@ -1,10 +1,4 @@
 import IncomeReport from "./pages/IncomeReport";
-
-import PatientList from "./components/PatientList";
-import { PrescriptionList } from "./components/PrescriptionList";
-import { PrescriptionDetail } from "./components/PrescriptionDetail";
-import { PrescriptionForm } from "./components/PrescriptionForm";
-
 import React from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -101,20 +95,6 @@ const App = () => {
               <Route path='/move' element={<Move />} />
               <Route path='/pharmacy' element={<Pharmacy />} />
               <Route path='/incomeReport' element={<IncomeReport />} />
-              <Route path='/paitientList' element={<PatientList />} />
-              <Route
-                path='/patients/:patientId/prescriptions'
-                element={<PrescriptionList />}
-              />
-              <Route
-                path='/prescriptions/:prescriptionId'
-                element={<PrescriptionDetail />}
-              />
-              <Route path='/prescriptions/new' element={<PrescriptionForm />} />
-              <Route
-                path='/prescriptions/:prescriptionId/edit'
-                element={<PrescriptionForm />}
-              />
             </Route>
             <Route path='*' element={<NoPageFound />} />
           </Routes>
