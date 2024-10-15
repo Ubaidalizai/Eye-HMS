@@ -240,9 +240,92 @@ const getOneYearSales = asyncHandler(async (req, res) => {
   }
 });
 
+const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  try {
+    // Get the first and last days of the specified month
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59);
+
+    // Aggregate sales data for the specified month
+    const sales = await Sale.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: startDate,
+            $lt: endDate,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'pharmacies', // Assuming the collection for products is named 'pharmacies'
+          localField: 'soldDetails.productRefId',
+          foreignField: '_id',
+          as: 'productDetails',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users', // Assuming the collection for users is named 'users'
+          localField: 'userID',
+          foreignField: '_id',
+          as: 'userDetails',
+        },
+      },
+      {
+        $unwind: '$userDetails', // Unwind the user details to get a single object
+      },
+      {
+        $project: {
+          soldDetails: 1,
+          totalIncome: 1,
+          totalNetIncome: 1,
+          date: 1,
+          category: 1,
+          user: {
+            _id: '$userDetails._id',
+            firstName: '$userDetails.firstName',
+            lastName: '$userDetails.lastName',
+          },
+          productDetails: {
+            _id: '$productDetails._id',
+            name: '$productDetails.name',
+            salePrice: '$productDetails.salePrice',
+          },
+        },
+      },
+      {
+        $sort: { date: 1 }, // Sort by date in ascending order
+      },
+    ]);
+
+    // If no sales found for the month
+    if (!sales.length) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'No sales found for the given month',
+      });
+    }
+
+    // Return sales details for the month
+    res.status(200).json({
+      status: 'success',
+      data: sales, // Detailed sales data
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: `Failed to retrieve monthly sales: ${error.message}`,
+    });
+  }
+});
+
 module.exports = {
   sellItems,
   getAllSales,
   getOneYearSales,
   getOneMonthSales,
+  getOneMonthSalesWithFullDetails,
 };
