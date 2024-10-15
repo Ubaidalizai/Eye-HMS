@@ -6,7 +6,7 @@ const expenseSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    reasons: {
+    reason: {
       type: String,
       required: true,
     },
@@ -17,6 +17,7 @@ const expenseSchema = new mongoose.Schema(
     },
     category: {
       type: String,
+      enum: ['food', 'salary', 'furniture', 'other'], // Define allowed categories here
       required: true, // Set to true if category is mandatory, otherwise false
     },
   },

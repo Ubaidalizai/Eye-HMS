@@ -44,8 +44,9 @@ app.use('/api/v1/purchase', purchaseRoute); // Purchase API
 app.use('/api/v1/sales', salesRoute); // Sales API
 app.use('/api/v1/pharmacy', pharmacyRoute); // Pharmacy API
 app.use('/api/v1/patient', patientRoute); // Patient API
-app.use('/api/v1/expenses', expensesRoute); // Expenses API
+app.use('/api/v1/expense', expensesRoute); // Expenses API
 app.use('/api/v1/income', incomeRoute); // Income API
+
 // ------------- Signin --------------
 let userAuthCheck;
 app.post('/api/login', async (req, res) => {
