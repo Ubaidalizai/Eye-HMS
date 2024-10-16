@@ -21,6 +21,9 @@ import store from "./redux/store";
 import ExpenseManagement from "./pages/ExpenceManegement";
 import PrescriptionPage from "./pages/PrescriptionPage";
 import Patient from "./pages/Patient";
+import { PrescriptionForm } from "./components/PrescriptionForm";
+import { PrescriptionList } from "./components/PrescriptionList";
+import { PrescriptionDetail } from "./components/PrescriptionDetail";
 
 const App = () => {
   const [user, setUser] = useState("");
@@ -80,10 +83,21 @@ const App = () => {
                 </ProtectedWrapper>
               }
             >
+              <Route
+                path='patients/:patientId/prescriptions'
+                element={<PrescriptionList />}
+              />
+              <Route path='prescriptions/new' element={<PrescriptionForm />} />
+
+              <Route
+                path='/prescriptions/:prescriptionId'
+                element={<PrescriptionDetail />}
+              />
               <Route index element={<Dashboard />} />
               <Route
                 path='/expenceManegement'
-                element={<ExpenseManagement />}
+                elem
+                ent={<ExpenseManagement />}
               />
 
               <Route path='/patient' element={<Patient />} />
