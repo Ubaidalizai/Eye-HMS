@@ -20,6 +20,76 @@ const createIncome = async (req, res) => {
   }
 };
 
+// Filter income by year and return monthly totals
+const filterIncomeByYear = async (req, res) => {
+  try {
+    const { year } = req.query;
+
+    if (!year) {
+      return res.status(400).json({ error: 'Year is required.' });
+    }
+
+    const startDate = new Date(`${year}-01-01T00:00:00.000+00:00`);
+    const endDate = new Date(`${Number(year) + 1}-01-01T00:00:00.000+00:00`);
+
+    const incomes = await Income.find({
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
+
+    // Initialize an array with 12 zeros (one for each month)
+    const monthlyIncome = Array(12).fill(0);
+
+    // Calculate total income for each month
+    incomes.forEach((income) => {
+      const month = new Date(income.date).getMonth(); // Get month index (0 = Jan, 11 = Dec)
+      monthlyIncome[month] += income.amount; // Add income amount to the respective month
+    });
+
+    res.status(200).json(monthlyIncome);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const filterIncomeByYearAndMonth = async (req, res) => {
+  try {
+    const { year, month } = req.query;
+
+    if (!year || !month) {
+      return res.status(400).json({ error: 'Year and month are required.' });
+    }
+
+    // Get the start date and end date for the month
+    const startDate = new Date(`${year}-${month}-01T00:00:00.000+00:00`);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1); // Set to the first day of the next month
+
+    // Find all incomes within the given year and month
+    const filteredIncomes = await Income.find({
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
+
+    // Initialize an array with 31 zeros (for each day of the month)
+    const dailyIncome = Array(31).fill(0);
+
+    // Iterate through the incomes and add the amounts to the respective day
+    filteredIncomes.forEach((income) => {
+      const day = new Date(income.date).getDate(); // Get day of the month (1-31)
+      dailyIncome[day - 1] += income.amount; // Add income to the respective day (array index 0 = day 1)
+    });
+
+    res.status(200).json(dailyIncome);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Update an income record by ID
 const updateIncome = async (req, res) => {
   try {
@@ -82,4 +152,6 @@ module.exports = {
   getAllIncome,
   getIncomeById,
   deleteIncome,
+  filterIncomeByYear,
+  filterIncomeByYearAndMonth,
 };
