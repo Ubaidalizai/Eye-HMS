@@ -13,19 +13,27 @@ const getDateRangeForYear = (year) => {
 // Get expenses summarized by month for a given year (return as an array)
 const getExpensesByYear = asyncHandler(async (req, res) => {
   const { year } = req.params; // Get the year from the request parameters
+  const { category } = req.query; // Get the category from the query parameters (optional)
 
   try {
     const { startDate, endDate } = getDateRangeForYear(year);
 
+    // Build the match object with optional category filtering
+    const matchCriteria = {
+      date: {
+        $gte: startDate, // Greater than or equal to the start of the year
+        $lte: endDate, // Less than or equal to the end of the year
+      },
+    };
+
+    if (category) {
+      matchCriteria.category = category; // Add category filter if provided
+    }
+
     // Aggregate expenses to sum amounts for each month
     const expenses = await Expense.aggregate([
       {
-        $match: {
-          date: {
-            $gte: startDate, // Greater than or equal to start of the year
-            $lte: endDate, // Less than or equal to end of the year
-          },
-        },
+        $match: matchCriteria, // Use the built match object
       },
       {
         $group: {
@@ -62,19 +70,26 @@ const getDateRangeForMonth = (year, month) => {
 // Get expenses summarized by day for a given month
 const getExpensesByMonth = asyncHandler(async (req, res) => {
   const { year, month } = req.params; // Get the year and month from the request parameters
+  const { category } = req.query; // Get the category from the query parameters (optional)
 
   try {
     const { startDate, endDate } = getDateRangeForMonth(year, month);
+    // Build the match object with optional category filtering
+    const matchCriteria = {
+      date: {
+        $gte: startDate, // Greater than or equal to the start of the month
+        $lte: endDate, // Less than or equal to the end of the month
+      },
+    };
+
+    if (category) {
+      matchCriteria.category = category; // Add category filter if provided
+    }
 
     // Aggregate expenses to sum amounts for each day of the month
     const expenses = await Expense.aggregate([
       {
-        $match: {
-          date: {
-            $gte: startDate, // Greater than or equal to start of the month
-            $lte: endDate, // Less than or equal to end of the month
-          },
-        },
+        $match: matchCriteria, // Use the built match object
       },
       {
         $group: {
