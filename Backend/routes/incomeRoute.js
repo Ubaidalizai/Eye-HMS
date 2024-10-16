@@ -1,20 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const incomeController = require('../controllers/IncomeController');
-
+const {
+  createIncome,
+  getAllIncome,
+  updateIncome,
+  getIncomeById,
+  deleteIncome,
+  filterIncomeByYear,
+  filterIncomeByYearAndMonth,
+} = require('../controllers/IncomeController');
+router.get('/filterIncomeByYear', filterIncomeByYear);
+router.get('/filterIncomeByYearAndMonth', filterIncomeByYearAndMonth);
 // Route for creating a new income record
-router.post('/income', incomeController.createIncome);
+router.route('/income').post(createIncome).get(getAllIncome);
 
-// Route for updating an income record by ID
-router.put('/income/:id', incomeController.updateIncome);
-
-// Route for retrieving all income records
-router.get('/income', incomeController.getAllIncome);
-
-// Route for retrieving a single income record by ID
-router.get('/income/:id', incomeController.getIncomeById);
-
-// Route for deleting an income record by ID
-router.delete('/income/:id', incomeController.deleteIncome);
+router
+  .route('/income/:id')
+  .patch(updateIncome)
+  .get(getIncomeById)
+  .delete(deleteIncome);
 
 module.exports = router;
