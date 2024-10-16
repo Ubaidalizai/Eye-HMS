@@ -51,12 +51,16 @@ const ExpenseManagement = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [updatePage, setUpdatePage] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // Number of items per page
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [currentPage, selectedCategory]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,10 +69,13 @@ const ExpenseManagement = () => {
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/v1/expense', {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}&category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -76,6 +83,10 @@ const ExpenseManagement = () => {
 
       const data = await response.json();
       setExpenses(data.data.results);
+      setTotalPages(
+        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
+      );
+      console.log(data);
     } catch (err) {
       console.log(err);
     }
@@ -83,9 +94,13 @@ const ExpenseManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    let baseUrl = `http://localhost:4000/api/v1/expense`;
     const url = newExpense._id
-      ? `http://localhost:4000/api/v1/expense/${newExpense._id}`
-      : 'http://localhost:4000/api/v1/expense';
+      ? baseUrl +
+        `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
+      : baseUrl +
+        `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
     const method = newExpense._id ? 'PATCH' : 'POST';
 
     try {
@@ -182,7 +197,12 @@ const ExpenseManagement = () => {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
+    setCurrentPage(1); // Reset to page 1 when category changes
     updateSummary();
+  };
+  // Handle Page Update
+  const handlePageUpdate = () => {
+    setUpdatePage(!updatePage);
   };
 
   const handleSummaryTypeChange = (e) => {
@@ -326,6 +346,31 @@ const ExpenseManagement = () => {
               )}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-between mt-4">
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1 || totalPages === 0}
+            >
+              Previous
+            </button>
+
+            <span className="flex items-center text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              Next
+            </button>
+          </div>
         </div>
 
         <div className="general-div">
