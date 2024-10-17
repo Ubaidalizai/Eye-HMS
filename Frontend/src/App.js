@@ -93,11 +93,14 @@ const App = () => {
                 path='/prescriptions/:prescriptionId'
                 element={<PrescriptionDetail />}
               />
+              <Route
+                path='/prescriptions/:prescriptionId/edit'
+                element={<PrescriptionForm />}
+              />
               <Route index element={<Dashboard />} />
               <Route
                 path='/expenceManegement'
-                elem
-                ent={<ExpenseManagement />}
+                element={<ExpenseManagement />}
               />
 
               <Route path='/patient' element={<Patient />} />
