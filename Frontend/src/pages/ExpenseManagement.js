@@ -53,14 +53,18 @@ const ExpenseManagement = () => {
   const [summary, setSummary] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10; // Number of items per page
 
   useEffect(() => {
-    fetchExpenses();
-  }, [currentPage, selectedCategory]);
+    if (summaryType === 'monthly') {
+      fetchMonthlyExpenses();
+    } else {
+      fetchYearlyExpenses();
+    }
+    fetchExpenses(); // Fetch paginated expenses for the list
+  }, [currentPage, selectedCategory, selectedMonth, selectedYear, summaryType]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,7 +74,7 @@ const ExpenseManagement = () => {
   const fetchExpenses = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}&category=${selectedCategory}`,
+        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -83,10 +87,50 @@ const ExpenseManagement = () => {
 
       const data = await response.json();
       setExpenses(data.data.results);
-      setTotalPages(
-        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchMonthlyExpenses = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlyExpenses = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense/${selectedYear}?category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
       console.log(data);
+      setSummary(data.data); // Assuming the backend returns a "summary" field
     } catch (err) {
       console.log(err);
     }
@@ -125,10 +169,15 @@ const ExpenseManagement = () => {
         date: '',
         reason: '',
         category: '',
-        id: null,
+        _id: null,
       });
       setShowForm(false);
       fetchExpenses(); // Refresh the list after adding/updating
+      if (summaryType === 'monthly') {
+        fetchMonthlyExpenses();
+      } else {
+        fetchYearlyExpenses();
+      }
     } catch (error) {
       console.error('Error:', error.message);
     }
@@ -153,7 +202,6 @@ const ExpenseManagement = () => {
       }
 
       fetchExpenses();
-      updateSummary(); // Update summary after deletion
     } catch (error) {
       console.error('Error:', error.message);
     }
@@ -197,12 +245,7 @@ const ExpenseManagement = () => {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
-    setCurrentPage(1); // Reset to page 1 when category changes
     updateSummary();
-  };
-  // Handle Page Update
-  const handlePageUpdate = () => {
-    setUpdatePage(!updatePage);
   };
 
   const handleSummaryTypeChange = (e) => {
@@ -227,10 +270,10 @@ const ExpenseManagement = () => {
 
     if (summaryType === 'yearly') {
       labels = monthLabels; // Month names for the x-axis
-      data = summary[selectedYear] || Array(12).fill(0); // Use data for the selected year or zeros
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
     } else {
-      labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary; // Expenses for days
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
     }
 
     return {
@@ -296,7 +339,7 @@ const ExpenseManagement = () => {
             ))}
           </select>
           <button className="UpdateBtn" type="submit">
-            {newExpense.id ? 'Update Expense' : 'Add Expense'}
+            {newExpense._id ? 'Update Expense' : 'Add Expense'}
           </button>
         </form>
       )}
@@ -377,7 +420,7 @@ const ExpenseManagement = () => {
           <div className="filter-category">
             <h2>Filter by Category</h2>
             <select onChange={handleCategoryChange} value={selectedCategory}>
-              <option value="All Categories">All Categories</option>
+              <option value="">All Categories</option>
               {categories.map((category, index) => (
                 <option key={index} value={category}>
                   {category}

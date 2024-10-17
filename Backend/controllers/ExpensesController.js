@@ -14,7 +14,6 @@ const getDateRangeForYear = (year) => {
 const getExpensesByYear = asyncHandler(async (req, res) => {
   const { year } = req.params; // Get the year from the request parameters
   const { category } = req.query; // Get the category from the query parameters (optional)
-
   try {
     const { startDate, endDate } = getDateRangeForYear(year);
 
@@ -54,7 +53,7 @@ const getExpensesByYear = asyncHandler(async (req, res) => {
       totalAmountsByMonth[expense._id.month - 1] = expense.totalAmount; // Assign totalAmount to the correct month
     });
 
-    res.status(200).json(totalAmountsByMonth);
+    res.status(200).json({ data: totalAmountsByMonth });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -71,7 +70,6 @@ const getDateRangeForMonth = (year, month) => {
 const getExpensesByMonth = asyncHandler(async (req, res) => {
   const { year, month } = req.params; // Get the year and month from the request parameters
   const { category } = req.query; // Get the category from the query parameters (optional)
-
   try {
     const { startDate, endDate } = getDateRangeForMonth(year, month);
     // Build the match object with optional category filtering
@@ -111,7 +109,7 @@ const getExpensesByMonth = asyncHandler(async (req, res) => {
       totalAmountsByDay[expense._id.day - 1] = expense.totalAmount; // Assign totalAmount to the correct day
     });
 
-    res.status(200).json(totalAmountsByDay);
+    res.status(200).json({ data: totalAmountsByDay });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -127,7 +125,7 @@ const addExpense = asyncHandler(async (req, res) => {
   try {
     const newExpense = new Expense({ amount, date, reason, category });
     const savedExpense = await newExpense.save();
-    res.status(201).json(savedExpense);
+    res.status(201).json({ data: { savedExpense } });
   } catch (error) {
     res
       .status(400)
