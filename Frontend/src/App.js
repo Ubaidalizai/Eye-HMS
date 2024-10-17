@@ -99,7 +99,7 @@ const App = () => {
               />
               <Route index element={<Dashboard />} />
               <Route
-                path='/expenceManegement'
+                path='/expenseManagement'
                 element={<ExpenseManagement />}
               />
 
