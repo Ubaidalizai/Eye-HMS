@@ -1,0 +1,98 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.add-button {
+  margin-top: 20px;
+  background-color: #28a745;
+}
+
+.add-button:hover {
+  background-color: #218838;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000; /* Ensure it covers the form */
+}
+.form-container {
+  position: fixed;
+  top: 50%;
+  left: 50%; /* Positioning the form on the left */
+  transform: translate(-50%, -50%);
+  width: 30rem; /* Width of the form */
+  padding: 20px; /* Padding inside the form */
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001; /* Place the form above the overlay */
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns */
+  gap: 10px; /* Space between columns */
+}
+.input-field {
+  width: 100%; /* Full width of the column */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.button-container {
+  margin-top: 20px;
+}
+.cancel-button,
+.submit-button {
+  background: blue;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 5rem;
+}
+.cancel-button {
+  background: red;
+}
+.submitted-data {
+  margin-top: 20px;
+}
+.close-button {
+  margin-top: 0.5rem;
+}
