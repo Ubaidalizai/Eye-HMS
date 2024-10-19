@@ -8,23 +8,21 @@ const incomeSchema = new mongoose.Schema(
       required: true,
       default: Date.now,
     },
-    amount: {
+    totalIncome: {
       type: Number,
-      required: true,
+      required: [true, 'An income must have a total income'],
+    },
+    totalNetIncome: {
+      type: Number,
+      required: [true, 'An income must have a total net income'],
     },
     category: {
-      type: String, // e.g., "Sales", "Consultation", "Insurance Reimbursement"
+      type: String,
       required: true,
     },
     description: {
       type: String,
       required: true, // Description of income
-    },
-    paymentStatus: {
-      type: String,
-      enum: ['Paid', 'Pending'],
-      default: 'Paid',
-      required: true,
     },
   },
   { timestamps: true }
