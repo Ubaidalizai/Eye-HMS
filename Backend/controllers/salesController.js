@@ -1,5 +1,6 @@
 const Pharmacy = require('../models/pharmacyModel');
 const Sale = require('../models/salesModel');
+const Income = require('../models/incomeModule');
 const Product = require('../models/product');
 const Purchase = require('../models/purchase');
 const getAll = require('./handleFactory');
@@ -113,6 +114,15 @@ const sellItems = asyncHandler(async (req, res) => {
       totalNetIncome,
       date,
       category,
+      userID: req.user._id,
+    });
+
+    // Step 8: Create a income record
+    await Income.create({
+      date,
+      totalIncome,
+      category: 'Sales',
+      description: `Sales of ${category} products`,
       userID: req.user._id,
     });
 
