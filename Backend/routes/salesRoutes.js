@@ -3,20 +3,21 @@ const app = express();
 
 const router = express.Router();
 const {
-  sellDrugs,
+  sellItems,
   getAllSales,
+  getOneYearSales,
   getOneMonthSales,
-  getMonthlySales,
+  getOneMonthSalesWithFullDetails,
 } = require('../controllers/salesController');
 const { authenticate } = require('../middlewares/authMiddleware');
 
 router.use(authenticate); // Enable authentication middleware for all routes in this file
 
 // Get Sales Monthly Data
-router.get('/one-month-sales/:year/:month', getOneMonthSales);
-router.get('/monthly-sales/', getMonthlySales);
-
+router.get('/:year/:month', getOneMonthSales);
+router.get('/:year', getOneYearSales);
+router.get('/year-month/:year/:month', getOneMonthSalesWithFullDetails);
 // Add Sales
-router.route('/').get(getAllSales).post(sellDrugs);
+router.route('/').get(getAllSales).post(sellItems);
 
 module.exports = router;

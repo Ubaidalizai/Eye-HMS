@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
+
 function SideMenu({ setActiveComponent }) {
   const [userInfo, setUserInfo] = useState({});
 
@@ -14,7 +15,8 @@ function SideMenu({ setActiveComponent }) {
         );
 
         if (res.status === 200) {
-          setUserInfo(res.data.data);
+          setUserInfo(res?.data?.data);
+
         } else {
           console.error('Failed to fetch user profile', res);
         }
@@ -25,6 +27,16 @@ function SideMenu({ setActiveComponent }) {
 
     fetchData();
   }, []);
+
+  const MenuItem = ({ to, imgSrc, label }) => (
+    <Link
+      to={to}
+      className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+    >
+      <img alt={label} src={imgSrc} />
+      <span className="text-sm font-medium">{label}</span>
+    </Link>
+  );
 
   return (
     <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
@@ -154,6 +166,7 @@ function SideMenu({ setActiveComponent }) {
             className='h-10 w-10 rounded-full object-cover'
           />
           <div>
+
             <p className='text-xs'>
               <strong className='block font-medium'>
                 {userInfo.firstName} {userInfo.lastName}

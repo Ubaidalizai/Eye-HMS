@@ -107,8 +107,6 @@ function Inventory() {
 
   // Delete item
   const deleteItem = (id) => {
-    console.log('Product ID: ', id);
-    console.log(`http://localhost:4000/api/v1/inventory/product/${id}`);
     fetch(`http://localhost:4000/api/v1/inventory/product/${id}`, {
       method: 'DELETE',
       credentials: 'include',
@@ -281,6 +279,7 @@ function Inventory() {
                 <option value="">Select a category</option>
                 <option value="drug">Drug</option>
                 <option value="sunglasses">Sunglasses</option>
+                <option value="frame">frame</option>
               </select>
             </div>
             <div className="flex gap-4">
@@ -309,7 +308,7 @@ function Inventory() {
                   Description
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Availability
+                  Availibility
                 </th>
                 <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
                   More

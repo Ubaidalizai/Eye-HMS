@@ -22,6 +22,14 @@ import PrescriptionPage from './pages/PrescriptionPage';
 import Bedroom from './components/Bedroom';
 import Ultrasound from './components/Altrasound';
 import Operation from './components/Operation';
+import IncomeReport from './pages/IncomeReport';
+import ExpenseManagement from './pages/ExpenseManagement';
+// import PrescriptionPage from './pages/PrescriptionPage';
+import Patient from './pages/Patient';
+import { PrescriptionForm } from './components/PrescriptionForm';
+import { PrescriptionList } from './components/PrescriptionList';
+import { PrescriptionDetail } from './components/PrescriptionDetail';
+
 const App = () => {
   const [user, setUser] = useState('');
   const [loader, setLoader] = useState(true);
@@ -80,18 +88,45 @@ const App = () => {
                 </ProtectedWrapper>
               }
             >
+              <Route
+                path='patients/:patientId/prescriptions'
+                element={<PrescriptionList />}
+              />
+              <Route path='prescriptions/new' element={<PrescriptionForm />} />
+
+              <Route
+                path='/prescriptions/:prescriptionId'
+                element={<PrescriptionDetail />}
+              />
+              <Route
+                path='/prescriptions/:prescriptionId/edit'
+                element={<PrescriptionForm />}
+              />
               <Route index element={<Dashboard />} />
+
+              <Route
+                path='/expenseManagement'
+                element={<ExpenseManagement />}
+              />
+
+              <Route path='/patient' element={<Patient />} />
+
               <Route path='/inventory' element={<Inventory />} />
               <Route path='/purchase-details' element={<PurchaseDetails />} />
               <Route path='/sales' element={<Sales />} />
               <Route path='/manage-store' element={<Store />} />
               <Route path='/move' element={<Move />} />
+
               <Route path='/patient' element={<Patient />} />
               <Route path='/prescription/:id' element={<PrescriptionPage />} />
               <Route path='/branches/bedroom' element={<Bedroom />} />
               <Route path='/branches/ultrasound' element={<Ultrasound />} />
               <Route path='/branches/operation' element={<Operation />} />
             </Route>
+              <Route path='/pharmacy' element={<Pharmacy />} />
+              <Route path='/incomeReport' element={<IncomeReport />} />
+            </Route>
+            <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>

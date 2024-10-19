@@ -1,315 +1,284 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect } from "react";
-import { Toaster, toast } from "react-hot-toast";
-import { v4 as uuidv4 } from "uuid";
-import PatientForm from "../components/PatientForm";
-import ReportGenerator from "../components/ReportGenerator";
-import PatientList from "../components/PatientList";
-import { useNavigate } from "react-router-dom";
-import PrescriptionModal from "../components/PrescriptionModal";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { HiMenu } from 'react-icons/hi';
 
-export default function Patient() {
-  const navigate = useNavigate();
-  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false); // For prescription modal
-  const [currentPatient, setCurrentPatient] = useState(null); // Patient to add prescription to
+const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
-  const [filter, setFilter] = useState("");
-  const [isInitialMount, setIsInitialMount] = useState(true);
-  const handleAddPrescription = (patient) => {
-    setCurrentPatient(patient); // Set current patient
-    setShowPrescriptionModal(true); // Open prescription modal
-  };
-
-  const handleSavePrescription = (prescriptionData) => {
-    setPatients((prevPatients) =>
-      prevPatients.map((patient) => {
-        if (patient.id === currentPatient.id) {
-          return {
-            ...patient,
-            prescriptions: [
-              ...patient.prescriptions,
-              `Prescription ${
-                patient.prescriptions.length + 1
-              }: ${prescriptionData}`,
-            ], // Append prescription
-          };
-        }
-        return patient;
-      })
-    );
-    setShowPrescriptionModal(false); // Close modal after saving
-    toast.success("Prescription added successfully!");
-  };
-
-  // const columns = React.useMemo(
-  //   () => [
-  //     { Header: "Patient Name", accessor: "name" },
-  //     { Header: "Date of Birth", accessor: "dob" },
-  //     { Header: "Insurance", accessor: "insurance" },
-  //     { Header: "Contact", accessor: "contact" },
-  //     {
-  //       Header: "Prescriptions",
-  //       accessor: "prescriptions",
-  //       Cell: ({ row }) => (
-  //         <ul>
-  //           {row.original.prescriptions.map((prescription, index) => (
-  //             <li key={index}>
-  //               <a
-  //                 href="#"
-  //                 onClick={() => navigate(`/prescription/${row.original.id}`)}
-  //                 style={{ color: "#2196F3", textDecoration: "underline" }}
-  //               >
-  //                 {prescription}
-  //               </a>
-  //             </li>
-  //           ))}
-  //         </ul>
-  //       ),
-  //     },
-  //     {
-  //       Header: "Actions",
-  //       accessor: "actions",
-  //       Cell: ({ row }) => (
-  //         <div className="flex space-x-2">
-  //           <button
-  //             onClick={() => handleEdit(row.original)}
-  //             className="text-blue-600 hover:underline"
-  //           >
-  //             Edit
-  //           </button>
-  //           <button
-  //             onClick={() => handleDelete(row.original.id)}
-  //             className="text-red-600 hover:underline"
-  //           >
-  //             Delete
-  //           </button>
-  //         </div>
-  //       ),
-  //     },
-  //   ],
-  //   [navigate]
-  // );
-  const columns = React.useMemo(
-    () => [
-      { Header: "Patient Name", accessor: "name" },
-      { Header: "Date of Birth", accessor: "dob" },
-      { Header: "Insurance", accessor: "insurance" },
-      { Header: "Contact", accessor: "contact" },
-      {
-        Header: "Prescriptions",
-        accessor: "prescriptions",
-        Cell: ({ row }) => (
-          <ul>
-            {row.original.prescriptions.map((prescription, index) => (
-              <li key={index}>
-                <a
-                  href="#"
-                  onClick={() => navigate(`/prescription/${row.original.id}`)}
-                  style={{ color: "#2196F3", textDecoration: "underline" }}
-                >
-                  {prescription}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ),
-      },
-      {
-        Header: "Actions",
-        accessor: "actions",
-        Cell: ({ row }) => (
-          <div className="flex space-x-2">
-            <button
-              onClick={() => handleEdit(row.original)}
-              className="text-blue-600 hover:underline"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDelete(row.original.id)}
-              className="text-red-600 hover:underline"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => handleAddPrescription(row.original)} // New button to add prescription
-              className="text-green-600 hover:underline"
-            >
-              Add Prescription
-            </button>
-          </div>
-        ),
-      },
-    ],
-    [navigate]
-  );
-
-  const [patientData, setPatientData] = useState({
-    name: "",
-    dob: "",
-    contact: "",
-    insurance: "",
+export default function PatientManagement() {
+  const [patients, setPatients] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPatient, setCurrentPatient] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null); // For toggling dropdown
+  const [formData, setFormData] = useState({
+    name: '',
+    age: '',
+    contact: '',
+    patientID: '',
+    patientGender: '',
+    insuranceContact: '',
   });
 
-  const [patients, setPatients] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [storageData, SetStoragedar] = useState([]);
-  // Load patients from local storage when the component mounts
-  // Load patients from local storage when the component mounts
   useEffect(() => {
-    const storedPatients = JSON.parse(localStorage.getItem("patients")) || [];
-    setPatients(storedPatients);
-    setIsInitialMount(false); // Mark initial mount as complete
+    fetchPatients();
   }, []);
+  const navigate = useNavigate();
 
-  // Update local storage whenever the patients state changes (but not on initial mount)
-  useEffect(() => {
-    if (!isInitialMount) {
-      localStorage.setItem("patients", JSON.stringify(patients));
-      console.log("Updated local storage with patients:", patients);
+  const fetchPatients = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}?searchTerm=${searchTerm}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch patients');
+      const data = await response.json();
+      setPatients(data.data.results);
+    } catch (error) {
+      toast.error('Failed to fetch patients');
     }
-  }, [patients, isInitialMount]); // Add isInitialMount to the dependency array
-
-  const handlePatientChange = (e) => {
-    const { name, value } = e.target;
-    setPatientData({ ...patientData, [name]: value });
   };
 
-  const handlePatientSubmit = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!patientData.name || !patientData.dob || !patientData.contact) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
+    try {
+      const method = currentPatient ? 'PATCH' : 'POST';
+      const url = currentPatient
+        ? `${API_BASE_URL}/${currentPatient._id}`
+        : API_BASE_URL;
 
-    const newPatient = {
-      id: uuidv4(),
-      ...patientData,
-      prescriptions: [],
-    };
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+        credentials: 'include',
+      });
 
-    if (isEditing) {
-      setPatients((prevPatients) =>
-        prevPatients.map((patient) =>
-          patient.id === editingId
-            ? {
-                ...patientData,
-                id: editingId,
-                prescriptions: patient.prescriptions,
-              }
-            : patient
-        )
+      if (!response.ok) throw new Error('Failed to save patient');
+
+      toast.success(
+        `Patient ${currentPatient ? 'updated' : 'added'} successfully!`
       );
-      toast.success("Patient updated successfully!");
-      setIsEditing(false);
-      setEditingId(null);
-    } else {
-      setPatients((prevPatients) => [...prevPatients, newPatient]);
-      toast.success("Patient registered successfully!");
+      setIsModalOpen(false);
+      fetchPatients();
+    } catch (error) {
+      toast.error('Failed to save patient');
     }
-
-    setPatientData({ name: "", dob: "", contact: "", insurance: "" });
-    setIsModalOpen(false);
   };
 
   const handleEdit = (patient) => {
+    setCurrentPatient(patient);
+    setFormData(patient);
     setIsModalOpen(true);
-    setIsEditing(true);
-    setPatientData(patient);
-    setEditingId(patient.id);
   };
 
-  const handleDelete = (id) => {
-    setPatients((prevPatients) =>
-      prevPatients.filter((patient) => patient.id !== id)
-    );
-    toast.success("Patient deleted successfully!");
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this patient?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to delete patient');
+        toast.success('Patient deleted successfully!');
+        fetchPatients();
+      } catch (error) {
+        toast.error('Failed to delete patient');
+      }
+    }
   };
-  const addPrescription = (patientId) => {
-    setPatients((prevPatients) =>
-      prevPatients.map((patient) => {
-        if (patient.id === patientId) {
-          const newPrescription = `Prescription ${
-            patient.prescriptions.length + 1
-          }`;
-          return {
-            ...patient,
-            prescriptions: [...patient.prescriptions, newPrescription],
-          };
-        }
-        return patient;
-      })
-    );
-    toast.success("Prescription added successfully!");
+  const toggleDropdown = (id) => {
+    setActiveDropdown(activeDropdown === id ? null : id); // Toggle the dropdown for specific patient
   };
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(filter.toLowerCase())
-  );
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <Toaster />
+    <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <ToastContainer />
       <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
         Patient Management
       </h1>
-      <input
-        type="text"
-        placeholder="Filter by name..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="mb-4 p-2 border border-gray-300 rounded"
-      />
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mb-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
-      >
-        {isEditing ? "Edit Patient" : "Add Patient"}
-      </button>
-      {filteredPatients.length > 0 ? (
-        <PatientList
-          patients={filteredPatients}
-          columns={columns}
-          handleEdit={handleEdit}
-          addPrescription={addPrescription}
+
+      <div className="mb-4 flex justify-between items-center">
+        <input
+          type="text"
+          placeholder="Search patients..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-2 border border-gray-300 rounded w-64"
         />
-      ) : (
-        <p className="text-center text-gray-500">No patients registered.</p>
-      )}
-      <ReportGenerator />
+        <button
+          onClick={() => {
+            setCurrentPatient(null);
+            setFormData({
+              name: '',
+              age: '',
+              contact: '',
+              patientID: '',
+              patientGender: '',
+              insuranceContact: '',
+            });
+            setIsModalOpen(true);
+          }}
+          className="px-4 py-2  text-[#555] rounded  transition"
+        >
+          Add New Patient
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-2 px-4 border-b">Name</th>
+              <th className="py-2 px-4 border-b">Age</th>
+              <th className="py-2 px-4 border-b">Contact</th>
+              <th className="py-2 px-4 border-b">Patient ID</th>
+              <th className="py-2 px-4 border-b">Gender</th>
+              <th className="py-2 px-4 border-b">Insurance</th>
+              <th className="py-2 px-4 border-b">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient) => (
+              <tr key={patient._id} className="hover:bg-gray-50">
+                <td className="py-2 px-4 border-b">{patient.name}</td>
+                <td className="py-2 px-4 border-b">{patient.age}</td>
+                <td className="py-2 px-4 border-b">{patient.contact}</td>
+                <td className="py-2 px-4 border-b">{patient.patientID}</td>
+                <td className="py-2 px-4 border-b">{patient.patientGender}</td>
+                <td className="py-2 px-4 border-b">
+                  {patient.insuranceContact}
+                </td>
+                <td className="py-2 px-4 border-b relative">
+                  {/* Menu Icon */}
+                  <button
+                    onClick={() => toggleDropdown(patient._id)}
+                    className="focus:outline-none bg-slate-200 hover:bg-slate-100 "
+                  >
+                    <HiMenu
+                      size={24}
+                      className="text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                    />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {activeDropdown === patient._id && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-10">
+                      <button
+                        onClick={() => handleEdit(patient)}
+                        className="block px-4 py-2 text-left bg-slate-200  text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-150"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(patient._id)}
+                        className="block px-4 py-2 text-left text-gray-700 bg-slate-200 hover:bg-gray-50 hover:text-red-600 transition-colors duration-150"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(`/patients/${patient.name}/prescriptions`)
+                        }
+                        className="block px-4 py-2 text-left text-gray-700 bg-slate-200 hover:bg-gray-50 hover:text-green-600 transition-colors duration-150"
+                      >
+                        Add Prescription
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-700 bg-opacity-75 flex justify-center items-center z-50 transition-opacity duration-300 ease-in-out">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                {isEditing ? "Edit Patient" : "Add Patient"}
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-800"
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-2xl font-bold mb-4">
+              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Name"
+                className="w-full p-2 mb-2 border rounded"
+                required
+              />
+              <input
+                type="number"
+                name="age"
+                value={formData.age}
+                onChange={handleInputChange}
+                placeholder="Age"
+                className="w-full p-2 mb-2 border rounded"
+                required
+              />
+              <input
+                type="tel"
+                name="contact"
+                value={formData.contact}
+                onChange={handleInputChange}
+                placeholder="Contact"
+                className="w-full p-2 mb-2 border rounded"
+                required
+              />
+              <input
+                type="text"
+                name="patientID"
+                value={formData.patientID}
+                onChange={handleInputChange}
+                placeholder="Patient ID"
+                className="w-full p-2 mb-2 border rounded"
+                required
+              />
+              <select
+                name="patientGender"
+                value={formData.patientGender}
+                onChange={handleInputChange}
+                className="w-full p-2 mb-2 border rounded"
+                required
               >
-                ✖
-              </button>
-            </div>
-            <PatientForm
-              patientData={patientData}
-              handlePatientChange={handlePatientChange}
-              handlePatientSubmit={handlePatientSubmit}
-            />
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              <input
+                type="text"
+                name="insuranceContact"
+                value={formData.insuranceContact}
+                onChange={handleInputChange}
+                placeholder="Insurance Contact"
+                className="w-full p-2 mb-4 border rounded"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded mr-2 hover:bg-gray-400 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                >
+                  {currentPatient ? 'Update' : 'Add'} Patient
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      )}
-
-      {/* Prescription Modal */}
-      {showPrescriptionModal && (
-        <PrescriptionModal
-          show={showPrescriptionModal}
-          onClose={() => setShowPrescriptionModal(false)}
-          onSave={handleSavePrescription}
-          patient={currentPatient}
-        />
       )}
     </div>
   );

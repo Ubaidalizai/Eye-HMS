@@ -2,11 +2,6 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema(
   {
-    userID: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
-      required: true,
-    },
     name: {
       type: String,
       required: true,
@@ -22,17 +17,19 @@ const ProductSchema = new mongoose.Schema(
     description: String,
     category: {
       type: String,
-      enum: ['drug', 'sunglasses'],
+      enum: ['drug', 'sunglasses', 'frame'],
       required: true,
     },
-    // batchNumber: {
-    //   type: Number,
-    //   required: true,
-    // },
-    // expiryDate: {
-    //   type: Date,
-    //   required: true,
-    // },
+    expiryDate: {
+      type: Date,
+      validate: {
+        validator: function (value) {
+          // Make expiryDate required only for drugs
+          return this.category === 'drug' ? !!value : true;
+        },
+        message: 'Expiry date is required for drugs.',
+      },
+    },
   },
   { timestamps: true }
 );

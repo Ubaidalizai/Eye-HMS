@@ -34,7 +34,7 @@ function Sales() {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses';
+        baseUrl += '&category=sunglasses,frame';
       } else if (user.role === 'pharmacist') {
         baseUrl += '&category=drug';
       }
@@ -65,7 +65,15 @@ function Sales() {
 
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    fetch('http://localhost:4000/api/v1/pharmacy', {
+    let baseUrl = `http://localhost:4000/api/v1/pharmacy`;
+
+    if (user.role === 'sunglassesSeller') {
+      baseUrl += `?category=sunglasses,frame&checkQuantity=true`;
+    } else if (user.role === 'pharmacist') {
+      baseUrl += `?category=drug&checkQuantity=true`;
+    }
+
+    fetch(baseUrl, {
       credentials: 'include',
       method: 'GET',
     })
@@ -125,6 +133,7 @@ function Sales() {
                   <option value="">Select Category</option>
                   <option value="drug">Drug</option>
                   <option value="sunglasses">Sunglasses</option>
+                  <option value="frame">frame</option>
                 </select>
               </div>
             )}
@@ -166,16 +175,16 @@ function Sales() {
             <tbody className="divide-y divide-gray-200">
               {sales.length > 0 ? (
                 sales.map((sale) =>
-                  sale.soldItems.map((item) => (
+                  sale.soldDetails.map((item) => (
                     <tr key={`${sale._id}-${item._id}`}>
                       <td className="whitespace-nowrap px-4 py-2 text-gray-900">
-                        {item.drugId?.name}
+                        {item.productRefId?.name}
                       </td>
                       <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                         {item.quantity}
                       </td>
                       <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                        ${item.drugId?.salePrice}
+                        ${item.productRefId?.salePrice}
                       </td>
                       <td className="whitespace-nowrap px-4 py-2 text-gray-700">
                         {new Date(sale.date).toLocaleDateString()}

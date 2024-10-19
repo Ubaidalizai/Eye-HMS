@@ -106,6 +106,7 @@ function PurchaseDetails() {
                 <option value="">Select Category</option>
                 <option value="drug">Drug</option>
                 <option value="sunglasses">Sunglasses</option>
+                <option value="frame">frame</option>
               </select>
             </div>
             <div className="flex gap-4">
