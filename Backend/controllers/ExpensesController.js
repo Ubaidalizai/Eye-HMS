@@ -1,7 +1,7 @@
 // controllers/expenseController.js
 const Expense = require('../models/ExpensesModule');
 const asyncHandler = require('../middlewares/asyncHandler');
-// Helper function to calculate start and end dates for month and year
+const getAll = require('./handleFactory');
 
 // Helper function to calculate start and end dates for the year
 const getDateRangeForYear = (year) => {
@@ -13,19 +13,26 @@ const getDateRangeForYear = (year) => {
 // Get expenses summarized by month for a given year (return as an array)
 const getExpensesByYear = asyncHandler(async (req, res) => {
   const { year } = req.params; // Get the year from the request parameters
-
+  const { category } = req.query; // Get the category from the query parameters (optional)
   try {
     const { startDate, endDate } = getDateRangeForYear(year);
+
+    // Build the match object with optional category filtering
+    const matchCriteria = {
+      date: {
+        $gte: startDate, // Greater than or equal to the start of the year
+        $lte: endDate, // Less than or equal to the end of the year
+      },
+    };
+
+    if (category) {
+      matchCriteria.category = category; // Add category filter if provided
+    }
 
     // Aggregate expenses to sum amounts for each month
     const expenses = await Expense.aggregate([
       {
-        $match: {
-          date: {
-            $gte: startDate, // Greater than or equal to start of the year
-            $lte: endDate, // Less than or equal to end of the year
-          },
-        },
+        $match: matchCriteria, // Use the built match object
       },
       {
         $group: {
@@ -46,7 +53,7 @@ const getExpensesByYear = asyncHandler(async (req, res) => {
       totalAmountsByMonth[expense._id.month - 1] = expense.totalAmount; // Assign totalAmount to the correct month
     });
 
-    res.status(200).json(totalAmountsByMonth);
+    res.status(200).json({ data: totalAmountsByMonth });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
@@ -62,19 +69,25 @@ const getDateRangeForMonth = (year, month) => {
 // Get expenses summarized by day for a given month
 const getExpensesByMonth = asyncHandler(async (req, res) => {
   const { year, month } = req.params; // Get the year and month from the request parameters
-
+  const { category } = req.query; // Get the category from the query parameters (optional)
   try {
     const { startDate, endDate } = getDateRangeForMonth(year, month);
+    // Build the match object with optional category filtering
+    const matchCriteria = {
+      date: {
+        $gte: startDate, // Greater than or equal to the start of the month
+        $lte: endDate, // Less than or equal to the end of the month
+      },
+    };
+
+    if (category) {
+      matchCriteria.category = category; // Add category filter if provided
+    }
 
     // Aggregate expenses to sum amounts for each day of the month
     const expenses = await Expense.aggregate([
       {
-        $match: {
-          date: {
-            $gte: startDate, // Greater than or equal to start of the month
-            $lte: endDate, // Less than or equal to end of the month
-          },
-        },
+        $match: matchCriteria, // Use the built match object
       },
       {
         $group: {
@@ -96,30 +109,23 @@ const getExpensesByMonth = asyncHandler(async (req, res) => {
       totalAmountsByDay[expense._id.day - 1] = expense.totalAmount; // Assign totalAmount to the correct day
     });
 
-    res.status(200).json(totalAmountsByDay);
+    res.status(200).json({ data: totalAmountsByDay });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
   }
 });
 
 // Get all expenses
-const getExpenses = asyncHandler(async (req, res) => {
-  try {
-    const expenses = await Expense.find();
-    res.status(200).json(expenses);
-  } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
-  }
-});
+const getExpenses = getAll(Expense);
 
 // Add a new expense
 const addExpense = asyncHandler(async (req, res) => {
-  const { amount, date, reasons, category } = req.body;
+  const { amount, date, reason, category } = req.body;
 
   try {
-    const newExpense = new Expense({ amount, date, reasons, category });
+    const newExpense = new Expense({ amount, date, reason, category });
     const savedExpense = await newExpense.save();
-    res.status(201).json(savedExpense);
+    res.status(201).json({ data: { savedExpense } });
   } catch (error) {
     res
       .status(400)
@@ -130,12 +136,12 @@ const addExpense = asyncHandler(async (req, res) => {
 // Update an expense by ID
 const updateExpense = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { amount, date, reasons, category } = req.body;
+  const { amount, date, reason, category } = req.body;
 
   try {
     const updatedExpense = await Expense.findByIdAndUpdate(
       id,
-      { amount, date, reasons, category },
+      { amount, date, reason, category },
       { new: true }
     );
 
@@ -162,9 +168,7 @@ const deleteExpense = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Expense not found' });
     }
 
-    res
-      .status(200)
-      .json({ message: 'Expense deleted', expense: deletedExpense });
+    res.status(204).json({ message: 'Expense deleted' });
   } catch (error) {
     res
       .status(400)

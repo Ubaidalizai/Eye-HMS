@@ -167,7 +167,7 @@ const checkProductExpiry = asyncHandler(async (req, res) => {
   beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);
 
   const expireProducts = await Product.find({
-    expiryDate: { $lte: new Date() },
+    expiryDate: { $lte: beforeThirtyDays },
     stock: { $gt: 0 },
   }); // Find products with an expiry date before 30 days
 

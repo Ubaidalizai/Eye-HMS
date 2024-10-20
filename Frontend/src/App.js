@@ -1,9 +1,9 @@
-import IncomeReport from "./pages/IncomeReport";
 import React from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import "./index.css";
+import "./task.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Inventory from "./pages/Inventory";
@@ -13,15 +13,23 @@ import ProtectedWrapper from "./ProtectedWrapper";
 import { useEffect, useState } from "react";
 import Store from "./pages/Store";
 import Sales from "./pages/Sales";
+import Patient from "./pages/Patient";
 import PurchaseDetails from "./pages/PurchaseDetails";
 import Move from "./pages/Move";
-import Pharmacy from "./pages/Pharmacy";
 import { Provider } from "react-redux";
 import store from "./redux/store";
-import ExpenseManagement from "./pages/ExpenceManegement";
 import PrescriptionPage from "./pages/PrescriptionPage";
-import Patient from "./pages/Patient";
-
+import Bedroom from "./components/Bedroom";
+import Ultrasound from "./components/Altrasound";
+import Operation from "./components/Operation";
+import IncomeReport from "./pages/IncomeReport";
+import ExpenseManagement from "./pages/ExpenseManagement";
+// import PrescriptionPage from './pages/PrescriptionPage';
+// import Patient from './pages/Patient';
+import { PrescriptionForm } from "./components/PrescriptionForm";
+import { PrescriptionList } from "./components/PrescriptionList";
+import { PrescriptionDetail } from "./components/PrescriptionDetail";
+import Pharmacy from "./pages/Pharmacy";
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
@@ -80,9 +88,24 @@ const App = () => {
                 </ProtectedWrapper>
               }
             >
-              <Route index element={<Dashboard />} />
               <Route
-                path='/expenceManegement'
+                path='patients/:patientId/prescriptions'
+                element={<PrescriptionList />}
+              />
+              <Route path='prescriptions/new' element={<PrescriptionForm />} />
+
+              <Route
+                path='/prescriptions/:prescriptionId'
+                element={<PrescriptionDetail />}
+              />
+              <Route
+                path='/prescriptions/:prescriptionId/edit'
+                element={<PrescriptionForm />}
+              />
+              <Route index element={<Dashboard />} />
+
+              <Route
+                path='/expenseManagement'
                 element={<ExpenseManagement />}
               />
 
@@ -93,9 +116,16 @@ const App = () => {
               <Route path='/sales' element={<Sales />} />
               <Route path='/manage-store' element={<Store />} />
               <Route path='/move' element={<Move />} />
-              <Route path='/pharmacy' element={<Pharmacy />} />
-              <Route path='/incomeReport' element={<IncomeReport />} />
+
+              <Route path='/patient' element={<Patient />} />
+              <Route path='/prescription/:id' element={<PrescriptionPage />} />
+              <Route path='/branches/bedroom' element={<Bedroom />} />
+              <Route path='/branches/ultrasound' element={<Ultrasound />} />
+              <Route path='/branches/operation' element={<Operation />} />
             </Route>
+            <Route path='/pharmacy' element={<Pharmacy />} />
+            <Route path='/incomeReport' element={<IncomeReport />} />
+
             <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>
