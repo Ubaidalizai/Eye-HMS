@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Doughnut, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -21,7 +21,12 @@ ChartJS.register(
   BarElement
 );
 
-const categories = ["food", "salary", "furniture", "other"];
+const categories = [
+  "Operational Costs",
+  "Staff Salaries",
+  "Medical Supplies",
+  "Marketing",
+];
 
 const monthLabels = [
   "January",
@@ -51,160 +56,45 @@ const ExpenseManagement = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const limit = 10; // Number of items per page
-
-  useEffect(() => {
-    if (summaryType === "monthly") {
-      fetchMonthlyExpenses();
-    } else {
-      fetchYearlyExpenses();
-    }
-    fetchExpenses(); // Fetch paginated expenses for the list
-  }, [currentPage, selectedCategory, selectedMonth, selectedYear, summaryType]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewExpense({ ...newExpense, [name]: value });
   };
 
-  const fetchExpenses = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setExpenses(data.data.results);
-      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchMonthlyExpenses = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setSummary(data.data); // Assuming the backend returns a "summary" field
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchYearlyExpenses = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/expense/${selectedYear}?category=${selectedCategory}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-      setSummary(data.data); // Assuming the backend returns a "summary" field
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    const formattedDate = newExpense.date;
 
-    let baseUrl = `http://localhost:4000/api/v1/expense`;
-    const url = newExpense._id
-      ? baseUrl +
-        `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
-      : baseUrl +
-        `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
-    const method = newExpense._id ? "PATCH" : "POST";
-
-    try {
-      const response = await fetch(url, {
-        method,
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newExpense),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          newExpense._id ? "Failed to update expense" : "Failed to add expense"
-        );
-      }
-
-      // Reset form and refetch expenses
-      setNewExpense({
-        amount: "",
-        date: "",
-        reason: "",
-        category: "",
-        _id: null,
-      });
-      setShowForm(false);
-      fetchExpenses(); // Refresh the list after adding/updating
-      if (summaryType === "monthly") {
-        fetchMonthlyExpenses();
-      } else {
-        fetchYearlyExpenses();
-      }
-    } catch (error) {
-      console.error("Error:", error.message);
+    if (newExpense.id) {
+      setExpenses(
+        expenses.map((expense) =>
+          expense.id === newExpense.id
+            ? { ...newExpense, date: formattedDate }
+            : expense
+        )
+      );
+    } else {
+      setExpenses([
+        ...expenses,
+        { ...newExpense, date: formattedDate, id: Date.now() },
+      ]);
     }
+    setNewExpense({ amount: "", date: "", reason: "", category: "", id: null });
+    setShowForm(false);
+    updateSummary();
   };
+
   const editExpense = (expense) => {
     setNewExpense(expense);
     setShowForm(true);
   };
 
-  const deleteExpense = async (id) => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/expense/${id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete expense");
-      }
-
-      fetchExpenses();
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
+  const deleteExpense = (id) => {
+    setExpenses(expenses.filter((expense) => expense.id !== id));
+    updateSummary();
   };
 
   const aggregateExpenses = () => {
@@ -270,10 +160,10 @@ const ExpenseManagement = () => {
 
     if (summaryType === "yearly") {
       labels = monthLabels; // Month names for the x-axis
-      data = summary || Array(12).fill(0); // Use data from the API or zeros
+      data = summary[selectedYear] || Array(12).fill(0); // Use data for the selected year or zeros
     } else {
-      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary || Array(30).fill(0); // Use data from the API or zeros
+      labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary; // Expenses for days
     }
 
     return {
@@ -339,7 +229,7 @@ const ExpenseManagement = () => {
             ))}
           </select>
           <button className='UpdateBtn' type='submit'>
-            {newExpense._id ? "Update Expense" : "Add Expense"}
+            {newExpense.id ? "Update Expense" : "Add Expense"}
           </button>
         </form>
       )}
@@ -371,14 +261,13 @@ const ExpenseManagement = () => {
                     <td>{expense.category}</td>
                     <td>
                       <button
-                        onClick={() => editExpense(expense)} // This sets the selected expense in the form
+                        onClick={() => editExpense(expense)}
                         className='edit-button'
                       >
                         Edit
                       </button>
-
                       <button
-                        onClick={() => deleteExpense(expense._id)}
+                        onClick={() => deleteExpense(expense.id)}
                         className='delete-button'
                       >
                         Delete
@@ -389,38 +278,13 @@ const ExpenseManagement = () => {
               )}
             </tbody>
           </table>
-
-          {/* Pagination Controls */}
-          <div className='flex justify-between mt-4'>
-            <button
-              className='px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50'
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1 || totalPages === 0}
-            >
-              Previous
-            </button>
-
-            <span className='flex items-center text-gray-700'>
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              className='px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50'
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages || totalPages === 0}
-            >
-              Next
-            </button>
-          </div>
         </div>
 
         <div className='general-div'>
           <div className='filter-category'>
             <h2>Filter by Category</h2>
             <select onChange={handleCategoryChange} value={selectedCategory}>
-              <option value=''>All Categories</option>
+              <option value='All Categories'>All Categories</option>
               {categories.map((category, index) => (
                 <option key={index} value={category}>
                   {category}
