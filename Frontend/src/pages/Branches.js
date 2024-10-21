@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Altrasound from '../components/Altrasound';
 import Bedroom from '../components/Bedroom';
 import Operation from '../components/Operation';
+import "./task.css";
 
 function Branches() {
   const [activeComponent, setActiveComponent] = useState('Bedroom'); // Default component
