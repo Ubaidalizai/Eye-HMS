@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Doughnut, Bar } from "react-chartjs-2";
+import React, { useState, useEffect } from 'react';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -9,9 +9,11 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import "./newManagement.css";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
+
+} from 'chart.js';
+import './newManagement.css';
 
 // Register Chart.js components
 ChartJS.register(
@@ -23,26 +25,21 @@ ChartJS.register(
   BarElement
 );
 
-const categories = [
-  "Operational Costs",
-  "Staff Salaries",
-  "Medical Supplies",
-  "Marketing",
-];
+const categories = ['food', 'salary', 'furniture', 'other'];
 
 const monthLabels = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
@@ -136,55 +133,171 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
-    amount: "",
-    date: "",
-    reason: "",
-    category: "",
+    amount: '',
+    date: '',
+    reason: '',
+    category: '',
     id: null,
   });
-  const [summaryType, setSummaryType] = useState("monthly");
+  const [summaryType, setSummaryType] = useState('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [summary, setSummary] = useState({});
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [showModal, setShowModal] = useState(false);
+  const [summary, setSummary] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // Number of items per page
+
+  useEffect(() => {
+    if (summaryType === 'monthly') {
+      fetchMonthlyExpenses();
+    } else {
+      fetchYearlyExpenses();
+    }
+    fetchExpenses(); // Fetch paginated expenses for the list
+  }, [currentPage, selectedCategory, selectedMonth, selectedYear, summaryType]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewExpense({ ...newExpense, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formattedDate = newExpense.date;
-
-    if (newExpense.id) {
-      setExpenses(
-        expenses.map((expense) =>
-          expense.id === newExpense.id
-            ? { ...newExpense, date: formattedDate }
-            : expense
-        )
+  const fetchExpenses = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
       );
-    } else {
-      setExpenses([
-        ...expenses,
-        { ...newExpense, date: formattedDate, id: Date.now() },
-      ]);
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setExpenses(data.data.results);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (err) {
+      console.log(err);
     }
-    setNewExpense({ amount: "", date: "", reason: "", category: "", id: null });
-    setShowModal(false);
-    updateSummary();
   };
 
+  const fetchMonthlyExpenses = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlyExpenses = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense/${selectedYear}?category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    let baseUrl = `http://localhost:4000/api/v1/expense`;
+    const url = newExpense._id
+      ? baseUrl +
+        `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
+      : baseUrl +
+        `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
+    const method = newExpense._id ? 'PATCH' : 'POST';
+
+    try {
+      const response = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newExpense),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          newExpense._id ? 'Failed to update expense' : 'Failed to add expense'
+        );
+      }
+
+      // Reset form and refetch expenses
+      setNewExpense({
+        amount: '',
+        date: '',
+        reason: '',
+        category: '',
+        _id: null,
+      });
+      setShowForm(false);
+      fetchExpenses(); // Refresh the list after adding/updating
+      if (summaryType === 'monthly') {
+        fetchMonthlyExpenses();
+      } else {
+        fetchYearlyExpenses();
+      }
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
+  };
   const editExpense = (expense) => {
     setNewExpense(expense);
     setShowModal(true);
   };
 
-  const deleteExpense = (id) => {
-    setExpenses(expenses.filter((expense) => expense.id !== id));
-    updateSummary();
+  const deleteExpense = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/expense/${id}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete expense');
+      }
+
+      fetchExpenses();
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
   };
 
   const aggregateExpenses = () => {
@@ -198,18 +311,24 @@ const ExpenseManagement = () => {
       const year = date.getFullYear();
 
       // Aggregate for yearly summary
-      if (!yearlyData[year]) {
-        yearlyData[year] = Array(12).fill(0); // Initialize months for the year
+      if (summaryType === 'yearly') {
+        if (!yearlyData[year]) {
+          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
+        }
+        yearlyData[year][month] += amount; // Sum amount for the respective month
       }
-      yearlyData[year][month] += amount; // Sum amount for the respective month
 
       // Aggregate for monthly summary
-      if (summaryType === "monthly" && month + 1 === selectedMonth && year === selectedYear) {
-        monthlyData[month] += amount; // Sum amount for the selected month
+      if (
+        summaryType === 'monthly' &&
+        month + 1 === selectedMonth &&
+        year === selectedYear
+      ) {
+        monthlyData[month] += amount; // Sum amount for the respective day
       }
     });
 
-    return summaryType === "yearly" ? yearlyData : monthlyData;
+    return summaryType === 'yearly' ? yearlyData : monthlyData;
   };
 
   const updateSummary = () => {
@@ -242,22 +361,22 @@ const ExpenseManagement = () => {
   const getBarChartData = () => {
     let labels, data;
 
-    if (summaryType === "yearly") {
+    if (summaryType === 'yearly') {
       labels = monthLabels; // Month names for the x-axis
-      data = summary[selectedYear] || Array(12).fill(0); // Use data for the selected year or zeros
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
     } else {
-      labels = monthLabels; // Month names for the x-axis
-      data = summary; // Expenses for the selected month
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
     }
 
     return {
       labels,
       datasets: [
         {
-          label: "Expenses",
+          label: 'Expenses',
           data,
-          backgroundColor: "rgba(75, 192, 192, 0.6)",
-          borderColor: "rgba(75, 192, 192, 1)",
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1,
         },
       ],
