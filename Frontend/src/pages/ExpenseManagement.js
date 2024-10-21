@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Doughnut, Bar } from 'react-chartjs-2';
+import React, { useState, useEffect } from "react";
+import { Doughnut, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -12,8 +12,7 @@ import {
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 
-} from 'chart.js';
-import './newManagement.css';
+import "./newManagement.css";
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,90 +24,123 @@ ChartJS.register(
   BarElement
 );
 
-const categories = ['food', 'salary', 'furniture', 'other'];
+const categories = ["food", "salary", "furniture", "other"];
 
 const monthLabels = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="overlay" onClick={onClose}></div>
-      <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg z-60">
-        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div className="sm:flex sm:items-start">
-            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-6 w-6 text-blue-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    <div className='fixed inset-0 flex items-center justify-center z-50'>
+      <div className='overlay' onClick={onClose}></div>
+      <div className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg z-60'>
+        <div className='bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4'>
+          <div className='sm:flex sm:items-start'>
+            <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth='1.5'
+                stroke='currentColor'
+                className='h-6 w-6 text-blue-400'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M12 4.5v15m7.5-7.5h-15'
+                />
               </svg>
             </div>
-            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-              <h3 className="text-lg font-semibold leading-6 text-gray-900">Add Expense</h3>
+            <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left'>
+              <h3 className='text-lg font-semibold leading-6 text-gray-900'>
+                Add Expense
+              </h3>
               <form onSubmit={onSubmit}>
-                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                <div className='grid gap-4 mb-4 sm:grid-cols-2'>
                   <div>
-                    <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+                    <label
+                      htmlFor='amount'
+                      className='block mb-2 text-sm font-medium text-gray-900'
+                    >
+                      Amount
+                    </label>
                     <input
-                      type="number"
-                      name="amount"
-                      id="amount"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      type='number'
+                      name='amount'
+                      id='amount'
+                      className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
                       value={newExpense.amount}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="date" className="block mb-2 text-sm font-medium text-gray-900">Date</label>
+                    <label
+                      htmlFor='date'
+                      className='block mb-2 text-sm font-medium text-gray-900'
+                    >
+                      Date
+                    </label>
                     <input
-                      type="date"
-                      name="date"
-                      id="date"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                      type='date'
+                      name='date'
+                      id='date'
+                      className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
                       value={newExpense.date}
                       onChange={handleChange}
                       required
                     />
                   </div>
                 </div>
-                <div className="grid gap-4 mb-4 sm:grid-cols-2">
-                  <div className="mt-4">
-                    <label htmlFor="reason" className="block mb-2 text-sm font-medium text-gray-900">Reason</label>
+                <div className='grid gap-4 mb-4 sm:grid-cols-2'>
+                  <div className='mt-4'>
+                    <label
+                      htmlFor='reason'
+                      className='block mb-2 text-sm font-medium text-gray-900'
+                    >
+                      Reason
+                    </label>
                     <input
-                      type="text"
-                      name="reason"
-                      id="reason"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      type='text'
+                      name='reason'
+                      id='reason'
+                      className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
                       value={newExpense.reason}
                       onChange={handleChange}
                       required
                     />
                   </div>
-                  <div className="mt-4">
-                    <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">Category</label>
+                  <div className='mt-4'>
+                    <label
+                      htmlFor='category'
+                      className='block mb-2 text-sm font-medium text-gray-900'
+                    >
+                      Category
+                    </label>
                     <select
-                      name="category"
-                      id="category"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      name='category'
+                      id='category'
+                      className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
                       value={newExpense.category}
                       onChange={handleChange}
                       required
                     >
-                      <option value="">Select Category</option>
+                      <option value=''>Select Category</option>
                       {categories.map((category, index) => (
                         <option key={index} value={category}>
                           {category}
@@ -117,9 +149,13 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
                     </select>
                   </div>
                 </div>
-                <div className="mt-4">
-                  <button type="button" className="cancel" onClick={onClose}>Cancel</button>
-                  <button type="submit" className="UpdateBtn">Add Expense</button>
+                <div className='mt-4'>
+                  <button type='button' className='cancel' onClick={onClose}>
+                    Cancel
+                  </button>
+                  <button type='submit' className='UpdateBtn'>
+                    Add Expense
+                  </button>
                 </div>
               </form>
             </div>
@@ -133,24 +169,24 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
-    amount: '',
-    date: '',
-    reason: '',
-    category: '',
+    amount: "",
+    date: "",
+    reason: "",
+    category: "",
     id: null,
   });
-  const [summaryType, setSummaryType] = useState('monthly');
+  const [summaryType, setSummaryType] = useState("monthly");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10; // Number of items per page
 
   useEffect(() => {
-    if (summaryType === 'monthly') {
+    if (summaryType === "monthly") {
       fetchMonthlyExpenses();
     } else {
       fetchYearlyExpenses();
@@ -168,8 +204,8 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          method: "GET",
+          credentials: "include",
         }
       );
 
@@ -190,8 +226,8 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `http://localhost:4000/api/v1/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          method: "GET",
+          credentials: "include",
         }
       );
 
@@ -212,8 +248,8 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `http://localhost:4000/api/v1/expense/${selectedYear}?category=${selectedCategory}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          method: "GET",
+          credentials: "include",
         }
       );
 
@@ -238,41 +274,41 @@ const ExpenseManagement = () => {
         `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
       : baseUrl +
         `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
-    const method = newExpense._id ? 'PATCH' : 'POST';
+    const method = newExpense._id ? "PATCH" : "POST";
 
     try {
       const response = await fetch(url, {
         method,
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newExpense),
       });
 
       if (!response.ok) {
         throw new Error(
-          newExpense._id ? 'Failed to update expense' : 'Failed to add expense'
+          newExpense._id ? "Failed to update expense" : "Failed to add expense"
         );
       }
 
       // Reset form and refetch expenses
       setNewExpense({
-        amount: '',
-        date: '',
-        reason: '',
-        category: '',
+        amount: "",
+        date: "",
+        reason: "",
+        category: "",
         _id: null,
       });
       setShowForm(false);
       fetchExpenses(); // Refresh the list after adding/updating
-      if (summaryType === 'monthly') {
+      if (summaryType === "monthly") {
         fetchMonthlyExpenses();
       } else {
         fetchYearlyExpenses();
       }
     } catch (error) {
-      console.error('Error:', error.message);
+      console.error("Error:", error.message);
     }
   };
   const editExpense = (expense) => {
@@ -285,18 +321,18 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `http://localhost:4000/api/v1/expense/${id}`,
         {
-          method: 'DELETE',
-          credentials: 'include',
+          method: "DELETE",
+          credentials: "include",
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to delete expense');
+        throw new Error("Failed to delete expense");
       }
 
       fetchExpenses();
     } catch (error) {
-      console.error('Error:', error.message);
+      console.error("Error:", error.message);
     }
   };
 
@@ -311,7 +347,7 @@ const ExpenseManagement = () => {
       const year = date.getFullYear();
 
       // Aggregate for yearly summary
-      if (summaryType === 'yearly') {
+      if (summaryType === "yearly") {
         if (!yearlyData[year]) {
           yearlyData[year] = Array(12).fill(0); // Initialize months for the year
         }
@@ -320,7 +356,7 @@ const ExpenseManagement = () => {
 
       // Aggregate for monthly summary
       if (
-        summaryType === 'monthly' &&
+        summaryType === "monthly" &&
         month + 1 === selectedMonth &&
         year === selectedYear
       ) {
@@ -328,7 +364,7 @@ const ExpenseManagement = () => {
       }
     });
 
-    return summaryType === 'yearly' ? yearlyData : monthlyData;
+    return summaryType === "yearly" ? yearlyData : monthlyData;
   };
 
   const updateSummary = () => {
@@ -361,7 +397,7 @@ const ExpenseManagement = () => {
   const getBarChartData = () => {
     let labels, data;
 
-    if (summaryType === 'yearly') {
+    if (summaryType === "yearly") {
       labels = monthLabels; // Month names for the x-axis
       data = summary || Array(12).fill(0); // Use data from the API or zeros
     } else {
@@ -373,10 +409,10 @@ const ExpenseManagement = () => {
       labels,
       datasets: [
         {
-          label: 'Expenses',
+          label: "Expenses",
           data,
-          backgroundColor: 'rgba(75, 192, 192, 0.6)',
-          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: "rgba(75, 192, 192, 0.6)",
+          borderColor: "rgba(75, 192, 192, 1)",
           borderWidth: 1,
         },
       ],
@@ -386,10 +422,7 @@ const ExpenseManagement = () => {
   return (
     <div className='parent'>
       <h1>Expense Management</h1>
-      <button
-        className='add-expense-button'
-        onClick={() => setShowModal(true)}
-      >
+      <button className='add-expense-button' onClick={() => setShowModal(true)}>
         Add Expense
       </button>
 
