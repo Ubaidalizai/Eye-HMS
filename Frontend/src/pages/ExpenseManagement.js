@@ -404,7 +404,7 @@ const ExpenseManagement = () => {
 
       <div className='expense-list-detail'>
         <div className='summary-display'>
-          <h2>Expenses</h2>
+          <h2>Expense List</h2>
           <table className='expense-table'>
             <thead>
               <tr>
