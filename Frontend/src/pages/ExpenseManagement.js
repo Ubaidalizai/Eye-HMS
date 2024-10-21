@@ -10,6 +10,8 @@ import {
   BarElement,
 } from "chart.js";
 import "./newManagement.css";
+import { MdOutlineDeleteForever } from "react-icons/md";
+import { FaRegEdit } from "react-icons/fa";
 
 // Register Chart.js components
 ChartJS.register(
@@ -43,6 +45,94 @@ const monthLabels = [
   "December",
 ];
 
+const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="overlay" onClick={onClose}></div>
+      <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg z-60">
+        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="sm:flex sm:items-start">
+            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-6 w-6 text-blue-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </div>
+            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900">Add Expense</h3>
+              <form onSubmit={onSubmit}>
+                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+                    <input
+                      type="number"
+                      name="amount"
+                      id="amount"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.amount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="date" className="block mb-2 text-sm font-medium text-gray-900">Date</label>
+                    <input
+                      type="date"
+                      name="date"
+                      id="date"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                      value={newExpense.date}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                  <div className="mt-4">
+                    <label htmlFor="reason" className="block mb-2 text-sm font-medium text-gray-900">Reason</label>
+                    <input
+                      type="text"
+                      name="reason"
+                      id="reason"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.reason}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">Category</label>
+                    <select
+                      name="category"
+                      id="category"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.category}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category, index) => (
+                        <option key={index} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <button type="button" className="cancel" onClick={onClose}>Cancel</button>
+                  <button type="submit" className="UpdateBtn">Add Expense</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
@@ -55,9 +145,9 @@ const ExpenseManagement = () => {
   const [summaryType, setSummaryType] = useState("monthly");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [summary, setSummary] = useState([]);
+  const [summary, setSummary] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,13 +173,13 @@ const ExpenseManagement = () => {
       ]);
     }
     setNewExpense({ amount: "", date: "", reason: "", category: "", id: null });
-    setShowForm(false);
+    setShowModal(false);
     updateSummary();
   };
 
   const editExpense = (expense) => {
     setNewExpense(expense);
-    setShowForm(true);
+    setShowModal(true);
   };
 
   const deleteExpense = (id) => {
@@ -108,20 +198,14 @@ const ExpenseManagement = () => {
       const year = date.getFullYear();
 
       // Aggregate for yearly summary
-      if (summaryType === "yearly") {
-        if (!yearlyData[year]) {
-          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
-        }
-        yearlyData[year][month] += amount; // Sum amount for the respective month
+      if (!yearlyData[year]) {
+        yearlyData[year] = Array(12).fill(0); // Initialize months for the year
       }
+      yearlyData[year][month] += amount; // Sum amount for the respective month
 
       // Aggregate for monthly summary
-      if (
-        summaryType === "monthly" &&
-        month + 1 === selectedMonth &&
-        year === selectedYear
-      ) {
-        monthlyData[month] += amount; // Sum amount for the respective day
+      if (summaryType === "monthly" && month + 1 === selectedMonth && year === selectedYear) {
+        monthlyData[month] += amount; // Sum amount for the selected month
       }
     });
 
@@ -162,8 +246,8 @@ const ExpenseManagement = () => {
       labels = monthLabels; // Month names for the x-axis
       data = summary[selectedYear] || Array(12).fill(0); // Use data for the selected year or zeros
     } else {
-      labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary; // Expenses for days
+      labels = monthLabels; // Month names for the x-axis
+      data = summary; // Expenses for the selected month
     }
 
     return {
@@ -185,54 +269,19 @@ const ExpenseManagement = () => {
       <h1>Expense Management</h1>
       <button
         className='add-expense-button'
-        onClick={() => setShowForm(!showForm)}
+        onClick={() => setShowModal(true)}
       >
-        {showForm ? "Cancel" : "Add Expense"}
+        Add Expense
       </button>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className='expense-form'>
-          <input
-            type='number'
-            name='amount'
-            placeholder='Amount'
-            value={newExpense.amount}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type='date'
-            name='date'
-            value={newExpense.date}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type='text'
-            name='reason'
-            placeholder='Reason'
-            value={newExpense.reason}
-            onChange={handleChange}
-            required
-          />
-          <select
-            name='category'
-            value={newExpense.category}
-            onChange={handleChange}
-            required
-          >
-            <option value=''>Select Category</option>
-            {categories.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <button className='UpdateBtn' type='submit'>
-            {newExpense.id ? "Update Expense" : "Add Expense"}
-          </button>
-        </form>
-      )}
+      {/* Modal for adding expense */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleSubmit}
+        newExpense={newExpense}
+        handleChange={handleChange}
+      />
 
       <div className='expense-list-detail'>
         <div className='summary-display'>
@@ -264,13 +313,13 @@ const ExpenseManagement = () => {
                         onClick={() => editExpense(expense)}
                         className='edit-button'
                       >
-                        Edit
+                        <FaRegEdit />
                       </button>
                       <button
                         onClick={() => deleteExpense(expense.id)}
-                        className='delete-button'
+                        className='edit-button'
                       >
-                        Delete
+                        <MdOutlineDeleteForever />
                       </button>
                     </td>
                   </tr>
