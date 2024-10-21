@@ -39,9 +39,7 @@ function PurchaseDetails() {
       }
       const data = await response.json();
       setAllPurchasesData(data.data.results);
-      setTotalPages(
-        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
-      );
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
       console.log(err);
     }

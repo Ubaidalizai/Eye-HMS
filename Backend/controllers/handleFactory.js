@@ -26,7 +26,6 @@ const getAll = (Model, userID = false, popOptions = null) =>
       let queryBuilder = Model.find(query).sort({ date: -1 }); // Sort by date
 
       if (popOptions) {
-        console.log(popOptions);
         queryBuilder = queryBuilder.populate(popOptions); // Apply population if provided
       }
 

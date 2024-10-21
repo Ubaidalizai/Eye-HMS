@@ -45,7 +45,7 @@ app.use('/api/v1/sales', salesRoute); // Sales API
 app.use('/api/v1/pharmacy', pharmacyRoute); // Pharmacy API
 app.use('/api/v1/patient', patientRoute); // Patient API
 app.use('/api/v1/expense', expensesRoute); // Expenses API
-app.use('/api/v1/incomes', incomeRoute); // Income API
+app.use('/api/v1/income', incomeRoute); // Income API
 
 // ------------- Signin --------------
 let userAuthCheck;

@@ -18,11 +18,17 @@ const incomeSchema = new mongoose.Schema(
     },
     category: {
       type: String,
+      enum: ['drug', 'sunglasses', 'frame'],
       required: true,
     },
-    description: {
+    reason: {
       type: String,
       required: true, // Description of income
+    },
+    userID: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: true,
     },
   },
   { timestamps: true }
