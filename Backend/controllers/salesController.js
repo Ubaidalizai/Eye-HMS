@@ -121,7 +121,8 @@ const sellItems = asyncHandler(async (req, res) => {
     await Income.create({
       date,
       totalIncome,
-      category: 'Sales',
+      totalNetIncome,
+      category,
       description: `Sales of ${category} products`,
       userID: req.user._id,
     });
@@ -131,7 +132,6 @@ const sellItems = asyncHandler(async (req, res) => {
       data: { sale },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       status: 'error',
       message: `Failed to complete the sale: ${error.message}`,
