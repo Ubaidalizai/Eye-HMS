@@ -183,6 +183,7 @@ const ExpenseManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showModal, setShowModal] = useState(false);
   const limit = 10; // Number of items per page
 
   useEffect(() => {
