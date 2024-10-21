@@ -8,6 +8,10 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+} from "chart.js";
+import { MdOutlineDeleteForever } from "react-icons/md";
+import { FaRegEdit } from "react-icons/fa";
+
 } from 'chart.js';
 import './newManagement.css';
 
@@ -37,6 +41,94 @@ const monthLabels = [
   'November',
   'December',
 ];
+
+const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="overlay" onClick={onClose}></div>
+      <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg z-60">
+        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="sm:flex sm:items-start">
+            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-6 w-6 text-blue-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </div>
+            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900">Add Expense</h3>
+              <form onSubmit={onSubmit}>
+                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="amount" className="block mb-2 text-sm font-medium text-gray-900">Amount</label>
+                    <input
+                      type="number"
+                      name="amount"
+                      id="amount"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.amount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="date" className="block mb-2 text-sm font-medium text-gray-900">Date</label>
+                    <input
+                      type="date"
+                      name="date"
+                      id="date"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                      value={newExpense.date}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                  <div className="mt-4">
+                    <label htmlFor="reason" className="block mb-2 text-sm font-medium text-gray-900">Reason</label>
+                    <input
+                      type="text"
+                      name="reason"
+                      id="reason"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.reason}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900">Category</label>
+                    <select
+                      name="category"
+                      id="category"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.category}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category, index) => (
+                        <option key={index} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <button type="button" className="cancel" onClick={onClose}>Cancel</button>
+                  <button type="submit" className="UpdateBtn">Add Expense</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
@@ -185,7 +277,7 @@ const ExpenseManagement = () => {
   };
   const editExpense = (expense) => {
     setNewExpense(expense);
-    setShowForm(true);
+    setShowModal(true);
   };
 
   const deleteExpense = async (id) => {
@@ -292,63 +384,28 @@ const ExpenseManagement = () => {
   };
 
   return (
-    <div className="parent">
+    <div className='parent'>
       <h1>Expense Management</h1>
       <button
-        className="add-expense-button"
-        onClick={() => setShowForm(!showForm)}
+        className='add-expense-button'
+        onClick={() => setShowModal(true)}
       >
-        {showForm ? 'Cancel' : 'Add Expense'}
+        Add Expense
       </button>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="expense-form">
-          <input
-            type="number"
-            name="amount"
-            placeholder="Amount"
-            value={newExpense.amount}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="date"
-            name="date"
-            value={newExpense.date}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="reason"
-            placeholder="Reason"
-            value={newExpense.reason}
-            onChange={handleChange}
-            required
-          />
-          <select
-            name="category"
-            value={newExpense.category}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Category</option>
-            {categories.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <button className="UpdateBtn" type="submit">
-            {newExpense._id ? 'Update Expense' : 'Add Expense'}
-          </button>
-        </form>
-      )}
+      {/* Modal for adding expense */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleSubmit}
+        newExpense={newExpense}
+        handleChange={handleChange}
+      />
 
-      <div className="expense-list-detail">
-        <div className="summary-display">
+      <div className='expense-list-detail'>
+        <div className='summary-display'>
           <h2>Expenses</h2>
-          <table className="expense-table">
+          <table className='expense-table'>
             <thead>
               <tr>
                 <th>Amount</th>
@@ -361,7 +418,7 @@ const ExpenseManagement = () => {
             <tbody>
               {expenses.length === 0 ? (
                 <tr>
-                  <td colSpan="5">No expenses added yet.</td>
+                  <td colSpan='5'>No expenses added yet.</td>
                 </tr>
               ) : (
                 expenses.map((expense) => (
@@ -372,17 +429,16 @@ const ExpenseManagement = () => {
                     <td>{expense.category}</td>
                     <td>
                       <button
-                        onClick={() => editExpense(expense)} // This sets the selected expense in the form
-                        className="edit-button"
+                        onClick={() => editExpense(expense)}
+                        className='edit-button'
                       >
-                        Edit
+                        <FaRegEdit />
                       </button>
-
                       <button
-                        onClick={() => deleteExpense(expense._id)}
-                        className="delete-button"
+                        onClick={() => deleteExpense(expense.id)}
+                        className='edit-button'
                       >
-                        Delete
+                        <MdOutlineDeleteForever />
                       </button>
                     </td>
                   </tr>
@@ -390,38 +446,13 @@ const ExpenseManagement = () => {
               )}
             </tbody>
           </table>
-
-          {/* Pagination Controls */}
-          <div className="flex justify-between mt-4">
-            <button
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1 || totalPages === 0}
-            >
-              Previous
-            </button>
-
-            <span className="flex items-center text-gray-700">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages || totalPages === 0}
-            >
-              Next
-            </button>
-          </div>
         </div>
 
-        <div className="general-div">
-          <div className="filter-category">
+        <div className='general-div'>
+          <div className='filter-category'>
             <h2>Filter by Category</h2>
             <select onChange={handleCategoryChange} value={selectedCategory}>
-              <option value="">All Categories</option>
+              <option value='All Categories'>All Categories</option>
               {categories.map((category, index) => (
                 <option key={index} value={category}>
                   {category}
@@ -430,15 +461,15 @@ const ExpenseManagement = () => {
             </select>
           </div>
 
-          <div className="summery-type">
+          <div className='summery-type'>
             <h2>Summary Type</h2>
             <select onChange={handleSummaryTypeChange} value={summaryType}>
-              <option value="monthly">Monthly Summary</option>
-              <option value="yearly">Yearly Summary</option>
+              <option value='monthly'>Monthly Summary</option>
+              <option value='yearly'>Yearly Summary</option>
             </select>
           </div>
 
-          {summaryType === 'monthly' && (
+          {summaryType === "monthly" && (
             <div>
               <h2>Select Month</h2>
               <select onChange={handleMonthChange} value={selectedMonth}>
@@ -451,21 +482,21 @@ const ExpenseManagement = () => {
             </div>
           )}
 
-          {summaryType === 'yearly' && (
+          {summaryType === "yearly" && (
             <div>
               <h2>Select Year</h2>
               <input
-                type="number"
+                type='number'
                 value={selectedYear}
                 onChange={handleYearChange}
-                min="2000"
+                min='2000'
                 max={new Date().getFullYear()}
               />
             </div>
           )}
         </div>
 
-        <div className="summary-display">
+        <div className='summary-display'>
           <h2>
             {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
             for {selectedCategory}
@@ -476,7 +507,7 @@ const ExpenseManagement = () => {
               responsive: true,
               plugins: {
                 legend: {
-                  position: 'top',
+                  position: "top",
                 },
                 title: {
                   display: true,
@@ -489,9 +520,9 @@ const ExpenseManagement = () => {
           />
         </div>
 
-        <div className="chart">
+        <div className='chart'>
           <h2>Expense by Category</h2>
-          <div className="graph">
+          <div className='graph'>
             <Doughnut
               data={{
                 labels: categories,
@@ -503,10 +534,10 @@ const ExpenseManagement = () => {
                         .reduce((sum, exp) => sum + parseFloat(exp.amount), 0)
                     ),
                     backgroundColor: [
-                      '#FF6384',
-                      '#36A2EB',
-                      '#FFCE56',
-                      '#4BC0C0',
+                      "#FF6384",
+                      "#36A2EB",
+                      "#FFCE56",
+                      "#4BC0C0",
                     ],
                   },
                 ],
