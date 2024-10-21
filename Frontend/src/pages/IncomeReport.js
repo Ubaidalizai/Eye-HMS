@@ -1,418 +1,524 @@
-import React, { useEffect, useState } from "react";
-import { Bar, Line } from "react-chartjs-2";
+import React, { useState, useEffect } from 'react';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  PointElement,
-  LineElement,
-  Title,
+  ArcElement,
   Tooltip,
   Legend,
-} from "chart.js";
-import styles from "./Income.module.css";
-
-ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
-  PointElement,
-  LineElement,
-  Title,
+} from 'chart.js';
+import './newManagement.css';
+
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
 );
 
-// Initial data
-const initialTransactions = [
-  {
-    id: 1,
-    date: "2024-09-29",
-    amount: 600,
-    source: "Sales",
-    description: "Sale A",
-  },
-  {
-    id: 2,
-    date: "2024-09-29",
-    amount: 150,
-    source: "Service",
-    description: "Consulting",
-  },
-  {
-    id: 3,
-    date: "2024-09-01",
-    amount: 300,
-    source: "Sales",
-    description: "Sale B",
-  },
-  {
-    id: 4,
-    date: "2024-08-15",
-    amount: 400,
-    source: "Service",
-    description: "Maintenance",
-  },
-];
+const categories = ['drug', 'sunglasses', 'frame'];
 
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+const monthLabels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const IncomeReport = () => {
-  const [transactions, setTransactions] = useState(initialTransactions);
-  const [selectedReport, setSelectedReport] = useState("Daily");
-  const [reportData, setReportData] = useState(null);
-  const [newTransaction, setNewTransaction] = useState({
-    date: "",
-    amount: "",
-    source: "",
-    description: "",
+  const [income, setIncome] = useState([]);
+  const [newIncome, setNewIncome] = useState({
+    totalIncome: '',
+    totalNetIncome: '',
+    date: '',
+    reason: '',
+    category: '',
   });
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Default to current month
+  const [summaryType, setSummaryType] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // Number of items per page
 
-  // Function to get last 5 years
-  const getLastFiveYears = () => {
-    const currentYear = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, index) => currentYear - index);
-  };
-
-  // Function to handle year selection
-  const handleYearClick = (year) => {
-    setSelectedYear(year);
-    setSelectedReport("Annual"); // Switch to yearly report view
-  };
-
-  // Helper function to filter transactions based on date range
-  function filterTransactionsByDate(transactions, startDate, endDate) {
-    return transactions.filter((transaction) => {
-      const transactionDate = new Date(transaction.date);
-      return transactionDate >= startDate && transactionDate <= endDate;
-    });
-  }
-
-  // Calculate Daily Income (for a specific date)
-  function calculateDailyIncome(transactions, targetDate = new Date()) {
-    const today = new Date(targetDate);
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const dailyTransactions = filterTransactionsByDate(
-      transactions,
-      today,
-      tomorrow
-    );
-    return generateReport(dailyTransactions, "Daily");
-  }
-
-  // Calculate Monthly Income (aggregate income for each day in the selected month)
-  function calculateMonthlyIncome(transactions, year, month) {
-    const startOfMonth = new Date(year, month - 1, 1);
-    const endOfMonth = new Date(year, month, 0);
-    const monthlyTransactions = filterTransactionsByDate(
-      transactions,
-      startOfMonth,
-      endOfMonth
-    );
-    const incomeByDay = Array.from({ length: endOfMonth.getDate() }, (_, i) => {
-      const day = i + 1;
-      const dailyIncome = monthlyTransactions
-        .filter((tx) => new Date(tx.date).getDate() === day)
-        .reduce((sum, tx) => sum + tx.amount, 0);
-      return dailyIncome;
-    });
-    return generateReport(monthlyTransactions, "Monthly", incomeByDay);
-  }
-
-  // Calculate Annual Income (aggregate income for each month)
-  function calculateAnnualIncome(transactions, year) {
-    const startOfYear = new Date(year, 0, 1);
-    const endOfYear = new Date(year, 11, 31);
-    const annualTransactions = filterTransactionsByDate(
-      transactions,
-      startOfYear,
-      endOfYear
-    );
-    const incomeByMonth = monthNames.map((_, monthIndex) => {
-      const monthlyIncome = annualTransactions
-        .filter((tx) => new Date(tx.date).getMonth() === monthIndex)
-        .reduce((sum, tx) => sum + tx.amount, 0);
-      return monthlyIncome;
-    });
-    return generateReport(annualTransactions, "Annual", incomeByMonth);
-  }
-
-  // Generate Report based on the filtered transactions
-  function generateReport(transactions, reportType, incomeData = []) {
-    const totalIncome = transactions.reduce((sum, tx) => sum + tx.amount, 0);
-    const sourcesBreakdown = transactions.reduce((sources, tx) => {
-      sources[tx.source] = (sources[tx.source] || 0) + tx.amount;
-      return sources;
-    }, {});
-    return {
-      reportType,
-      totalIncome,
-      transactionsCount: transactions.length,
-      sourcesBreakdown,
-      incomeData,
-      transactions,
-    };
-  }
-
-  // Generate Comprehensive Report (Daily, Monthly, and Annual)
-  function generateComprehensiveReport(
-    transactions,
-    year,
-    month,
-    date = new Date()
-  ) {
-    const dailyReport = calculateDailyIncome(transactions, date);
-    const monthlyReport = calculateMonthlyIncome(transactions, year, month);
-    const annualReport = calculateAnnualIncome(transactions, year);
-    return {
-      dailyReport,
-      monthlyReport,
-      annualReport,
-    };
-  }
-
-  // Component for displaying the report
-  const IncomeDetailReport = ({ report, title, selectedReport }) => {
-    const {
-      totalIncome,
-      transactionsCount,
-      sourcesBreakdown = {},
-      incomeData,
-      transactions,
-    } = report;
-
-    const barData = {
-      labels: Object.keys(sourcesBreakdown),
-      datasets: [
-        {
-          label: "Income by Source",
-          data: Object.values(sourcesBreakdown),
-          backgroundColor: ["#4caf50", "#ff5722", "#03a9f4", "#e91e63"],
-        },
-      ],
-    };
-
-    const lineData = {
-      labels:
-        selectedReport === "Daily"
-          ? [new Date().toDateString()]
-          : selectedReport === "Monthly"
-          ? Array.from({ length: incomeData.length }, (_, i) => i + 1) // Days of the month
-          : monthNames, // Months of the year
-      datasets: [
-        {
-          label: `Income Over Time (${selectedReport})`,
-          data: incomeData,
-          fill: false,
-          backgroundColor: "#03a9f4",
-          borderColor: "#03a9f4",
-        },
-      ],
-    };
-
-    return (
-      <div className={styles.reportContainer}>
-        <h2>{title} Income Report</h2>
-        <p>
-          <strong>Total Income:</strong> ${totalIncome}
-        </p>
-        <p>
-          <strong>Number of Transactions:</strong> {transactionsCount}
-        </p>
-
-        <h3>Income by Source</h3>
-        <div className={styles.chartContainer}>
-          {Object.keys(sourcesBreakdown).length > 0 ? (
-            <Bar
-              data={barData}
-              options={{ responsive: true, maintainAspectRatio: false }}
-            />
-          ) : (
-            <p>No data available for income by source.</p>
-          )}
-        </div>
-        <h3>Transactions</h3>
-        <table className={styles.transactionsTable}>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Source</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((tx) => (
-              <tr key={tx.id}>
-                <td data-label='Date'>{tx.date}</td>
-                <td data-label='Amount'>${tx.amount}</td>
-                <td data-label='Source'>{tx.source}</td>
-                <td data-label='Description'>{tx.description}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <h3>Income Over Time</h3>
-        <div className={styles.chartContainer}>
-          <Line
-            data={lineData}
-            options={{ responsive: true, maintainAspectRatio: false }}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  // Use effect to generate reports when transactions change
   useEffect(() => {
-    const date = new Date();
-    const comprehensiveReport = generateComprehensiveReport(
-      transactions,
-      date.getFullYear(),
-      date.getMonth() + 1
-    );
-    setReportData(comprehensiveReport);
-  }, [transactions]);
+    if (summaryType === 'monthly') {
+      fetchMonthlyIncome();
+    } else {
+      fetchYearlyIncome();
+    }
+    fetchIncome(); // Fetch paginated income for the list
+  }, [currentPage, selectedCategory, selectedMonth, selectedYear, summaryType]);
 
-  // Handle new transaction submission
-  const handleAddTransaction = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewIncome({ ...newIncome, [name]: value });
+  };
+
+  const fetchIncome = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/income?page=${currentPage}&limit=${limit}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setIncome(data.data.results);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchMonthlyIncome = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/income/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlyIncome = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/income/${selectedYear}?category=${selectedCategory}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTx = {
-      ...newTransaction,
-      id: transactions.length + 1,
-      amount: parseFloat(newTransaction.amount),
+    console.log(newIncome);
+    let baseUrl = `http://localhost:4000/api/v1/income`;
+    const url = newIncome?._id
+      ? baseUrl +
+        `/${newIncome._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
+      : baseUrl +
+        `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new income
+    const method = newIncome?._id ? 'PATCH' : 'POST';
+    console.log(method);
+    try {
+      const response = await fetch(url, {
+        method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newIncome),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          newIncome._id ? 'Failed to update income' : 'Failed to add income'
+        );
+      }
+
+      // Reset form and refetch income
+      setNewIncome({
+        totalIncome: '',
+        totalNetIncome: '',
+        date: '',
+        reason: '',
+        category: '',
+      });
+      setShowForm(false);
+      fetchIncome(); // Refresh the list after adding/updating
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
+  };
+  const editIncome = (income) => {
+    setNewIncome(income);
+    setShowForm(true);
+  };
+
+  const deleteIncome = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/income/${id}`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete income');
+      }
+
+      fetchIncome();
+    } catch (error) {
+      console.error('Error:', error.message);
+    }
+  };
+
+  const aggregateIncome = () => {
+    const monthlyData = Array(12).fill(0);
+    const yearlyData = {};
+
+    income.forEach((income) => {
+      const date = new Date(income.date);
+      const amount = parseFloat(income.amount);
+      const month = date.getMonth(); // Zero-based index
+      const year = date.getFullYear();
+
+      // Aggregate for yearly summary
+      if (summaryType === 'yearly') {
+        if (!yearlyData[year]) {
+          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
+        }
+        yearlyData[year][month] += amount; // Sum amount for the respective month
+      }
+
+      // Aggregate for monthly summary
+      if (
+        summaryType === 'monthly' &&
+        month + 1 === selectedMonth &&
+        year === selectedYear
+      ) {
+        monthlyData[month] += amount; // Sum amount for the respective day
+      }
+    });
+
+    return summaryType === 'yearly' ? yearlyData : monthlyData;
+  };
+
+  const updateSummary = () => {
+    const newSummary = aggregateIncome();
+    setSummary(newSummary);
+  };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+    updateSummary();
+  };
+
+  const handleSummaryTypeChange = (e) => {
+    setSummaryType(e.target.value);
+    updateSummary();
+  };
+
+  const handleMonthChange = (e) => {
+    const month = Number(e.target.value);
+    setSelectedMonth(month);
+    updateSummary();
+  };
+
+  const handleYearChange = (e) => {
+    const year = Number(e.target.value);
+    setSelectedYear(year);
+    updateSummary();
+  };
+
+  const getBarChartData = () => {
+    let labels, data;
+
+    if (summaryType === 'yearly') {
+      labels = monthLabels; // Month names for the x-axis
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
+    } else {
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'income',
+          data,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+      ],
     };
-    setTransactions([...transactions, newTx]);
-    setNewTransaction({ date: "", amount: "", source: "", description: "" });
   };
 
   return (
-    <div className={styles.container}>
-      <h1>Income Report</h1>
+    <div className="parent">
+      <h1>Income Management</h1>
+      <button
+        className="add-income-button"
+        onClick={() => setShowForm(!showForm)}
+      >
+        {showForm ? 'Cancel' : 'Add Income'}
+      </button>
 
-      <div className={styles.buttonContainer}>
-        <button onClick={() => setSelectedReport("Daily")}>Daily</button>
-        <button onClick={() => setSelectedReport("Monthly")}>Monthly</button>
-        <button onClick={() => setSelectedReport("Annual")}>Annual</button>
-      </div>
-      <div className={styles.addTransaction}>
-        <h2>Add New Transaction</h2>
-        <form onSubmit={handleAddTransaction}>
+      {showForm && (
+        <form onSubmit={handleSubmit} className="income-form">
           <input
-            type='date'
-            value={newTransaction.date}
-            onChange={(e) =>
-              setNewTransaction({ ...newTransaction, date: e.target.value })
-            }
+            type="number"
+            name="totalIncome"
+            placeholder="Total Income"
+            value={newIncome.totalIncome}
+            onChange={handleChange}
             required
           />
           <input
-            type='number'
-            value={newTransaction.amount}
-            onChange={(e) =>
-              setNewTransaction({ ...newTransaction, amount: e.target.value })
-            }
-            placeholder='Amount'
+            type="number"
+            name="totalNetIncome"
+            placeholder="Total Net Income"
+            value={newIncome.totalNetIncome}
+            onChange={handleChange}
             required
           />
           <input
-            type='text'
-            value={newTransaction.source}
-            onChange={(e) =>
-              setNewTransaction({ ...newTransaction, source: e.target.value })
-            }
-            placeholder='Source'
+            type="date"
+            name="date"
+            value={newIncome.date}
+            onChange={handleChange}
             required
           />
           <input
-            type='text'
-            value={newTransaction.description}
-            onChange={(e) =>
-              setNewTransaction({
-                ...newTransaction,
-                description: e.target.value,
-              })
-            }
-            placeholder='Description'
+            type="text"
+            name="reason"
+            placeholder="Reason"
+            value={newIncome.reason}
+            onChange={handleChange}
             required
           />
-          <button type='submit'>Add Transaction</button>
-        </form>
-      </div>
-
-      {selectedReport === "Daily" && reportData && (
-        <IncomeDetailReport
-          report={reportData.dailyReport}
-          title='Daily'
-          selectedReport='Daily'
-        />
-      )}
-
-      {selectedReport === "Monthly" && reportData && (
-        <div>
-          <h3>Monthly Income Report for {monthNames[selectedMonth - 1]}</h3>
-          <div className={styles.monthNavigation}>
-            <button
-              onClick={() => setSelectedMonth((prev) => Math.max(1, prev - 1))}
-              disabled={selectedMonth === 1}
-            >
-              Previous Month
-            </button>
-            <button
-              onClick={() => setSelectedMonth((prev) => Math.min(12, prev + 1))}
-              disabled={selectedMonth === 12}
-            >
-              Next Month
-            </button>
-          </div>
-          <IncomeDetailReport
-            report={calculateMonthlyIncome(
-              transactions,
-              selectedYear,
-              selectedMonth
-            )}
-            title='Monthly'
-            selectedReport='Monthly'
-          />
-        </div>
-      )}
-
-      {selectedReport === "Annual" && reportData && (
-        <div>
-          <h3>Annual Income Report for {selectedYear}</h3>
-          <div className={styles.yearNavigation}>
-            {getLastFiveYears().map((year) => (
-              <button key={year} onClick={() => handleYearClick(year)}>
-                {year}
-              </button>
+          <select
+            name="category"
+            value={newIncome.category}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select Category</option>
+            {categories.map((category, index) => (
+              <option key={index} value={category}>
+                {category}
+              </option>
             ))}
+          </select>
+          <button className="UpdateBtn" type="submit">
+            {newIncome._id ? 'Update Income' : 'Add Income'}
+          </button>
+        </form>
+      )}
+
+      <div className="income-list-detail">
+        <div className="summary-display">
+          <h2>income</h2>
+          <table className="income-table">
+            <thead>
+              <tr>
+                <th>TotalIncome</th>
+                <th>TotalNetIncome</th>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {income.length === 0 ? (
+                <tr>
+                  <td colSpan="5">No income added yet.</td>
+                </tr>
+              ) : (
+                income.map((income) => (
+                  <tr key={income._id}>
+                    <td>{income.totalIncome}</td>
+                    <td>{income.totalNetIncome}</td>
+                    <td>{new Date(income.date).toLocaleDateString()}</td>
+                    <td>{income.reason}</td>
+                    <td>{income.category}</td>
+                    <td>
+                      <button
+                        onClick={() => editIncome(income)} // This sets the selected income in the form
+                        className="edit-button"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => deleteIncome(income._id)}
+                        className="delete-button"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+
+          {/* Pagination Controls */}
+          <div className="flex justify-between mt-4">
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1 || totalPages === 0}
+            >
+              Previous
+            </button>
+
+            <span className="flex items-center text-gray-700">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              Next
+            </button>
           </div>
-          <IncomeDetailReport
-            report={calculateAnnualIncome(transactions, selectedYear)}
-            title='Annual'
-            selectedReport='Annual'
+        </div>
+
+        <div className="general-div">
+          <div className="filter-category">
+            <h2>Filter by Category</h2>
+            <select onChange={handleCategoryChange} value={selectedCategory}>
+              <option value="">All Categories</option>
+              {categories.map((category, index) => (
+                <option key={index} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="summery-type">
+            <h2>Summary Type</h2>
+            <select onChange={handleSummaryTypeChange} value={summaryType}>
+              <option value="monthly">Monthly Summary</option>
+              <option value="yearly">Yearly Summary</option>
+            </select>
+          </div>
+
+          {summaryType === 'monthly' && (
+            <div>
+              <h2>Select Month</h2>
+              <select onChange={handleMonthChange} value={selectedMonth}>
+                {monthLabels.map((label, index) => (
+                  <option key={index} value={index + 1}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {summaryType === 'yearly' && (
+            <div>
+              <h2>Select Year</h2>
+              <input
+                type="number"
+                value={selectedYear}
+                onChange={handleYearChange}
+                min="2000"
+                max={new Date().getFullYear()}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="summary-display">
+          <h2>
+            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
+            for {selectedCategory}
+          </h2>
+          <Bar
+            data={getBarChartData()}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: `${
+                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+                  } Summary for ${selectedCategory}`,
+                },
+              },
+            }}
           />
         </div>
-      )}
+
+        <div className="chart">
+          <h2>Income by Category</h2>
+          <div className="graph">
+            <Doughnut
+              data={{
+                labels: categories,
+                datasets: [
+                  {
+                    data: categories.map((category) =>
+                      income
+                        .filter((exp) => exp.category === category)
+                        .reduce((sum, exp) => sum + parseFloat(exp.amount), 0)
+                    ),
+                    backgroundColor: [
+                      '#FF6384',
+                      '#36A2EB',
+                      '#FFCE56',
+                      '#4BC0C0',
+                    ],
+                  },
+                ],
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

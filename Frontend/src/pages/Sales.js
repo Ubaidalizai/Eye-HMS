@@ -65,12 +65,12 @@ function Sales() {
 
   // Fetching Data of All Products
   const fetchProductsData = () => {
-    let baseUrl = `http://localhost:4000/api/v1/pharmacy`;
+    let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
 
     if (user.role === 'sunglassesSeller') {
-      baseUrl += `?category=sunglasses,frame&checkQuantity=true`;
+      baseUrl += '&category=sunglasses,frame';
     } else if (user.role === 'pharmacist') {
-      baseUrl += `?category=drug&checkQuantity=true`;
+      baseUrl += '&category=drug';
     }
 
     fetch(baseUrl, {
