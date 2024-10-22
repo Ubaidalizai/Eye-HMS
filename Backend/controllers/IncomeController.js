@@ -1,16 +1,18 @@
 const Income = require('../models/incomeModule');
+const getAll = require('./handleFactory');
 
 // Create new income record
 const createIncome = async (req, res) => {
   try {
-    const { date, amount, category, description, paymentStatus } = req.body;
-
+    const { totalIncome, totalNetIncome, category, reason, date } = req.body;
+    console.log(req.body);
     const newIncome = new Income({
       date,
-      amount,
+      totalIncome,
+      totalNetIncome,
       category,
-      description,
-      paymentStatus,
+      reason,
+      userID: req.user._id,
     });
 
     const savedIncome = await newIncome.save();
@@ -110,28 +112,10 @@ const updateIncome = async (req, res) => {
 };
 
 // Get all income records
-const getAllIncome = async (req, res) => {
-  try {
-    const incomes = await Income.find();
-    res.json(incomes);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// Get a single income record by I
-const getIncomeById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const income = await Income.findById(id);
-    if (!income) {
-      return res.status(404).json({ message: 'Income record not found' });
-    }
-    res.json(income);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+const getAllIncome = getAll(Income, false, {
+  path: 'userID',
+  select: 'firstName lastName',
+});
 
 // Delete an income record by ID
 const deleteIncome = async (req, res) => {
@@ -150,7 +134,6 @@ module.exports = {
   createIncome,
   updateIncome,
   getAllIncome,
-  getIncomeById,
   deleteIncome,
   filterIncomeByYear,
   filterIncomeByYearAndMonth,
