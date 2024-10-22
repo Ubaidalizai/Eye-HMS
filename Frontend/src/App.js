@@ -121,9 +121,9 @@ const App = () => {
               <Route path='/branches/bedroom' element={<Bedroom />} />
               <Route path='/branches/ultrasound' element={<Ultrasound />} />
               <Route path='/branches/operation' element={<Operation />} />
+              <Route path='/pharmacy' element={<Pharmacy />} />
+              <Route path='/incomeReport' element={<IncomeReport />} />
             </Route>
-            <Route path='/pharmacy' element={<Pharmacy />} />
-            <Route path='/incomeReport' element={<IncomeReport />} />
 
             <Route path='*' element={<NoPageFound />} />
           </Routes>

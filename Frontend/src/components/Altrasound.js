@@ -3,13 +3,17 @@ import FormModal from "../components/FormModal";
 import DataTable from "../components/DataTable";
 
 function Ultrasound() {
-  const [id, setId] = useState("");
-  const [name, setName] = useState("");
-  const [time, setTime] = useState("");
-  const [date, setDate] = useState("");
-  const [image, setImage] = useState("");
+  const [fieldValues, setFieldValues] = useState({
+    id: "",
+    name: "",
+    time: "",
+    date: "",
+    image: "",
+  });
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
     const storedData = localStorage.getItem("ultrasoundSubmittedData");
@@ -20,28 +24,43 @@ function Ultrasound() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const entry = { id, name, time, date, image };
-    const newSubmittedData = [...submittedData, entry];
-    setSubmittedData(newSubmittedData);
-    localStorage.setItem(
-      "ultrasoundSubmittedData",
-      JSON.stringify(newSubmittedData)
-    );
+    if (editMode) {
+      const updatedData = [...submittedData];
+      updatedData[editIndex] = fieldValues; // Update the existing record
+      setSubmittedData(updatedData);
+      localStorage.setItem(
+        "ultrasoundSubmittedData",
+        JSON.stringify(updatedData)
+      );
+    } else {
+      const newSubmittedData = [...submittedData, fieldValues];
+      setSubmittedData(newSubmittedData);
+      localStorage.setItem(
+        "ultrasoundSubmittedData",
+        JSON.stringify(newSubmittedData)
+      );
+    }
     clearForm();
     setIsOpen(false);
   };
 
-  const handleCancel = () => {
-    clearForm();
-    setIsOpen(false);
+  const handleEdit = (index) => {
+    const recordToEdit = submittedData[index];
+    setFieldValues(recordToEdit);
+    setEditMode(true); // Set to edit mode
+    setEditIndex(index); // Store index for editing
+    setIsOpen(true); // Open modal
   };
 
   const clearForm = () => {
-    setId("");
-    setName("");
-    setTime("");
-    setDate("");
-    setImage("");
+    setFieldValues({
+      id: "",
+      name: "",
+      time: "",
+      date: "",
+      image: "",
+    });
+    setEditMode(false); // Reset edit mode
   };
 
   const fields = [
@@ -52,21 +71,15 @@ function Ultrasound() {
     { label: "Image", type: "file", name: "image" },
   ];
 
-  const fieldValues = { id, name, time, date, image };
-  const setFieldValues = ({ id, name, time, date, image }) => {
-    setId(id);
-    setName(name);
-    setTime(time);
-    setDate(date);
-    setImage(image);
-  };
-
   return (
     <div className='p-8 bg-gray-100 min-h-screen'>
       <div className='mb-4 flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>Ultrasound Management</h1>
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            clearForm(); // Ensure form is cleared when adding a new record
+            setIsOpen(true);
+          }}
           className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition'
         >
           + Add Record
@@ -74,10 +87,12 @@ function Ultrasound() {
       </div>
 
       <FormModal
-        title='Add New Ultrasound Record'
+        title={
+          editMode ? "Edit Ultrasound Record" : "Add New Ultrasound Record"
+        }
         isOpen={isOpen}
         handleSubmit={handleSubmit}
-        handleCancel={handleCancel}
+        handleCancel={() => setIsOpen(false)}
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
@@ -86,6 +101,7 @@ function Ultrasound() {
       <DataTable
         submittedData={submittedData}
         fields={fields}
+        handleEdit={handleEdit} // Handle edit for each row
         handleRemove={(index) => {
           const updatedData = submittedData.filter((_, i) => i !== index);
           setSubmittedData(updatedData);

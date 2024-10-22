@@ -9,6 +9,9 @@ import {
   LinearScale,
   BarElement,
 } from 'chart.js';
+import { MdOutlineDeleteForever } from 'react-icons/md';
+import { FaRegEdit } from 'react-icons/fa';
+
 import './newManagement.css';
 
 // Register Chart.js components
@@ -38,6 +41,131 @@ const monthLabels = [
   'December',
 ];
 
+const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="overlay" onClick={onClose}></div>
+      <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg z-60">
+        <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="sm:flex sm:items-start">
+            <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="h-6 w-6 text-blue-400"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            </div>
+            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+              <h3 className="text-lg font-semibold leading-6 text-gray-900">
+                Add Expense
+              </h3>
+              <form onSubmit={onSubmit}>
+                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="amount"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Amount
+                    </label>
+                    <input
+                      type="number"
+                      name="amount"
+                      id="amount"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.amount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="date"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      name="date"
+                      id="date"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                      value={newExpense.date}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                  <div className="mt-4">
+                    <label
+                      htmlFor="reason"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Reason
+                    </label>
+                    <input
+                      type="text"
+                      name="reason"
+                      id="reason"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.reason}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <label
+                      htmlFor="category"
+                      className="block mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      id="category"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
+                      value={newExpense.category}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category, index) => (
+                        <option key={index} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <button type="button" className="cancel" onClick={onClose}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="UpdateBtn">
+                    Add Expense
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
@@ -55,6 +183,7 @@ const ExpenseManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showModal, setShowModal] = useState(false);
   const limit = 10; // Number of items per page
 
   useEffect(() => {
@@ -109,6 +238,7 @@ const ExpenseManagement = () => {
 
       const data = await response.json();
       setSummary(data.data); // Assuming the backend returns a "summary" field
+      console.log(data);
     } catch (err) {
       console.log(err);
     }
@@ -182,10 +312,9 @@ const ExpenseManagement = () => {
       console.error('Error:', error.message);
     }
   };
-
   const editExpense = (expense) => {
     setNewExpense(expense);
-    setShowForm(true);
+    setShowModal(true);
   };
 
   const deleteExpense = async (id) => {
@@ -267,29 +396,14 @@ const ExpenseManagement = () => {
   };
 
   const getBarChartData = () => {
-    let labels = [];
-    let data = [];
+    let labels, data;
 
     if (summaryType === 'yearly') {
-      labels = monthLabels; // Use month names for yearly data
-      data = summary || Array(12).fill(0); // Yearly data (assumed as monthly totals)
-    } else if (summaryType === 'monthly') {
-      // Use day labels for the selected month
-      const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
-
-      // Filter expenses by selected month and year, and aggregate daily totals
-      data = Array(daysInMonth).fill(0);
-      expenses.forEach((expense) => {
-        const expenseDate = new Date(expense.date);
-        const expenseMonth = expenseDate.getMonth() + 1;
-        const expenseYear = expenseDate.getFullYear();
-        const expenseDay = expenseDate.getDate();
-
-        if (expenseMonth === selectedMonth && expenseYear === selectedYear) {
-          data[expenseDay - 1] += parseFloat(expense.amount);
-        }
-      });
+      labels = monthLabels; // Month names for the x-axis
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
+    } else {
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
     }
 
     return {
@@ -309,181 +423,161 @@ const ExpenseManagement = () => {
   return (
     <div className="parent">
       <h1>Expense Management</h1>
-      <button
-        className="add-expense-button"
-        onClick={() => setShowForm(!showForm)}
-      >
-        {showForm ? 'Cancel' : 'Add Expense'}
+      <button className="add-expense-button" onClick={() => setShowModal(true)}>
+        Add Expense
       </button>
-      {showForm && (
-        <form onSubmit={handleSubmit} className="expense-form">
-          <input
-            type="number"
-            name="amount"
-            placeholder="Amount"
-            value={newExpense.amount}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="date"
-            name="date"
-            value={newExpense.date}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="reason"
-            placeholder="Reason"
-            value={newExpense.reason}
-            onChange={handleChange}
-            required
-          />
-          <select
-            name="category"
-            value={newExpense.category}
-            onChange={handleChange}
-            required
-          >
-            <option value="" disabled>
-              Select category
-            </option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <button type="submit">
-            {newExpense._id ? 'Update Expense' : 'Add Expense'}
-          </button>
-        </form>
-      )}
-      {/* Expense List */}
-      <table className="expense-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Reason</th>
-            <th>Amount</th>
-            <th>Category</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {expenses.map((expense) => (
-            <tr key={expense._id}>
-              <td>{expense.date}</td>
-              <td>{expense.reason}</td>
-              <td>{expense.amount}</td>
-              <td>{expense.category}</td>
-              <td>
-                <button onClick={() => editExpense(expense)}>Edit</button>
-                <button onClick={() => deleteExpense(expense._id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* Pagination */}
-      <div className="pagination">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={currentPage === i + 1 ? 'active' : ''}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
-      <div className="general-div">
-        <div className="filter-category">
-          <h2>Filter by Category</h2>
-          <select onChange={handleCategoryChange} value={selectedCategory}>
-            <option value="">All Categories</option>
-            {categories.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+
+      {/* Modal for adding expense */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleSubmit}
+        newExpense={newExpense}
+        handleChange={handleChange}
+      />
+
+      <div className="expense-list-detail">
+        <div className="summary-display">
+          <h2>Expenses</h2>
+          <table className="expense-table">
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {expenses.length === 0 ? (
+                <tr>
+                  <td colSpan="5">No expenses added yet.</td>
+                </tr>
+              ) : (
+                expenses.map((expense) => (
+                  <tr key={expense.id}>
+                    <td>{expense.amount}</td>
+                    <td>{new Date(expense.date).toLocaleDateString()}</td>
+                    <td>{expense.reason}</td>
+                    <td>{expense.category}</td>
+                    <td>
+                      <button
+                        onClick={() => editExpense(expense)}
+                        className="edit-button"
+                      >
+                        <FaRegEdit />
+                      </button>
+                      <button
+                        onClick={() => deleteExpense(expense.id)}
+                        className="edit-button"
+                      >
+                        <MdOutlineDeleteForever />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <div className="summery-type">
-          <h2>Summary Type</h2>
-          <select onChange={handleSummaryTypeChange} value={summaryType}>
-            <option value="monthly">Monthly Summary</option>
-            <option value="yearly">Yearly Summary</option>
-          </select>
-        </div>
-
-        {summaryType === 'monthly' && (
-          <div>
-            <h2>Select Month</h2>
-            <select onChange={handleMonthChange} value={selectedMonth}>
-              {monthLabels.map((label, index) => (
-                <option key={index} value={index + 1}>
-                  {label}
+        <div className="general-div">
+          <div className="filter-category">
+            <h2>Filter by Category</h2>
+            <select onChange={handleCategoryChange} value={selectedCategory}>
+              <option value="All Categories">All Categories</option>
+              {categories.map((category, index) => (
+                <option key={index} value={category}>
+                  {category}
                 </option>
               ))}
             </select>
           </div>
-        )}
 
-        {summaryType === 'yearly' && (
-          <div>
-            <h2>Select Year</h2>
-            <input
-              type="number"
-              value={selectedYear}
-              onChange={handleYearChange}
-              min="2000"
-              max={new Date().getFullYear()}
-            />
+          <div className="summery-type">
+            <h2>Summary Type</h2>
+            <select onChange={handleSummaryTypeChange} value={summaryType}>
+              <option value="monthly">Monthly Summary</option>
+              <option value="yearly">Yearly Summary</option>
+            </select>
           </div>
-        )}
-      </div>
-      <div className="chart-container">
-        <Bar data={getBarChartData()} />
-      </div>
-      ;{/* Charts */}
-      <div className="chart">
-        <div className="graph">
-          <Doughnut
-            data={{
-              labels: categories,
-              datasets: [
-                {
-                  label: 'Expenses by Category',
-                  data: categories.map((category) =>
-                    expenses
-                      .filter((expense) => expense.category === category)
-                      .reduce(
-                        (total, expense) => total + Number(expense.amount),
-                        0
-                      )
-                  ),
-                  backgroundColor: [
-                    'rgba(255, 99, 132, 0.6)',
-                    'rgba(54, 162, 235, 0.6)',
-                    'rgba(255, 206, 86, 0.6)',
-                    'rgba(75, 192, 192, 0.6)',
-                  ],
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                  ],
-                  borderWidth: 1,
+
+          {summaryType === 'monthly' && (
+            <div>
+              <h2>Select Month</h2>
+              <select onChange={handleMonthChange} value={selectedMonth}>
+                {monthLabels.map((label, index) => (
+                  <option key={index} value={index + 1}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {summaryType === 'yearly' && (
+            <div>
+              <h2>Select Year</h2>
+              <input
+                type="number"
+                value={selectedYear}
+                onChange={handleYearChange}
+                min="2000"
+                max={new Date().getFullYear()}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="summary-display">
+          <h2>
+            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
+            for {selectedCategory}
+          </h2>
+          <Bar
+            data={getBarChartData()}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
                 },
-              ],
+                title: {
+                  display: true,
+                  text: `${
+                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+                  } Summary for ${selectedCategory}`,
+                },
+              },
             }}
           />
+        </div>
+
+        <div className="chart">
+          <h2>Expense by Category</h2>
+          <div className="graph">
+            <Doughnut
+              data={{
+                labels: categories,
+                datasets: [
+                  {
+                    data: categories.map((category) =>
+                      expenses
+                        .filter((exp) => exp.category === category)
+                        .reduce((sum, exp) => sum + parseFloat(exp.amount), 0)
+                    ),
+                    backgroundColor: [
+                      '#FF6384',
+                      '#36A2EB',
+                      '#FFCE56',
+                      '#4BC0C0',
+                    ],
+                  },
+                ],
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

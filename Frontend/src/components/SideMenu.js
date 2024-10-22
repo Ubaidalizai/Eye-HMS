@@ -1,6 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import {
+  FaUserMd,
+  FaStethoscope,
+  FaBed,
+  FaClipboard,
+  FaStore,
+  FaFileInvoice,
+  FaShoppingBag,
+  FaCapsules,
+  FaFileMedical,
+  FaWarehouse,
+} from "react-icons/fa";
 
 function SideMenu({ setActiveComponent }) {
   const [userInfo, setUserInfo] = useState({});
@@ -9,176 +21,161 @@ function SideMenu({ setActiveComponent }) {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          'http://localhost:4000/api/v1/user/profile',
+          "http://localhost:4000/api/v1/user/profile",
           { withCredentials: true }
         );
 
         if (res.status === 200) {
           setUserInfo(res?.data?.data);
         } else {
-          console.error('Failed to fetch user profile', res);
+          console.error("Failed to fetch user profile", res);
         }
       } catch (error) {
-        console.error('Error fetching user profile', error);
+        console.error("Error fetching user profile", error);
       }
     };
 
     fetchData();
   }, []);
 
-  const MenuItem = ({ to, imgSrc, label }) => (
-    <Link
-      to={to}
-      className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-    >
-      <img alt={label} src={imgSrc} />
-      <span className="text-sm font-medium">{label}</span>
-    </Link>
-  );
-
   return (
-    <div className="h-full flex-col justify-between bg-white hidden lg:flex">
-      <div className="px-4 py-6">
-        <nav aria-label="Main Nav" className="mt-6 flex flex-col space-y-1">
+    <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
+      <div className='px-4 py-6'>
+        <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
           <Link
-            to="/"
-            className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700"
+            to='/'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
           >
-            <img
-              alt="dashboard-icon"
-              src={require('../assets/dashboard-icon.png')}
-            />
-            <span className="text-sm font-medium">Dashboard</span>
+            <FaClipboard className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Dashboard</span>
           </Link>
 
           <Link
-            to="/inventory"
-            className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500"
+            to='/inventory'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
-            <img
-              alt="inventory-icon"
-              src={require('../assets/inventory-icon.png')}
-            />
-            <span className="text-sm font-medium">Inventory</span>
+            <FaWarehouse className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Inventory</span>
           </Link>
 
           <Link
-            to="/purchase-details"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            to='/purchase-details'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
-            <img
-              alt="purchase-icon"
-              src={require('../assets/supplier-icon.png')}
-            />
-            <span className="text-sm font-medium">Purchase Details</span>
+            <FaFileInvoice className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Purchase Details</span>
           </Link>
 
           <Link
-            to="/sales"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            to='/sales'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
-            <img alt="sale-icon" src={require('../assets/supplier-icon.png')} />
-            <span className="text-sm font-medium">Sales</span>
+            <FaShoppingBag className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Sales</span>
           </Link>
 
           <Link
-            to="/patient"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            to='/patient'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
-            <img
-              alt="patient-icon"
-              src={require('../assets/supplier-icon.png')}
-            />
-            <span className="text-sm font-medium">Patient</span>
+            <FaFileMedical className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Patient</span>
           </Link>
 
           <Link
-            to="/move"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            to='/move'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
-            <img alt="move-icon" src={require('../assets/supplier-icon.png')} />
-            <span className="text-sm font-medium">Move</span>
-          </Link>
-          <Link
-            to="/expenseManagement"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img alt="sale-icon" src={require('../assets/supplier-icon.png')} />
-            <span className="text-sm font-medium"> Expenses</span>
-          </Link>
-          <Link
-            to="/incomeReport"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img alt="sale-icon" src={require('../assets/supplier-icon.png')} />
-            <span className="text-sm font-medium"> Income</span>
-          </Link>
-          <Link
-            to="/pharmacy"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          >
-            <img
-              alt="pharmacy-icon"
-              src={require('../assets/supplier-icon.png')}
-            />
-            <span className="text-sm font-medium">Pharmacy</span>
+            <FaUserMd className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Move</span>
           </Link>
 
           <Link
-            to="/manage-store"
-            className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500"
+            to='/expenseManagement'
+            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
           >
-            <img alt="store-icon" src={require('../assets/order-icon.png')} />
-            <span className="text-sm font-medium">Manage Store</span>
+            <FaFileInvoice className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Expenses</span>
           </Link>
 
-          <details className="group [&_summary::-webkit-details-marker]:hidden">
-            <summary className="flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-              <span className="flex items-center gap-2">
-                <img
-                  alt="branches-icon"
-                  src={require('../assets/supplier-icon.png')}
-                />
-                <span className="text-sm font-medium">Branches</span>
+          <Link
+            to='/incomeReport'
+            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+          >
+            <FaFileInvoice className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Income</span>
+          </Link>
+
+          <Link
+            to='/pharmacy'
+            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+          >
+            <FaCapsules className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Pharmacy</span>
+          </Link>
+
+          <Link
+            to='/manage-store'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
+          >
+            <FaStore className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Manage Store</span>
+          </Link>
+
+          <details className='group [&_summary::-webkit-details-marker]:hidden'>
+            <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
+              <span className='flex items-center gap-2'>
+                <FaClipboard className='text-lg text-gray-500' />
+                <span className='text-sm font-medium'>Branches</span>
               </span>
             </summary>
-            <div className="pl-4">
-              <Link
-                to="/branches/operation"
-                className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500"
-                onClick={() => setActiveComponent('Operation')}
-              >
-                <span className="text-sm font-medium">Operation</span>
-              </Link>
-              <Link
-                to="/branches/ultrasound"
-                className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500"
-                onClick={() => setActiveComponent('Altrasound')}
-              >
-                <span className="text-sm font-medium">Ultrasound</span>
-              </Link>
-              <Link
-                to="/branches/bedroom"
-                className="flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500"
-                onClick={() => setActiveComponent('Bedroom')}
-              >
-                <span className="text-sm font-medium">Bedroom</span>
-              </Link>
+
+            <div className='space-y-2 pl-4'>
+              {[
+                {
+                  name: "Operation",
+                  path: "/branches/operation",
+                  icon: <FaUserMd />,
+                },
+                {
+                  name: "Ultrasound",
+                  path: "/branches/ultrasound",
+                  icon: <FaStethoscope />,
+                },
+                {
+                  name: "Bedroom",
+                  path: "/branches/bedroom",
+                  icon: <FaBed />,
+                },
+              ].map(({ name, path, icon }, index) => (
+                <Link
+                  key={index}
+                  to={path}
+                  className='flex items-center gap-3 rounded-lg transition-all duration-300 hover:bg-blue-50 px-4 py-3 text-gray-700 group'
+                  onClick={() => setActiveComponent(name)}
+                >
+                  <span className='text-lg text-blue-500 group-hover:text-blue-600'>
+                    {icon}
+                  </span>
+                  <span className='text-sm font-semibold group-hover:text-blue-600'>
+                    {name}
+                  </span>
+                  <span className='ml-auto text-xs text-gray-400 group-hover:text-blue-400 transition duration-300'>
+                    →
+                  </span>
+                </Link>
+              ))}
             </div>
           </details>
         </nav>
       </div>
 
-      <div className="sticky inset-x-0 bottom-0 border-t border-gray-100">
-        <div className="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
-          <img
-            alt="Profile"
-            src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
-            className="h-10 w-10 rounded-full object-cover"
-          />
+      <div className='sticky inset-x-0 bottom-0 border-t border-gray-100'>
+        <div className='flex items-center gap-2 bg-white p-4 hover:bg-gray-50'>
+          <FaUserMd className='h-10 w-10 text-gray-500' />
           <div>
-            <p className="text-xs">
-              <strong className="block font-medium">
+            <p className='text-xs'>
+              <strong className='block font-medium'>
                 {userInfo.firstName} {userInfo.lastName}
               </strong>
               <span>{userInfo.email}</span>
