@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import FormModal from "../components/FormModal";
+import DataTable from "../components/DataTable";
 
 function Operation() {
-  const [id, setId] = useState('');
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [time, setTime] = useState('');
-  const [date, setDate] = useState('');
-  const [doctor, setDoctor] = useState('');
+  const [id, setId] = useState("");
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [time, setTime] = useState("");
+  const [date, setDate] = useState("");
+  const [doctor, setDoctor] = useState("");
   const [submittedData, setSubmittedData] = useState([]);
-  const [isOpen, setIsOpen] = useState(true); // State to control form visibility
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Load submitted data from localStorage when the component mounts
   useEffect(() => {
-    const storedData = localStorage.getItem('operationSubmittedData');
+    const storedData = localStorage.getItem("operationSubmittedData");
     if (storedData) {
       setSubmittedData(JSON.parse(storedData));
     }
@@ -24,169 +25,81 @@ function Operation() {
     const newSubmittedData = [...submittedData, entry];
     setSubmittedData(newSubmittedData);
     localStorage.setItem(
-      'operationSubmittedData',
+      "operationSubmittedData",
       JSON.stringify(newSubmittedData)
-    ); // Save to localStorage
+    );
     clearForm();
-    setIsOpen(false); // Close the form after submission
+    setIsOpen(false);
   };
 
   const handleCancel = () => {
     clearForm();
-    setIsOpen(false); // Close the form
+    setIsOpen(false);
   };
 
   const clearForm = () => {
-    setId('');
-    setName('');
-    setPrice('');
-    setTime('');
-    setDate('');
-    setDoctor('');
+    setId("");
+    setName("");
+    setPrice("");
+    setTime("");
+    setDate("");
+    setDoctor("");
   };
 
-  const handleRemove = (index) => {
-    const updatedData = submittedData.filter((_, i) => i !== index);
-    setSubmittedData(updatedData);
-    localStorage.setItem('operationSubmittedData', JSON.stringify(updatedData)); // Update localStorage
+  const fields = [
+    { label: "ID", type: "text", name: "id" },
+    { label: "Name", type: "text", name: "name" },
+    { label: "Price", type: "text", name: "price" },
+    { label: "Time", type: "time", name: "time" },
+    { label: "Date", type: "date", name: "date" },
+    { label: "Doctor", type: "text", name: "doctor" },
+  ];
+
+  const fieldValues = { id, name, price, time, date, doctor };
+  const setFieldValues = ({ id, name, price, time, date, doctor }) => {
+    setId(id);
+    setName(name);
+    setPrice(price);
+    setTime(time);
+    setDate(date);
+    setDoctor(doctor);
   };
 
   return (
-    <>
-      {isOpen && (
-        <>
-          <div className='overlay' />
-          <form className='form-container' onSubmit={handleSubmit}>
-            <div className='grid-container'>
-              <div className='mb-4'>
-                <label className='block mb-2 text-sm font-medium'>ID:</label>
-                <input
-                  type='text'
-                  className='input-field'
-                  value={id}
-                  onChange={(e) => setId(e.target.value)}
-                />
-              </div>
+    <div className='p-8 bg-gray-100 min-h-screen'>
+      <div className='mb-4 flex justify-between items-center'>
+        <h1 className='text-2xl font-bold'>Operation Management</h1>
+        <button
+          onClick={() => setIsOpen(true)}
+          className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition'
+        >
+          + Add Record
+        </button>
+      </div>
 
-              <div className='mb-4'>
-                <label className='block mb-2 text-sm font-medium'>Name:</label>
-                <input
-                  type='text'
-                  className='input-field'
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
+      <FormModal
+        title='Add New Operation Record'
+        isOpen={isOpen}
+        handleSubmit={handleSubmit}
+        handleCancel={handleCancel}
+        fields={fields}
+        fieldValues={fieldValues}
+        setFieldValues={setFieldValues}
+      />
 
-              <div className='mb-4'>
-                <label className='block mb-2 text-sm font-medium'>Price:</label>
-                <input
-                  type='text'
-                  className='input-field'
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label className='block mb-2 text-sm font-medium'>Time:</label>
-                <input
-                  type='time'
-                  className='input-field'
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label className='block mb-2 text-sm font-medium'>Date:</label>
-                <input
-                  type='date'
-                  className='input-field'
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label className='block mb-2 text-sm font-medium'>
-                  Doctor:
-                </label>
-                <input
-                  type='text'
-                  className='input-field'
-                  value={doctor}
-                  onChange={(e) => setDoctor(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className='button-container flex justify-end space-x-2'>
-              <button
-                type='button'
-                onClick={handleCancel}
-                className='cancel-button'
-              >
-                Cancel
-              </button>
-              <button type='submit' className='submit-button'>
-                Register
-              </button>
-            </div>
-          </form>
-        </>
-      )}
-
-      {/* Display submitted data here */}
-      {submittedData.length > 0 && (
-        <div className='submitted-data mt-4'>
-          <h3>Submitted Data:</h3>
-          <table className='min-w-full bg-white border border-gray-300 mt-2'>
-            <thead>
-              <tr>
-                <th className='border border-gray-300 px-4 py-2'>ID</th>
-                <th className='border border-gray-300 px-4 py-2'>Name</th>
-                <th className='border border-gray-300 px-4 py-2'>Price</th>
-                <th className='border border-gray-300 px-4 py-2'>Time</th>
-                <th className='border border-gray-300 px-4 py-2'>Date</th>
-                <th className='border border-gray-300 px-4 py-2'>Doctor</th>
-              </tr>
-            </thead>
-            <tbody>
-              {submittedData.map((data, index) => (
-                <tr key={index}>
-                  <td className='border border-gray-300 px-4 py-2'>
-                    {data.id}
-                  </td>
-                  <td className='border border-gray-300 px-4 py-2'>
-                    {data.name}
-                  </td>
-                  <td className='border border-gray-300 px-4 py-2'>
-                    {data.price}
-                  </td>
-                  <td className='border border-gray-300 px-4 py-2'>
-                    {data.time}
-                  </td>
-                  <td className='border border-gray-300 px-4 py-2'>
-                    {data.date}
-                  </td>
-                  <td className='border border-gray-300 px-4 py-2'>
-                    {data.doctor}
-                  </td>
-
-                  <button
-                    onClick={() => handleRemove(index)}
-                    className='close-button'
-                  >
-                    ❌
-                  </button>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
+      <DataTable
+        submittedData={submittedData}
+        fields={fields}
+        handleRemove={(index) => {
+          const updatedData = submittedData.filter((_, i) => i !== index);
+          setSubmittedData(updatedData);
+          localStorage.setItem(
+            "operationSubmittedData",
+            JSON.stringify(updatedData)
+          );
+        }}
+      />
+    </div>
   );
 }
 

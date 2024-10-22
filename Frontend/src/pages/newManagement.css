@@ -39,30 +39,62 @@ input:focus, select:focus {
     outline: none;
 }
 
-button {
-    width: 120px;
+.add-expense-button{
+    width: 100px;
     background-color: blue;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 5px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
     transition: background-color 0.3s, transform 0.3s;
     margin: 10px;
     align-items: center;
 }
 
-button:hover {
+.add-expense-button:hover {
     background-color: darkblue;
     transform: translateY(-1px);
 }
 .UpdateBtn{
+    width: 100px;
     background-color: blue;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s, transform 0.3s;
+    margin: 10px;
+    align-items: center;
+}
+.UpdateBtn:hover {
+    background-color: darkblue;
+    transform: translateY(-1px);
+}
+.cancel{
+    width: 100px;
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s, transform 0.3s;
+    margin: 10px;
+    align-items: center;
+}
+.cancel:hover {
+    background-color: darkblue;
+    transform: translateY(-1px);
 }
 h2 {
     margin-top: 30px;
     color: #555;
+
     font-weight: 500;
 }
 .summary-display{
@@ -97,20 +129,21 @@ h2 {
 }
 
 .edit-button {
-    background-color: blue;
-    margin-left: 10px;
+    width: 40px;
+    background-color: #fff;
+    margin-right: 10px;
     border: none;
-    color: white;
+    color:black;
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-}
 
-.edit-button:hover {
-    background-color: darkblue;
-    transform: translateY(-1px);
 }
+.edit-button:hover {
+    background-color: #fff;
+  color: rgb(0, 179, 255);
+    transform: scale(1.05);  
+} 
 
 .approved {
     background-color: #d4edda;
@@ -160,13 +193,6 @@ h2 {
     font-weight: bold;
 }
 
-.summary-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.summary-table tbody tr:hover {
-    background-color: #f1f1f1;
-}
 
 .summary-table tbody td {
     font-size: 1em;
@@ -183,24 +209,6 @@ h2 {
 
 
 
-.expence-list-detail {
-    width: 100%;
-    border: 1px solid red;
-
-}
-
-.delete-button {
-    margin-left: 10px;
-    background-color: #FF3B30; /* Red color for delete */
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-.delete-button:hover {
-    background-color: darkred;
-}
 
 /* Table Styling */
 .expense-table {
@@ -220,7 +228,7 @@ h2 {
 }
 
 .expense-table th {
-    padding: 15px;
+    padding: 5px;
     font-weight: 600;
     text-align: left;
     border-bottom: 2px solid #dddddd;
@@ -230,11 +238,13 @@ h2 {
 .expense-table tbody tr {
     border-bottom: 1px solid #dddddd;
     transition: background-color 0.2s ease;
+ 
 }
 
 /* Alternate row coloring for better readability */
-.expense-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+
+.expense-table tbody{
+    padding: 5px;
 }
 
 /* Table cell styling */
@@ -246,21 +256,6 @@ h2 {
 /* Remove border for the last column */
 .expense-table td:last-child {
     border-right: none;
-}
-
-/* Table row hover effect */
-.expense-table tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* Action buttons styling */
-.edit-button, .delete-button {
-    padding: 8px 12px;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
 }
 
 /* Column styling */
@@ -287,6 +282,33 @@ h2 {
     width: 300px;
     height: 300px;
 }
+.fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50; /* Higher than the overlay */
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 40; /* Lower than the modal */
+}
+
+.relative {
+    z-index: 60; /* Ensure modal is above the overlay */
+}
+
+/* Add any other styles you need for your application */
 
 
 
