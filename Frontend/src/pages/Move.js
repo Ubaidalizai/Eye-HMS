@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useDispatch } from "react-redux";
-import { moveItemAPI } from "../redux/inventorySlice";
+import { moveItemAPI } from "../redux/inventorySlice"; // Ensure this is correct
 import AuthContext from "../AuthContext";
 import { Dialog, Transition } from "@headlessui/react"; // Modal
 
@@ -27,9 +27,7 @@ const Move = () => {
         );
         const data = await response.json();
         setProducts(data.data.results);
-        setTotalPages(
-          data.totalPages || Math.ceil(Math.ceil(data.results / limit))
-        );
+        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } catch (error) {
         setError("Failed to fetch products.");
       } finally {
@@ -38,7 +36,7 @@ const Move = () => {
     };
 
     fetchProductsData();
-  }, [authContext.user]);
+  }, [currentPage]);
 
   const openModal = (item) => {
     setSelectedItem(item);
