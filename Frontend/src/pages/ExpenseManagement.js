@@ -9,7 +9,7 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import { MdOutlineDeleteForever } from "react-icons/md";
+import { MdOutlineDeleteOutline } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 
 import "./newManagement.css";
@@ -412,8 +412,8 @@ const ExpenseManagement = () => {
         {
           label: "Expenses",
           data,
-          backgroundColor: "rgba(75, 192, 192, 0.6)",
-          borderColor: "rgba(75, 192, 192, 1)",
+          backgroundColor: "rgb(0, 179, 255)",
+          borderColor: "rgb(0, 179, 255)",
           borderWidth: 1,
         },
       ],
@@ -422,23 +422,29 @@ const ExpenseManagement = () => {
 
   return (
     <div className='parent'>
+     
       <h1>Expense Management</h1>
-      <button className='add-expense-button' onClick={() => setShowModal(true)}>
-        Add Expense
-      </button>
+    
 
-      {/* Modal for adding expense */}
-      <Modal
+      <div className='expense-list-detail'>
+        <div className='summary-display'>
+        <div className="Add-btn">
+    <h2 className="list-header">Expense List</h2>
+    <button className='add-expense-button' onClick={() => setShowModal(true)}>
+        Add Expense
+    </button>
+    
+
+    {/* Modal for adding expense */}
+    <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleSubmit}
         newExpense={newExpense}
         handleChange={handleChange}
-      />
+    />
+    </div>
 
-      <div className='expense-list-detail'>
-        <div className='summary-display'>
-          <h2>Expenses</h2>
           <table className='expense-table'>
             <thead>
               <tr>
@@ -452,7 +458,7 @@ const ExpenseManagement = () => {
             <tbody>
               {expenses.length === 0 ? (
                 <tr>
-                  <td colSpan='5'>No expenses added yet.</td>
+                  <td>No expenses added yet.</td>
                 </tr>
               ) : (
                 expenses.map((expense) => (
@@ -462,6 +468,7 @@ const ExpenseManagement = () => {
                     <td>{expense.reason}</td>
                     <td>{expense.category}</td>
                     <td>
+                      <div className="edit-parent">
                       <button
                         onClick={() => editExpense(expense)}
                         className='edit-button'
@@ -472,8 +479,11 @@ const ExpenseManagement = () => {
                         onClick={() => deleteExpense(expense.id)}
                         className='edit-button'
                       >
-                        <MdOutlineDeleteForever />
+                        <div className="del-icon">
+                        <MdOutlineDeleteOutline />
+                        </div>
                       </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -483,52 +493,50 @@ const ExpenseManagement = () => {
         </div>
 
         <div className='general-div'>
-          <div className='filter-category'>
-            <h2>Filter by Category</h2>
-            <select onChange={handleCategoryChange} value={selectedCategory}>
-              <option value='All Categories'>All Categories</option>
-              {categories.map((category, index) => (
-                <option key={index} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
+  <div className='filter-category'>
+    <select className='dropdown' onChange={handleCategoryChange} value={selectedCategory}>
+      <option value='All Categories'>All Categories</option>
+      {categories.map((category, index) => (
+        <option key={index} value={category}>
+          {category}
+        </option>
+      ))}
+    </select>
+  </div>
 
-          <div className='summery-type'>
-            <h2>Summary Type</h2>
-            <select onChange={handleSummaryTypeChange} value={summaryType}>
-              <option value='monthly'>Monthly Summary</option>
-              <option value='yearly'>Yearly Summary</option>
-            </select>
-          </div>
+  <div className='summery-type'>
+    <select className='dropdown' onChange={handleSummaryTypeChange} value={summaryType}>
+      <option value='monthly'>Monthly Summary</option>
+      <option value='yearly'>Yearly Summary</option>
+    </select>
+  </div>
 
-          {summaryType === "monthly" && (
-            <div>
-              <h2>Select Month</h2>
-              <select onChange={handleMonthChange} value={selectedMonth}>
-                {monthLabels.map((label, index) => (
-                  <option key={index} value={index + 1}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+  {summaryType === "monthly" && (
+    <div className='month-selection'>
+      <select className='dropdown' onChange={handleMonthChange} value={selectedMonth}>
+        {monthLabels.map((label, index) => (
+          <option key={index} value={index + 1}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </div>
+  )}
 
-          {summaryType === "yearly" && (
-            <div>
-              <h2>Select Year</h2>
-              <input
-                type='number'
-                value={selectedYear}
-                onChange={handleYearChange}
-                min='2000'
-                max={new Date().getFullYear()}
-              />
-            </div>
-          )}
-        </div>
+  {summaryType === "yearly" && (
+    <div className='year-selection'>
+      <h2 className='year-label'>Select Year</h2>
+      <input
+        className='year-input'
+        type='number'
+        value={selectedYear}
+        onChange={handleYearChange}
+        min='2000'
+        max={new Date().getFullYear()}
+      />
+    </div>
+  )}
+</div>
 
         <div className='summary-display'>
           <h2>

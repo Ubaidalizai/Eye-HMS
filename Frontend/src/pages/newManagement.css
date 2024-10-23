@@ -1,13 +1,13 @@
 .parent {
-    width:1000px;
+    width: 1000px;
     height: auto;
     font-family: 'Arial', sans-serif;
-  
     margin: 0;
-    padding:40px;
+    padding: 0 40px;
     justify-content: center;
     align-items: center;
 }
+
 h1 {
     margin-top: 0;
     text-align: center;
@@ -16,15 +16,41 @@ h1 {
     font-weight: 600;
     margin-bottom: 20px;
 }
-.add-expense-button{
-    float: right;
-    margin-right: 20px;
-  
+.Add-btn {
+    display: flex;              
+    justify-content: space-between; 
+    align-items: center;  
+    margin-top: 15px;           
 }
+
+.list-header {
+    margin: 0;                 /* Remove default margin */
+}
+
+
+/* Responsive Adjustments for .parent and h1 */
+@media (max-width: 1000px) {
+    .parent {
+        padding: 20px; /* Reduce padding on smaller screens */
+    }
+
+    h1 {
+        font-size: 1.8em; /* Slightly decrease font size */
+    }
+}
+
+
 .expense-form {
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
+}
+
+/* Responsive Adjustments for expense-form */
+@media (max-width: 600px) {
+    .expense-form {
+        padding: 15px; /* Adjust padding for smaller screens */
+    }
 }
 
 input, select {
@@ -36,82 +62,90 @@ input, select {
     transition: border-color 0.3s;
 }
 
+/* Responsive Adjustments for input/select */
+@media (max-width: 600px) {
+    input, select {
+        font-size: 14px; /* Smaller font size for inputs */
+        width: 100%; /* Full width for inputs */
+    }
+}
+
 input:focus, select:focus {
     border-color: blue;
     outline: none;
 }
 
-.add-expense-button{
+.add-expense-button {
     width: 100px;
     background-color: blue;
     color: white;
     border: none;
     padding: 5px;
+    margin-right: 10px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
     transition: background-color 0.3s, transform 0.3s;
-    margin: 10px;
+    /* margin: 10px; */
     align-items: center;
+}
+
+/* Responsive Adjustments for buttons */
+@media (max-width: 600px) {
+    .add-expense-button {
+        width: 100%; /* Full width for buttons */
+        margin: 10px 0; /* Adjust margin */
+        font-size: 14px; /* Adjust font size */
+    }
 }
 
 .add-expense-button:hover {
     background-color: darkblue;
     transform: translateY(-1px);
 }
-.UpdateBtn{
-    width: 100px;
-    background-color: blue;
-    color: white;
-    border: none;
-    padding: 5px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.3s, transform 0.3s;
-    margin: 10px;
-    align-items: center;
-}
-.UpdateBtn:hover {
-    background-color: darkblue;
-    transform: translateY(-1px);
-}
-.cancel{
-    width: 100px;
-    background-color: blue;
-    color: white;
-    border: none;
-    padding: 5px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.3s, transform 0.3s;
-    margin: 10px;
-    align-items: center;
-}
-.cancel:hover {
-    background-color: darkblue;
-    transform: translateY(-1px);
-}
-h2 {
-    margin-top: 30px;
-    color: #555;
 
-    font-weight: 500;
+.UpdateBtn, .cancel {
+    width: 100px;
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s, transform 0.3s;
+    margin: 10px;
+    align-items: center;
 }
-.summary-display{
-    padding: 10px;
-        margin-top: 20px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-  
+
+/* Responsive Adjustments for Update and Cancel buttons */
+@media (max-width: 600px) {
+    .UpdateBtn, .cancel {
+        width: 100%; /* Full width for buttons */
+        font-size: 14px; /* Adjust font size */
+    }
 }
+
+.list-header {
+    /* margin-top: 15px; */
+    color: #555;
+    padding: 0 15px;
+    /* font-weight: 500; */
+}
+
 .expense-list-container {
     margin-top: 20px;
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
+}
+
+/* Responsive Adjustments for .expense-list-container */
+@media (max-width: 600px) {
+    .expense-list-container {
+        padding: 15px; /* Adjust padding */
+    }
 }
 
 .expense-item {
@@ -126,50 +160,118 @@ h2 {
     transition: background-color 0.3s;
 }
 
+/* Responsive Adjustments for .expense-item */
+@media (max-width: 600px) {
+    .expense-item {
+        flex-direction: column; /* Stack items vertically */
+        align-items: flex-start; /* Align items to the left */
+    }
+}
+
 .expense-item:hover {
     background-color: #e9ecef;
 }
 
+.edit-parent{
+    display: flex;
+}
 .edit-button {
-    width: 40px;
+    /* width: 40px; */
     background-color: #fff;
-    margin-right: 10px;
+    /* margin-right: 10px; */
     border: none;
-    color:black;
+    color: black;
     padding: 5px 10px;
     border-radius: 4px;
     cursor: pointer;
-
 }
+
+/* Responsive Adjustments for edit-button */
+@media (max-width: 600px) {
+    .edit-button {
+        width: auto; /* Allow buttons to adjust size */
+        margin-top: 5px; /* Add margin for spacing */
+    }
+}
+
 .edit-button:hover {
     background-color: #fff;
-  color: rgb(0, 179, 255);
-    transform: scale(1.05);  
-} 
-
+    color: rgb(0, 179, 255);
+    transform: scale(1.05);
+}
+.del-icon{
+    font-size: 1.1rem;
+}
 .approved {
     background-color: #d4edda;
     border-left: 5px solid blue;
 }
-.general-div{
+
+.general-div {
     display: flex;
+    align-items: center; /* Align items in a single line */
+    padding: 5px;
+    margin-top: 20px;
 }
-.filter-category{
-    margin:0px 20px;
+
+/* Responsive Adjustments for general-div */
+@media (max-width: 600px) {
+    .general-div {
+        flex-direction: column; /* Stack items on smaller screens */
+        align-items: flex-start; /* Align items to the left */
+    }
+}
+
+.filter-category, .summery-type, .month-selection, .year-selection {
+    margin-right: 15px; /* Space between inputs */
+}
+
+/* Responsive Adjustments for filter inputs */
+@media (max-width: 600px) {
+    .filter-category, .summery-type, .month-selection, .year-selection {
+        margin-right: 0; /* Remove spacing in mobile view */
+        margin-bottom: 10px; /* Add space below each dropdown */
+    }
+}
+
+.dropdown, .year-input {
+    padding: 5px; /* Adjust padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px; /* Consistent font size */
+    width: 10rem; /* Fixed width */
+}
+
+/* Responsive Adjustments for dropdowns */
+@media (max-width: 600px) {
+    .dropdown, .year-input {
+        width: 100%; /* Full width for dropdowns */
+    }
+}
+
+.year-label {
+    margin: 0 10px; /* Adjust margin for spacing */
 }
 
 .summary {
-    /* background-color: #fff; */
     padding: 10px;
     border-radius: 4px;
     overflow-x: auto;
     border: 1px solid #ccc;
 }
 
-
-.summary-display h2 {
-    margin-bottom: 15px;
+.summary-display {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+/* .Add-btn h2{
     font-size: 1.5em;
+    /* padding: 0 0 0 10px; 
+} */
+.summary-display h2 {
+    /* margin-bottom: 15px; */
+    font-size: 1.5em;
+    padding: 0 0 0 10px;
 }
 
 .summary-table {
@@ -189,6 +291,12 @@ h2 {
     font-weight: bold;
 }
 
+/* Responsive Adjustments for summary table */
+@media (max-width: 600px) {
+    .summary-table {
+        font-size: 14px; /* Adjust font size */
+    }
+}
 
 .summary-table tbody td {
     font-size: 1em;
@@ -203,60 +311,57 @@ h2 {
     color: #333;
 }
 
-
-
-
 /* Table Styling */
 .expense-table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
     font-size: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     background-color: #ffffff;
+}
+
+/* Responsive Adjustments for expense-table */
+@media (max-width: 600px) {
+    .expense-table {
+        font-size: 14px; /* Adjust font size */
+    }
 }
 
 /* Table header styling */
 .expense-table thead {
     background-color: #0b72ef;
     opacity: 0.4;
-    color:#fff;
+    color: #fff;
     text-align: left;
 }
 .expense-table th {
     padding: 5px;
     font-weight: 600;
     text-align: left;
-    border-bottom: 2px solid #dddddd;
 }
 
 /* Table body styling */
 .expense-table tbody tr {
     border-bottom: 1px solid #dddddd;
     transition: background-color 0.2s ease;
- 
-}
-
-/* Alternate row coloring for better readability */
-
-.expense-table tbody{
-    padding: 5px;
 }
 
 /* Table cell styling */
 .expense-table td {
     padding: 5px;
-   color: #777;
+    color: #777;
+    
 }
 
 /* Column styling */
 .expense-table th, .expense-table td {
-    text-align: center;
+    text-align:left;
+
 }
 
 .chart {
     width: 100%; /* Full width of the page */
-    height:auto; /* Reduced height for the chart */
+    height: auto; /* Reduced height for the chart */
     margin: 20px auto;
     padding: 10px;
     text-align: center; 
@@ -267,10 +372,12 @@ h2 {
 .chart h2 {
     margin-bottom: 10px; /* Reduced space between title and chart */
 }
-.graph{
+
+.graph {
     width: 300px;
     height: 300px;
 }
+
 .fixed {
     position: fixed;
     top: 0;
@@ -297,18 +404,10 @@ h2 {
     z-index: 60; /* Ensure modal is above the overlay */
 }
 
-/* Add any other styles you need for your application */
-
-
-
 /* Responsive table styling */
 @media (max-width: 800px) {
-    .expense-table {
-        font-size: 14px;
-    }
-
     .expense-table thead {
-        font-size: 15px;
+        font-size: 15px; /* Adjust header font size */
     }
 
     .edit-button, .delete-button {
@@ -318,21 +417,17 @@ h2 {
 }
 
 @media (max-width: 600px) {
-    .expense-form {
-        padding: 15px;
-    }
-
     input, select, button {
-        font-size: 14px;
-    }
-
-    .expense-item {
-        flex-direction: column;
-        align-items: flex-start;
+        font-size: 14px; /* Smaller font size for inputs and buttons */
     }
 
     .edit-button {
         margin-left: 0;
-        margin-top: 5px;
+        margin-top: 5px; /* Adjust margin for layout */
+    }
+
+    .expense-item {
+        flex-direction: column; /* Stack items vertically */
+        align-items: flex-start; /* Align items to the left */
     }
 }
