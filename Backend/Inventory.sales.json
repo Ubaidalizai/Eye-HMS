@@ -1,0 +1,122 @@
+[
+  {
+    "amount": 250,
+    "reason": "Groceries shopping",
+    "date": "2024-01-02",
+    "category": "food"
+  },
+  {
+    "amount": 1500,
+    "reason": "Monthly salary",
+    "date": "2024-01-03",
+    "category": "salary"
+  },
+  {
+    "amount": 800,
+    "reason": "Bought a new sofa",
+    "date": "2024-01-01",
+    "category": "furniture"
+  },
+  {
+    "amount": 60,
+    "reason": "Lunch with friends",
+    "date": "2024-02-01",
+    "category": "food"
+  },
+  {
+    "amount": 200,
+    "reason": "Dining out",
+    "date": "2024-02-02",
+    "category": "food"
+  },
+  {
+    "amount": 150,
+    "reason": "Office supplies",
+    "date": "2024-02-03",
+    "category": "other"
+  },
+  {
+    "amount": 90,
+    "reason": "Snacks for team meeting",
+    "date": "2024-02-04",
+    "category": "food"
+  },
+  {
+    "amount": 450,
+    "reason": "Repaired furniture",
+    "date": "2024-02-11",
+    "category": "furniture"
+  },
+  {
+    "amount": 2000,
+    "reason": "Bonus salary",
+    "date": "2024-02-12",
+    "category": "salary"
+  },
+  {
+    "amount": 120,
+    "reason": "Coffee and snacks",
+    "date": "2024-03-13",
+    "category": "food"
+  },
+  {
+    "amount": 75,
+    "reason": "Home cleaning supplies",
+    "date": "2024-03-14",
+    "category": "other"
+  },
+  {
+    "amount": 50,
+    "reason": "Lunch with coworkers",
+    "date": "2024-03-15",
+    "category": "food"
+  },
+  {
+    "amount": 1800,
+    "reason": "Regular monthly salary",
+    "date": "2024-03-16",
+    "category": "salary"
+  },
+  {
+    "amount": 900,
+    "reason": "New dining table",
+    "date": "2024-03-17",
+    "category": "furniture"
+  },
+  {
+    "amount": 300,
+    "reason": "Groceries",
+    "date": "2024-04-18",
+    "category": "food"
+  },
+  {
+    "amount": 100,
+    "reason": "Household essentials",
+    "date": "2024-04-19",
+    "category": "other"
+  },
+  {
+    "amount": 1500,
+    "reason": "Salary payment",
+    "date": "2024-04-20",
+    "category": "salary"
+  },
+  {
+    "amount": 400,
+    "reason": "Furniture polishing",
+    "date": "2024-01-21",
+    "category": "furniture"
+  },
+  {
+    "amount": 50,
+    "reason": "Fast food dinner",
+    "date": "2024-01-22",
+    "category": "food"
+  },
+  {
+    "amount": 200,
+    "reason": "Miscellaneous expenses",
+    "date": "2024-01-23",
+    "category": "other"
+  }
+]
