@@ -1,5 +1,7 @@
 // routes/expenseRoutes.js
 const express = require('express');
+
+const { authenticate } = require('../middlewares/authMiddleware');
 const {
   getExpenses,
   getExpensesByYear,
@@ -11,8 +13,12 @@ const {
 } = require('../controllers/ExpensesController');
 
 const router = express.Router();
+
+router.use(authenticate);
+
 router.get('/:year/:month', getExpensesByMonth);
 router.get('/categoryExpense', getCategoryTotal);
+
 // GET all expenses
 router.route('/').get(getExpenses).post(addExpense);
 // GET expenses by year (e.g., /api/expenses/year/2024)

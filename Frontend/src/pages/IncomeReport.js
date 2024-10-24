@@ -108,7 +108,8 @@ const IncomeReport = () => {
       }
 
       const data = await response.json();
-      setSummary(data.data); // Assuming the backend returns a "summary" field
+      // Set summary to the data object directly
+      setSummary(data.data); // Now summary should be { totalIncome, totalNetIncome }
     } catch (err) {
       console.log(err);
     }
@@ -129,8 +130,8 @@ const IncomeReport = () => {
       }
 
       const data = await response.json();
-      console.log(data);
-      setSummary(data.data); // Assuming the backend returns a "summary" field
+      // Set summary to the data object directly
+      setSummary(data.data); // Now summary should be { totalIncome, totalNetIncome }
     } catch (err) {
       console.log(err);
     }
@@ -138,7 +139,7 @@ const IncomeReport = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(newIncome);
+
     let baseUrl = `http://localhost:4000/api/v1/income`;
     const url = newIncome?._id
       ? baseUrl +
@@ -146,7 +147,7 @@ const IncomeReport = () => {
       : baseUrl +
         `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new income
     const method = newIncome?._id ? 'PATCH' : 'POST';
-    console.log(method);
+
     try {
       const response = await fetch(url, {
         method,
@@ -261,24 +262,36 @@ const IncomeReport = () => {
   };
 
   const getBarChartData = () => {
-    let labels, data;
+    let labels, incomeData, netIncomeData;
 
     if (summaryType === 'yearly') {
-      labels = monthLabels; // Month names for the x-axis
-      data = summary || Array(12).fill(0); // Use data from the API or zeros
+      labels = monthLabels;
+      // Use the arrays directly from summary
+      incomeData = summary.totalIncome;
+      netIncomeData = summary.totalNetIncome;
     } else {
-      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary || Array(30).fill(0); // Use data from the API or zeros
+      // For monthly view
+      labels = Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
+      // Use the arrays directly from summary
+      incomeData = summary.totalIncome;
+      netIncomeData = summary.totalNetIncome;
     }
 
     return {
       labels,
       datasets: [
         {
-          label: 'income',
-          data,
+          label: 'Total Income',
+          data: incomeData,
           backgroundColor: 'rgba(75, 192, 192, 0.6)',
           borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+        },
+        {
+          label: 'Total Net Income',
+          data: netIncomeData,
+          backgroundColor: 'rgba(255, 99, 132, 0.6)',
+          borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1,
         },
       ],
@@ -474,23 +487,27 @@ const IncomeReport = () => {
             {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
             for {selectedCategory}
           </h2>
-          <Bar
-            data={getBarChartData()}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: 'top',
+          {summary ? (
+            <Bar
+              data={getBarChartData()}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                  },
+                  title: {
+                    display: true,
+                    text: `${
+                      summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+                    } Summary for ${selectedCategory}`,
+                  },
                 },
-                title: {
-                  display: true,
-                  text: `${
-                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
-                  } Summary for ${selectedCategory}`,
-                },
-              },
-            }}
-          />
+              }}
+            />
+          ) : (
+            <p>Loading...</p>
+          )}
         </div>
 
         <div className="chart">
