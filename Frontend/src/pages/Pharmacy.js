@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import {
   FaPills,
@@ -7,7 +7,6 @@ import {
   FaExclamationTriangle,
   FaChevronLeft,
   FaChevronRight,
-  FaSearch,
 } from "react-icons/fa";
 
 const Pharmacy = () => {
@@ -17,53 +16,44 @@ const Pharmacy = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
   const limit = 10;
   const user = JSON.parse(localStorage.getItem("user"));
 
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
+
+    if (user.role === "sunglassesSeller") {
+      baseUrl += "&category=sunglasses,frame";
+    } else if (user.role === "pharmacist") {
+      baseUrl += "&category=drug";
+    }
+
+    try {
+      const res = await fetch(baseUrl, {
+        credentials: "include",
+        method: "GET",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setDrugs(data.data.results);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, user.role]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-
-      let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
-
-      if (user.role === "sunglassesSeller") {
-        baseUrl = `${baseUrl}&category=sunglasses,frame`;
-      } else if (user.role === "pharmacist") {
-        baseUrl = `${baseUrl}&category=drug`;
-      }
-
-      if (searchTerm) {
-        baseUrl = `${baseUrl}&search=${searchTerm}`;
-      }
-
-      try {
-        const res = await fetch(baseUrl, {
-          credentials: "include",
-          method: "GET",
-        });
-
-        if (!res.ok) {
-          throw new Error(`Error: ${res.status}`);
-        }
-
-        const data = await res.json();
-        setDrugs(data.data.results);
-        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, [currentPage, searchTerm]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setCurrentPage(1);
-  };
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -192,40 +182,7 @@ const Pharmacy = () => {
                 </div>
               </div>
             </div>
-            <div className='px-4 py-5 sm:px-6'>
-              <form
-                onSubmit={handleSearch}
-                className='mt-1 flex rounded-md shadow-sm'
-              >
-                <div className='relative flex items-stretch flex-grow focus-within:z-10'>
-                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                    <FaSearch
-                      className='h-5 w-5 text-gray-400'
-                      aria-hidden='true'
-                    />
-                  </div>
-                  <input
-                    type='text'
-                    name='search'
-                    id='search'
-                    className='focus:ring-indigo-500 focus:border-indigo-500 block w-full rounded-none rounded-l-md pl-10 sm:text-sm border-gray-300'
-                    placeholder='Search items'
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <button
-                  type='submit'
-                  className='-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'
-                >
-                  <FaSearch
-                    className='h-5 w-5 text-gray-400'
-                    aria-hidden='true'
-                  />
-                  <span>Search</span>
-                </button>
-              </form>
-            </div>
+
             <ul className='divide-y divide-gray-200'>
               {drugs.map((drug, index) => (
                 <li
