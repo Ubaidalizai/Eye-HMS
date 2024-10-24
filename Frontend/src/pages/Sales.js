@@ -1,6 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
-import AddSale from '../components/AddSale';
-import AuthContext from '../AuthContext';
+import React, { useState, useEffect, useContext } from "react";
+import {
+  FaPlus,
+  FaChevronLeft,
+  FaChevronRight,
+  FaFilter,
+} from "react-icons/fa";
+import AddSale from "../components/AddSale";
+import AuthContext from "../AuthContext";
 
 function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -10,43 +16,43 @@ function Sales() {
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 10; // Number of items per page
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  const limit = 10;
   const authContext = useContext(AuthContext);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  // Determine initial URL based on role
   useEffect(() => {
     fetchSales();
     fetchProductsData();
   }, [currentPage, category]);
 
-  // Handle category change (only for admin)
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
-    setCurrentPage(1); // Reset to page 1 when category changes
+    setCurrentPage(1);
   };
 
-  // Fetch paginated sales data from the backend
   const fetchSales = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses,frame';
-      } else if (user.role === 'pharmacist') {
-        baseUrl += '&category=drug';
+      if (user.role === "sunglassesSeller") {
+        baseUrl += "&category=sunglasses,frame";
+      } else if (user.role === "pharmacist") {
+        baseUrl += "&category=drug";
       }
 
-      // If admin selected a category
       if (category) {
         baseUrl += `&category=${category}`;
       }
 
       const response = await fetch(baseUrl, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -55,48 +61,60 @@ function Sales() {
 
       const data = await response.json();
       setSales(data.data.results);
-      setTotalPages(
-        data.totalPages || Math.ceil(Math.ceil(data.results / limit))
-      );
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
-      console.log(err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Fetching Data of All Products
-  const fetchProductsData = () => {
-    let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
+  const fetchProductsData = async () => {
+    try {
+      let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
 
-    if (user.role === 'sunglassesSeller') {
-      baseUrl += '&category=sunglasses,frame';
-    } else if (user.role === 'pharmacist') {
-      baseUrl += '&category=drug';
+      if (user.role === "sunglassesSeller") {
+        baseUrl += "&category=sunglasses,frame";
+      } else if (user.role === "pharmacist") {
+        baseUrl += "&category=drug";
+      }
+
+      const response = await fetch(baseUrl, {
+        credentials: "include",
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAllProducts(data.data.results);
+    } catch (err) {
+      console.error("Error fetching products:", err);
     }
-
-    fetch(baseUrl, {
-      credentials: 'include',
-      method: 'GET',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAllProducts(data.data.results);
-      })
-      .catch((err) => console.log(err));
   };
 
-  // Modal for Sale Add
   const addSaleModalSetting = () => {
     setShowSaleModal(!showSaleModal);
   };
 
-  // Handle Page Update
   const handlePageUpdate = () => {
     setUpdatePage(!updatePage);
   };
 
   return (
-    <div className="col-span-12 lg:col-span-10 flex justify-center">
-      <div className="flex flex-col gap-5 w-11/12">
+    <div className='min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8'>
+      <div className='max-w-7xl mx-auto'>
+        <div className='text-center'>
+          <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
+            Sales Management
+          </h2>
+          <p className='mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4'>
+            Track and manage your sales data efficiently
+          </p>
+        </div>
+
         {showSaleModal && (
           <AddSale
             addSaleModalSetting={addSaleModalSetting}
@@ -107,129 +125,196 @@ function Sales() {
           />
         )}
 
-        {/* Sales Table */}
-        <div className="overflow-x-auto rounded-lg border bg-white border-gray-200">
-          <div className="flex justify-between pt-5 pb-3 px-3">
-            <div className="flex gap-4 justify-center items-center">
-              <span className="font-bold">Sales</span>
-            </div>
-
-            {/* Category Dropdown for Admin */}
-            {user.role === 'admin' && (
-              <div className="flex items-center">
-                <label
-                  htmlFor="category"
-                  className="mb-2 font-bold text-gray-900 dark:text-white mr-2"
-                >
-                  Category
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={category}
-                  onChange={handleCategoryChange}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pt-2 pb-2"
-                >
-                  <option value="">Select Category</option>
-                  <option value="drug">Drug</option>
-                  <option value="sunglasses">Sunglasses</option>
-                  <option value="frame">frame</option>
-                </select>
-              </div>
-            )}
-
-            <div className="flex gap-4">
+        <div className='mt-10 bg-white shadow overflow-hidden sm:rounded-lg'>
+          <div className='px-4 py-5 sm:px-6 flex justify-between items-center'>
+            <h3 className='text-lg leading-6 font-medium text-gray-900'>
+              Sales Data
+            </h3>
+            <div className='flex items-center space-x-4'>
+              {user.role === "admin" && (
+                <div className='flex items-center'>
+                  <label htmlFor='category' className='sr-only'>
+                    Category
+                  </label>
+                  <div className='relative'>
+                    <select
+                      id='category'
+                      name='category'
+                      value={category}
+                      onChange={handleCategoryChange}
+                      className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                    >
+                      <option value=''>All Categories</option>
+                      <option value='drug'>Drug</option>
+                      <option value='sunglasses'>Sunglasses</option>
+                      <option value='frame'>Frame</option>
+                    </select>
+                    <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+                      <FaFilter className='h-4 w-4' aria-hidden='true' />
+                    </div>
+                  </div>
+                </div>
+              )}
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 text-xs rounded"
+                className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={addSaleModalSetting}
               >
-                Add Sales
+                <FaPlus className='mr-2 -ml-1 h-5 w-5' aria-hidden='true' />
+                Add Sale
               </button>
             </div>
           </div>
-
-          {/* Table for Sales */}
-          <table className="min-w-full divide-y-2 divide-gray-200 text-sm">
-            <thead>
-              <tr>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Product Name
-                </th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Stock Sold
-                </th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Sale Price
-                </th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Sales Date
-                </th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Sales By
-                </th>
-                <th className="whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900">
-                  Total Sale Amount
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sales.length > 0 ? (
-                sales.map((sale) =>
-                  sale.soldDetails.map((item) => (
-                    <tr key={`${sale._id}-${item._id}`}>
-                      <td className="whitespace-nowrap px-4 py-2 text-gray-900">
-                        {item.productRefId?.name}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                        {item.quantity}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                        ${item.productRefId?.salePrice}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                        {new Date(sale.date).toLocaleDateString()}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                        {sale.userID?.firstName} {sale.userID?.lastName}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-2 text-gray-700">
-                        ${item.income}
+          <div className='border-t border-gray-200'>
+            {isLoading ? (
+              <div className='text-center py-4'>Loading...</div>
+            ) : error ? (
+              <div className='text-center py-4 text-red-600'>{error}</div>
+            ) : (
+              <table className='min-w-full divide-y divide-gray-200'>
+                <thead className='bg-gray-50'>
+                  <tr>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Product Name
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Stock Sold
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Sale Price
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Sales Date
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Sales By
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Total Sale Amount
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='bg-white divide-y divide-gray-200'>
+                  {sales.length > 0 ? (
+                    sales.map((sale) =>
+                      sale.soldDetails.map((item) => (
+                        <tr key={`${sale._id}-${item._id}`}>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                            {item.productRefId?.name}
+                          </td>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {item.quantity}
+                          </td>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            ${item.productRefId?.salePrice}
+                          </td>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {new Date(sale.date).toLocaleDateString()}
+                          </td>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            ${item.income}
+                          </td>
+                        </tr>
+                      ))
+                    )
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan='6'
+                        className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center'
+                      >
+                        No sales available
                       </td>
                     </tr>
-                  ))
-                )
-              ) : (
-                <tr>
-                  <td colSpan="6">No sales available</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
 
-        {/* Pagination Controls */}
-        <div className="flex justify-between mt-4">
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1 || totalPages === 0}
-          >
-            Previous
-          </button>
-
-          <span className="flex items-center text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages || totalPages === 0}
-          >
-            Next
-          </button>
+        <div className='bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4'>
+          <div className='flex-1 flex justify-between sm:hidden'>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1 || totalPages === 0}
+              className='relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
+            >
+              Previous
+            </button>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+              className='ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
+            >
+              Next
+            </button>
+          </div>
+          <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
+            <div>
+              <p className='text-sm text-gray-700'>
+                Showing{" "}
+                <span className='font-medium'>
+                  {(currentPage - 1) * limit + 1}
+                </span>{" "}
+                to{" "}
+                <span className='font-medium'>
+                  {Math.min(currentPage * limit, sales.length)}
+                </span>{" "}
+                of <span className='font-medium'>{sales.length}</span> results
+              </p>
+            </div>
+            <div>
+              <nav
+                className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
+                aria-label='Pagination'
+              >
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1 || totalPages === 0}
+                  className='relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
+                >
+                  <span className='sr-only'>Previous</span>
+                  <FaChevronLeft className='h-5 w-5' aria-hidden='true' />
+                </button>
+                <span className='relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700'>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className='relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
+                >
+                  <span className='sr-only'>Next</span>
+                  <FaChevronRight className='h-5 w-5' aria-hidden='true' />
+                </button>
+              </nav>
+            </div>
+          </div>
         </div>
       </div>
     </div>

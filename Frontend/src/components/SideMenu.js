@@ -82,13 +82,13 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Patient</span>
           </Link>
 
-          <Link
+          {/* <Link
             to='/move'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
             <FaUserMd className='text-lg text-gray-500' />
             <span className='text-sm font-medium'>Move</span>
-          </Link>
+          </Link> */}
 
           <Link
             to='/expenseManagement'
@@ -114,13 +114,13 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Pharmacy</span>
           </Link>
 
-          <Link
+          {/* <Link
             to='/manage-store'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
           >
             <FaStore className='text-lg text-gray-500' />
             <span className='text-sm font-medium'>Manage Store</span>
-          </Link>
+          </Link> */}
 
           <details className='group [&_summary::-webkit-details-marker]:hidden'>
             <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
