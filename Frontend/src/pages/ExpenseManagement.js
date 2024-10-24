@@ -469,12 +469,14 @@ const ExpenseManagement = () => {
                     <td>{expense.category}</td>
                     <td>
                       <div className="edit-parent">
+                       
                       <button
                         onClick={() => editExpense(expense)}
                         className='edit-button'
                       >
                         <FaRegEdit />
                       </button>
+                     
                       <button
                         onClick={() => deleteExpense(expense.id)}
                         className='edit-button'

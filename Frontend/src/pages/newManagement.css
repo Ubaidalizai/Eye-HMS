@@ -174,6 +174,7 @@ input:focus, select:focus {
 
 .edit-parent{
     display: flex;
+    justify-content: center;
 }
 .edit-button {
     /* width: 40px; */
@@ -274,43 +275,6 @@ input:focus, select:focus {
     padding: 0 0 0 10px;
 }
 
-.summary-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.summary-table th,
-.summary-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-}
-
-.summary-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-/* Responsive Adjustments for summary table */
-@media (max-width: 600px) {
-    .summary-table {
-        font-size: 14px; /* Adjust font size */
-    }
-}
-
-.summary-table tbody td {
-    font-size: 1em;
-}
-
-.summary-table td {
-    text-align: center;
-}
-
-.summary-table th {
-    font-size: 1.1em;
-    color: #333;
-}
-
 /* Table Styling */
 .expense-table {
     width: 100%;
@@ -332,12 +296,12 @@ input:focus, select:focus {
     background-color: #0b72ef;
     opacity: 0.4;
     color: #fff;
-    text-align: left;
+    /* text-align: left; */
 }
 .expense-table th {
     padding: 5px;
     font-weight: 600;
-    text-align: left;
+    /* text-align: left; */
 }
 
 /* Table body styling */
@@ -354,8 +318,10 @@ input:focus, select:focus {
 }
 
 /* Column styling */
-.expense-table th, .expense-table td {
-    text-align:left;
+.expense-table th,
+ .expense-table td {
+    text-align: center
+
 
 }
 
