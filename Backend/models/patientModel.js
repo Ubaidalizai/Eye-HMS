@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Prescription = require('./PrescriptionModule');
 const patientSchema = new mongoose.Schema(
   {
     name: {
