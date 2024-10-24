@@ -5,7 +5,6 @@ const getAll = require('./handleFactory');
 const createIncome = async (req, res) => {
   try {
     const { totalIncome, totalNetIncome, category, reason, date } = req.body;
-    console.log(req.body);
     const newIncome = new Income({
       date,
       totalIncome,
@@ -22,10 +21,17 @@ const createIncome = async (req, res) => {
   }
 };
 
+// Helper function to calculate start and end dates for a month
+const getDateRangeForMonth = (year, month) => {
+  const startDate = new Date(year, month - 1, 1); // Start of the month (month is 0-indexed in JavaScript)
+  const endDate = new Date(year, month, 0); // End of the month (last day of the month)
+  return { startDate, endDate };
+};
+
 // Filter income by year and return monthly totals
 const filterIncomeByYear = async (req, res) => {
   try {
-    const { year } = req.query;
+    const { year } = req.params;
 
     if (!year) {
       return res.status(400).json({ error: 'Year is required.' });
@@ -41,54 +47,77 @@ const filterIncomeByYear = async (req, res) => {
       },
     });
 
-    // Initialize an array with 12 zeros (one for each month)
-    const monthlyIncome = Array(12).fill(0);
+    // Initialize arrays with 12 zeros (one for each month)
+    let totalIncome = Array(12).fill(0);
+    let totalNetIncome = Array(12).fill(0);
 
-    // Calculate total income for each month
+    // Calculate total income and total net income for each month
     incomes.forEach((income) => {
       const month = new Date(income.date).getMonth(); // Get month index (0 = Jan, 11 = Dec)
-      monthlyIncome[month] += income.amount; // Add income amount to the respective month
+      totalIncome[month] += income.totalIncome; // Add totalIncome to the respective month
+      totalNetIncome[month] += income.totalNetIncome; // Add totalNetIncome to the respective month
     });
 
-    res.status(200).json(monthlyIncome);
+    res.status(200).json({
+      data: { totalIncome, totalNetIncome },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 const filterIncomeByYearAndMonth = async (req, res) => {
-  try {
-    const { year, month } = req.query;
+  const { year, month } = req.params; // Get the year and month from the request parameters
+  const { category } = req.query; // Get the category from the query parameters (optional)
 
-    if (!year || !month) {
-      return res.status(400).json({ error: 'Year and month are required.' });
+  try {
+    const { startDate, endDate } = getDateRangeForMonth(year, month);
+
+    // Build the match object with optional category filtering
+    const matchCriteria = {
+      date: {
+        $gte: startDate, // Greater than or equal to the start of the month
+        $lte: endDate, // Less than or equal to the end of the month
+      },
+    };
+
+    if (category) {
+      matchCriteria.category = category; // Add category filter if provided
     }
 
-    // Get the start date and end date for the month
-    const startDate = new Date(`${year}-${month}-01T00:00:00.000+00:00`);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 1); // Set to the first day of the next month
-
-    // Find all incomes within the given year and month
-    const filteredIncomes = await Income.find({
-      date: {
-        $gte: startDate,
-        $lt: endDate,
+    // Aggregate totalIncome and totalNetIncome for each day of the month
+    const incomes = await Income.aggregate([
+      {
+        $match: matchCriteria, // Use the built match object
       },
+      {
+        $group: {
+          _id: { day: { $dayOfMonth: '$date' } }, // Group by the day of the income date
+          totalIncome: { $sum: '$totalIncome' }, // Sum totalIncome for each day
+          totalNetIncome: { $sum: '$totalNetIncome' }, // Sum totalNetIncome for each day
+        },
+      },
+      {
+        $sort: { '_id.day': 1 }, // Sort the results by day
+      },
+    ]);
+
+    // Create arrays with elements for each day of the month, initializing with 0s
+    const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
+    const totalIncome = new Array(daysInMonth).fill(0);
+    const totalNetIncome = new Array(daysInMonth).fill(0);
+
+    // Populate the correct day in the arrays
+    incomes.forEach((income) => {
+      totalIncome[income._id.day - 1] = income.totalIncome; // Assign totalIncome to the correct day
+      totalNetIncome[income._id.day - 1] = income.totalNetIncome; // Assign totalNetIncome to the correct day
     });
 
-    // Initialize an array with 31 zeros (for each day of the month)
-    const dailyIncome = Array(31).fill(0);
-
-    // Iterate through the incomes and add the amounts to the respective day
-    filteredIncomes.forEach((income) => {
-      const day = new Date(income.date).getDate(); // Get day of the month (1-31)
-      dailyIncome[day - 1] += income.amount; // Add income to the respective day (array index 0 = day 1)
+    res.status(200).json({
+      data: { totalIncome, totalNetIncome },
     });
-
-    res.status(200).json(dailyIncome);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
