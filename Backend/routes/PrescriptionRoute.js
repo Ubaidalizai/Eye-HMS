@@ -11,7 +11,8 @@ const {
 } = require('../controllers/PrescriptionController');
 
 // Create a new prescription
-router.route('/').post(createPrescription).get(getAllPrescriptions);
+router.route('/patient/:patient_Id/prescreption').post(createPrescription);
+router.route('/').get(getAllPrescriptions);
 
 // Get a single prescription by ID
 router
