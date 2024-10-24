@@ -10,6 +10,7 @@ import {
   FaPlus,
   FaChevronLeft,
   FaChevronRight,
+  FaSearch,
 } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,6 +24,7 @@ function Inventory() {
   const [updateProduct, setUpdateProduct] = useState(null);
   const [products, setAllProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [updatePage, setUpdatePage] = useState(true);
   const [stores, setAllStores] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +54,15 @@ function Inventory() {
     constructUrl(currentPage, category);
   }, [updatePage, url, currentPage, category]);
 
+  useEffect(() => {
+    const filtered = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.manufacturer.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
+
   const constructUrl = (page, selectedCategory) => {
     const baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${page}&limit=${limit}`;
     const updatedUrl = selectedCategory
@@ -68,6 +79,7 @@ function Inventory() {
       });
       const data = await response.json();
       setAllProducts(data.data.results);
+      setFilteredProducts(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
       console.log(err);
@@ -237,7 +249,6 @@ function Inventory() {
                   Add New Product
                 </h3>
                 <form onSubmit={handleAddProduct} className='mt-2 text-left'>
-                  {/* Product Name Input */}
                   <input
                     type='text'
                     placeholder='Product Name'
@@ -248,8 +259,6 @@ function Inventory() {
                     className='mt-2 p-2 w-full border rounded'
                     required
                   />
-
-                  {/* Manufacturer Input */}
                   <input
                     type='text'
                     placeholder='Manufacturer'
@@ -263,8 +272,6 @@ function Inventory() {
                     className='mt-2 p-2 w-full border rounded'
                     required
                   />
-
-                  {/* Stock Input */}
                   <input
                     type='number'
                     placeholder='Stock'
@@ -278,8 +285,6 @@ function Inventory() {
                     className='mt-2 p-2 w-full border rounded'
                     required
                   />
-
-                  {/* Category Dropdown */}
                   <select
                     value={newProduct.category}
                     onChange={(e) =>
@@ -293,8 +298,6 @@ function Inventory() {
                     <option value='sunglasses'>Sunglasses</option>
                     <option value='frame'>Frame</option>
                   </select>
-
-                  {/* Buttons */}
                   <div className='items-center px-4 py-3'>
                     <button
                       id='ok-btn'
@@ -305,7 +308,7 @@ function Inventory() {
                     </button>
                     <button
                       type='button'
-                      onClick={() => setShowProductModal(false)} // Close the modal on cancel
+                      onClick={() => setShowProductModal(false)}
                       className='mt-2 px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300'
                     >
                       Cancel
@@ -326,7 +329,16 @@ function Inventory() {
 
         <div className='overflow-x-auto rounded-lg border bg-white border-gray-200'>
           <div className='flex justify-between pt-5 pb-3 px-3'>
-            {/* Search and Category Filters */}
+            <div className='flex items-center justify-center'>
+              <FaSearch className=' translate-x-8 text-gray-400' />
+              <input
+                type='text'
+                placeholder='Search products...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 focus:outline-none focus:ring-2 focus:ring-blue-500'
+              />
+            </div>
           </div>
           <table className='min-w-full divide-y-2 divide-gray-200 text-sm'>
             <thead>
@@ -334,7 +346,6 @@ function Inventory() {
                 <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
                   Products
                 </th>
-
                 <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
                   Manufacturer
                 </th>
@@ -347,7 +358,7 @@ function Inventory() {
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200'>
-              {products.map((item) => (
+              {filteredProducts.map((item) => (
                 <tr key={item._id}>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-900'>
                     {item.name}
@@ -384,7 +395,6 @@ function Inventory() {
           </table>
         </div>
 
-        {/* Modal for Moving Item */}
         <Transition appear show={isOpen} as={React.Fragment}>
           <Dialog as='div' className='relative z-10' onClose={closeMoveModal}>
             <Transition.Child
@@ -464,7 +474,6 @@ function Inventory() {
           </Dialog>
         </Transition>
 
-        {/* Pagination Controls */}
         <div className='flex justify-between mt-4'>
           <button
             className='px-4 py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
