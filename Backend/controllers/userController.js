@@ -93,7 +93,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
   try {
     await newUser.save();
-    const token = generateToken(res, newUser._id);
 
     res.status(201).json({
       _id: newUser._id,
