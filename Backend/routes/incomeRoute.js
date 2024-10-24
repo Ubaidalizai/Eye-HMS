@@ -13,8 +13,8 @@ const { authenticate } = require('../middlewares/authMiddleware');
 
 router.use(authenticate);
 
-router.get('/filterIncomeByYear', filterIncomeByYear);
-router.get('/filterIncomeByYearAndMonth', filterIncomeByYearAndMonth);
+router.get('/:year', filterIncomeByYear);
+router.get('/:year/:month', filterIncomeByYearAndMonth);
 // Route for creating a new income record
 router.route('/').post(createIncome).get(getAllIncome);
 
