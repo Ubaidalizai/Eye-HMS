@@ -133,6 +133,27 @@ const addExpense = asyncHandler(async (req, res) => {
   }
 });
 
+// Get sum of all expenses for a specific category (e.g., 'food')
+const getCategoryTotal = asyncHandler(async (req, res) => {
+  const category = req.query.category || 'other'; // Get category from query params, default to 'other'
+
+  try {
+    // Sum all expenses for the provided category
+    const totalExpense = await Expense.aggregate([
+      { $match: { category: category } }, // Ensure exact category match
+      { $group: { _id: null, total: { $sum: '$amount' } } }, // Sum the 'amount' field
+    ]);
+
+    const total = totalExpense.length > 0 ? totalExpense[0].total : 0;
+    res.status(200).json({ category, totalExpense: total });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error calculating total expense',
+      error: error.message,
+    });
+  }
+});
+
 // Update an expense by ID
 const updateExpense = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -183,4 +204,5 @@ module.exports = {
   addExpense,
   updateExpense,
   deleteExpense,
+  getCategoryTotal,
 };
