@@ -22,6 +22,7 @@ function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateProduct, setUpdateProduct] = useState(null);
+  const [summary, setSummary] = useState({});
   const [products, setAllProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -49,6 +50,7 @@ function Inventory() {
   );
 
   useEffect(() => {
+    fetchInventorySummary();
     fetchProductsData();
     fetchSalesData();
     constructUrl(currentPage, category, searchTerm);
@@ -66,6 +68,24 @@ function Inventory() {
     }
     console.log(baseUrl);
     setUrl(baseUrl);
+  };
+
+  // Fetch the inventory summary from the backend
+  const fetchInventorySummary = async () => {
+    try {
+      const response = await fetch(
+        'http://localhost:4000/api/v1/inventory/product/summary',
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+      const data = await response.json();
+      setSummary(data.data);
+    } catch (err) {
+      console.log(err);
+      toast.error('Failed to fetch inventory summary');
+    }
   };
 
   const fetchProductsData = async () => {
@@ -203,25 +223,23 @@ function Inventory() {
               <FaBoxOpen className="text-3xl text-blue-500 mr-3" />
               <div>
                 <p className="text-sm text-gray-500">Total Products</p>
-                <p className="text-xl font-semibold">{products.length}</p>
+                <p className="text-xl font-semibold">
+                  {summary.totalProductsCount}
+                </p>
               </div>
             </div>
             <div className="flex items-center p-4">
               <FaWarehouse className="text-3xl text-green-500 mr-3" />
               <div>
                 <p className="text-sm text-gray-500">Total Stock</p>
-                <p className="text-xl font-semibold">
-                  {products.reduce((sum, product) => sum + product.stock, 0)}
-                </p>
+                <p className="text-xl font-semibold">{summary.totalStock}</p>
               </div>
             </div>
             <div className="flex items-center p-4">
               <FaExchangeAlt className="text-3xl text-yellow-500 mr-3" />
               <div>
                 <p className="text-sm text-gray-500">Low Stock Items</p>
-                <p className="text-xl font-semibold">
-                  {products.filter((product) => product.stock < 10).length}
-                </p>
+                <p className="text-xl font-semibold">{summary.lowStockCount}</p>
               </div>
             </div>
           </div>

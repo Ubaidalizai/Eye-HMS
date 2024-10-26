@@ -15,6 +15,9 @@ router.get('/product/expire', product.checkProductExpiry);
 // Move Drugs From Inventory to pharmacy
 router.post('/product/move', product.moveDrugsToPharmacy);
 
+// Route to get inventory summary
+router.get('/product/summary', product.getInventorySummary);
+
 // Search Products
 router.get('/product/search', product.searchProduct);
 
