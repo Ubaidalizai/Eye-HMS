@@ -178,6 +178,42 @@ const checkProductExpiry = asyncHandler(async (req, res) => {
   res.status(200).json({ expireProducts });
 });
 
+// Get Inventory Summary
+const getInventorySummary = async (req, res) => {
+  try {
+    // Total Products Count
+    const totalProductsCount = await Product.countDocuments();
+
+    // Total Stock
+    const totalStock = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStock: { $sum: "$stock" }  // Assuming the stock field is in each product document
+        }
+      }
+    ]);
+
+    // Low Stock Count (for example, stock less than 10)
+    const lowStockCount = await Product.countDocuments({ stock: { $lt: 10 } });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        totalProductsCount,
+        totalStock: totalStock[0]?.totalStock || 0,  // Check for empty result
+        lowStockCount
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get inventory summary',
+      error: err.message
+    });
+  }
+};
+
 module.exports = {
   addProduct,
   getAllProducts,
@@ -186,4 +222,5 @@ module.exports = {
   searchProduct,
   moveDrugsToPharmacy,
   checkProductExpiry,
+  getInventorySummary,
 };
