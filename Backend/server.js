@@ -17,6 +17,7 @@ const patientRoute = require('./routes/patientsRoutes');
 const expensesRoute = require('./routes/ExpensesRoute');
 const incomeRoute = require('./routes/incomeRoute');
 const prescriptionRoute = require('./routes/PrescriptionRoute');
+const dashboardRoute = require('./routes/dashboaredRoutes');
 
 const app = express();
 const PORT = 4000;
@@ -48,6 +49,7 @@ app.use('/api/v1/patient', patientRoute); // Patient API
 app.use('/api/v1/expense', expensesRoute); // Expenses API
 app.use('/api/v1/income', incomeRoute); // Income API
 app.use('/api/v1/prescriptions', prescriptionRoute); // Prescriptions API
+app.use('/api/v1/dashboard', dashboardRoute); // Dashboard API
 
 // ------------- Signin --------------
 let userAuthCheck;
@@ -103,5 +105,5 @@ app.post('/api/register', (req, res) => {
 
 // Here we are listening to the server
 app.listen(PORT, () => {
-  console.log('I am live again');
+  console.log('I am live again on port', PORT);
 });

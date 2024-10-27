@@ -22,6 +22,10 @@ const saleSchema = new mongoose.Schema({
       },
     },
   ],
+  totalSale: {
+    type: Number,
+    required: [true, 'A sale must have a total income'],
+  },
   date: {
     type: Date,
     default: Date.now,

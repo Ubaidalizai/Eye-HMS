@@ -8,10 +8,6 @@ const incomeSchema = new mongoose.Schema(
       required: true,
       default: Date.now,
     },
-    totalIncome: {
-      type: Number,
-      required: [true, 'An income must have a total income'],
-    },
     totalNetIncome: {
       type: Number,
       required: [true, 'An income must have a total net income'],
