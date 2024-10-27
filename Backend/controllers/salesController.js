@@ -74,7 +74,7 @@ const updateDrugStock = async (drug, quantity) => {
 // Updated sellItems function to handle both pharmacy and inventory products
 const sellItems = asyncHandler(async (req, res) => {
   const { soldItems, category, date } = req.body;
-  let totalIncome = 0;
+  let totalSale = 0;
   let totalNetIncome = 0;
   const soldDetails = [];
 
@@ -90,7 +90,7 @@ const sellItems = asyncHandler(async (req, res) => {
 
       // Step 3: Validate stock and calculate income for each product
       const income = await validateDrugAndCalculateIncome(product, soldItem);
-      totalIncome += income;
+      totalSale += income;
 
       // Step 4: Calculate net income
       const purchaseCost = await calculateNetIncome(product, soldItem);
@@ -110,8 +110,7 @@ const sellItems = asyncHandler(async (req, res) => {
     // Step 7: Create a sale record
     const sale = await Sale.create({
       soldDetails,
-      totalIncome,
-      totalNetIncome,
+      totalSale,
       date,
       category,
       userID: req.user._id,
@@ -120,7 +119,6 @@ const sellItems = asyncHandler(async (req, res) => {
     // Step 8: Create a income record
     await Income.create({
       date,
-      totalIncome,
       totalNetIncome,
       category,
       description: `Sales of ${category} products`,
@@ -166,7 +164,7 @@ const getOneMonthSales = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: { $dayOfMonth: '$date' }, // Group by day of the month
-          totalIncome: { $sum: '$totalIncome' },
+          totalSale: { $sum: '$totalSale' },
           totalNetIncome: { $sum: '$totalNetIncome' },
         },
       },
@@ -214,7 +212,7 @@ const getOneYearSales = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: { $month: '$date' }, // Group by month
-          totalIncome: { $sum: '$totalIncome' },
+          totalSale: { $sum: '$totalSale' },
           totalNetIncome: { $sum: '$totalNetIncome' },
         },
       },
@@ -230,7 +228,7 @@ const getOneYearSales = asyncHandler(async (req, res) => {
     // Map the aggregated data to the arrays
     incomeByMonth.forEach((item) => {
       const monthIndex = item._id - 1; // Month is 1-indexed, array is 0-indexed
-      incomeResult[monthIndex] = item.totalIncome;
+      incomeResult[monthIndex] = item.totalSale;
       netIncomeResult[monthIndex] = item.totalNetIncome;
     });
 
@@ -290,7 +288,7 @@ const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
       {
         $project: {
           soldDetails: 1,
-          totalIncome: 1,
+          totalSale: 1,
           totalNetIncome: 1,
           date: 1,
           category: 1,

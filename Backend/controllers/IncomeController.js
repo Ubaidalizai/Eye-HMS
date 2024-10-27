@@ -4,10 +4,10 @@ const getAll = require('./handleFactory');
 // Create new income record
 const createIncome = async (req, res) => {
   try {
-    const { totalIncome, totalNetIncome, category, reason, date } = req.body;
+    const { totalSale, totalNetIncome, category, reason, date } = req.body;
     const newIncome = new Income({
       date,
-      totalIncome,
+      totalSale,
       totalNetIncome,
       category,
       reason,
@@ -48,18 +48,18 @@ const filterIncomeByYear = async (req, res) => {
     });
 
     // Initialize arrays with 12 zeros (one for each month)
-    let totalIncome = Array(12).fill(0);
+    let totalSale = Array(12).fill(0);
     let totalNetIncome = Array(12).fill(0);
 
     // Calculate total income and total net income for each month
     incomes.forEach((income) => {
       const month = new Date(income.date).getMonth(); // Get month index (0 = Jan, 11 = Dec)
-      totalIncome[month] += income.totalIncome; // Add totalIncome to the respective month
+      totalSale[month] += income.totalSale; // Add totalSale to the respective month
       totalNetIncome[month] += income.totalNetIncome; // Add totalNetIncome to the respective month
     });
 
     res.status(200).json({
-      data: { totalIncome, totalNetIncome },
+      data: { totalSale, totalNetIncome },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -85,7 +85,7 @@ const filterIncomeByYearAndMonth = async (req, res) => {
       matchCriteria.category = category; // Add category filter if provided
     }
 
-    // Aggregate totalIncome and totalNetIncome for each day of the month
+    // Aggregate totalSale and totalNetIncome for each day of the month
     const incomes = await Income.aggregate([
       {
         $match: matchCriteria, // Use the built match object
@@ -93,7 +93,7 @@ const filterIncomeByYearAndMonth = async (req, res) => {
       {
         $group: {
           _id: { day: { $dayOfMonth: '$date' } }, // Group by the day of the income date
-          totalIncome: { $sum: '$totalIncome' }, // Sum totalIncome for each day
+          totalSale: { $sum: '$totalSale' }, // Sum totalSale for each day
           totalNetIncome: { $sum: '$totalNetIncome' }, // Sum totalNetIncome for each day
         },
       },
@@ -104,17 +104,17 @@ const filterIncomeByYearAndMonth = async (req, res) => {
 
     // Create arrays with elements for each day of the month, initializing with 0s
     const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
-    const totalIncome = new Array(daysInMonth).fill(0);
+    const totalSale = new Array(daysInMonth).fill(0);
     const totalNetIncome = new Array(daysInMonth).fill(0);
 
     // Populate the correct day in the arrays
     incomes.forEach((income) => {
-      totalIncome[income._id.day - 1] = income.totalIncome; // Assign totalIncome to the correct day
+      totalSale[income._id.day - 1] = income.totalSale; // Assign totalSale to the correct day
       totalNetIncome[income._id.day - 1] = income.totalNetIncome; // Assign totalNetIncome to the correct day
     });
 
     res.status(200).json({
-      data: { totalIncome, totalNetIncome },
+      data: { totalSale, totalNetIncome },
     });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Server error' });
