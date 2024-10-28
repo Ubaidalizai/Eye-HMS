@@ -1,11 +1,10 @@
-const Purchase = require('../models/purchase');
-const Product = require('../models/product');
-const purchaseStock = require('./purchaseStock');
+const Purchase = require("../models/purchase");
+const Product = require("../models/product");
+const purchaseStock = require("./purchaseStock");
 // const validateMongoDBId = require('../utils/validateMongoDBId');
-const asyncHandler = require('../middlewares/asyncHandler');
-const getAll = require('./handleFactory');
-const mongoose = require('mongoose');
-const PurchaseService = require('../services/purchaseServices');
+const asyncHandler = require("../middlewares/asyncHandler");
+const getAll = require("./handleFactory");
+const mongoose = require("mongoose");
 
 // Add Purchase Details
 const addPurchase = asyncHandler(async (req, res) => {
@@ -28,7 +27,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     !category
   ) {
     res.status(400);
-    throw new Error('All fields are required.');
+    throw new Error("All fields are required.");
   }
 
   try {
@@ -47,20 +46,20 @@ const addPurchase = asyncHandler(async (req, res) => {
 
     // Send success response
     res.status(200).json({
-      message: 'Purchase added successfully',
+      message: "Purchase added successfully",
       data: { purchaseDetails },
     });
   } catch (error) {
     console.log(error);
     res.status(500);
-    throw new Error('Error while adding purchase');
+    throw new Error("Error while adding purchase");
   }
 });
 
 // Get All Purchase Data with Product Name And Also By Category
 const getPurchaseData = getAll(Purchase, true, {
-  path: 'ProductID',
-  select: 'name',
+  path: "ProductID",
+  select: "name",
 });
 
 // Get total purchase amount
@@ -74,7 +73,7 @@ const getTotalPurchaseAmount = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: null,
-          totalPurchaseAmount: { $sum: '$TotalPurchaseAmount' },
+          totalPurchaseAmount: { $sum: "$TotalPurchaseAmount" },
         },
       },
     ]);
@@ -83,7 +82,7 @@ const getTotalPurchaseAmount = asyncHandler(async (req, res) => {
       result.length > 0 ? result[0].totalPurchaseAmount : 0;
 
     res.status(200).json({
-      status: 'success',
+      status: "success",
       data: {
         totalPurchaseAmount,
       },
@@ -91,7 +90,7 @@ const getTotalPurchaseAmount = asyncHandler(async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500);
-    throw new Error('Error calculating total purchase amount');
+    throw new Error("Error calculating total purchase amount");
   }
 });
 
@@ -101,7 +100,7 @@ const updatePurchase = asyncHandler(async (req, res) => {
   // Validate MongoDB ID
   if (!_id || !validateMongoDBId(_id)) {
     res.status(400);
-    throw new Error('Invalid purchase ID');
+    throw new Error("Invalid purchase ID");
   }
 
   // Extract only the fields you want to update
@@ -112,15 +111,15 @@ const updatePurchase = asyncHandler(async (req, res) => {
     (!Number.isInteger(QuantityPurchased) || QuantityPurchased < 0)
   ) {
     res.status(400);
-    throw new Error('Quantity must be a positive integer');
+    throw new Error("Quantity must be a positive integer");
   }
 
   if (
     UnitPurchaseAmount !== undefined &&
-    (typeof UnitPurchaseAmount !== 'number' || UnitPurchaseAmount <= 0)
+    (typeof UnitPurchaseAmount !== "number" || UnitPurchaseAmount <= 0)
   ) {
     res.status(400);
-    throw new Error('Unit purchase amount must be a positive number');
+    throw new Error("Unit purchase amount must be a positive number");
   }
 
   try {
@@ -128,7 +127,7 @@ const updatePurchase = asyncHandler(async (req, res) => {
     const originalPurchase = await Purchase.findById(_id);
     if (!originalPurchase) {
       res.status(404);
-      throw new Error('Purchase not found');
+      throw new Error("Purchase not found");
     }
 
     // Capture the original quantity before updating
@@ -155,7 +154,7 @@ const updatePurchase = asyncHandler(async (req, res) => {
       QuantityPurchased !== originalQuantity
     ) {
       const stockDifference = QuantityPurchased - originalQuantity;
-      console.log('Stock Difference: ', originalPurchase.ProductID);
+      console.log("Stock Difference: ", originalPurchase.ProductID);
       const updatedProduct = await Product.findByIdAndUpdate(
         originalPurchase.ProductID, // Keep the product the same
         { $inc: { stock: stockDifference } }, // Update stock based on the quantity difference
@@ -163,23 +162,23 @@ const updatePurchase = asyncHandler(async (req, res) => {
       );
 
       if (!updatedProduct) {
-        throw new Error('Failed to update product stock');
+        throw new Error("Failed to update product stock");
       }
 
       if (updatedProduct.stock < 0) {
-        throw new Error('Insufficient stock quantity');
+        throw new Error("Insufficient stock quantity");
       }
     }
 
     res.status(200).json({
       success: true,
-      message: 'Purchase updated successfully',
+      message: "Purchase updated successfully",
       data: updatedPurchase,
     });
   } catch (error) {
-    console.error('Update Purchase Error:', error);
+    console.error("Update Purchase Error:", error);
     res.status(error.status || 500);
-    throw new Error(error.message || 'Error while updating purchase');
+    throw new Error(error.message || "Error while updating purchase");
   }
 });
 
@@ -194,7 +193,7 @@ const deletePurchase = asyncHandler(async (req, res) => {
   // Validate MongoDB ID
   if (!validateMongoDBId(id)) {
     res.status(400);
-    throw new Error('Invalid purchase ID');
+    throw new Error("Invalid purchase ID");
   }
 
   try {
@@ -202,7 +201,7 @@ const deletePurchase = asyncHandler(async (req, res) => {
     const purchase = await Purchase.findById(id);
     if (!purchase) {
       res.status(404);
-      throw new Error('Purchase not found');
+      throw new Error("Purchase not found");
     }
 
     // Update the product stock before deleting the purchase
@@ -218,26 +217,26 @@ const deletePurchase = asyncHandler(async (req, res) => {
     );
 
     if (!updatedProduct) {
-      throw new Error('Failed to update product stock');
+      throw new Error("Failed to update product stock");
     }
 
     // Prevent negative stock
     if (updatedProduct.stock < 0) {
-      throw new Error('Insufficient stock quantity');
+      throw new Error("Insufficient stock quantity");
     }
 
     // Delete the purchase
     await purchase.deleteOne();
 
     res.status(200).json({
-      message: 'Purchase deleted successfully',
+      message: "Purchase deleted successfully",
       deletedPurchase: purchase,
       updatedProductStock: updatedProduct.stock, // Send back the updated stock quantity for the product
     });
   } catch (error) {
     console.log(error);
     res.status(error.status || 500);
-    throw new Error(error.message || 'Error while deleting purchase');
+    throw new Error(error.message || "Error while deleting purchase");
   }
 });
 
