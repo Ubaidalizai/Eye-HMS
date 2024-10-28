@@ -8,4 +8,9 @@ router.get('/totalPurchaseAmount', purchase.getTotalPurchaseAmount);
 
 router.route('/').get(purchase.getPurchaseData).post(purchase.addPurchase);
 
+router
+  .route('/:id')
+  .patch(purchase.updatePurchase)
+  .delete(purchase.deletePurchase);
+
 module.exports = router;
