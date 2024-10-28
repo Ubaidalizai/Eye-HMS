@@ -1,11 +1,11 @@
-const Product = require('../models/product');
-const Sales = require('../models/salesModel');
-const Purchase = require('../models/purchase');
-const Pharmacy = require('../models/pharmacyModel');
-const DrugMovement = require('../models/drugMovmentModel');
-const validateMongoDBId = require('../utils/validateMongoDBId');
-const asyncHandler = require('../middlewares/asyncHandler');
-const getAll = require('./handleFactory');
+const Product = require("../models/product");
+const Sales = require("../models/salesModel");
+const Purchase = require("../models/purchase");
+const Pharmacy = require("../models/pharmacyModel");
+const DrugMovement = require("../models/drugMovmentModel");
+const validateMongoDBId = require("../utils/validateMongoDBId");
+const asyncHandler = require("../middlewares/asyncHandler");
+const getAll = require("./handleFactory");
 
 // Add Post
 const addProduct = asyncHandler((req, res) => {
@@ -40,7 +40,7 @@ const deleteSelectedProduct = asyncHandler(async (req, res) => {
 
   const productExist = await Product.findOne({ _id: productId });
   if (!productExist) {
-    return res.status(404).json({ message: 'Product not found' });
+    return res.status(404).json({ message: "Product not found" });
   }
 
   await Product.findByIdAndDelete({ _id: productId });
@@ -68,13 +68,13 @@ const updateSelectedProduct = asyncHandler(async (req, res) => {
     );
 
     res.status(200).json({
-      status: 'success',
+      status: "success",
       data: {
         updatedResult,
       },
     });
   } catch (error) {
-    res.status(402).send('Error');
+    res.status(402).send("Error");
   }
 });
 
@@ -119,18 +119,19 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
   };
 
   try {
+    console.log(req.body);
     const { name, manufacturer, quantity, salePrice, category } = req.body;
 
     // Step 1: Find drug in the inventory
     const product = await Product.findOne({ name, manufacturer });
     if (!product) {
       res.status(404);
-      throw new Error('Drug not found in inventory');
+      throw new Error("Drug not found in inventory");
     }
     // Step 2: Validate available stock
     if (product.stock < quantity) {
       res.status(400);
-      throw new Error('Insufficient quantity in inventory');
+      throw new Error("Insufficient quantity in inventory");
     }
 
     // Step 3: Update inventory stock
@@ -155,11 +156,11 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
     });
 
     // Step 6: Respond with success
-    res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
+    res.status(200).json({ message: "Drugs moved to pharmacy successfully!" });
   } catch (error) {
     res.status(500);
     console.log(error);
-    throw new Error('Internal server error');
+    throw new Error("Internal server error");
   }
 });
 const checkProductExpiry = asyncHandler(async (req, res) => {
@@ -172,7 +173,7 @@ const checkProductExpiry = asyncHandler(async (req, res) => {
   }); // Find products with an expiry date before 30 days
 
   if (expireProducts.length === 0) {
-    return res.status(200).json({ message: 'No expired products found' });
+    return res.status(200).json({ message: "No expired products found" });
   }
 
   res.status(200).json({ expireProducts });
@@ -189,27 +190,27 @@ const getInventorySummary = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalStock: { $sum: "$stock" }  // Assuming the stock field is in each product document
-        }
-      }
+          totalStock: { $sum: "$stock" }, // Assuming the stock field is in each product document
+        },
+      },
     ]);
 
     // Low Stock Count (for example, stock less than 10)
     const lowStockCount = await Product.countDocuments({ stock: { $lt: 10 } });
 
     res.status(200).json({
-      status: 'success',
+      status: "success",
       data: {
         totalProductsCount,
-        totalStock: totalStock[0]?.totalStock || 0,  // Check for empty result
-        lowStockCount
-      }
+        totalStock: totalStock[0]?.totalStock || 0, // Check for empty result
+        lowStockCount,
+      },
     });
   } catch (err) {
     res.status(500).json({
-      status: 'error',
-      message: 'Failed to get inventory summary',
-      error: err.message
+      status: "error",
+      message: "Failed to get inventory summary",
+      error: err.message,
     });
   }
 };
