@@ -55,26 +55,58 @@ const deleteSelectedProduct = asyncHandler(async (req, res) => {
 const updateSelectedProduct = asyncHandler(async (req, res) => {
   const productID = req.params.id;
   validateMongoDBId(productID); // Check if ProductID is valid
-  // Update Product
+
   try {
+    // First, find the original product to get its name and manufacturer before updating
+    const originalProduct = await Product.findById(productID);
+    if (!originalProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Update the product details
     const updatedResult = await Product.findByIdAndUpdate(
-      { _id: productID },
+      productID,
       {
         name: req.body.name,
         manufacturer: req.body.manufacturer,
         description: req.body.description,
+        category: req.body.category,
       },
       { new: true }
     );
 
+    if (!updatedResult) {
+      return res.status(400).json({ message: 'Failed to update product' });
+    }
+
+    // Now update the products in the Pharmacy collection
+    const updatedPharmacyProducts = await Pharmacy.updateMany(
+      {
+        name: originalProduct.name,
+        manufacturer: originalProduct.manufacturer,
+      }, // Find by original name and manufacturer
+      {
+        $set: {
+          name: updatedResult.name,
+          manufacturer: updatedResult.manufacturer,
+        },
+      }
+    );
+
+    if (!updatedPharmacyProducts) {
+      throw new Error('Failed to update product details in the pharmacy');
+    }
+
     res.status(200).json({
       status: 'success',
       data: {
-        updatedResult,
+        updatedProduct: updatedResult,
+        updatedPharmacyProducts,
       },
     });
   } catch (error) {
-    res.status(402).send('Error');
+    console.error('Error in updating product and pharmacy:', error);
+    res.status(500).send({ message: 'Error updating product and pharmacy' });
   }
 });
 
@@ -189,9 +221,9 @@ const getInventorySummary = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalStock: { $sum: "$stock" }  // Assuming the stock field is in each product document
-        }
-      }
+          totalStock: { $sum: '$stock' }, // Assuming the stock field is in each product document
+        },
+      },
     ]);
 
     // Low Stock Count (for example, stock less than 10)
@@ -201,15 +233,15 @@ const getInventorySummary = async (req, res) => {
       status: 'success',
       data: {
         totalProductsCount,
-        totalStock: totalStock[0]?.totalStock || 0,  // Check for empty result
-        lowStockCount
-      }
+        totalStock: totalStock[0]?.totalStock || 0, // Check for empty result
+        lowStockCount,
+      },
     });
   } catch (err) {
     res.status(500).json({
       status: 'error',
       message: 'Failed to get inventory summary',
-      error: err.message
+      error: err.message,
     });
   }
 };
