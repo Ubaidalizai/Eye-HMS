@@ -23,7 +23,7 @@ const getAll = (Model, userID = false, popOptions = null) =>
     }
 
     try {
-      let queryBuilder = Model.find(query).sort({ date: -1 }); // Sort by date
+      let queryBuilder = Model.find(query).sort({ createdAt: -1 }); // Sort by date
 
       if (popOptions) {
         queryBuilder = queryBuilder.populate(popOptions); // Apply population if provided

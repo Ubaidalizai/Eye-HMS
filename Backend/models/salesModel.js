@@ -4,43 +4,49 @@ const Pharmacy = require('./pharmacyModel');
 const Product = require('./pharmacyModel');
 const User = require('./userModel');
 
-const saleSchema = new mongoose.Schema({
-  soldDetails: [
-    {
-      productRefId: {
-        type: mongoose.Schema.ObjectId,
-        required: [true, 'Each sold item must reference a product or drug'],
-        ref: 'Pharmacy',
+const saleSchema = new mongoose.Schema(
+  {
+    soldDetails: [
+      {
+        productRefId: {
+          type: mongoose.Schema.ObjectId,
+          required: [true, 'Each sold item must reference a product or drug'],
+          ref: 'Pharmacy',
+        },
+        quantity: {
+          type: Number,
+          required: [true, 'A sold item must have a quantity'],
+        },
+        income: {
+          type: Number,
+          required: [true, 'A sold item must have an income'],
+        },
       },
-      quantity: {
-        type: Number,
-        required: [true, 'A sold item must have a quantity'],
-      },
-      income: {
-        type: Number,
-        required: [true, 'A sold item must have an income'],
-      },
+    ],
+    totalSale: {
+      type: Number,
+      required: [true, 'A sale must have a total income'],
     },
-  ],
-  totalSale: {
-    type: Number,
-    required: [true, 'A sale must have a total income'],
+    date: {
+      type: Date,
+      default: Date.now,
+    },
+    category: {
+      type: String,
+      enum: ['drug', 'sunglasses', 'frame'],
+      required: [
+        true,
+        'A sale must have a category (either drug or sunglasses)',
+      ],
+    },
+    userID: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: true,
+    },
   },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-  category: {
-    type: String,
-    enum: ['drug', 'sunglasses', 'frame'],
-    required: [true, 'A sale must have a category (either drug or sunglasses)'],
-  },
-  userID: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-});
+  { timestamps: true }
+);
 
 const Sale = mongoose.model('Sale', saleSchema);
 module.exports = Sale;
