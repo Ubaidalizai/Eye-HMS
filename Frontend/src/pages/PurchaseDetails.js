@@ -4,12 +4,18 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaFilter,
+  FaEdit,
+  FaTrash,
 } from "react-icons/fa";
 import AddPurchaseDetails from "../components/AddPurchaseDetails";
+import EditPurchaseDetails from "../components/EditPurchaseDetails";
 import AuthContext from "../AuthContext";
+import { toast } from "react-toastify";
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState(null);
   const [purchases, setAllPurchasesData] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,12 +76,64 @@ function PurchaseDetails() {
       const data = await response.json();
       setAllProducts(data.data.results);
     } catch (err) {
-      console.error("Error fetching products:", err);
+      toast.error("Error fetching products:", err);
     }
   };
 
   const addSaleModalSetting = () => {
     setPurchaseModal(!showPurchaseModal);
+  };
+
+  const handleEdit = (purchase) => {
+    setEditingPurchase(purchase);
+    setShowEditModal(true);
+    toast.success("Purchase Updated Successfully");
+  };
+
+  const handleDelete = async (purchaseId) => {
+    if (window.confirm("Are you sure you want to delete this purchase?")) {
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/v1/purchase/${purchaseId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        fetchPurchaseData(); // Refresh the purchase list
+      } catch (err) {
+        toast.error("Error deleting purchase:", err);
+        setError("Failed to delete purchase. Please try again.");
+      }
+    }
+  };
+  const handleEditSubmit = async (editedPurchase) => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/purchase/${editedPurchase._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editedPurchase),
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      setShowEditModal(false);
+      fetchPurchaseData(); // Refresh the purchase list
+    } catch (err) {
+      toast.error("Error updating purchase:", err);
+      setError("Failed to update purchase. Please try again.");
+    }
   };
 
   return (
@@ -99,6 +157,15 @@ function PurchaseDetails() {
           />
         )}
 
+        {showEditModal && (
+          <EditPurchaseDetails
+            purchase={editingPurchase}
+            products={products}
+            onClose={() => setShowEditModal(false)}
+            onUpdate={handleEditSubmit} // Pass the actual submit function
+          />
+        )}
+
         <div className='mt-10 bg-white shadow overflow-hidden sm:rounded-lg'>
           <div className='px-4 py-5 sm:px-6 flex justify-between items-center'>
             <h3 className='text-lg leading-6 font-medium text-gray-900'>
@@ -109,7 +176,7 @@ function PurchaseDetails() {
                 <label htmlFor='category' className='sr-only'>
                   Category
                 </label>
-                <div className='relative'>
+                <div className=''>
                   <select
                     id='category'
                     name='category'
@@ -175,6 +242,12 @@ function PurchaseDetails() {
                     >
                       Total Purchase Amount
                     </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
@@ -207,6 +280,20 @@ function PurchaseDetails() {
                         {element.TotalPurchaseAmount !== undefined
                           ? `$${element.TotalPurchaseAmount.toFixed(2)}`
                           : "N/A"}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <button
+                          onClick={() => handleEdit(element)}
+                          className='text-indigo-600 hover:text-indigo-900 mr-2'
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(element._id)}
+                          className='text-red-600 hover:text-red-900'
+                        >
+                          <FaTrash />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -252,7 +339,7 @@ function PurchaseDetails() {
             </div>
             <div>
               <nav
-                className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
+                className=' z-0 inline-flex rounded-md shadow-sm -space-x-px'
                 aria-label='Pagination'
               >
                 <button
@@ -260,12 +347,12 @@ function PurchaseDetails() {
                     setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
                   disabled={currentPage === 1 || totalPages === 0}
-                  className='relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
+                  className=' inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
                 >
                   <span className='sr-only'>Previous</span>
                   <FaChevronLeft className='h-5 w-5' aria-hidden='true' />
                 </button>
-                <span className='relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700'>
+                <span className=' inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700'>
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
@@ -273,7 +360,7 @@ function PurchaseDetails() {
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
                   disabled={currentPage === totalPages || totalPages === 0}
-                  className='relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
+                  className=' inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
                 >
                   <span className='sr-only'>Next</span>
                   <FaChevronRight className='h-5 w-5' aria-hidden='true' />

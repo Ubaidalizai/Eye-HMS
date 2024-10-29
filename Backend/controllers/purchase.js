@@ -96,7 +96,7 @@ const getTotalPurchaseAmount = asyncHandler(async (req, res) => {
 
 const updatePurchase = asyncHandler(async (req, res) => {
   const _id = req.params.id;
-
+  console.log(req.body);
   // Validate MongoDB ID
   if (!_id || !validateMongoDBId(_id)) {
     res.status(400);
@@ -105,6 +105,7 @@ const updatePurchase = asyncHandler(async (req, res) => {
 
   // Extract only the fields you want to update
   const { QuantityPurchased, UnitPurchaseAmount } = req.body;
+  // console.log(typeof QuantityPurchased, UnitPurchaseAmount);
 
   if (
     QuantityPurchased !== undefined &&

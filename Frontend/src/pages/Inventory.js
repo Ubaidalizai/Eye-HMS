@@ -300,19 +300,7 @@ function Inventory() {
                     className='mt-2 p-2 w-full border rounded'
                     required
                   />
-                  <input
-                    type='number'
-                    placeholder='Stock'
-                    value={newProduct.stock}
-                    onChange={(e) =>
-                      setNewProduct({
-                        ...newProduct,
-                        stock: parseInt(e.target.value),
-                      })
-                    }
-                    className='mt-2 p-2 w-full border rounded'
-                    required
-                  />
+
                   <select
                     value={newProduct.category}
                     onChange={(e) =>
