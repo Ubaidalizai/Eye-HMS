@@ -32,6 +32,7 @@ const getValidProducts = async (productsSold) => {
 
 // Helper function to validate stock and calculate income
 const validateDrugAndCalculateIncome = async (drug, soldItem) => {
+  console.log(drug, soldItem);
   if (drug.quantity < soldItem.quantity) {
     throw new Error(`Insufficient stock for drug: ${drug.name}`);
   }
@@ -71,7 +72,6 @@ const updateDrugStock = async (drug, quantity) => {
 };
 
 // Main sellItems function
-// Updated sellItems function to handle both pharmacy and inventory products
 const sellItems = asyncHandler(async (req, res) => {
   const { soldItems, category, date } = req.body;
   let totalSale = 0;
@@ -330,10 +330,101 @@ const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
   }
 });
 
+const updateSale = asyncHandler(async (req, res) => {
+  const saleId = req.params.id;
+
+  // Validate MongoDB ID
+  validateMongoDBId(saleId);
+
+  const { soldItems, category, date } = req.body;
+  let totalSale = 0;
+  let totalNetIncome = 0;
+  const updatedSoldDetails = [];
+
+  try {
+    // Fetch the original sale to compare changes
+    const originalSale = await Sale.findById(saleId);
+    if (!originalSale) {
+      res.status(404);
+      throw new Error('Sale not found');
+    }
+
+    // Revert the stock based on the original sale quantities
+    for (const originalItem of originalSale.soldDetails) {
+      const product = await Pharmacy.findById(originalItem.productRefId);
+      if (product) {
+        product.quantity += originalItem.quantity; // Revert the quantity
+        await product.save();
+      }
+    }
+
+    // Validate and update based on the new soldItems
+    const validProducts = await getValidProducts(soldItems);
+
+    for (const soldItem of soldItems) {
+      const product = validProducts.find((p) =>
+        p._id.equals(soldItem.productRefId)
+      );
+
+      // Validate stock and calculate income for each updated product
+      const income = await validateDrugAndCalculateIncome(product, soldItem);
+      totalSale += income;
+
+      // Calculate net income based on purchase cost
+      const purchaseCost = await calculateNetIncome(product, soldItem);
+      totalNetIncome += income - purchaseCost;
+
+      // Update product quantity in the pharmacy
+      await updateDrugStock(product, soldItem.quantity);
+
+      // Add updated details to the soldDetails array
+      updatedSoldDetails.push({
+        productRefId: product._id,
+        quantity: soldItem.quantity,
+        income,
+      });
+    }
+
+    // Update the sale record
+    originalSale.soldDetails = updatedSoldDetails;
+    originalSale.totalSale = totalSale;
+    originalSale.date = date || originalSale.date;
+    originalSale.category = category || originalSale.category;
+
+    const updatedSale = await originalSale.save();
+
+    // Update or create an income record
+    const incomeRecord = await Income.findOneAndUpdate(
+      {
+        date: updatedSale.date,
+        userID: req.user._id,
+        category: updatedSale.category,
+      },
+      {
+        totalNetIncome,
+        description: `Updated sales of ${category} products`,
+      },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: { sale: updatedSale, income: incomeRecord },
+    });
+  } catch (error) {
+    console.error('Error updating sale:', error);
+    res.status(500).json({
+      status: 'error',
+      message: `Failed to update the sale: ${error.message}`,
+    });
+  }
+});
+
 module.exports = {
   sellItems,
   getAllSales,
   getOneYearSales,
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
+  updateSale,
 };
