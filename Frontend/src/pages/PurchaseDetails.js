@@ -171,7 +171,7 @@ function PurchaseDetails() {
             <h3 className='text-lg leading-6 font-medium text-gray-900'>
               Purchase Records
             </h3>
-            <div className='flex items-center space-x-4'>
+            <div className='flex  items-center space-x-4'>
               <div className='flex items-center'>
                 <label htmlFor='category' className='sr-only'>
                   Category
@@ -189,9 +189,9 @@ function PurchaseDetails() {
                     <option value='sunglasses'>Sunglasses</option>
                     <option value='frame'>Frame</option>
                   </select>
-                  <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+                  {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
                     <FaFilter className='h-4 w-4' aria-hidden='true' />
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <button
