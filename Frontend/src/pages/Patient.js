@@ -8,6 +8,8 @@ import {
   HiPencil,
   HiTrash,
   HiDocumentAdd,
+  HiChevronLeft,
+  HiChevronRight,
 } from "react-icons/hi";
 
 const API_BASE_URL = "http://localhost:4000/api/v1/patient";

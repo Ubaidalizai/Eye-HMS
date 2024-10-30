@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   FaPlus,
   FaChevronLeft,
@@ -6,26 +6,25 @@ import {
   FaFilter,
   FaEdit,
   FaTrash,
-} from 'react-icons/fa';
-import AddSale from '../components/AddSale';
-import AuthContext from '../AuthContext';
-import { toast } from 'react-toastify';
+} from "react-icons/fa";
+import AddSale from "../components/AddSale";
+// import EditSale from "./EditSale";
+import { toast } from "react-toastify";
 
-function Sales() {
+export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [sales, setSales] = useState([]);
   const [products, setAllProducts] = useState([]);
-  const [stores, setAllStores] = useState([]);
-  const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingSale, setEditingSale] = useState(null);
 
   const limit = 10;
-  const authContext = useContext(AuthContext);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     fetchSales();
@@ -43,10 +42,10 @@ function Sales() {
     try {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses,frame';
-      } else if (user.role === 'pharmacist') {
-        baseUrl += '&category=drug';
+      if (user.role === "sunglassesSeller") {
+        baseUrl += "&category=sunglasses,frame";
+      } else if (user.role === "pharmacist") {
+        baseUrl += "&category=drug";
       }
 
       if (category) {
@@ -54,8 +53,8 @@ function Sales() {
       }
 
       const response = await fetch(baseUrl, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -76,15 +75,15 @@ function Sales() {
     try {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
 
-      if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses,frame';
-      } else if (user.role === 'pharmacist') {
-        baseUrl += '&category=drug';
+      if (user.role === "sunglassesSeller") {
+        baseUrl += "&category=sunglasses,frame";
+      } else if (user.role === "pharmacist") {
+        baseUrl += "&category=drug";
       }
 
       const response = await fetch(baseUrl, {
-        credentials: 'include',
-        method: 'GET',
+        credentials: "include",
+        method: "GET",
       });
 
       if (!response.ok) {
@@ -94,37 +93,40 @@ function Sales() {
       const data = await response.json();
       setAllProducts(data.data.results);
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error("Error fetching products:", err);
     }
   };
 
-  const addSaleModalSetting = () => {
-    setShowSaleModal(!showSaleModal);
-  };
-
-  const handlePageUpdate = () => {
-    setUpdatePage(!updatePage);
-  };
-
-  const handleDelete = async (purchaseId) => {
-    if (window.confirm('Are you sure you want to delete this purchase?')) {
+  const handleDelete = async (saleId) => {
+    if (window.confirm("Are you sure you want to delete this sale?")) {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/v1/purchase/${purchaseId}`,
+          `http://localhost:4000/api/v1/sales/${saleId}`,
           {
-            method: 'DELETE',
-            credentials: 'include',
+            method: "DELETE",
+            credentials: "include",
           }
         );
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`);
         }
-        fetchSales(); // Refresh the purchase list
+        toast.success("Sale deleted successfully");
+        fetchSales();
       } catch (err) {
-        toast.error('Error deleting purchase:', err);
-        setError('Failed to delete purchase. Please try again.');
+        toast.error("Error deleting sale: " + err.message);
       }
     }
+  };
+
+  const handleEdit = (sale) => {
+    setEditingSale(sale);
+    setShowEditModal(true);
+  };
+
+  const handleEditComplete = () => {
+    setShowEditModal(false);
+    setEditingSale(null);
+    fetchSales();
   };
 
   return (
@@ -141,13 +143,19 @@ function Sales() {
 
         {showSaleModal && (
           <AddSale
-            addSaleModalSetting={addSaleModalSetting}
+            addSaleModalSetting={() => setShowSaleModal(false)}
             products={products}
-            stores={stores}
-            handlePageUpdate={handlePageUpdate}
-            authContext={authContext}
+            handlePageUpdate={fetchSales}
           />
         )}
+
+        {/* {showEditModal && (
+          // <EditSale
+          //   sale={editingSale}
+          //   onClose={handleEditComplete}
+          //   products={products}
+          // />
+        )} */}
 
         <div className='mt-10 bg-white shadow overflow-hidden sm:rounded-lg'>
           <div className='px-4 py-5 sm:px-6 flex justify-between items-center'>
@@ -155,7 +163,7 @@ function Sales() {
               Sales Data
             </h3>
             <div className='flex items-center space-x-4'>
-              {user.role === 'admin' && (
+              {user.role === "admin" && (
                 <div className='flex items-center'>
                   <label htmlFor='category' className='sr-only'>
                     Category
@@ -181,7 +189,7 @@ function Sales() {
               )}
               <button
                 className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                onClick={addSaleModalSetting}
+                onClick={() => setShowSaleModal(true)}
               >
                 <FaPlus className='mr-2 -ml-1 h-5 w-5' aria-hidden='true' />
                 Add Sale
@@ -264,13 +272,13 @@ function Sales() {
                           </td>
                           <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                             <button
-                              onClick={() => handleEdit(item)}
+                              onClick={() => handleEdit(sale)}
                               className='text-indigo-600 hover:text-indigo-900 mr-2'
                             >
                               <FaEdit />
                             </button>
                             <button
-                              onClick={() => handleDelete(item._id)}
+                              onClick={() => handleDelete(sale._id)}
                               className='text-red-600 hover:text-red-900'
                             >
                               <FaTrash />
@@ -282,7 +290,7 @@ function Sales() {
                   ) : (
                     <tr>
                       <td
-                        colSpan='6'
+                        colSpan='7'
                         className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center'
                       >
                         No sales available
@@ -317,14 +325,14 @@ function Sales() {
           <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
             <div>
               <p className='text-sm text-gray-700'>
-                Showing{' '}
+                Showing{" "}
                 <span className='font-medium'>
                   {(currentPage - 1) * limit + 1}
-                </span>{' '}
-                to{' '}
+                </span>{" "}
+                to{" "}
                 <span className='font-medium'>
                   {Math.min(currentPage * limit, sales.length)}
-                </span>{' '}
+                </span>{" "}
                 of <span className='font-medium'>{sales.length}</span> results
               </p>
             </div>
@@ -364,5 +372,3 @@ function Sales() {
     </div>
   );
 }
-
-export default Sales;
