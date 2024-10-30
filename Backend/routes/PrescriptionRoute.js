@@ -8,10 +8,15 @@ const {
   getPrescriptionById,
   updatePrescription,
   deletePrescription,
+  getPrescriptionsByPatientId,
+  getPrescriptionsByPatientName,
 } = require('../controllers/PrescriptionController');
 
+router.get('/patient/:patientId', getPrescriptionsByPatientId);
+// Route to get all prescriptions by patient name
+router.get('/patients/name/:name/prescriptions', getPrescriptionsByPatientName);
 // Create a new prescription
-router.route('/patient/:patient_Id/prescreption').post(createPrescription);
+router.route('/patient/name/:patientName').post(createPrescription);
 router.route('/').get(getAllPrescriptions);
 
 // Get a single prescription by ID
