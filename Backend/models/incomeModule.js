@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
+const Sale = require('./salesModel');
 
 // Define the Income schema
 const incomeSchema = new mongoose.Schema(
   {
+    saleId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Sale',
+      required: true,
+    },
     date: {
       type: Date,
       required: true,
@@ -17,7 +23,7 @@ const incomeSchema = new mongoose.Schema(
       enum: ['drug', 'sunglasses', 'frame'],
       required: true,
     },
-    reason: {
+    description: {
       type: String,
       required: true, // Description of income
     },
