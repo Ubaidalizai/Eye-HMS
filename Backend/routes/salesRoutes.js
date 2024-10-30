@@ -9,6 +9,7 @@ const {
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
   updateSale,
+  deleteSale,
 } = require('../controllers/salesController');
 const { authenticate } = require('../middlewares/authMiddleware');
 
@@ -21,6 +22,6 @@ router.get('/year-month/:year/:month', getOneMonthSalesWithFullDetails);
 // Add Sales
 router.route('/').get(getAllSales).post(sellItems);
 
-router.route('/:id').patch(updateSale);
+router.route('/:id').patch(updateSale).delete(deleteSale);
 
 module.exports = router;
