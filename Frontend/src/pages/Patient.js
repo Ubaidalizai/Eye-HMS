@@ -8,8 +8,6 @@ import {
   HiPencil,
   HiTrash,
   HiDocumentAdd,
-  HiChevronLeft,
-  HiChevronRight,
 } from "react-icons/hi";
 
 const API_BASE_URL = "http://localhost:4000/api/v1/patient";
@@ -41,12 +39,9 @@ export default function PatientManagement() {
   const fetchPatients = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}?searchTerm=${searchTerm}&page=${currentPage}&limit=${patientsPerPage}`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}?searchTerm=${searchTerm}`, {
+        credentials: "include",
+      });
       if (!response.ok) throw new Error("Failed to fetch patients");
       const data = await response.json();
       setPatients(data.data.results);
@@ -161,16 +156,13 @@ export default function PatientManagement() {
 
       <div className='mb-6 flex justify-between items-center'>
         <div className='flex items-center justify-center z-0'>
-          <HiSearch className='translate-x-7 text-gray-400' size={20} />
+          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
           <input
             type='text'
             placeholder='Search patients...'
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className='pl-12 pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
           />
         </div>
         <button
@@ -220,57 +212,43 @@ export default function PatientManagement() {
             </tr>
           </thead>
           <tbody className='divide-y divide-gray-200'>
-            {isLoading ? (
-              <tr>
-                <td colSpan='7' className='text-center py-4'>
-                  Loading...
+            {patients.map((patient) => (
+              <tr
+                key={patient._id}
+                className='hover:bg-indigo-50 transition-colors duration-150'
+              >
+                <td className='py-4 px-4'>{patient.name}</td>
+                <td className='py-4 px-4'>{patient.age}</td>
+                <td className='py-4 px-4'>{patient.contact}</td>
+                <td className='py-4 px-4'>{patient.patientID}</td>
+                <td className='py-4 px-4'>{patient.patientGender}</td>
+                <td className='py-4 px-4'>{patient.insuranceContact}</td>
+                <td className='py-4 px-4'>
+                  <div className='flex space-x-2'>
+                    <button
+                      onClick={() => handleEdit(patient)}
+                      className='text-blue-600 hover:text-blue-800'
+                    >
+                      <HiPencil size={20} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(patient._id)}
+                      className='text-red-600 hover:text-red-800'
+                    >
+                      <HiTrash size={20} />
+                    </button>
+                    <button
+                      onClick={() =>
+                        navigate(`/patients/${patient.name}/prescriptions`)
+                      }
+                      className='text-green-600 hover:text-green-800'
+                    >
+                      <HiDocumentAdd size={20} />
+                    </button>
+                  </div>
                 </td>
               </tr>
-            ) : patients.length === 0 ? (
-              <tr>
-                <td colSpan='7' className='text-center py-4'>
-                  No patients found
-                </td>
-              </tr>
-            ) : (
-              patients.map((patient) => (
-                <tr
-                  key={patient._id}
-                  className='hover:bg-indigo-50 transition-colors duration-150'
-                >
-                  <td className='py-4 px-4'>{patient.name}</td>
-                  <td className='py-4 px-4'>{patient.age}</td>
-                  <td className='py-4 px-4'>{patient.contact}</td>
-                  <td className='py-4 px-4'>{patient.patientID}</td>
-                  <td className='py-4 px-4'>{patient.patientGender}</td>
-                  <td className='py-4 px-4'>{patient.insuranceContact}</td>
-                  <td className='py-4 px-4'>
-                    <div className='flex space-x-2'>
-                      <button
-                        onClick={() => handleEdit(patient)}
-                        className='text-blue-600 hover:text-blue-800'
-                      >
-                        <HiPencil size={20} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(patient._id)}
-                        className='text-red-600 hover:text-red-800'
-                      >
-                        <HiTrash size={20} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigate(`/patients/${patient.name}/prescriptions`)
-                        }
-                        className='text-green-600 hover:text-green-800'
-                      >
-                        <HiDocumentAdd size={20} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>

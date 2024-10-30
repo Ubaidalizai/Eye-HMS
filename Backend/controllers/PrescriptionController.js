@@ -3,27 +3,28 @@
 const Prescription = require('../models/PrescriptionModule');
 const Patient = require('../models/patientModel');
 // Create a new prescription
+
 const createPrescription = async (req, res) => {
   try {
-    const { patient_Id } = req.params; // Extract patient_Id from the URL
+    const { patientName } = req.params; // Extract patientName from the URL
 
-    // Create a new prescription and associate it with the patient
-    const newPrescription = new Prescription({
-      ...req.body,
-      patient_Id, // Associate the prescription with the patient
-    });
-
-    // Save the new prescription
-    const savedPrescription = await newPrescription.save();
-
-    // Find the patient by patient_Id
-    const patient = await Patient.findById(patient_Id); // Assuming you have a Patient model
+    // Find the patient by name
+    const patient = await Patient.findOne({ name: patientName }); // Assuming 'name' is a field in the Patient model
 
     if (!patient) {
       return res.status(404).json({
         message: 'Patient not found',
       });
     }
+
+    // Create a new prescription and associate it with the patient
+    const newPrescription = new Prescription({
+      ...req.body,
+      patient_Id: patient._id, // Use the found patient's ID
+    });
+
+    // Save the new prescription
+    const savedPrescription = await newPrescription.save();
 
     // Add the new prescription's ID to the patient's prescriptions array
     patient.prescriptions.push(savedPrescription._id); // Assuming prescriptions is an array in the Patient model
@@ -60,6 +61,55 @@ const getPrescriptionById = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: 'Error fetching prescription',
+      error: error.message,
+    });
+  }
+};
+
+// Function to get all prescriptions by patientID
+const getPrescriptionsByPatientId = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    console.log(patientId);
+    // Find the patient by patientID and populate prescriptions
+    const patient = await Patient.findById(patientId).populate('prescriptions');
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    return res.status(200).json({
+      message: 'Prescriptions fetched successfully',
+      data: patient.prescriptions,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Error fetching prescriptions',
+      error: error.message,
+    });
+  }
+};
+
+// Function to get all prescriptions by patient name
+const getPrescriptionsByPatientName = async (req, res) => {
+  try {
+    const { name } = req.params;
+    console.log('Patient Name:', name);
+
+    // Find the patient by name and populate prescriptions
+    const patient = await Patient.findOne({ name }).populate('prescriptions');
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    return res.status(200).json({
+      message: 'Prescriptions fetched successfully',
+      data: patient.prescriptions,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Error fetching prescriptions',
       error: error.message,
     });
   }
@@ -158,4 +208,6 @@ module.exports = {
   getAllPrescriptions,
   updatePrescription,
   deletePrescription,
+  getPrescriptionsByPatientId,
+  getPrescriptionsByPatientName,
 };

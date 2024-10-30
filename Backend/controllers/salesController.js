@@ -95,7 +95,7 @@ const sellItems = asyncHandler(async (req, res) => {
       // Step 4: Calculate net income
       const purchaseCost = await calculateNetIncome(product, soldItem);
       totalNetIncome += income - purchaseCost;
-
+      console.log(typeof totalNetIncome);
       // Step 5: Update product quantity in the correct location (pharmacy or inventory)
       await updateDrugStock(product, soldItem.quantity);
 
@@ -118,6 +118,7 @@ const sellItems = asyncHandler(async (req, res) => {
 
     // Step 8: Create a income record
     await Income.create({
+      saleId: sale._id,
       date,
       totalNetIncome,
       category,
@@ -349,7 +350,7 @@ const updateSale = asyncHandler(async (req, res) => {
       throw new Error('Sale not found');
     }
 
-    // Revert the stock based on the original sale quantities
+    // Revert stock based on original sale quantities
     for (const originalItem of originalSale.soldDetails) {
       const product = await Pharmacy.findById(originalItem.productRefId);
       if (product) {
@@ -358,7 +359,7 @@ const updateSale = asyncHandler(async (req, res) => {
       }
     }
 
-    // Validate and update based on the new soldItems
+    // Validate and update based on new soldItems
     const validProducts = await getValidProducts(soldItems);
 
     for (const soldItem of soldItems) {
@@ -366,18 +367,18 @@ const updateSale = asyncHandler(async (req, res) => {
         p._id.equals(soldItem.productRefId)
       );
 
-      // Validate stock and calculate income for each updated product
+      // Validate stock and calculate income
       const income = await validateDrugAndCalculateIncome(product, soldItem);
       totalSale += income;
 
-      // Calculate net income based on purchase cost
+      // Calculate net income
       const purchaseCost = await calculateNetIncome(product, soldItem);
       totalNetIncome += income - purchaseCost;
 
-      // Update product quantity in the pharmacy
+      // Update product quantity
       await updateDrugStock(product, soldItem.quantity);
 
-      // Add updated details to the soldDetails array
+      // Add updated details to soldDetails array
       updatedSoldDetails.push({
         productRefId: product._id,
         quantity: soldItem.quantity,
@@ -393,16 +394,13 @@ const updateSale = asyncHandler(async (req, res) => {
 
     const updatedSale = await originalSale.save();
 
-    // Update or create an income record
+    // Update or create the associated income record by saleId
     const incomeRecord = await Income.findOneAndUpdate(
-      {
-        date: updatedSale.date,
-        userID: req.user._id,
-        category: updatedSale.category,
-      },
+      { saleId: saleId },
       {
         totalNetIncome,
         description: `Updated sales of ${category} products`,
+        date: date || originalSale.date,
       },
       { new: true, upsert: true }
     );
@@ -420,6 +418,56 @@ const updateSale = asyncHandler(async (req, res) => {
   }
 });
 
+const deleteSale = asyncHandler(async (req, res) => {
+  const saleId = req.params.id;
+
+  // Validate MongoDB ID
+  validateMongoDBId(saleId);
+
+  try {
+    // Fetch the original sale record
+    const sale = await Sale.findById(saleId);
+    if (!sale) {
+      res.status(404);
+      throw new Error('Sale not found');
+    }
+
+    // Step 1: Restore product quantities in the pharmacy based on the sale
+    for (const soldItem of sale.soldDetails) {
+      const product = await Pharmacy.findById(soldItem.productRefId);
+      if (product) {
+        product.quantity += soldItem.quantity; // Restore the stock
+        await product.save();
+      }
+    }
+
+    // Step 2: Delete or adjust the income record associated with the sale
+    const incomeRecord = await Income.findOne({
+      saleId: saleId, // Assuming saleId is stored in the income record
+    });
+
+    if (incomeRecord) {
+      // If needed, you could adjust or delete the income record.
+      await Income.findByIdAndDelete(incomeRecord._id);
+    }
+
+    // Step 3: Delete the sale record
+    await Sale.findByIdAndDelete(saleId);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Sale deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting sale:', error);
+    res.status(500).json({
+      status: 'error',
+      message: `Failed to delete the sale: ${error.message}`,
+    });
+  }
+});
+
+
 module.exports = {
   sellItems,
   getAllSales,
@@ -427,4 +475,5 @@ module.exports = {
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
   updateSale,
+  deleteSale,
 };

@@ -8,7 +8,10 @@ const PrescriptionSchema = new mongoose.Schema(
     doctor: { type: String, required: true },
     // Nested structure for right eye
     rightEye: {
-      sphere: { type: Number, required: true },
+      sphere: {
+        type: Number,
+        required: true,
+      },
       cylinder: { type: Number, required: true },
       axis: { type: Number, required: true },
     },

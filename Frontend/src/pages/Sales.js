@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from 'react';
 import {
   FaPlus,
   FaChevronLeft,
   FaChevronRight,
   FaFilter,
-} from "react-icons/fa";
-import AddSale from "../components/AddSale";
-import AuthContext from "../AuthContext";
+  FaEdit,
+  FaTrash,
+} from 'react-icons/fa';
+import AddSale from '../components/AddSale';
+import AuthContext from '../AuthContext';
+import { toast } from 'react-toastify';
 
 function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -16,13 +19,13 @@ function Sales() {
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const limit = 10;
   const authContext = useContext(AuthContext);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     fetchSales();
@@ -40,10 +43,10 @@ function Sales() {
     try {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === "sunglassesSeller") {
-        baseUrl += "&category=sunglasses,frame";
-      } else if (user.role === "pharmacist") {
-        baseUrl += "&category=drug";
+      if (user.role === 'sunglassesSeller') {
+        baseUrl += '&category=sunglasses,frame';
+      } else if (user.role === 'pharmacist') {
+        baseUrl += '&category=drug';
       }
 
       if (category) {
@@ -51,8 +54,8 @@ function Sales() {
       }
 
       const response = await fetch(baseUrl, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -73,15 +76,15 @@ function Sales() {
     try {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
 
-      if (user.role === "sunglassesSeller") {
-        baseUrl += "&category=sunglasses,frame";
-      } else if (user.role === "pharmacist") {
-        baseUrl += "&category=drug";
+      if (user.role === 'sunglassesSeller') {
+        baseUrl += '&category=sunglasses,frame';
+      } else if (user.role === 'pharmacist') {
+        baseUrl += '&category=drug';
       }
 
       const response = await fetch(baseUrl, {
-        credentials: "include",
-        method: "GET",
+        credentials: 'include',
+        method: 'GET',
       });
 
       if (!response.ok) {
@@ -91,7 +94,7 @@ function Sales() {
       const data = await response.json();
       setAllProducts(data.data.results);
     } catch (err) {
-      console.error("Error fetching products:", err);
+      console.error('Error fetching products:', err);
     }
   };
 
@@ -101,6 +104,27 @@ function Sales() {
 
   const handlePageUpdate = () => {
     setUpdatePage(!updatePage);
+  };
+
+  const handleDelete = async (purchaseId) => {
+    if (window.confirm('Are you sure you want to delete this purchase?')) {
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/v1/purchase/${purchaseId}`,
+          {
+            method: 'DELETE',
+            credentials: 'include',
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        fetchSales(); // Refresh the purchase list
+      } catch (err) {
+        toast.error('Error deleting purchase:', err);
+        setError('Failed to delete purchase. Please try again.');
+      }
+    }
   };
 
   return (
@@ -131,7 +155,7 @@ function Sales() {
               Sales Data
             </h3>
             <div className='flex items-center space-x-4'>
-              {user.role === "admin" && (
+              {user.role === 'admin' && (
                 <div className='flex items-center'>
                   <label htmlFor='category' className='sr-only'>
                     Category
@@ -209,6 +233,12 @@ function Sales() {
                     >
                       Total Sale Amount
                     </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    >
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
@@ -231,6 +261,20 @@ function Sales() {
                           <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
                           <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                             ${item.income}
+                          </td>
+                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className='text-indigo-600 hover:text-indigo-900 mr-2'
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item._id)}
+                              className='text-red-600 hover:text-red-900'
+                            >
+                              <FaTrash />
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -273,14 +317,14 @@ function Sales() {
           <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
             <div>
               <p className='text-sm text-gray-700'>
-                Showing{" "}
+                Showing{' '}
                 <span className='font-medium'>
                   {(currentPage - 1) * limit + 1}
-                </span>{" "}
-                to{" "}
+                </span>{' '}
+                to{' '}
                 <span className='font-medium'>
                   {Math.min(currentPage * limit, sales.length)}
-                </span>{" "}
+                </span>{' '}
                 of <span className='font-medium'>{sales.length}</span> results
               </p>
             </div>

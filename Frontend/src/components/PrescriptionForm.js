@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export function PrescriptionForm() {
-  const { prescriptionId } = useParams();
+  const { prescriptionId, patientId } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     date: '',
@@ -11,23 +12,24 @@ export function PrescriptionForm() {
     leftEye: { sphere: '', cylinder: '', axis: '' },
     pdDistance: '',
     pdNear: '',
-    addPower: '',
+    pdPower: '',
     lensType: '',
   });
 
+  // Debugging to ensure patientId and prescriptionId are present
+  useEffect(() => {
+    console.log('Patient ID:', patientId);
+    console.log('Prescription ID:', prescriptionId);
+  }, [patientId, prescriptionId]);
+
   useEffect(() => {
     if (prescriptionId) {
-      // Simulating API call to fetch prescription data for editing
-      setFormData({
-        date: '2023-06-01',
-        doctor: 'Dr. Smith',
-        rightEye: { sphere: '-1.00', cylinder: '-0.50', axis: '180' },
-        leftEye: { sphere: '-1.25', cylinder: '-0.75', axis: '175' },
-        pdDistance: '62',
-        pdNear: '60',
-        addPower: '+2.00',
-        lensType: 'Progressive',
-      });
+      axios
+        .get(
+          `http://127.0.0.1:4000/api/v1/prescriptions/prescription/${prescriptionId}`
+        )
+        .then((response) => setFormData(response.data.data))
+        .catch((error) => console.error('Error fetching prescription:', error));
     }
   }, [prescriptionId]);
 
@@ -49,19 +51,48 @@ export function PrescriptionForm() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulating API call to save prescription
-    console.log('Saving prescription:', formData);
-    navigate('/patients/1/prescriptions'); // Redirect to prescription list
-  };
+    try {
+      if (prescriptionId) {
+        // Update existing prescription
+        const response = await axios.patch(
+          `http://localhost:4000/api/v1/prescriptions/prescription/${prescriptionId}`,
+          formData
+        );
+        if (response.status === 200) {
+          alert('Prescription updated successfully!');
+        }
+      } else if (patientId) {
+        // Create a new prescription if only patientId exists
+        const response = await axios.post(
+          `http://127.0.0.1:4000/api/v1/prescriptions/patient/name/${patientId}`,
+          formData
+        );
+        if (response.status === 201) {
+          alert('Prescription created successfully!');
+        }
+      } else {
+        throw new Error('Patient ID is missing. Cannot create prescription.');
+      }
 
+      // Navigate to prescriptions page for the specific patient
+      navigate(`/patients/${patientId}/prescriptions`);
+    } catch (error) {
+      console.error(
+        'Error saving prescription:',
+        error.response ? error.response.data.data : error.message
+      );
+      alert('Error saving prescription. Please try again.');
+    }
+  };
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">
         {prescriptionId ? 'Edit' : 'Add'} Prescription
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Date */}
         <div>
           <label
             htmlFor="date"
@@ -75,9 +106,11 @@ export function PrescriptionForm() {
             name="date"
             value={formData.date}
             onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           />
         </div>
+
+        {/* Doctor */}
         <div>
           <label
             htmlFor="doctor"
@@ -91,9 +124,11 @@ export function PrescriptionForm() {
             name="doctor"
             value={formData.doctor}
             onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           />
         </div>
+
+        {/* Right Eye */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h3 className="text-lg font-medium text-gray-900">Right Eye</h3>
@@ -105,7 +140,7 @@ export function PrescriptionForm() {
                 onChange={(e) =>
                   handleEyeChange('rightEye', 'sphere', e.target.value)
                 }
-                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
               />
               <input
                 type="text"
@@ -114,7 +149,7 @@ export function PrescriptionForm() {
                 onChange={(e) =>
                   handleEyeChange('rightEye', 'cylinder', e.target.value)
                 }
-                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
               />
               <input
                 type="text"
@@ -123,10 +158,12 @@ export function PrescriptionForm() {
                 onChange={(e) =>
                   handleEyeChange('rightEye', 'axis', e.target.value)
                 }
-                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
               />
             </div>
           </div>
+
+          {/* Left Eye */}
           <div>
             <h3 className="text-lg font-medium text-gray-900">Left Eye</h3>
             <div className="mt-2 space-y-2">
@@ -137,7 +174,7 @@ export function PrescriptionForm() {
                 onChange={(e) =>
                   handleEyeChange('leftEye', 'sphere', e.target.value)
                 }
-                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
               />
               <input
                 type="text"
@@ -146,7 +183,7 @@ export function PrescriptionForm() {
                 onChange={(e) =>
                   handleEyeChange('leftEye', 'cylinder', e.target.value)
                 }
-                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
               />
               <input
                 type="text"
@@ -155,61 +192,67 @@ export function PrescriptionForm() {
                 onChange={(e) =>
                   handleEyeChange('leftEye', 'axis', e.target.value)
                 }
-                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
               />
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="pdDistance"
-              className="block text-sm font-medium text-gray-700"
-            >
-              PD Distance
-            </label>
-            <input
-              type="text"
-              id="pdDistance"
-              name="pdDistance"
-              value={formData.pdDistance}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="pdNear"
-              className="block text-sm font-medium text-gray-700"
-            >
-              PD Near
-            </label>
-            <input
-              type="text"
-              id="pdNear"
-              name="pdNear"
-              value={formData.pdNear}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-        </div>
+
+        {/* PD Distance */}
         <div>
           <label
-            htmlFor="addPower"
+            htmlFor="pdDistance"
+            className="block text-sm font-medium text-gray-700"
+          >
+            PD Distance
+          </label>
+          <input
+            type="text"
+            id="pdDistance"
+            name="pdDistance"
+            value={formData.pdDistance}
+            onChange={handleChange}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+          />
+        </div>
+
+        {/* PD Near */}
+        <div>
+          <label
+            htmlFor="pdNear"
+            className="block text-sm font-medium text-gray-700"
+          >
+            PD Near
+          </label>
+          <input
+            type="text"
+            id="pdNear"
+            name="pdNear"
+            value={formData.pdNear}
+            onChange={handleChange}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+          />
+        </div>
+
+        {/* Add Power */}
+        <div>
+          <label
+            htmlFor="pdPower"
             className="block text-sm font-medium text-gray-700"
           >
             Add Power
           </label>
           <input
             type="text"
-            id="addPower"
-            name="addPower"
-            value={formData.addPower}
+            id="pdPower"
+            name="pdPower"
+            value={formData.pdPower}
             onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           />
         </div>
+
+        {/* Lens Type */}
         <div>
           <label
             htmlFor="lensType"
@@ -222,7 +265,7 @@ export function PrescriptionForm() {
             name="lensType"
             value={formData.lensType}
             onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
           >
             <option value="">Select lens type</option>
             <option value="Single Vision">Single Vision</option>
@@ -230,10 +273,12 @@ export function PrescriptionForm() {
             <option value="Progressive">Progressive</option>
           </select>
         </div>
+
+        {/* Submit Button */}
         <div>
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
           >
             {prescriptionId ? 'Update' : 'Add'} Prescription
           </button>
