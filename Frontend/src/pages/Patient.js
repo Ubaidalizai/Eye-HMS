@@ -136,21 +136,21 @@ export default function PatientManagement() {
   };
 
   return (
-    <div className="max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-lg">
+    <div className='max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-lg'>
       <ToastContainer />
-      <h1 className="text-4xl font-bold text-center mb-8 text-indigo-800">
+      <h1 className='text-4xl font-bold text-center mb-8 text-indigo-800'>
         Patient Management
       </h1>
 
-      <div className="mb-6 flex justify-between items-center">
-        <div className="flex items-center justify-center z-0">
-          <HiSearch className=" translate-x-7 text-gray-400" size={20} />
+      <div className='mb-6 flex justify-between items-center'>
+        <div className='flex items-center justify-center z-0'>
+          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
           <input
-            type="text"
-            placeholder="Search patients..."
+            type='text'
+            placeholder='Search patients...'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition"
+            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
           />
         </div>
         <button
@@ -166,62 +166,62 @@ export default function PatientManagement() {
             });
             setIsModalOpen(true);
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition flex items-center"
+          className='px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition flex items-center'
         >
-          <HiPlus className="mr-2" /> Add New Patient
+          <HiPlus className='mr-2' /> Add New Patient
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full">
-          <thead className="bg-indigo-100">
+      <div className='overflow-x-auto bg-white rounded-lg shadow'>
+        <table className='min-w-full'>
+          <thead className='bg-indigo-100'>
             <tr>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Name
               </th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Age
               </th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Contact
               </th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Patient ID
               </th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Gender
               </th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Insurance
               </th>
-              <th className="py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider">
+              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className='divide-y divide-gray-200'>
             {patients.map((patient) => (
               <tr
                 key={patient._id}
-                className="hover:bg-indigo-50 transition-colors duration-150"
+                className='hover:bg-indigo-50 transition-colors duration-150'
               >
-                <td className="py-4 px-4">{patient.name}</td>
-                <td className="py-4 px-4">{patient.age}</td>
-                <td className="py-4 px-4">{patient.contact}</td>
-                <td className="py-4 px-4">{patient.patientID}</td>
-                <td className="py-4 px-4">{patient.patientGender}</td>
-                <td className="py-4 px-4">{patient.insuranceContact}</td>
-                <td className="py-4 px-4">
-                  <div className="flex space-x-2">
+                <td className='py-4 px-4'>{patient.name}</td>
+                <td className='py-4 px-4'>{patient.age}</td>
+                <td className='py-4 px-4'>{patient.contact}</td>
+                <td className='py-4 px-4'>{patient.patientID}</td>
+                <td className='py-4 px-4'>{patient.patientGender}</td>
+                <td className='py-4 px-4'>{patient.insuranceContact}</td>
+                <td className='py-4 px-4'>
+                  <div className='flex space-x-2'>
                     <button
                       onClick={() => handleEdit(patient)}
-                      className="text-blue-600 hover:text-blue-800"
+                      className='text-blue-600 hover:text-blue-800'
                     >
                       <HiPencil size={20} />
                     </button>
                     <button
                       onClick={() => handleDelete(patient._id)}
-                      className="text-red-600 hover:text-red-800"
+                      className='text-red-600 hover:text-red-800'
                     >
                       <HiTrash size={20} />
                     </button>
@@ -229,7 +229,7 @@ export default function PatientManagement() {
                       onClick={() =>
                         navigate(`/patients/${patient.name}/prescriptions`)
                       }
-                      className="text-green-600 hover:text-green-800"
+                      className='text-green-600 hover:text-green-800'
                     >
                       <HiDocumentAdd size={20} />
                     </button>
@@ -242,79 +242,79 @@ export default function PatientManagement() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900">
-          <div className="bg-white p-6 rounded-lg w-96 max-w-md z-60">
-            <h2 className="text-2xl font-bold mb-4 text-indigo-800">
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
+          <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
+            <h2 className='text-2xl font-bold mb-4 text-indigo-800'>
               {currentPatient ? 'Edit Patient' : 'Add New Patient'}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className='space-y-4'>
               <input
-                type="text"
-                name="name"
+                type='text'
+                name='name'
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Name"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder='Name'
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 required
               />
               <input
-                type="number"
-                name="age"
+                type='number'
+                name='age'
                 value={formData.age}
                 onChange={handleInputChange}
-                placeholder="Age"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder='Age'
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 required
               />
               <input
-                type="tel"
-                name="contact"
+                type='tel'
+                name='contact'
                 value={formData.contact}
                 onChange={handleInputChange}
-                placeholder="Contact"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder='Contact'
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 required
               />
               <input
-                type="text"
-                name="patientID"
+                type='text'
+                name='patientID'
                 value={formData.patientID}
                 onChange={handleInputChange}
-                placeholder="Patient ID"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder='Patient ID'
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 required
               />
               <select
-                name="patientGender"
+                name='patientGender'
                 value={formData.patientGender}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 required
               >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value=''>Select Gender</option>
+                <option value='Male'>Male</option>
+                <option value='Female'>Female</option>
+                <option value='Other'>Other</option>
               </select>
               <input
-                type="text"
-                name="insuranceContact"
+                type='text'
+                name='insuranceContact'
                 value={formData.insuranceContact}
                 onChange={handleInputChange}
-                placeholder="Insurance Contact"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder='Insurance Contact'
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
               />
-              <div className="flex justify-end space-x-2">
+              <div className='flex justify-end space-x-2'>
                 <button
-                  type="button"
+                  type='button'
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition"
+                  className='px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition'
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+                  type='submit'
+                  className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition'
                 >
                   {currentPatient ? 'Update' : 'Add'} Patient
                 </button>

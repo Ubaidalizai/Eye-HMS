@@ -77,10 +77,10 @@ const App = () => {
       <AuthContext.Provider value={value}>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
             <Route
-              path="/"
+              path='/'
               element={
                 <ProtectedWrapper>
                   <Layout />
@@ -88,48 +88,48 @@ const App = () => {
               }
             >
               <Route
-                path="patients/:patientId/prescriptions"
+                path='patients/:patientId/prescriptions'
                 element={<PrescriptionList />}
               />
               <Route
-                path="/prescriptions/:patientId"
+                path='/prescriptions/:patientId'
                 element={<PrescriptionForm />}
               />
 
               <Route
-                path="/patients/:patientId/prescriptions/:prescriptionId"
+                path='/patients/:patientId/prescriptions/:prescriptionId'
                 element={<PrescriptionDetail />}
               />
               <Route
-                path="/patients/:patientId/prescriptions/:prescriptionId/edit"
+                path='/patients/:patientId/prescriptions/:prescriptionId/edit'
                 element={<PrescriptionForm />}
               />
               <Route index element={<Dashboard />} />
 
               <Route
-                path="/expenseManagement"
+                path='/expenseManagement'
                 element={<ExpenseManagement />}
               />
 
-              <Route path="/patient" element={<Patient />} />
+              <Route path='/patient' element={<Patient />} />
 
-              <Route path="/inventory" element={<Inventory />} />
-              <Route path="/purchase-details" element={<PurchaseDetails />} />
-              <Route path="/sales" element={<Sales />} />
-              <Route path="/manage-store" element={<Store />} />
-              <Route path="/move" element={<Move />} />
+              <Route path='/inventory' element={<Inventory />} />
+              <Route path='/purchase-details' element={<PurchaseDetails />} />
+              <Route path='/sales' element={<Sales />} />
+              <Route path='/manage-store' element={<Store />} />
+              <Route path='/move' element={<Move />} />
 
-              <Route path="/patient" element={<Patient />} />
-              <Route path="/prescription/:id" element={<PrescriptionPage />} />
+              <Route path='/patient' element={<Patient />} />
+              <Route path='/prescription/:id' element={<PrescriptionPage />} />
 
-              <Route path="/branches/bedroom" element={<Bedroom />} />
-              <Route path="/branches/ultrasound" element={<Ultrasound />} />
-              <Route path="/branches/operation" element={<Operation />} />
-              <Route path="/pharmacy" element={<Pharmacy />} />
-              <Route path="/incomeReport" element={<IncomeReport />} />
+              <Route path='/branches/bedroom' element={<Bedroom />} />
+              <Route path='/branches/ultrasound' element={<Ultrasound />} />
+              <Route path='/branches/operation' element={<Operation />} />
+              <Route path='/pharmacy' element={<Pharmacy />} />
+              <Route path='/incomeReport' element={<IncomeReport />} />
             </Route>
 
-            <Route path="*" element={<NoPageFound />} />
+            <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>

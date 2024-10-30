@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
-import { useTable } from "react-table";
-import { Link } from "react-router-dom";
+import React, { useState, useMemo } from 'react';
+import { useTable } from 'react-table';
+import { Link } from 'react-router-dom';
 
 const PatientList = ({
   patients,
@@ -14,19 +14,19 @@ const PatientList = ({
     () => [
       ...columns,
       {
-        Header: "Actions",
+        Header: 'Actions',
         Cell: ({ row }) => (
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <button
               onClick={() => handleEdit(row.original)}
               style={{
-                padding: "6px 12px",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                marginRight: "10px",
+                padding: '6px 12px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                marginRight: '10px',
               }}
             >
               Edit
@@ -34,12 +34,12 @@ const PatientList = ({
             <button
               onClick={() => addPrescription(row.original.id)}
               style={{
-                padding: "6px 12px",
-                backgroundColor: "#2196F3",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
+                padding: '6px 12px',
+                backgroundColor: '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
               }}
             >
               Make Prescription
@@ -60,7 +60,7 @@ const PatientList = ({
       <div className='overflow-x-auto bg-white shadow-md rounded-lg'>
         <table
           {...getTableProps()}
-          style={{ width: "100%", borderCollapse: "collapse" }}
+          style={{ width: '100%', borderCollapse: 'collapse' }}
           className='min-w-full divide-y divide-gray-200'
         >
           <thead className='bg-gray-50'>
@@ -69,10 +69,10 @@ const PatientList = ({
                 {headerGroup.headers.map((column) => (
                   <th
                     {...column.getHeaderProps()}
-                    style={{ border: "1px solid black", padding: "8px" }}
+                    style={{ border: '1px solid black', padding: '8px' }}
                     className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                   >
-                    {column.render("Header")}
+                    {column.render('Header')}
                   </th>
                 ))}
               </tr>
@@ -89,13 +89,13 @@ const PatientList = ({
                   {row.cells.map((cell) => (
                     <td
                       {...cell.getCellProps()}
-                      style={{ border: "1px solid black", padding: "8px" }}
+                      style={{ border: '1px solid black', padding: '8px' }}
                       className='px-6 py-4 whitespace-nowrap'
                     >
-                      {cell.render("Cell")}
+                      {cell.render('Cell')}
                     </td>
                   ))}
-                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                  <td style={{ border: '1px solid black', padding: '8px' }}>
                     <div>
                       {row.original.prescriptions &&
                         row.original.prescriptions.length > 0 && (
