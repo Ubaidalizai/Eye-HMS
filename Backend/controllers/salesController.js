@@ -8,31 +8,18 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
 // Helper function to retrieve products from inventory or pharmacy
-const getValidProducts = async (productsSold) => {
-  const productIds = productsSold.map((item) => item.productRefId);
+const getValidProduct = async (productRefId) => {
+  const productInPharmacy = await Pharmacy.findById(productRefId);
 
-  const productsInPharmacy = await Pharmacy.find({
-    _id: { $in: productIds },
-  });
-  if (productsInPharmacy.length !== productsSold.length) {
-    const missingProducts = productsSold.filter(
-      (item) =>
-        !productsInPharmacy.some((product) =>
-          product._id.equals(item.productRefId)
-        )
-    );
-    throw new Error(
-      `Some drugs not found in pharmacy: ${missingProducts.map(
-        (d) => d.productRefId
-      )}`
-    );
+  if (!productInPharmacy) {
+    throw new Error(`Product with ID ${productRefId} not found in pharmacy`);
   }
-  return productsInPharmacy;
+
+  return productInPharmacy;
 };
 
 // Helper function to validate stock and calculate income
 const validateDrugAndCalculateIncome = async (drug, soldItem) => {
-  console.log(drug, soldItem);
   if (drug.quantity < soldItem.quantity) {
     throw new Error(`Insufficient stock for drug: ${drug.name}`);
   }
@@ -67,62 +54,45 @@ const calculateNetIncome = async (drug, soldItem) => {
 // Helper function to update drug quantity in the pharmacy
 const updateDrugStock = async (drug, quantity) => {
   drug.quantity -= quantity;
-
   await drug.save();
 };
 
 // Main sellItems function
 const sellItems = asyncHandler(async (req, res) => {
-  const { soldItems, category, date } = req.body;
-  let totalSale = 0;
-  let totalNetIncome = 0;
-  const soldDetails = [];
+  const { productRefId, quantity, category, date } = req.body;
 
   try {
-    // Step 1: Get valid products (pharmacy or inventory)
-    const validProducts = await getValidProducts(soldItems, category);
-
-    // Step 2: Loop through sold items to process each product sale
-    for (const soldItem of soldItems) {
-      const product = validProducts.find((p) =>
-        p._id.equals(soldItem.productRefId)
-      );
-
-      // Step 3: Validate stock and calculate income for each product
-      const income = await validateDrugAndCalculateIncome(product, soldItem);
-      totalSale += income;
-
-      // Step 4: Calculate net income
-      const purchaseCost = await calculateNetIncome(product, soldItem);
-      totalNetIncome += income - purchaseCost;
-      console.log(typeof totalNetIncome);
-      // Step 5: Update product quantity in the correct location (pharmacy or inventory)
-      await updateDrugStock(product, soldItem.quantity);
-
-      // Step 6: Push sold item details to soldDetails array
-      soldDetails.push({
-        productRefId: product._id,
-        quantity: soldItem.quantity,
-        income,
-      });
+    // Step 1: Validate the product exists in pharmacy or inventory
+    const product = await Pharmacy.findById(productRefId);
+    if (!product) {
+      throw new Error(`Product with ID ${productRefId} not found in pharmacy`);
     }
 
-    // Step 7: Create a sale record
+    // Step 2: Validate stock and calculate income for the product
+    const income = await validateDrugAndCalculateIncome(product, { quantity });
+    const purchaseCost = await calculateNetIncome(product, { quantity });
+    const productNetIncome = income - purchaseCost;
+
+    // Step 3: Create a sale record for the single product (now using productRefId)
     const sale = await Sale.create({
-      soldDetails,
-      totalSale,
+      productRefId: product._id,
+      quantity,
+      income,
       date,
       category,
       userID: req.user._id,
     });
 
-    // Step 8: Create a income record
+    // Step 4: Update product quantity in the pharmacy or inventory
+    await updateDrugStock(product, quantity);
+
+    // Step 5: Create an income record associated with this sale
     await Income.create({
-      saleId: sale._id,
+      saleId: sale._id, // Link this income entry to the sale record
       date,
-      totalNetIncome,
+      totalNetIncome: productNetIncome,
       category,
-      description: `Sales of ${category} products`,
+      description: `Sale of ${product.name} (${category})`,
       userID: req.user._id,
     });
 
@@ -139,7 +109,7 @@ const sellItems = asyncHandler(async (req, res) => {
 });
 
 const getAllSales = getAll(Sale, false, [
-  { path: 'soldDetails.productRefId', select: 'name salePrice' },
+  { path: 'productRefId', select: 'name salePrice' },
   { path: 'userID', select: 'firstName lastName' },
 ]);
 
@@ -333,8 +303,6 @@ const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
 
 const updateSale = asyncHandler(async (req, res) => {
   const saleId = req.params.id;
-
-  // Validate MongoDB ID
   validateMongoDBId(saleId);
 
   const { soldItems, category, date } = req.body;
@@ -351,6 +319,7 @@ const updateSale = asyncHandler(async (req, res) => {
     }
 
     // Revert stock based on original sale quantities
+    let productNetIncomeDifference = 0;
     for (const originalItem of originalSale.soldDetails) {
       const product = await Pharmacy.findById(originalItem.productRefId);
       if (product) {
@@ -367,15 +336,23 @@ const updateSale = asyncHandler(async (req, res) => {
         p._id.equals(soldItem.productRefId)
       );
 
-      // Validate stock and calculate income
+      // Find original item income, then calculate the difference
+      const originalItem = originalSale.soldDetails.find((item) =>
+        item.productRefId.equals(soldItem.productRefId)
+      );
+      const originalNetIncome = originalItem ? originalItem.income : 0;
+
+      // Calculate updated income and net income for the product
       const income = await validateDrugAndCalculateIncome(product, soldItem);
-      totalSale += income;
-
-      // Calculate net income
       const purchaseCost = await calculateNetIncome(product, soldItem);
-      totalNetIncome += income - purchaseCost;
+      const newNetIncome = income - purchaseCost;
 
-      // Update product quantity
+      // Calculate the difference for this specific product
+      productNetIncomeDifference += newNetIncome - originalNetIncome;
+      totalSale += income;
+      totalNetIncome += newNetIncome;
+
+      // Update product quantity in the pharmacy
       await updateDrugStock(product, soldItem.quantity);
 
       // Add updated details to soldDetails array
@@ -391,14 +368,13 @@ const updateSale = asyncHandler(async (req, res) => {
     originalSale.totalSale = totalSale;
     originalSale.date = date || originalSale.date;
     originalSale.category = category || originalSale.category;
-
     const updatedSale = await originalSale.save();
 
-    // Update or create the associated income record by saleId
-    const incomeRecord = await Income.findOneAndUpdate(
+    // Adjust the income record based on productNetIncomeDifference
+    await Income.findOneAndUpdate(
       { saleId: saleId },
       {
-        totalNetIncome,
+        $inc: { totalNetIncome: productNetIncomeDifference }, // Decrement by productNetIncomeDifference
         description: `Updated sales of ${category} products`,
         date: date || originalSale.date,
       },
@@ -407,7 +383,7 @@ const updateSale = asyncHandler(async (req, res) => {
 
     res.status(200).json({
       status: 'success',
-      data: { sale: updatedSale, income: incomeRecord },
+      data: { sale: updatedSale },
     });
   } catch (error) {
     console.error('Error updating sale:', error);
@@ -420,7 +396,6 @@ const updateSale = asyncHandler(async (req, res) => {
 
 const deleteSale = asyncHandler(async (req, res) => {
   const saleId = req.params.id;
-
   // Validate MongoDB ID
   validateMongoDBId(saleId);
 
@@ -432,13 +407,11 @@ const deleteSale = asyncHandler(async (req, res) => {
       throw new Error('Sale not found');
     }
 
-    // Step 1: Restore product quantities in the pharmacy based on the sale
-    for (const soldItem of sale.soldDetails) {
-      const product = await Pharmacy.findById(soldItem.productRefId);
-      if (product) {
-        product.quantity += soldItem.quantity; // Restore the stock
-        await product.save();
-      }
+    // Step 1: Restore the product quantity in the pharmacy based on the sale
+    const product = await Pharmacy.findById(sale.productRefId);
+    if (product) {
+      product.quantity += sale.quantity; // Restore the stock
+      await product.save();
     }
 
     // Step 2: Delete or adjust the income record associated with the sale
@@ -447,8 +420,7 @@ const deleteSale = asyncHandler(async (req, res) => {
     });
 
     if (incomeRecord) {
-      // If needed, you could adjust or delete the income record.
-      await Income.findByIdAndDelete(incomeRecord._id);
+      await Income.findByIdAndDelete(incomeRecord._id); // Delete associated income record
     }
 
     // Step 3: Delete the sale record
@@ -466,7 +438,6 @@ const deleteSale = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 module.exports = {
   sellItems,

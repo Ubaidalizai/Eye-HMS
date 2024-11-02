@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   FaPlus,
   FaChevronLeft,
@@ -6,10 +6,10 @@ import {
   FaFilter,
   FaEdit,
   FaTrash,
-} from "react-icons/fa";
-import AddSale from "../components/AddSale";
+} from 'react-icons/fa';
+import AddSale from '../components/AddSale';
 // import EditSale from "./EditSale";
-import { toast } from "react-toastify";
+import { toast } from 'react-toastify';
 
 export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -18,13 +18,13 @@ export default function Sales() {
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingSale, setEditingSale] = useState(null);
 
   const limit = 10;
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     fetchSales();
@@ -42,10 +42,10 @@ export default function Sales() {
     try {
       let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === "sunglassesSeller") {
-        baseUrl += "&category=sunglasses,frame";
-      } else if (user.role === "pharmacist") {
-        baseUrl += "&category=drug";
+      if (user.role === 'sunglassesSeller') {
+        baseUrl += '&category=sunglasses,frame';
+      } else if (user.role === 'pharmacist') {
+        baseUrl += '&category=drug';
       }
 
       if (category) {
@@ -53,8 +53,8 @@ export default function Sales() {
       }
 
       const response = await fetch(baseUrl, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -75,15 +75,15 @@ export default function Sales() {
     try {
       let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
 
-      if (user.role === "sunglassesSeller") {
-        baseUrl += "&category=sunglasses,frame";
-      } else if (user.role === "pharmacist") {
-        baseUrl += "&category=drug";
+      if (user.role === 'sunglassesSeller') {
+        baseUrl += '&category=sunglasses,frame';
+      } else if (user.role === 'pharmacist') {
+        baseUrl += '&category=drug';
       }
 
       const response = await fetch(baseUrl, {
-        credentials: "include",
-        method: "GET",
+        credentials: 'include',
+        method: 'GET',
       });
 
       if (!response.ok) {
@@ -93,27 +93,27 @@ export default function Sales() {
       const data = await response.json();
       setAllProducts(data.data.results);
     } catch (err) {
-      console.error("Error fetching products:", err);
+      console.error('Error fetching products:', err);
     }
   };
 
   const handleDelete = async (saleId) => {
-    if (window.confirm("Are you sure you want to delete this sale?")) {
+    if (window.confirm('Are you sure you want to delete this sale?')) {
       try {
         const response = await fetch(
           `http://localhost:4000/api/v1/sales/${saleId}`,
           {
-            method: "DELETE",
-            credentials: "include",
+            method: 'DELETE',
+            credentials: 'include',
           }
         );
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`);
         }
-        toast.success("Sale deleted successfully");
+        toast.success('Sale deleted successfully');
         fetchSales();
       } catch (err) {
-        toast.error("Error deleting sale: " + err.message);
+        toast.error('Error deleting sale: ' + err.message);
       }
     }
   };
@@ -163,7 +163,7 @@ export default function Sales() {
               Sales Data
             </h3>
             <div className='flex items-center space-x-4'>
-              {user.role === "admin" && (
+              {user.role === 'admin' && (
                 <div className='flex items-center'>
                   <label htmlFor='category' className='sr-only'>
                     Category
@@ -251,42 +251,40 @@ export default function Sales() {
                 </thead>
                 <tbody className='bg-white divide-y divide-gray-200'>
                   {sales.length > 0 ? (
-                    sales.map((sale) =>
-                      sale.soldDetails.map((item) => (
-                        <tr key={`${sale._id}-${item._id}`}>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                            {item.productRefId?.name}
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            {item.quantity}
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            ${item.productRefId?.salePrice}
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            {new Date(sale.date).toLocaleDateString()}
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            ${item.income}
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            <button
-                              onClick={() => handleEdit(sale)}
-                              className='text-indigo-600 hover:text-indigo-900 mr-2'
-                            >
-                              <FaEdit />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(sale._id)}
-                              className='text-red-600 hover:text-red-900'
-                            >
-                              <FaTrash />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )
+                    sales.map((sale) => (
+                      <tr key={`${sale._id}`}>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                          {sale.productRefId?.name}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                          {sale.quantity}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                          ${sale.productRefId?.salePrice}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                          {new Date(sale.date).toLocaleDateString()}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                          ${sale.income}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                          <button
+                            // onClick={() => handleEdit(sale)}
+                            className='text-indigo-600 hover:text-indigo-900 mr-2'
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(sale._id)}
+                            className='text-red-600 hover:text-red-900'
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
                       <td
@@ -325,14 +323,14 @@ export default function Sales() {
           <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
             <div>
               <p className='text-sm text-gray-700'>
-                Showing{" "}
+                Showing{' '}
                 <span className='font-medium'>
                   {(currentPage - 1) * limit + 1}
-                </span>{" "}
-                to{" "}
+                </span>{' '}
+                to{' '}
                 <span className='font-medium'>
                   {Math.min(currentPage * limit, sales.length)}
-                </span>{" "}
+                </span>{' '}
                 of <span className='font-medium'>{sales.length}</span> results
               </p>
             </div>
