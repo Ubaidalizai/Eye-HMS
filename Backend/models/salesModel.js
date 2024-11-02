@@ -6,26 +6,18 @@ const User = require('./userModel');
 
 const saleSchema = new mongoose.Schema(
   {
-    soldDetails: [
-      {
-        productRefId: {
-          type: mongoose.Schema.ObjectId,
-          required: [true, 'Each sold item must reference a product or drug'],
-          ref: 'Pharmacy',
-        },
-        quantity: {
-          type: Number,
-          required: [true, 'A sold item must have a quantity'],
-        },
-        income: {
-          type: Number,
-          required: [true, 'A sold item must have an income'],
-        },
-      },
-    ],
-    totalSale: {
+    productRefId: {
+      type: mongoose.Schema.ObjectId,
+      required: [true, 'Each sold item must reference a product or drug'],
+      ref: 'Pharmacy',
+    },
+    quantity: {
       type: Number,
-      required: [true, 'A sale must have a total income'],
+      required: [true, 'A sold item must have a quantity'],
+    },
+    income: {
+      type: Number,
+      required: [true, 'A sold item must have an income'],
     },
     date: {
       type: Date,

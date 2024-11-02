@@ -1,6 +1,6 @@
-import { Fragment, useRef, useState, useEffect } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { Fragment, useRef, useState, useEffect } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 export default function AddSale({
   addSaleModalSetting,
@@ -8,85 +8,52 @@ export default function AddSale({
   handlePageUpdate,
 }) {
   const [sale, setSale] = useState({
-    soldItems: [
-      {
-        productRefId: "",
-        quantity: 0, // Initialize quantity as a number
-      },
-    ],
-    date: Date.now(), // Initialize date with the current date
-    category: "", // Initialize category as empty
+    productRefId: '',
+    quantity: 0,
+    date: new Date().toISOString().split('T')[0], // Initialize date with today's date
+    category: '',
   });
 
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   // Get user role from localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem('user'));
 
   // Set the category based on user role
   useEffect(() => {
-    if (user.role === "pharmacist" || user.role === "admin") {
-      setSale((prevSale) => ({ ...prevSale, category: "drug" }));
-    } else if (user.role === "sunglassesSeller") {
-      setSale((prevSale) => ({ ...prevSale, category: "sunglasses" }));
+    if (user.role === 'pharmacist' || user.role === 'admin') {
+      setSale((prevSale) => ({ ...prevSale, category: 'drug' }));
+    } else if (user.role === 'sunglassesSeller') {
+      setSale((prevSale) => ({ ...prevSale, category: 'sunglasses' }));
     }
   }, [user.role]);
 
-  // Handling Input Change for input fields
-  const handleInputChange = (index, name, value) => {
-    const updatedDrugsSold = sale.soldItems.map((item, i) =>
-      i === index ? { ...item, [name]: value } : item
-    );
-    setSale({ ...sale, soldItems: updatedDrugsSold });
+  // Handle Input Change
+  const handleInputChange = (name, value) => {
+    setSale({ ...sale, [name]: value });
   };
 
-  // Handle date changes
-  const handleDateChange = (value) => {
-    setSale({
-      ...sale,
-      date: value, // Set the date field
-    });
-  };
-
-  // Add new drug
-  const addNewDrug = () => {
-    setSale((prevSale) => ({
-      ...prevSale,
-      soldItems: [...prevSale.soldItems, { productRefId: "", quantity: 0 }],
-    }));
-  };
-
-  // Checking if all drugs are valid
-  const isSaleValid = sale.soldItems.some(
-    (drug) => drug.productRefId && drug.quantity > 0
-  );
+  // Validate sale
+  const isSaleValid = sale.productRefId && sale.quantity > 0;
 
   // POST Data
   const addSale = () => {
     if (!sale.date) {
-      alert("Please specify a sale date.");
-      return false;
+      alert('Please specify a sale date.');
+      return;
     }
 
-    // Create the final sale object with valid products
-    const finalSale = {
-      ...sale,
-      soldItems: sale.soldItems.filter(
-        (drug) => drug.productRefId && drug.quantity > 0
-      ),
-    };
-
-    fetch("http://localhost:4000/api/v1/sales", {
-      method: "POST",
+    fetch('http://localhost:4000/api/v1/sales', {
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
-      credentials: "include",
-      body: JSON.stringify(finalSale),
+      credentials: 'include',
+      body: JSON.stringify(sale),
     })
       .then((result) => {
-        alert("Sale ADDED");
+        alert('Sale ADDED');
         handlePageUpdate();
         addSaleModalSetting();
       })
@@ -141,71 +108,53 @@ export default function AddSale({
                         Add Sale
                       </Dialog.Title>
                       <form>
-                        {sale.soldItems.map((drug, index) => (
-                          <div
-                            key={index}
-                            className='grid gap-4 mb-4 sm:grid-cols-2'
-                          >
-                            <div>
-                              <label
-                                htmlFor={`productRefId-${index}`}
-                                className='block mb-2 text-sm font-medium text-gray-900'
-                              >
-                                Product Name
-                              </label>
-                              <select
-                                id={`productRefId-${index}`}
-                                name='productRefId'
-                                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
-                                value={drug.productRefId}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    index,
-                                    e.target.name,
-                                    e.target.value
-                                  )
-                                }
-                              >
-                                <option>Select Product</option>
-                                {products.map((element) => (
-                                  <option key={element._id} value={element._id}>
-                                    {element.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <div>
-                              <label
-                                htmlFor={`quantity-${index}`}
-                                className='block mb-2 text-sm font-medium text-gray-900'
-                              >
-                                Quantity
-                              </label>
-                              <input
-                                type='number'
-                                name='quantity'
-                                id={`quantity-${index}`}
-                                value={drug.quantity}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    index,
-                                    e.target.name,
-                                    e.target.value
-                                  )
-                                }
-                                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
-                              />
-                            </div>
+                        <div className='grid gap-4 mb-4 sm:grid-cols-2'>
+                          <div>
+                            <label
+                              htmlFor='productRefId'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                            >
+                              Product Name
+                            </label>
+                            <select
+                              id='productRefId'
+                              name='productRefId'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
+                              value={sale.productRefId}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  'productRefId',
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <option>Select Product</option>
+                              {products.map((product) => (
+                                <option key={product._id} value={product._id}>
+                                  {product.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
-                        ))}
-
-                        <button
-                          type='button'
-                          onClick={addNewDrug}
-                          className='mt-3 bg-blue-600 text-white px-3 py-2 rounded-md'
-                        >
-                          Add Another Product
-                        </button>
+                          <div>
+                            <label
+                              htmlFor='quantity'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                            >
+                              Quantity
+                            </label>
+                            <input
+                              type='number'
+                              name='quantity'
+                              id='quantity'
+                              value={sale.quantity}
+                              onChange={(e) =>
+                                handleInputChange('quantity', e.target.value)
+                              }
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
+                            />
+                          </div>
+                        </div>
                         <div className='mt-4'>
                           <label
                             htmlFor='date'
@@ -219,7 +168,9 @@ export default function AddSale({
                             id='date'
                             name='date'
                             value={sale.date}
-                            onChange={(e) => handleDateChange(e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange('date', e.target.value)
+                            }
                           />
                         </div>
                       </form>
@@ -231,8 +182,8 @@ export default function AddSale({
                     type='button'
                     className={`inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm ml-1 ${
                       isSaleValid
-                        ? "bg-blue-600 text-white hover:bg-blue-500"
-                        : "bg-gray-300 text-gray-500"
+                        ? 'bg-blue-600 text-white hover:bg-blue-500'
+                        : 'bg-gray-300 text-gray-500'
                     }`}
                     disabled={!isSaleValid}
                     onClick={addSale}
