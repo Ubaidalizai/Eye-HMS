@@ -79,13 +79,8 @@ const filterPurchasesByYear = async (req, res) =>
 const addPurchase = asyncHandler(async (req, res) => {
   const { _id: userID } = req.user;
   validateMongoDBId(userID);
-  const {
-    productID,
-    QuantityPurchased,
-    purchaseDate,
-    unitPurchaseAmount,
-    category,
-  } = req.body;
+  const { productID, QuantityPurchased, date, unitPurchaseAmount, category } =
+    req.body;
 
   // Validate required fields
   if (
