@@ -6,17 +6,14 @@ const Purchase = require('../models/purchase');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const validateMongoDBId = require('../utils/validateMongoDBId');
-
-// Helper function to retrieve products from inventory or pharmacy
-const getValidProduct = async (productRefId) => {
-  const productInPharmacy = await Pharmacy.findById(productRefId);
-
-  if (!productInPharmacy) {
-    throw new Error(`Product with ID ${productRefId} not found in pharmacy`);
-  }
-
-  return productInPharmacy;
-};
+const {
+  getDateRangeForYear,
+  getDateRangeForMonth,
+} = require('../utils/dateUtils');
+const {
+  getAggregatedData,
+  populateDataArray,
+} = require('../utils/aggregationUtils');
 
 // Helper function to validate stock and calculate income
 const validateDrugAndCalculateIncome = async (drug, soldItem) => {
@@ -113,111 +110,67 @@ const getAllSales = getAll(Sale, false, [
   { path: 'userID', select: 'firstName lastName' },
 ]);
 
-// Get monthly sales ( total income and total net income, total sold items )
-const getOneMonthSales = asyncHandler(async (req, res) => {
-  const { year, month } = req.params;
-
-  try {
-    // Get the first and last days of the specified month
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-
-    // Aggregate sales data for the specified month, grouped by day
-    const sales = await Sale.aggregate([
-      {
-        $match: {
-          date: {
-            $gte: startDate,
-            $lt: endDate,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: { $dayOfMonth: '$date' }, // Group by day of the month
-          totalSale: { $sum: '$totalSale' },
-          totalNetIncome: { $sum: '$totalNetIncome' },
-        },
-      },
-      {
-        $sort: { _id: 1 }, // Sort by day in ascending order
-      },
-    ]);
-
-    // If no sales found for the month
-    if (!sales.length) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'No sales found for the given month',
-      });
-    }
-
-    // Return daily sales
-    res.status(200).json({
-      status: 'success',
-      data: sales, // Array of sales grouped by day
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to retrieve monthly sales: ${error.message}`,
-    });
-  }
-});
-
-const getOneYearSales = asyncHandler(async (req, res) => {
+// Get summarized data by month for a given year (generic for any model)
+const getDataByYear = asyncHandler(async (req, res, Model) => {
   const { year } = req.params;
+  const { category } = req.query;
 
-  // Define the start and end of the year
-  const startOfYear = new Date(`${year}-01-01`);
-  const endOfYear = new Date(`${year}-12-31`);
+  const { startDate, endDate } = getDateRangeForYear(year);
+
+  const matchCriteria = {
+    date: { $gte: startDate, $lte: endDate },
+  };
+  if (category) matchCriteria.category = category;
+
+  const groupBy = {
+    _id: { month: { $month: '$date' } },
+    totalAmount: { $sum: '$income' },
+  };
 
   try {
-    // Aggregate sales data grouped by month
-    const incomeByMonth = await Sale.aggregate([
-      {
-        $match: {
-          date: { $gte: startOfYear, $lte: endOfYear },
-        },
-      },
-      {
-        $group: {
-          _id: { $month: '$date' }, // Group by month
-          totalSale: { $sum: '$totalSale' },
-          totalNetIncome: { $sum: '$totalNetIncome' },
-        },
-      },
-      {
-        $sort: { _id: 1 }, // Sort by month (ascending)
-      },
-    ]);
-
-    // Create arrays for income and net income, each with 12 slots (one for each month)
-    const incomeResult = new Array(12).fill(0);
-    const netIncomeResult = new Array(12).fill(0);
-
-    // Map the aggregated data to the arrays
-    incomeByMonth.forEach((item) => {
-      const monthIndex = item._id - 1; // Month is 1-indexed, array is 0-indexed
-      incomeResult[monthIndex] = item.totalSale;
-      netIncomeResult[monthIndex] = item.totalNetIncome;
-    });
-
-    // Respond with both income and net income arrays
-    res.status(200).json({
-      status: 'success',
-      data: {
-        incomeByMonth: incomeResult,
-        netIncomeByMonth: netIncomeResult,
-      },
-    });
+    const data = await getAggregatedData(Model, matchCriteria, groupBy);
+    const totalAmountsByDay = populateDataArray(data, 12, 'month');
+    res.status(200).json({ data: totalAmountsByDay });
   } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to retrieve yearly sales: ${error.message}`,
-    });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 });
+
+// Get summarized data by day for a given month (generic for any model)
+const getDataByMonth = asyncHandler(async (req, res, Model) => {
+  const { year, month } = req.params;
+  const { category } = req.query;
+
+  const { startDate, endDate } = getDateRangeForMonth(year, month);
+
+  const matchCriteria = {
+    date: { $gte: startDate, $lte: endDate },
+  };
+  if (category) matchCriteria.category = category;
+
+  const groupBy = {
+    _id: { day: { $dayOfMonth: '$date' } },
+    totalAmount: { $sum: '$income' },
+  };
+
+  try {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const data = await getAggregatedData(Model, matchCriteria, groupBy);
+    const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
+    res.status(200).json({ data: totalAmountsByDay });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+});
+
+// Get monthly sales ( total income and total net income, total sold items )
+const getOneMonthSales = asyncHandler(async (req, res) =>
+  getDataByMonth(req, res, Sale)
+);
+
+const getOneYearSales = asyncHandler(async (req, res) =>
+  getDataByYear(req, res, Sale)
+);
 
 const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
   const { year, month } = req.params;
@@ -301,99 +254,6 @@ const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
   }
 });
 
-const updateSale = asyncHandler(async (req, res) => {
-  const saleId = req.params.id;
-  validateMongoDBId(saleId);
-
-  const { soldItems, category, date } = req.body;
-  let totalSale = 0;
-  let totalNetIncome = 0;
-  const updatedSoldDetails = [];
-
-  try {
-    // Fetch the original sale to compare changes
-    const originalSale = await Sale.findById(saleId);
-    if (!originalSale) {
-      res.status(404);
-      throw new Error('Sale not found');
-    }
-
-    // Revert stock based on original sale quantities
-    let productNetIncomeDifference = 0;
-    for (const originalItem of originalSale.soldDetails) {
-      const product = await Pharmacy.findById(originalItem.productRefId);
-      if (product) {
-        product.quantity += originalItem.quantity; // Revert the quantity
-        await product.save();
-      }
-    }
-
-    // Validate and update based on new soldItems
-    const validProducts = await getValidProducts(soldItems);
-
-    for (const soldItem of soldItems) {
-      const product = validProducts.find((p) =>
-        p._id.equals(soldItem.productRefId)
-      );
-
-      // Find original item income, then calculate the difference
-      const originalItem = originalSale.soldDetails.find((item) =>
-        item.productRefId.equals(soldItem.productRefId)
-      );
-      const originalNetIncome = originalItem ? originalItem.income : 0;
-
-      // Calculate updated income and net income for the product
-      const income = await validateDrugAndCalculateIncome(product, soldItem);
-      const purchaseCost = await calculateNetIncome(product, soldItem);
-      const newNetIncome = income - purchaseCost;
-
-      // Calculate the difference for this specific product
-      productNetIncomeDifference += newNetIncome - originalNetIncome;
-      totalSale += income;
-      totalNetIncome += newNetIncome;
-
-      // Update product quantity in the pharmacy
-      await updateDrugStock(product, soldItem.quantity);
-
-      // Add updated details to soldDetails array
-      updatedSoldDetails.push({
-        productRefId: product._id,
-        quantity: soldItem.quantity,
-        income,
-      });
-    }
-
-    // Update the sale record
-    originalSale.soldDetails = updatedSoldDetails;
-    originalSale.totalSale = totalSale;
-    originalSale.date = date || originalSale.date;
-    originalSale.category = category || originalSale.category;
-    const updatedSale = await originalSale.save();
-
-    // Adjust the income record based on productNetIncomeDifference
-    await Income.findOneAndUpdate(
-      { saleId: saleId },
-      {
-        $inc: { totalNetIncome: productNetIncomeDifference }, // Decrement by productNetIncomeDifference
-        description: `Updated sales of ${category} products`,
-        date: date || originalSale.date,
-      },
-      { new: true, upsert: true }
-    );
-
-    res.status(200).json({
-      status: 'success',
-      data: { sale: updatedSale },
-    });
-  } catch (error) {
-    console.error('Error updating sale:', error);
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to update the sale: ${error.message}`,
-    });
-  }
-});
-
 const deleteSale = asyncHandler(async (req, res) => {
   const saleId = req.params.id;
   // Validate MongoDB ID
@@ -445,6 +305,5 @@ module.exports = {
   getOneYearSales,
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
-  updateSale,
   deleteSale,
 };

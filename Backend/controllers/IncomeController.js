@@ -1,5 +1,68 @@
 const Income = require('../models/incomeModule');
+const asyncHandler = require('../middlewares/asyncHandler');
+
 const getAll = require('./handleFactory');
+const {
+  getDateRangeForYear,
+  getDateRangeForMonth,
+} = require('../utils/dateUtils');
+const {
+  getAggregatedData,
+  populateDataArray,
+} = require('../utils/aggregationUtils');
+
+// Get summarized data by month for a given year (generic for any model)
+const getDataByYear = asyncHandler(async (req, res, Model) => {
+  const { year } = req.params;
+  const { category } = req.query;
+
+  const { startDate, endDate } = getDateRangeForYear(year);
+
+  const matchCriteria = {
+    date: { $gte: startDate, $lte: endDate },
+  };
+  if (category) matchCriteria.category = category;
+
+  const groupBy = {
+    _id: { month: { $month: '$date' } },
+    totalAmount: { $sum: '$amount' },
+  };
+
+  try {
+    const data = await getAggregatedData(Model, matchCriteria, groupBy);
+    const totalAmountsByMonth = populateDataArray(data, 12, 'month');
+    res.status(200).json({ data: totalAmountsByMonth });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+});
+
+// Get summarized data by day for a given month (generic for any model)
+const getDataByMonth = asyncHandler(async (req, res, Model) => {
+  const { year, month } = req.params;
+  const { category } = req.query;
+
+  const { startDate, endDate } = getDateRangeForMonth(year, month);
+
+  const matchCriteria = {
+    date: { $gte: startDate, $lte: endDate },
+  };
+  if (category) matchCriteria.category = category;
+
+  const groupBy = {
+    _id: { day: { $dayOfMonth: '$date' } },
+    totalAmount: { $sum: '$amount' },
+  };
+
+  try {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const data = await getAggregatedData(Model, matchCriteria, groupBy);
+    const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
+    res.status(200).json({ data: totalAmountsByDay });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+});
 
 // Create new income record
 const createIncome = async (req, res) => {
@@ -21,105 +84,11 @@ const createIncome = async (req, res) => {
   }
 };
 
-// Helper function to calculate start and end dates for a month
-const getDateRangeForMonth = (year, month) => {
-  const startDate = new Date(year, month - 1, 1); // Start of the month (month is 0-indexed in JavaScript)
-  const endDate = new Date(year, month, 0); // End of the month (last day of the month)
-  return { startDate, endDate };
-};
-
 // Filter income by year and return monthly totals
-const filterIncomeByYear = async (req, res) => {
-  try {
-    const { year } = req.params;
+const filterIncomeByYear = async (req, res) => getDataByMonth(req, res, Income);
 
-    if (!year) {
-      return res.status(400).json({ error: 'Year is required.' });
-    }
-
-    const startDate = new Date(`${year}-01-01T00:00:00.000+00:00`);
-    const endDate = new Date(`${Number(year) + 1}-01-01T00:00:00.000+00:00`);
-
-    const incomes = await Income.find({
-      date: {
-        $gte: startDate,
-        $lt: endDate,
-      },
-    });
-
-    // Initialize arrays with 12 zeros (one for each month)
-    let totalSale = Array(12).fill(0);
-    let totalNetIncome = Array(12).fill(0);
-
-    // Calculate total income and total net income for each month
-    incomes.forEach((income) => {
-      const month = new Date(income.date).getMonth(); // Get month index (0 = Jan, 11 = Dec)
-      totalSale[month] += income.totalSale; // Add totalSale to the respective month
-      totalNetIncome[month] += income.totalNetIncome; // Add totalNetIncome to the respective month
-    });
-
-    res.status(200).json({
-      data: { totalSale, totalNetIncome },
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-const filterIncomeByYearAndMonth = async (req, res) => {
-  const { year, month } = req.params; // Get the year and month from the request parameters
-  const { category } = req.query; // Get the category from the query parameters (optional)
-
-  try {
-    const { startDate, endDate } = getDateRangeForMonth(year, month);
-
-    // Build the match object with optional category filtering
-    const matchCriteria = {
-      date: {
-        $gte: startDate, // Greater than or equal to the start of the month
-        $lte: endDate, // Less than or equal to the end of the month
-      },
-    };
-
-    if (category) {
-      matchCriteria.category = category; // Add category filter if provided
-    }
-
-    // Aggregate totalSale and totalNetIncome for each day of the month
-    const incomes = await Income.aggregate([
-      {
-        $match: matchCriteria, // Use the built match object
-      },
-      {
-        $group: {
-          _id: { day: { $dayOfMonth: '$date' } }, // Group by the day of the income date
-          totalSale: { $sum: '$totalSale' }, // Sum totalSale for each day
-          totalNetIncome: { $sum: '$totalNetIncome' }, // Sum totalNetIncome for each day
-        },
-      },
-      {
-        $sort: { '_id.day': 1 }, // Sort the results by day
-      },
-    ]);
-
-    // Create arrays with elements for each day of the month, initializing with 0s
-    const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
-    const totalSale = new Array(daysInMonth).fill(0);
-    const totalNetIncome = new Array(daysInMonth).fill(0);
-
-    // Populate the correct day in the arrays
-    incomes.forEach((income) => {
-      totalSale[income._id.day - 1] = income.totalSale; // Assign totalSale to the correct day
-      totalNetIncome[income._id.day - 1] = income.totalNetIncome; // Assign totalNetIncome to the correct day
-    });
-
-    res.status(200).json({
-      data: { totalSale, totalNetIncome },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
-  }
-};
+const filterIncomeByYearAndMonth = async (req, res) =>
+  getDataByYear(req, res, Income);
 
 // Update an income record by ID
 const updateIncome = async (req, res) => {
