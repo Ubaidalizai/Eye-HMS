@@ -1,5 +1,4 @@
 const express = require('express');
-const app = express();
 
 const router = express.Router();
 const {
@@ -8,7 +7,6 @@ const {
   getOneYearSales,
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
-  updateSale,
   deleteSale,
 } = require('../controllers/salesController');
 const { authenticate } = require('../middlewares/authMiddleware');
@@ -22,6 +20,6 @@ router.get('/year-month/:year/:month', getOneMonthSalesWithFullDetails);
 // Add Sales
 router.route('/').get(getAllSales).post(sellItems);
 
-router.route('/:id').patch(updateSale).delete(deleteSale);
+router.route('/:id').delete(deleteSale);
 
 module.exports = router;

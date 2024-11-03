@@ -6,6 +6,9 @@ const { authenticate } = require('../middlewares/authMiddleware');
 router.use(authenticate);
 router.get('/totalPurchaseAmount', purchase.getTotalPurchaseAmount);
 
+router.get('/:year/:month', purchase.filterPurchasesByMonth);
+router.get('/:year', purchase.filterPurchasesByYear);
+
 router.route('/').get(purchase.getPurchaseData).post(purchase.addPurchase);
 
 router
