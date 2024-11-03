@@ -1,31 +1,31 @@
-import { Fragment, useEffect, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
   handlePageUpdate,
 }) {
   const [products, setAllProducts] = useState([]);
-  const [productCatagory, setProductCatagory] = useState("");
+  const [productCatagory, setProductCatagory] = useState('');
   const [purchase, setPurchase] = useState({
-    productID: "",
+    productID: '',
     QuantityPurchased: 0,
-    purchaseDate: "",
-    unitPurchaseAmount: "",
-    category: "", // New category field
+    date: '',
+    unitPurchaseAmount: '',
+    category: '', // New category field
   });
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   const fetchProductsData = (productCatagory) => {
-    let url = "http://localhost:4000/api/v1/inventory/product";
+    let url = 'http://localhost:4000/api/v1/inventory/product';
     if (productCatagory) {
       url += `?category=${productCatagory}`;
     }
 
     fetch(url, {
-      credentials: "include",
+      credentials: 'include',
     })
       .then((response) => response.json())
       .then((data) => {
@@ -35,7 +35,7 @@ export default function AddPurchaseDetails({
   };
 
   useEffect(() => {
-    fetchProductsData("");
+    fetchProductsData('');
   }, []);
   // Handling Input Change for input fields
   const handleInputChange = (key, value) => {
@@ -44,16 +44,16 @@ export default function AddPurchaseDetails({
 
   // POST Data
   const addSale = () => {
-    fetch("http://localhost:4000/api/v1/purchase", {
-      credentials: "include",
-      method: "POST",
+    fetch('http://localhost:4000/api/v1/purchase', {
+      credentials: 'include',
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
       body: JSON.stringify(purchase),
     })
       .then((result) => {
-        alert("Purchase ADDED");
+        alert('Purchase ADDED');
         handlePageUpdate();
         addSaleModalSetting();
       })
@@ -121,7 +121,7 @@ export default function AddPurchaseDetails({
                               name='category'
                               value={purchase.category}
                               onChange={(e) => {
-                                handleInputChange("category", e.target.value);
+                                handleInputChange('category', e.target.value);
                                 setProductCatagory(e.target.value);
                                 fetchProductsData(e.target.value);
                               }}
@@ -210,7 +210,7 @@ export default function AddPurchaseDetails({
                               type='date'
                               id='purchaseDate'
                               name='purchaseDate'
-                              value={purchase.purchaseDate}
+                              value={purchase.date}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
