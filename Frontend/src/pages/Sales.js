@@ -4,7 +4,6 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaFilter,
-  FaEdit,
   FaTrash,
 } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
@@ -270,12 +269,6 @@ export default function Sales() {
                           ${sale.income}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                          <button
-                            // onClick={() => handleEdit(sale)}
-                            className='text-indigo-600 hover:text-indigo-900 mr-2'
-                          >
-                            <FaEdit />
-                          </button>
                           <button
                             onClick={() => handleDelete(sale._id)}
                             className='text-red-600 hover:text-red-900'
