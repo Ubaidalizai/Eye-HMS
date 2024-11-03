@@ -72,7 +72,8 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password, phoneNumber } = req.body;
-
+  console.log(req.body);
+  console.log(req.file);
   if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new Error('Please fill all the inputs.');
   }
