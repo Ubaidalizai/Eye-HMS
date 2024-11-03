@@ -11,10 +11,9 @@ router.route('/logout').post(userController.logoutCurrentUser);
 router
   .route('/updatePassword')
   .patch(authenticate, userController.updatePassword);
-
+router.post('/updateMe', userController.uploadUserPhoto);
 router.patch(
   '/updateMe',
-  userController.uploadUserPhoto,
   authenticate,
   userController.resizeUserPhoto,
   authenticate,

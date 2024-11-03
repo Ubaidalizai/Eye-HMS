@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   HiPlus,
   HiSearch,
@@ -10,22 +10,22 @@ import {
   HiDocumentAdd,
   HiChevronLeft,
   HiChevronRight,
-} from "react-icons/hi";
+} from 'react-icons/hi';
 
-const API_BASE_URL = "http://localhost:4000/api/v1/patient";
+const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
 export default function PatientManagement() {
   const [patients, setPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPatient, setCurrentPatient] = useState(null);
   const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    contact: "",
-    patientID: "",
-    patientGender: "",
-    insuranceContact: "",
+    name: '',
+    age: '',
+    contact: '',
+    patientID: '',
+    patientGender: '',
+    insuranceContact: '',
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,15 +42,15 @@ export default function PatientManagement() {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}?searchTerm=${searchTerm}`, {
-        credentials: "include",
+        credentials: 'include',
       });
-      if (!response.ok) throw new Error("Failed to fetch patients");
+      if (!response.ok) throw new Error('Failed to fetch patients');
       const data = await response.json();
       setPatients(data.data.results);
       setTotalPages(Math.ceil(data.data.total / patientsPerPage));
     } catch (error) {
-      toast.error("Failed to fetch patients", {
-        position: "top-right",
+      toast.error('Failed to fetch patients', {
+        position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -70,24 +70,24 @@ export default function PatientManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const method = currentPatient ? "PATCH" : "POST";
+      const method = currentPatient ? 'PATCH' : 'POST';
       const url = currentPatient
         ? `${API_BASE_URL}/${currentPatient._id}`
         : API_BASE_URL;
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
-        credentials: "include",
+        credentials: 'include',
       });
 
-      if (!response.ok) throw new Error("Failed to save patient");
+      if (!response.ok) throw new Error('Failed to save patient');
 
       toast.success(
-        `Patient ${currentPatient ? "updated" : "added"} successfully!`,
+        `Patient ${currentPatient ? 'updated' : 'added'} successfully!`,
         {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -98,8 +98,8 @@ export default function PatientManagement() {
       setIsModalOpen(false);
       fetchPatients();
     } catch (error) {
-      toast.error("Failed to save patient", {
-        position: "top-right",
+      toast.error('Failed to save patient', {
+        position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -116,15 +116,15 @@ export default function PatientManagement() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this patient?")) {
+    if (window.confirm('Are you sure you want to delete this patient?')) {
       try {
         const response = await fetch(`${API_BASE_URL}/${id}`, {
-          method: "DELETE",
-          credentials: "include",
+          method: 'DELETE',
+          credentials: 'include',
         });
-        if (!response.ok) throw new Error("Failed to delete patient");
-        toast.success("Patient deleted successfully!", {
-          position: "top-right",
+        if (!response.ok) throw new Error('Failed to delete patient');
+        toast.success('Patient deleted successfully!', {
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -133,8 +133,8 @@ export default function PatientManagement() {
         });
         fetchPatients();
       } catch (error) {
-        toast.error("Failed to delete patient", {
-          position: "top-right",
+        toast.error('Failed to delete patient', {
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -171,12 +171,12 @@ export default function PatientManagement() {
           onClick={() => {
             setCurrentPatient(null);
             setFormData({
-              name: "",
-              age: "",
-              contact: "",
-              patientID: "",
-              patientGender: "",
-              insuranceContact: "",
+              name: '',
+              age: '',
+              contact: '',
+              patientID: '',
+              patientGender: '',
+              insuranceContact: '',
             });
             setIsModalOpen(true);
           }}
@@ -280,7 +280,8 @@ export default function PatientManagement() {
         <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
           <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
             <h2 className='text-2xl font-bold mb-4 text-indigo-800'>
-              {currentPatient ? "Edit Patient" : "Add New Patient"}
+              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
+              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
             </h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
               <input
@@ -351,7 +352,7 @@ export default function PatientManagement() {
                   type='submit'
                   className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition'
                 >
-                  {currentPatient ? "Update" : "Add"} Patient
+                  {currentPatient ? 'Update' : 'Add'} Patient
                 </button>
               </div>
             </form>

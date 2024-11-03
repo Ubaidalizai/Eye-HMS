@@ -33,45 +33,45 @@ export function PrescriptionList() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-4">
+      <h1 className='text-2xl font-semibold mb-4'>
         Prescriptions for Patient {patientId}
       </h1>
       <Link
         to={`/prescriptions/${patientId}`}
-        className="inline-block bg-indigo-600 text-white px-4 py-2 rounded mb-4"
+        className='inline-block bg-indigo-600 text-white px-4 py-2 rounded mb-4'
       >
         Add New Prescription
       </Link>
-      <ul className="divide-y divide-gray-200">
+      <ul className='divide-y divide-gray-200'>
         {prescriptions.map((prescription) => (
-          <li key={prescription.id} className="py-4">
+          <li key={prescription.id} className='py-4'>
             {/* <Link
               to={`/prescription/${prescription._id}`}
               className="block hover:bg-gray-50"
             > */}
             <Link
               to={`/patients/${patientId}/prescriptions/${prescription._id}`}
-              className="block hover:bg-gray-50"
+              className='block hover:bg-gray-50'
             >
-              <div className="flex items-center space-x-4">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+              <div className='flex items-center space-x-4'>
+                <div className='flex-1 min-w-0'>
+                  <p className='text-sm font-medium text-gray-900 truncate'>
                     Date: {prescription.date}
                   </p>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className='text-sm text-gray-500 truncate'>
                     Doctor: {prescription.doctor}
                   </p>
                 </div>
                 <div>
                   <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
+                    className='h-5 w-5 text-gray-400'
+                    fill='currentColor'
+                    viewBox='0 0 20 20'
                   >
                     <path
-                      fillRule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                      clipRule="evenodd"
+                      fillRule='evenodd'
+                      d='M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z'
+                      clipRule='evenodd'
                     />
                   </svg>
                 </div>
