@@ -25,7 +25,7 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
 
   const groupBy = {
     _id: { month: { $month: '$date' } },
-    totalAmount: { $sum: '$amount' },
+    totalAmount: { $sum: '$totalNetIncome' },
   };
 
   try {
@@ -51,7 +51,7 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
 
   const groupBy = {
     _id: { day: { $dayOfMonth: '$date' } },
-    totalAmount: { $sum: '$amount' },
+    totalAmount: { $sum: '$totalNetIncome' },
   };
 
   try {
@@ -85,10 +85,10 @@ const createIncome = async (req, res) => {
 };
 
 // Filter income by year and return monthly totals
-const filterIncomeByYear = async (req, res) => getDataByMonth(req, res, Income);
+const filterIncomeByYear = async (req, res) => getDataByYear(req, res, Income);
 
 const filterIncomeByYearAndMonth = async (req, res) =>
-  getDataByYear(req, res, Income);
+  getDataByMonth(req, res, Income);
 
 // Update an income record by ID
 const updateIncome = async (req, res) => {
