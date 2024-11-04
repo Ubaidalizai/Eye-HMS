@@ -1,43 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Doughnut, Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-} from "chart.js";
-import { MdOutlineDeleteOutline } from "react-icons/md";
-import { FaRegEdit } from "react-icons/fa";
+import React, { useState, useEffect } from 'react';
+import { MdOutlineDeleteOutline } from 'react-icons/md';
+import { FaRegEdit } from 'react-icons/fa';
 
-// Register Chart.js components
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement
-);
-
-const categories = ["drug", "sunglasses", "frame"];
-
-const monthLabels = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const categories = ['drug', 'sunglasses', 'frame'];
 
 const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
   if (!isOpen) return null;
@@ -52,23 +17,6 @@ const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
         <h3 className='text-lg font-semibold mb-4'>Add Income</h3>
         <form onSubmit={onSubmit}>
           <div className='grid gap-4 mb-4 sm:grid-cols-2'>
-            <div>
-              <label
-                htmlFor='totalIncome'
-                className='block mb-2 text-sm font-medium text-gray-900'
-              >
-                Total Income
-              </label>
-              <input
-                type='number'
-                name='totalIncome'
-                id='totalIncome'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full p-2.5'
-                value={newIncome.totalIncome}
-                onChange={handleChange}
-                required
-              />
-            </div>
             <div>
               <label
                 htmlFor='totalNetIncome'
@@ -105,17 +53,17 @@ const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
             </div>
             <div>
               <label
-                htmlFor='reason'
+                htmlFor='description'
                 className='block mb-2 text-sm font-medium text-gray-900'
               >
-                Reason
+                Description
               </label>
               <input
                 type='text'
-                name='reason'
-                id='reason'
+                name='description'
+                id='description'
                 className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full p-2.5'
-                value={newIncome.reason}
+                value={newIncome.description}
                 onChange={handleChange}
                 required
               />
@@ -168,20 +116,12 @@ const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
 export default function IncomeReport() {
   const [income, setIncome] = useState([]);
   const [newIncome, setNewIncome] = useState({
-    totalIncome: "",
-    totalNetIncome: "",
-    date: "",
-    reason: "",
-    category: "",
+    totalNetIncome: 0,
+    date: '',
+    description: '',
+    category: '',
   });
-  const [summaryType, setSummaryType] = useState("monthly");
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [summary, setSummary] = useState({
-    totalIncome: [],
-    totalNetIncome: [],
-  });
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -191,8 +131,7 @@ export default function IncomeReport() {
 
   useEffect(() => {
     fetchIncome();
-    fetchSummary();
-  }, [currentPage, selectedCategory, selectedMonth, selectedYear, summaryType]);
+  }, [currentPage, selectedCategory]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -205,7 +144,7 @@ export default function IncomeReport() {
     try {
       const response = await fetch(
         `http://localhost:4000/api/v1/income?page=${currentPage}&limit=${limit}&category=${selectedCategory}`,
-        { credentials: "include" }
+        { credentials: 'include' }
       );
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -213,28 +152,6 @@ export default function IncomeReport() {
       const data = await response.json();
       setIncome(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchSummary = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const url =
-        summaryType === "monthly"
-          ? `http://localhost:4000/api/v1/income/${selectedYear}/${selectedMonth}?category=${selectedCategory}`
-          : `http://localhost:4000/api/v1/income/${selectedYear}?category=${selectedCategory}`;
-
-      const response = await fetch(url, { credentials: "include" });
-
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-
-      const data = await response.json();
-      setSummary(data.data);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -250,27 +167,25 @@ export default function IncomeReport() {
     try {
       const url = newIncome._id
         ? `http://localhost:4000/api/v1/income/${newIncome._id}`
-        : "http://localhost:4000/api/v1/income";
+        : 'http://localhost:4000/api/v1/income';
 
       const response = await fetch(url, {
-        method: newIncome._id ? "PATCH" : "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        method: newIncome._id ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newIncome),
       });
 
-      if (!response.ok) throw new Error("Failed to save income");
+      if (!response.ok) throw new Error('Failed to save income');
 
       setNewIncome({
-        totalIncome: "",
-        totalNetIncome: "",
-        date: "",
-        reason: "",
-        category: "",
+        totalNetIncome: '',
+        date: '',
+        description: '',
+        category: '',
       });
       setShowModal(false);
       fetchIncome();
-      fetchSummary();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -284,20 +199,19 @@ export default function IncomeReport() {
   };
 
   const deleteIncome = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this income?")) return;
+    if (!window.confirm('Are you sure you want to delete this income?')) return;
 
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(
         `http://localhost:4000/api/v1/income/${id}`,
-        { method: "DELETE", credentials: "include" }
+        { method: 'DELETE', credentials: 'include' }
       );
 
-      if (!response.ok) throw new Error("Failed to delete income");
+      if (!response.ok) throw new Error('Failed to delete income');
 
       fetchIncome();
-      fetchSummary();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -308,45 +222,6 @@ export default function IncomeReport() {
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
     setCurrentPage(1);
-  };
-
-  const handleSummaryTypeChange = (e) => {
-    setSummaryType(e.target.value);
-  };
-
-  const handleMonthChange = (e) => {
-    setSelectedMonth(Number(e.target.value));
-  };
-
-  const handleYearChange = (e) => {
-    setSelectedYear(Number(e.target.value));
-  };
-
-  const getBarChartData = () => {
-    const labels =
-      summaryType === "yearly"
-        ? monthLabels
-        : Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`);
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: "Total Income",
-          data: summary.totalIncome || [],
-          backgroundColor: "rgba(75, 192, 192, 0.6)",
-          borderColor: "rgba(75, 192, 192, 1)",
-          borderWidth: 1,
-        },
-        {
-          label: "Total Net Income",
-          data: summary.totalNetIncome || [],
-          backgroundColor: "rgba(255, 99, 132, 0.6)",
-          borderColor: "rgba(255, 99, 132, 1)",
-          borderWidth: 1,
-        },
-      ],
-    };
   };
 
   return (
@@ -370,10 +245,9 @@ export default function IncomeReport() {
         <table className='w-full border-collapse border border-gray-300'>
           <thead>
             <tr className='bg-gray-100'>
-              <th className='border p-2'>Amount</th>
-              <th className='border p-2'>Net Amount</th>
+              <th className='border p-2'>Total Net Income</th>
               <th className='border p-2'>Date</th>
-              <th className='border p-2'>Reason</th>
+              <th className='border p-2'>Description</th>
               <th className='border p-2'>Category</th>
               <th className='border p-2'>Actions</th>
             </tr>
@@ -381,12 +255,11 @@ export default function IncomeReport() {
           <tbody>
             {income.map((item) => (
               <tr key={item._id} className='hover:bg-gray-50'>
-                <td className='border p-2'>{item.totalIncome}</td>
                 <td className='border p-2'>{item.totalNetIncome}</td>
                 <td className='border p-2'>
                   {new Date(item.date).toLocaleDateString()}
                 </td>
-                <td className='border p-2'>{item.reason}</td>
+                <td className='border p-2'>{item.description}</td>
                 <td className='border p-2'>{item.category}</td>
                 <td className='border p-2'>
                   <button
@@ -427,92 +300,6 @@ export default function IncomeReport() {
           >
             Next
           </button>
-        </div>
-      </div>
-
-      <div className='mb-8'>
-        <h2 className='text-2xl font-semibold mb-4'>Income Summary</h2>
-        <div className='flex gap-4 mb-4'>
-          <select
-            className='border p-2 rounded'
-            onChange={handleCategoryChange}
-            value={selectedCategory}
-          >
-            <option value=''>All Categories</option>
-            {categories.map((category, index) => (
-              <option key={index} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <select
-            className='border p-2  rounded'
-            onChange={handleSummaryTypeChange}
-            value={summaryType}
-          >
-            <option value='monthly'>Monthly Summary</option>
-            <option value='yearly'>Yearly Summary</option>
-          </select>
-          {summaryType === "monthly" && (
-            <select
-              className='border p-2 rounded'
-              onChange={handleMonthChange}
-              value={selectedMonth}
-            >
-              {monthLabels.map((label, index) => (
-                <option key={index} value={index + 1}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          )}
-          <input
-            type='number'
-            value={selectedYear}
-            onChange={handleYearChange}
-            min='2000'
-            max={new Date().getFullYear()}
-            className='border p-2 rounded'
-          />
-        </div>
-        <Bar
-          data={getBarChartData()}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { position: "top" },
-              title: {
-                display: true,
-                text: `${
-                  summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
-                } Summary for ${selectedCategory || "All Categories"}`,
-              },
-            },
-          }}
-        />
-      </div>
-
-      <div>
-        <h2 className='text-2xl font-semibold mb-4'>Income by Category</h2>
-        <div className='w-1/2 mx-auto'>
-          <Doughnut
-            data={{
-              labels: categories,
-              datasets: [
-                {
-                  data: categories.map((category) =>
-                    income
-                      .filter((inc) => inc.category === category)
-                      .reduce(
-                        (sum, inc) => sum + parseFloat(inc.totalIncome),
-                        0
-                      )
-                  ),
-                  backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
-                },
-              ],
-            }}
-          />
         </div>
       </div>
 

@@ -67,18 +67,17 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
 // Create new income record
 const createIncome = async (req, res) => {
   try {
-    const { totalSale, totalNetIncome, category, reason, date } = req.body;
+    const { totalNetIncome, category, description, date } = req.body;
     const newIncome = new Income({
       date,
-      totalSale,
+      description,
       totalNetIncome,
       category,
-      reason,
       userID: req.user._id,
     });
 
-    const savedIncome = await newIncome.save();
-    res.status(201).json(savedIncome);
+    await newIncome.save();
+    res.status(201).json(newIncome);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

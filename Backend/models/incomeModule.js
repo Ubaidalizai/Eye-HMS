@@ -7,7 +7,6 @@ const incomeSchema = new mongoose.Schema(
     saleId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Sale',
-      required: true,
     },
     date: {
       type: Date,
