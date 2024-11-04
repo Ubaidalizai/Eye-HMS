@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import AuthContext from "../AuthContext";
-import { Doughnut, Bar } from "react-chartjs-2";
+import React, { useContext, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import AuthContext from '../AuthContext';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -11,8 +11,8 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from "chart.js";
-import "./newManagement.css";
+} from 'chart.js';
+import './newManagement.css';
 
 // Register Chart.js components
 ChartJS.register(
@@ -24,36 +24,36 @@ ChartJS.register(
   BarElement
 );
 
-const categories = ["drug", "sunglasses", "frame"];
-const models = ["sales", "purchase", "income"];
+const categories = ['drug', 'sunglasses', 'frame'];
+const models = ['sales', 'purchase', 'income'];
 const monthLabels = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 function Dashboard() {
-  const [summaryType, setSummaryType] = useState("monthly");
+  const [summaryType, setSummaryType] = useState('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [dashboardSummary, setDashboardSummary] = useState({});
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedModel, setSelectedModel] = useState("purchase");
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedModel, setSelectedModel] = useState('sales');
   const [summary, setSummary] = useState({});
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchDashboardSummary();
-    if (summaryType === "monthly") {
+    if (summaryType === 'monthly') {
       fetchMonthlyStats();
     } else {
       fetchYearlyStats();
@@ -71,11 +71,11 @@ function Dashboard() {
       const response = await fetch(
         `http://localhost:4000/api/v1/${selectedModel}/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
-
+      console.log(selectedYear, selectedMonth);
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
@@ -91,16 +91,12 @@ function Dashboard() {
   const fetchYearlyStats = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/${selectedModel}/${selectedYear}?category=${selectedCategory}`,
+        `http://localhost:4000/api/v1/${selectedModel}/${selectedYear}/?category=${selectedCategory}`,
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
 
       const data = await response.json();
       console.log(data);
@@ -136,7 +132,7 @@ function Dashboard() {
   const getBarChartData = () => {
     let labels, data;
 
-    if (summaryType === "yearly") {
+    if (summaryType === 'yearly') {
       labels = monthLabels;
       data = summary.data || Array(12).fill(0);
     } else {
@@ -150,8 +146,8 @@ function Dashboard() {
         {
           label: selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1),
           data,
-          backgroundColor: "rgb(0, 179, 255)",
-          borderColor: "rgb(0, 179, 255)",
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
           borderWidth: 1,
         },
       ],
@@ -161,17 +157,17 @@ function Dashboard() {
   const fetchDashboardSummary = async () => {
     try {
       const response = await fetch(
-        "http://localhost:4000/api/v1/dashboard/summary",
+        'http://localhost:4000/api/v1/dashboard/summary',
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
       const data = await response.json();
       setDashboardSummary(data.data);
     } catch (err) {
       console.log(err);
-      toast.error("Failed to fetch dashboard summary");
+      toast.error('Failed to fetch dashboard summary');
     }
   };
 
@@ -300,7 +296,7 @@ function Dashboard() {
             </select>
           </div>
 
-          {summaryType === "monthly" && (
+          {summaryType === 'monthly' && (
             <div className='month-selection'>
               <select
                 className='dropdown'
@@ -316,7 +312,7 @@ function Dashboard() {
             </div>
           )}
 
-          {summaryType === "yearly" && (
+          {summaryType === 'yearly' && (
             <div className='year-selection'>
               <h2 className='year-label'>Select Year</h2>
               <input
@@ -341,7 +337,7 @@ function Dashboard() {
               responsive: true,
               plugins: {
                 legend: {
-                  position: "top",
+                  position: 'top',
                 },
                 title: {
                   display: true,
@@ -373,10 +369,10 @@ function Dashboard() {
                         .reduce((sum, item) => sum + parseFloat(item.amount), 0)
                     ),
                     backgroundColor: [
-                      "#FF6384",
-                      "#36A2EB",
-                      "#FFCE56",
-                      "#4BC0C0",
+                      '#FF6384',
+                      '#36A2EB',
+                      '#FFCE56',
+                      '#4BC0C0',
                     ],
                   },
                 ],
