@@ -10,7 +10,7 @@ import {
 import AddPurchaseDetails from '../components/AddPurchaseDetails';
 import EditPurchaseDetails from '../components/EditPurchaseDetails';
 import AuthContext from '../AuthContext';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -101,12 +101,13 @@ function PurchaseDetails() {
           }
         );
         if (!response.ok) {
+          console.log(response);
           throw new Error(`Error: ${response.status}`);
         }
         fetchPurchaseData(); // Refresh the purchase list
       } catch (err) {
-        toast.error('Error deleting purchase:', err);
         setError('Failed to delete purchase. Please try again.');
+        toast.error('Error deleting purchase:', err.message);
       }
     }
   };
@@ -130,6 +131,7 @@ function PurchaseDetails() {
 
       setShowEditModal(false);
       fetchPurchaseData(); // Refresh the purchase list
+      toast.success('Purchase added successfully');
     } catch (err) {
       toast.error('Error updating purchase:', err);
       setError('Failed to update purchase. Please try again.');
@@ -139,6 +141,7 @@ function PurchaseDetails() {
   return (
     <div className='min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
+        <ToastContainer />
         <div className='text-center'>
           <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
             Purchase Details
