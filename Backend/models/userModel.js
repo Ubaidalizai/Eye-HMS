@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Pleas provide your password'],
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       required: [true, 'Pleas provide your phone number'],
     },
     role: {
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
       enum: ['pharmacist', 'doctor', 'admin', 'sunglassesSeller'],
       default: 'sunglassesSeller',
     },
-    imageUrl: String,
+    image: String,
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,

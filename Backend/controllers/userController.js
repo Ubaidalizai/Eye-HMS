@@ -11,41 +11,54 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
-// Multer setup
+// Configure Multer Storage in memory
 const multerStorage = multer.memoryStorage();
 
+// Filter to ensure only images are uploaded
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
-    cb(new AppError('Not an image! Please upload only images.', 400), false);
+    cb('Not an image! Please upload only images.', false);
   }
 };
 
-const dir = path.join(__dirname, '../public/img/users');
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
-}
-
+// Multer upload configuration
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
 });
-const uploadUserPhoto = upload.single('photo');
 
+// Middleware to handle single image file upload with name 'image'
+const uploadUserPhoto = upload.single('image');
+
+// Resize and save the image using Sharp
 const resizeUserPhoto = asyncHandler(async (req, res, next) => {
   if (!req.file) return next();
 
-  req.file.filename = `user-${req.user._id}-${Date.now()}.jpeg`;
+  // Ensure directory exists
+  const dir = path.join(__dirname, '../public/img/users');
+  if (!fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (error) {
+      throw new Error('Failed to create image directory');
+    }
+  }
+
+  // Create a filename with user ID and timestamp, falling back if needed
+  req.file.filename = `user-${Date.now()}.jpeg`;
+
   try {
     await sharp(req.file.buffer)
       .resize(500, 500)
       .toFormat('jpeg')
       .jpeg({ quality: 90 })
-      .toFile(`public/img/users/${req.file.filename}`);
+      .toFile(path.join(dir, req.file.filename));
   } catch (error) {
-    throw new Error(error);
+    throw new Error('Error processing image');
   }
+
   next();
 });
 
@@ -53,7 +66,7 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user._id,
     {
-      imageUrl: req.file.filename,
+      image: req.file.filename,
     },
     {
       new: true,
@@ -72,12 +85,12 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password, phoneNumber } = req.body;
-  console.log(req.body);
-  console.log(req.file);
+
   if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new Error('Please fill all the inputs.');
   }
-
+  console.log(req.body);
+  console.log(req.file);
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(409);
@@ -90,6 +103,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     phoneNumber,
+    image: req.file ? req.file.filename : null,
   });
 
   try {
@@ -101,6 +115,7 @@ const registerUser = asyncHandler(async (req, res) => {
       lastName: newUser.lastName,
       email: newUser.email,
       phoneNumber: newUser.phoneNumber,
+      image: newUser.image,
     });
   } catch (error) {
     res.status(400);
@@ -232,7 +247,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         phoneNumber: user.phoneNumber,
-        imageUrl: user.imageUrl,
+        image: user.image,
       },
     });
   } else {

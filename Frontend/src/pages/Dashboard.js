@@ -81,7 +81,6 @@ function Dashboard() {
       }
 
       const data = await response.json();
-      console.log(data.data);
       setSummary(data);
     } catch (err) {
       console.log(err);
@@ -99,7 +98,6 @@ function Dashboard() {
       );
 
       const data = await response.json();
-      console.log(data);
 
       setSummary(data);
     } catch (err) {
