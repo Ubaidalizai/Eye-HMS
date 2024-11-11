@@ -3,8 +3,15 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 export const moveItemAPI = createAsyncThunk(
   "inventory/moveItem",
   async ({ item, quantity }) => {
-    const { name, manufacturer, category, salePrice } = item;
-    const payload = { name, manufacturer, quantity, salePrice, category };
+    const { name, manufacturer, category, salePrice, expiryDate } = item;
+    const payload = {
+      name,
+      manufacturer,
+      quantity,
+      salePrice,
+      category,
+      expiryDate,
+    };
 
     const response = await fetch(
       `http://localhost:4000/api/v1/inventory/product/move`,

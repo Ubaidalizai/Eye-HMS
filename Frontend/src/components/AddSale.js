@@ -25,7 +25,7 @@ export default function AddSale({
     if (user.role === 'pharmacist' || user.role === 'admin') {
       setSale((prevSale) => ({ ...prevSale, category: 'drug' }));
     } else if (user.role === 'sunglassesSeller') {
-      setSale((prevSale) => ({ ...prevSale, category: 'sunglasses' }));
+      setSale((prevSale) => ({ ...prevSale, category: 'glasses' }));
     }
   }, [user.role]);
 

@@ -26,7 +26,7 @@ const Pharmacy = () => {
     let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
     if (user.role === "sunglassesSeller") {
-      baseUrl += "&category=sunglasses,frame";
+      baseUrl += "&category=glasses,frame, glass";
     } else if (user.role === "pharmacist") {
       baseUrl += "&category=drug";
     }

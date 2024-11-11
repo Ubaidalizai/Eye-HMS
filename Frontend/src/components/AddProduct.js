@@ -43,129 +43,130 @@ export default function AddProduct({
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
-        as="div"
-        className="relative z-10"
+        as='div'
+        className='relative z-10'
         initialFocus={cancelButtonRef}
         onClose={setOpen}
       >
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+          enter='ease-out duration-300'
+          enterFrom='opacity-0'
+          enterTo='opacity-100'
+          leave='ease-in duration-200'
+          leaveFrom='opacity-100'
+          leaveTo='opacity-0'
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
         </Transition.Child>
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div className='fixed inset-0 z-10 overflow-y-auto'>
+          <div className='flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0'>
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enter='ease-out duration-300'
+              enterFrom='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
+              enterTo='opacity-100 translate-y-0 sm:scale-100'
+              leave='ease-in duration-200'
+              leaveFrom='opacity-100 translate-y-0 sm:scale-100'
+              leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg'>
+                <div className='bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4'>
+                  <div className='sm:flex sm:items-start'>
+                    <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10'>
                       <PlusIcon
-                        className="h-6 w-6 text-blue-400"
-                        aria-hidden="true"
+                        className='h-6 w-6 text-blue-400'
+                        aria-hidden='true'
                       />
                     </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left ">
+                    <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left '>
                       <Dialog.Title
-                        as="h3"
-                        className="text-lg font-semibold leading-6 text-gray-900 "
+                        as='h3'
+                        className='text-lg font-semibold leading-6 text-gray-900 '
                       >
                         Add Product
                       </Dialog.Title>
-                      <form action="#">
-                        <div className="grid gap-4 mb-4 sm:grid-cols-2">
+                      <form action='#'>
+                        <div className='grid gap-4 mb-4 sm:grid-cols-2'>
                           <div>
                             <label
-                              htmlFor="name"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              htmlFor='name'
+                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                             >
                               Name
                             </label>
                             <input
-                              type="text"
-                              name="name"
-                              id="name"
+                              type='text'
+                              name='name'
+                              id='name'
                               value={product.name}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Ex. Apple iMac 27&ldquo;"
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
+                              placeholder='Ex. Apple iMac 27&ldquo;'
                             />
                           </div>
                           <div>
                             <label
-                              htmlFor="manufacturer"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              htmlFor='manufacturer'
+                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                             >
                               Manufacturer
                             </label>
                             <input
-                              type="text"
-                              name="manufacturer"
-                              id="manufacturer"
+                              type='text'
+                              name='manufacturer'
+                              id='manufacturer'
                               value={product.manufacturer}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                              placeholder="Ex. Apple"
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
+                              placeholder='Ex. Apple'
                             />
                           </div>
-                          <div className="sm:col-span-2">
+                          <div className='sm:col-span-2'>
                             <label
-                              htmlFor="description"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              htmlFor='description'
+                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                             >
                               Description
                             </label>
                             <textarea
-                              id="description"
-                              rows="5"
-                              name="description"
-                              className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
-                              placeholder="Write a description..."
+                              id='description'
+                              rows='5'
+                              name='description'
+                              className='block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500'
+                              placeholder='Write a description...'
                               value={product.description}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
                             />
                           </div>
-                          <div className="sm:col-span-2">
+                          <div className='sm:col-span-2'>
                             <label
-                              htmlFor="category"
-                              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              htmlFor='category'
+                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                             >
                               Category
                             </label>
                             <select
-                              id="category"
-                              name="category"
+                              id='category'
+                              name='category'
                               value={product.category}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
-                              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
                             >
-                              <option value="">Select a category</option>
-                              <option value="drug">Drug</option>
-                              <option value="sunglasses">Sunglasses</option>
-                              <option value="frame">frame</option>
+                              <option value=''>Select a category</option>
+                              <option value='drug'>Drug</option>
+                              <option value='glasses'>Glasses</option>
+                              <option value='glass'>Glass</option>
+                              <option value='frame'>frame</option>
                             </select>
                           </div>
                         </div>
@@ -173,17 +174,17 @@ export default function AddProduct({
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <div className='bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6'>
                   <button
-                    type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                    type='button'
+                    className='inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto'
                     onClick={addProduct}
                   >
                     Add Product
                   </button>
                   <button
-                    type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    type='button'
+                    className='mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto'
                     onClick={() => addProductModalSetting()}
                     ref={cancelButtonRef}
                   >

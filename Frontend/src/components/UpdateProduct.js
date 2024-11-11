@@ -1,7 +1,7 @@
-import { Fragment, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
-import { toast } from "react-toastify";
+import { Fragment, useRef, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-toastify';
 
 export default function UpdateProduct({
   updateProductData,
@@ -26,31 +26,31 @@ export default function UpdateProduct({
 
   const updateProduct = () => {
     if (!product || !product.productID) {
-      return toast.error("Product ID is missing");
+      return toast.error('Product ID is missing');
     }
 
     const id = product.productID;
 
     fetch(`http://localhost:4000/api/v1/inventory/product/${id}`, {
-      method: "PATCH",
-      credentials: "include",
+      method: 'PATCH',
+      credentials: 'include',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(product),
     })
       .then((response) => {
-        if (!response.ok) throw new Error("Failed to update product");
+        if (!response.ok) throw new Error('Failed to update product');
         return response.json();
       })
       .then((data) => {
-        toast.success("Product Updated Successfully");
+        toast.success('Product Updated Successfully');
         onProductUpdate(data); // Call to update the UI in Inventory
         updateModalSetting();
         setUpdatePage((show) => !show); // Close the modal
       })
       .catch((err) => {
-        console.error("Error:", err.message);
+        console.error('Error:', err.message);
         toast.error(`Failed to update product: ${err.message}`);
       });
   };
@@ -159,7 +159,8 @@ export default function UpdateProduct({
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
                             >
                               <option value=''>Select a category</option>
-                              <option value='sunglasses'>Sunglasses</option>
+                              <option value='glasses'>Glasses</option>
+                              <option value='glass'>Glass</option>
                               <option value='frame'>Frame</option>
                               <option value='drug'>Drug</option>
                             </select>

@@ -1,7 +1,6 @@
 const Purchase = require('../models/purchase');
 const Product = require('../models/product');
 const purchaseStock = require('./purchaseStock');
-// const validateMongoDBId = require('../utils/validateMongoDBId');
 const asyncHandler = require('../middlewares/asyncHandler');
 const getAll = require('./handleFactory');
 const mongoose = require('mongoose');
@@ -105,8 +104,14 @@ const filterPurchasesByYear = async (req, res) =>
 const addPurchase = asyncHandler(async (req, res) => {
   const { _id: userID } = req.user;
   validateMongoDBId(userID);
-  const { productID, QuantityPurchased, date, unitPurchaseAmount, category } =
-    req.body;
+  const {
+    productID,
+    QuantityPurchased,
+    date,
+    unitPurchaseAmount,
+    category,
+    expiryDate,
+  } = req.body;
 
   // Validate required fields
   if (
@@ -114,7 +119,8 @@ const addPurchase = asyncHandler(async (req, res) => {
     !QuantityPurchased ||
     !date ||
     !unitPurchaseAmount ||
-    !category
+    !category ||
+    !expiryDate
   ) {
     res.status(400);
     throw new Error('All fields are required.');
@@ -132,7 +138,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     });
 
     // Update product stock after purchase
-    await purchaseStock(productID, QuantityPurchased);
+    await purchaseStock(productID, QuantityPurchased, expiryDate);
 
     // Send success response
     res.status(200).json({
@@ -236,16 +242,13 @@ const updatePurchase = asyncHandler(async (req, res) => {
     originalPurchase.TotalPurchaseAmount =
       originalPurchase.QuantityPurchased * originalPurchase.UnitPurchaseAmount;
 
-    // Save the updated purchase first before updating stock
-    const updatedPurchase = await originalPurchase.save();
-
     // If the quantity changed, update the product stock
     if (
       QuantityPurchased !== undefined &&
       QuantityPurchased !== originalQuantity
     ) {
       const stockDifference = QuantityPurchased - originalQuantity;
-      console.log('Stock Difference: ', originalPurchase.ProductID);
+
       const updatedProduct = await Product.findByIdAndUpdate(
         originalPurchase.ProductID, // Keep the product the same
         { $inc: { stock: stockDifference } }, // Update stock based on the quantity difference
@@ -256,8 +259,20 @@ const updatePurchase = asyncHandler(async (req, res) => {
         throw new Error('Failed to update product stock');
       }
 
+      const updatedProduct = await Product.findById(originalPurchase.ProductID);
+
+      updatedProduct.stock += stockDifference; // Adjust stock based on the difference
+      // Prevent negative stock
       if (updatedProduct.stock < 0) {
+        res.status(400);
         throw new Error('Insufficient stock quantity');
+      }
+      // Save the updated purchase first before updating stock
+      const updatedPurchase = await originalPurchase.save();
+      await updatedProduct.save(); // Save the updated product stock
+      if (!updatedProduct) {
+        throw new Error('Failed to update product stock');
+
       }
     }
 
@@ -313,6 +328,8 @@ const deletePurchase = asyncHandler(async (req, res) => {
 
     // Prevent negative stock
     if (updatedProduct.stock < 0) {
+
+      res.status(400);
       throw new Error('Insufficient stock quantity');
     }
 
