@@ -24,7 +24,7 @@ ChartJS.register(
   BarElement
 );
 
-const categories = ['drug', 'sunglasses', 'frame'];
+const categories = ['drug', 'glasses', 'glass', 'frame'];
 const models = ['sales', 'purchase', 'income'];
 const monthLabels = [
   'January',

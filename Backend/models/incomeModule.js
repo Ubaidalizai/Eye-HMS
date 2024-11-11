@@ -19,7 +19,7 @@ const incomeSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['drug', 'sunglasses', 'frame'],
+      enum: ['drug', 'glasses', 'glass', 'frame'],
       required: true,
     },
     description: {
