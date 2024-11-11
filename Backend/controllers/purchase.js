@@ -249,16 +249,6 @@ const updatePurchase = asyncHandler(async (req, res) => {
     ) {
       const stockDifference = QuantityPurchased - originalQuantity;
 
-      const updatedProduct = await Product.findByIdAndUpdate(
-        originalPurchase.ProductID, // Keep the product the same
-        { $inc: { stock: stockDifference } }, // Update stock based on the quantity difference
-        { new: true, runValidators: true }
-      );
-
-      if (!updatedProduct) {
-        throw new Error('Failed to update product stock');
-      }
-
       const updatedProduct = await Product.findById(originalPurchase.ProductID);
 
       updatedProduct.stock += stockDifference; // Adjust stock based on the difference
@@ -272,7 +262,6 @@ const updatePurchase = asyncHandler(async (req, res) => {
       await updatedProduct.save(); // Save the updated product stock
       if (!updatedProduct) {
         throw new Error('Failed to update product stock');
-
       }
     }
 
@@ -328,7 +317,6 @@ const deletePurchase = asyncHandler(async (req, res) => {
 
     // Prevent negative stock
     if (updatedProduct.stock < 0) {
-
       res.status(400);
       throw new Error('Insufficient stock quantity');
     }
