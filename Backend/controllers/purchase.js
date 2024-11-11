@@ -67,6 +67,32 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   }
 });
 
+// Get sum of all Sales for a specific category (e.g., 'drug')
+const getPurchesCategoryTotal = asyncHandler(async (req, res) => {
+  const category = req.query.category || 'drug'; // Get category from query params, default to 'drug'
+
+  try {
+    // Sum all income for the provided category
+    const totalPurches = await Purchase.aggregate([
+      { $match: { category: category } }, // Match the exact category
+      { $group: { _id: null, total: { $sum: '$QuantityPurchased' } } },
+    ]);
+
+    // Check for total income and format the response
+    const total = totalPurches.length > 0 ? totalPurches[0].total : 0;
+
+    res.status(200).json({
+      category,
+      totalPurches: total, // Set the field to totalSales as requested
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error calculating total Purches',
+      error: error.message,
+    });
+  }
+});
+
 // Filter purchases by year and return monthly totals
 const filterPurchasesByMonth = async (req, res) =>
   getDataByMonth(req, res, Purchase);
@@ -223,6 +249,16 @@ const updatePurchase = asyncHandler(async (req, res) => {
     ) {
       const stockDifference = QuantityPurchased - originalQuantity;
 
+      const updatedProduct = await Product.findByIdAndUpdate(
+        originalPurchase.ProductID, // Keep the product the same
+        { $inc: { stock: stockDifference } }, // Update stock based on the quantity difference
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedProduct) {
+        throw new Error('Failed to update product stock');
+      }
+
       const updatedProduct = await Product.findById(originalPurchase.ProductID);
 
       updatedProduct.stock += stockDifference; // Adjust stock based on the difference
@@ -236,6 +272,7 @@ const updatePurchase = asyncHandler(async (req, res) => {
       await updatedProduct.save(); // Save the updated product stock
       if (!updatedProduct) {
         throw new Error('Failed to update product stock');
+
       }
     }
 
@@ -291,6 +328,7 @@ const deletePurchase = asyncHandler(async (req, res) => {
 
     // Prevent negative stock
     if (updatedProduct.stock < 0) {
+
       res.status(400);
       throw new Error('Insufficient stock quantity');
     }
@@ -318,4 +356,5 @@ module.exports = {
   getTotalPurchaseAmount,
   updatePurchase,
   deletePurchase,
+  getPurchesCategoryTotal,
 };
