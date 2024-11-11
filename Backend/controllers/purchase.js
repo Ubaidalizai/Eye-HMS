@@ -1,7 +1,6 @@
 const Purchase = require('../models/purchase');
 const Product = require('../models/product');
 const purchaseStock = require('./purchaseStock');
-// const validateMongoDBId = require('../utils/validateMongoDBId');
 const asyncHandler = require('../middlewares/asyncHandler');
 const getAll = require('./handleFactory');
 const mongoose = require('mongoose');
@@ -79,8 +78,14 @@ const filterPurchasesByYear = async (req, res) =>
 const addPurchase = asyncHandler(async (req, res) => {
   const { _id: userID } = req.user;
   validateMongoDBId(userID);
-  const { productID, QuantityPurchased, date, unitPurchaseAmount, category } =
-    req.body;
+  const {
+    productID,
+    QuantityPurchased,
+    date,
+    unitPurchaseAmount,
+    category,
+    expiryDate,
+  } = req.body;
 
   // Validate required fields
   if (
@@ -88,7 +93,8 @@ const addPurchase = asyncHandler(async (req, res) => {
     !QuantityPurchased ||
     !date ||
     !unitPurchaseAmount ||
-    !category
+    !category ||
+    !expiryDate
   ) {
     res.status(400);
     throw new Error('All fields are required.');
@@ -106,7 +112,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     });
 
     // Update product stock after purchase
-    await purchaseStock(productID, QuantityPurchased);
+    await purchaseStock(productID, QuantityPurchased, expiryDate);
 
     // Send success response
     res.status(200).json({

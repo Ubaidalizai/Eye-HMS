@@ -1,31 +1,32 @@
-import { Fragment, useEffect, useRef, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
   handlePageUpdate,
 }) {
   const [products, setAllProducts] = useState([]);
-  const [productCatagory, setProductCatagory] = useState("");
+  const [productCatagory, setProductCatagory] = useState('');
   const [purchase, setPurchase] = useState({
-    productID: "",
+    productID: '',
     QuantityPurchased: 0,
-    date: "",
-    unitPurchaseAmount: "",
-    category: "", // New category field
+    date: '',
+    unitPurchaseAmount: '',
+    category: '', // New category field
+    expiryDate: null,
   });
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   const fetchProductsData = (productCatagory) => {
-    let url = "http://localhost:4000/api/v1/inventory/product";
+    let url = 'http://localhost:4000/api/v1/inventory/product';
     if (productCatagory) {
       url += `?category=${productCatagory}`;
     }
 
     fetch(url, {
-      credentials: "include",
+      credentials: 'include',
     })
       .then((response) => response.json())
       .then((data) => {
@@ -35,7 +36,7 @@ export default function AddPurchaseDetails({
   };
 
   useEffect(() => {
-    fetchProductsData("");
+    fetchProductsData('');
   }, []);
   // Handling Input Change for input fields
   const handleInputChange = (key, value) => {
@@ -44,16 +45,16 @@ export default function AddPurchaseDetails({
 
   // POST Data
   const addSale = () => {
-    fetch("http://localhost:4000/api/v1/purchase", {
-      credentials: "include",
-      method: "POST",
+    fetch('http://localhost:4000/api/v1/purchase', {
+      credentials: 'include',
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
       body: JSON.stringify(purchase),
     })
       .then((result) => {
-        alert("Purchase ADDED");
+        alert('Purchase ADDED');
         handlePageUpdate();
         addSaleModalSetting();
       })
@@ -121,15 +122,16 @@ export default function AddPurchaseDetails({
                               name='category'
                               value={purchase.category}
                               onChange={(e) => {
-                                handleInputChange("category", e.target.value);
+                                handleInputChange('category', e.target.value);
                                 setProductCatagory(e.target.value);
                                 fetchProductsData(e.target.value);
                               }}
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
                             >
-                              <option value=''>Select Category</option>
+                              <option value=''>Select a category</option>
                               <option value='drug'>Drug</option>
-                              <option value='sunglasses'>Sunglasses</option>
+                              <option value='glasses'>Glasses</option>
+                              <option value='glass'>Glass</option>
                               <option value='frame'>frame</option>
                             </select>
                           </div>
@@ -211,6 +213,24 @@ export default function AddPurchaseDetails({
                               id='date'
                               name='date'
                               value={purchase.date}
+                              onChange={(e) =>
+                                handleInputChange(e.target.name, e.target.value)
+                              }
+                            />
+                          </div>
+                          <div className='h-fit w-fit'>
+                            <label
+                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              htmlFor='date'
+                            >
+                              Product Expiry Date
+                            </label>
+                            <input
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              type='date'
+                              id='expiryDate'
+                              name='expiryDate'
+                              value={purchase.expiryDate}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }

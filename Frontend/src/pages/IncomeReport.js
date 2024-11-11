@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
 
-const categories = ['drug', 'sunglasses', 'frame'];
+const categories = ['drug', 'glasses', 'glass', 'frame'];
 
 const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
   if (!isOpen) return null;

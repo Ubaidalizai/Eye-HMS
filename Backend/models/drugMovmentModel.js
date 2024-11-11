@@ -24,8 +24,18 @@ const drugMovementSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['drug', 'sunglasses', 'frame'],
+      enum: ['drug', 'glasses', 'glass', 'frame'],
       required: true,
+    },
+    expiryDate: {
+      type: Date,
+      validate: {
+        validator: function (value) {
+          // Make expiryDate required only for drugs
+          return this.category === 'drug' ? !!value : true;
+        },
+        message: 'Expiry date is required for drugs.',
+      },
     },
   },
   { timestamps: true }

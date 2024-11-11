@@ -10,7 +10,6 @@ import NoPageFound from './pages/NoPageFound';
 import AuthContext from './AuthContext';
 import ProtectedWrapper from './ProtectedWrapper';
 import { useEffect, useState } from 'react';
-import Store from './pages/Store';
 import Sales from './pages/Sales';
 import Patient from './pages/Patient';
 import PurchaseDetails from './pages/PurchaseDetails';
@@ -116,7 +115,6 @@ const App = () => {
               <Route path='/inventory' element={<Inventory />} />
               <Route path='/purchase-details' element={<PurchaseDetails />} />
               <Route path='/sales' element={<Sales />} />
-              <Route path='/manage-store' element={<Store />} />
               <Route path='/move' element={<Move />} />
 
               <Route path='/patient' element={<Patient />} />
