@@ -1,9 +1,10 @@
 import { Fragment, useContext, useState, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { Bell } from "lucide-react"; // Use the Bell icon from lucide-react
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: true },
@@ -21,20 +22,18 @@ function classNames(...classes) {
 
 export default function Header() {
   const [userInfo, setUserInfo] = useState('');
+  const [messageCount, setMessageCount] = useState(10); // Placeholder for message count
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Send a GET request to the server to fetch the user profile
         const res = await axios.get(
           'http://localhost:4000/api/v1/user/profile',
           { withCredentials: true }
         );
 
-        // Check if the response is valid
         if (res.status === 200) {
-          // Update the user info state with the response data
           setUserInfo(res?.data?.data);
         } else {
           console.error('Failed to fetch user profile', res);
@@ -71,13 +70,23 @@ export default function Header() {
                   </div>
                   <div className='hidden md:block'>
                     <div className='ml-4 flex items-center md:ml-6'>
-                      <button
-                        type='button'
-                        className='rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
-                      >
-                        <span className='sr-only'>View notifications</span>
-                        <BellIcon className='h-6 w-6' aria-hidden='true' />
-                      </button>
+                      <Link to="/ExpiredProduct">
+                        <button
+                          type='button'
+                          className='relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
+                          aria-label="View notifications"
+                        >
+                          <Bell className="h-6 w-6" aria-hidden="true" />
+                          {messageCount > 0 && (
+                            <span
+                              className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full"
+                              aria-label={`You have ${messageCount} new notifications`}
+                            >
+                              {messageCount > 99 ? '99+' : messageCount}
+                            </span>
+                          )}
+                        </button>
+                      </Link>
 
                       {/* Profile dropdown */}
                       <Menu as='div' className='relative ml-3'>
@@ -128,15 +137,9 @@ export default function Header() {
                     <Disclosure.Button className='inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'>
                       <span className='sr-only'>Open main menu</span>
                       {open ? (
-                        <XMarkIcon
-                          className='block h-6 w-6'
-                          aria-hidden='true'
-                        />
+                        <XMarkIcon className='block h-6 w-6' aria-hidden='true' />
                       ) : (
-                        <Bars3Icon
-                          className='block h-6 w-6'
-                          aria-hidden='true'
-                        />
+                        <Bars3Icon className='block h-6 w-6' aria-hidden='true' />
                       )}
                     </Disclosure.Button>
                   </div>
@@ -150,7 +153,6 @@ export default function Header() {
                       <Disclosure.Button
                         key={item.name}
                         as='a'
-                        // href={item.href}
                         className={classNames(
                           item.current
                             ? 'bg-gray-900 text-white'
@@ -186,7 +188,7 @@ export default function Header() {
                       className='ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
                     >
                       <span className='sr-only'>View notifications</span>
-                      <BellIcon className='h-6 w-6' aria-hidden='true' />
+                      <Bell className='h-6 w-6' aria-hidden='true' />
                     </button>
                   </div>
                   <div className='mt-3 space-y-1 px-2'>
