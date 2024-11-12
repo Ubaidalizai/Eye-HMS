@@ -28,6 +28,7 @@ import { PrescriptionForm } from './components/PrescriptionForm';
 import { PrescriptionList } from './components/PrescriptionList';
 import { PrescriptionDetail } from './components/PrescriptionDetail';
 import Pharmacy from './pages/Pharmacy';
+import ExpiredProduct from './pages/ExpiredProduct';
 const App = () => {
   const [user, setUser] = useState('');
   const [loader, setLoader] = useState(true);
@@ -125,6 +126,7 @@ const App = () => {
               <Route path='/branches/operation' element={<Operation />} />
               <Route path='/pharmacy' element={<Pharmacy />} />
               <Route path='/incomeReport' element={<IncomeReport />} />
+              <Route path="/ExpiredProduct" element={<ExpiredProduct />} />
             </Route>
 
             <Route path='*' element={<NoPageFound />} />
