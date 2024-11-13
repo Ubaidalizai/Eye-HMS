@@ -242,7 +242,7 @@ function Dashboard() {
           </div>
           <div>
             <strong className='block text-sm font-medium text-gray-500'>
-              Total Income
+              Total Net Income
             </strong>
             <p>
               <span className='text-2xl font-medium text-gray-900'>
