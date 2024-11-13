@@ -11,6 +11,7 @@ import AddPurchaseDetails from '../components/AddPurchaseDetails';
 import EditPurchaseDetails from '../components/EditPurchaseDetails';
 import AuthContext from '../AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
+import { HiSearch } from 'react-icons/hi';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -174,6 +175,15 @@ function PurchaseDetails() {
             <h3 className='text-lg leading-6 font-medium text-gray-900'>
               Purchase Records
             </h3>
+            <div className='flex items-center justify-center z-0'>
+          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+          <input
+            type='text'
+            placeholder='Search patients...'
+          
+            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+          />
+        </div>
             <div className='flex  items-center space-x-4'>
               <div className='flex items-center'>
                 <label htmlFor='category' className='sr-only'>

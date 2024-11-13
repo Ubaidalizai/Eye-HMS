@@ -13,6 +13,7 @@ import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
 
 import './newManagement.css';
+import { HiSearch } from 'react-icons/hi';
 
 // Register Chart.js components
 ChartJS.register(
@@ -425,10 +426,19 @@ const ExpenseManagement = () => {
     <div className='parent'>
       <h1>Expense Management</h1>
 
-      <div className='expense-list-detail'>
-        <div className='summary-display'>
-          <div className='Add-btn'>
-            <h2 className='list-header'>Expense List</h2>
+      <div className="expense-list-detail">
+        <div className="summary-display">
+          <div className="Add-btn">
+            <h2 className="list-header">Expense List</h2>
+            <div className='flex items-center justify-center z-0'>
+          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+          <input
+            type='text'
+            placeholder='Search patients...'
+            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+          />
+        </div>
+
             <button
               className='add-expense-button'
               onClick={() => setShowModal(true)}

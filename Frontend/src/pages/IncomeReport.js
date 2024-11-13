@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
+import { HiSearch } from 'react-icons/hi';
 
 const categories = ['drug', 'glasses', 'glass', 'frame'];
 
@@ -231,6 +232,14 @@ export default function IncomeReport() {
       <div className='mb-8'>
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-2xl font-semibold'>Income List</h2>
+          <div className='flex items-center justify-center z-0'>
+          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+          <input
+            type='text'
+            placeholder='Search patients...'
+            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+          />
+        </div>
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
             onClick={() => setShowModal(true)}
