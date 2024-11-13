@@ -478,7 +478,7 @@ const ExpenseManagement = () => {
                         </button>
 
                         <button
-                          onClick={() => deleteExpense(expense.id)}
+                          onClick={() => deleteExpense(expense._id)}
                           className='edit-button'
                         >
                           <div className='del-icon'>
