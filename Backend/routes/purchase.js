@@ -4,6 +4,7 @@ const purchase = require('../controllers/purchase');
 const { authenticate } = require('../middlewares/authMiddleware');
 
 router.use(authenticate);
+router.get('/totalPurchesbycategory', purchase.getPurchesCategoryTotal);
 router.get('/totalPurchaseAmount', purchase.getTotalPurchaseAmount);
 
 router.get('/:year/:month', purchase.filterPurchasesByMonth);

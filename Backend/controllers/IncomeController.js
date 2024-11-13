@@ -64,6 +64,32 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   }
 });
 
+// Get sum of all income for a specific category (e.g., 'drug')
+const getIncomeCategoryTotal = asyncHandler(async (req, res) => {
+  const category = req.query.category || 'drug'; // Get category from query params, default to 'drug'
+
+  try {
+    // Sum all income for the provided category
+    const totalIncome = await Income.aggregate([
+      { $match: { category: category } }, // Match the exact category
+      { $group: { _id: null, total: { $sum: '$totalNetIncome' } } }, // Sum the 'totalNetIncome' field
+    ]);
+
+    // Check for total income and format the response
+    const total = totalIncome.length > 0 ? totalIncome[0].total : 0;
+
+    res.status(200).json({
+      category,
+      totalIncome: total, // Set the field to totalIncome as requested
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error calculating total Income',
+      error: error.message,
+    });
+  }
+});
+
 // Create new income record
 const createIncome = async (req, res) => {
   try {
@@ -134,4 +160,5 @@ module.exports = {
   deleteIncome,
   filterIncomeByYear,
   filterIncomeByYearAndMonth,
+  getIncomeCategoryTotal,
 };

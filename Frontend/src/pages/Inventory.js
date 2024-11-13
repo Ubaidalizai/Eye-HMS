@@ -397,6 +397,9 @@ function Inventory() {
                   Stock
                 </th>
                 <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
+                  Expiry Date
+                </th>
+                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
                   Actions
                 </th>
               </tr>
@@ -412,6 +415,9 @@ function Inventory() {
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     {item.stock}
+                  </td>
+                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    {new Date(item.expiryDate).toLocaleDateString()}
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     <button
