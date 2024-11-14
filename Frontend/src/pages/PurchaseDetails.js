@@ -106,7 +106,7 @@ function PurchaseDetails() {
         fetchPurchaseData(); // Refresh the purchase list
       } catch (err) {
         toast.error("Error deleting purchase:", err);
-        setError("Failed to delete purchase. Please try again.");
+        setError("Failed to delete purchase Please try again.");
       }
     }
   };
