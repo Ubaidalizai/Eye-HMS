@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { FaTimes, FaEdit } from "react-icons/fa";
+import React, { useState } from 'react';
+import { FaTimes, FaEdit } from 'react-icons/fa';
 
 const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Filter data based on search term
   const filteredData = submittedData.filter((data) =>
