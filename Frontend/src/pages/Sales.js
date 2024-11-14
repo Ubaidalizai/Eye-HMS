@@ -163,14 +163,13 @@ export default function Sales() {
               Sales Data
             </h3>
             <div className='flex items-center justify-center z-0'>
-          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
-          <input
-            type='text'
-            placeholder='Search patients...'
-
-            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
-          />
-        </div>
+              <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+              <input
+                type='text'
+                placeholder='Search patients...'
+                className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+              />
+            </div>
             <div className='flex items-center space-x-4'>
               {user.role === 'admin' && (
                 <div className='flex items-center'>
@@ -273,7 +272,7 @@ export default function Sales() {
                           ${sale.productRefId?.salePrice}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                          {new Date(sale.date).toLocaleDateString()}
+                          {sale.date.split('T')[0]}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
                         <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
