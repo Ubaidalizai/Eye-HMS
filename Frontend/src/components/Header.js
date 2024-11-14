@@ -4,14 +4,13 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Bell } from "lucide-react"; // Use the Bell icon from lucide-react
+import { Bell } from 'lucide-react'; // Use the Bell icon from lucide-react
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: true },
   { name: 'Inventory', href: '/inventory', current: false },
   { name: 'Purchase Details', href: '/purchase-details', current: false },
-  { name: 'Sales', href: '/sales', current: false },
-  { name: 'Manage Store', href: '/manage-store', current: false },
+  { name: 'Sales', href: '/Sales', current: false },
 ];
 
 const userNavigation = [{ name: 'Sign out', href: './login' }];
@@ -22,29 +21,72 @@ function classNames(...classes) {
 
 export default function Header() {
   const [userInfo, setUserInfo] = useState('');
-  const [messageCount, setMessageCount] = useState(10); // Placeholder for message count
+  const [exProductsCount, setExProductsCount] = useState(0);
+  const [exDrugsCount, setExDrugsCount] = useState(0);
   const authContext = useContext(AuthContext);
+  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get(
-          'http://localhost:4000/api/v1/user/profile',
-          { withCredentials: true }
-        );
-
-        if (res.status === 200) {
-          setUserInfo(res?.data?.data);
-        } else {
-          console.error('Failed to fetch user profile', res);
-        }
-      } catch (error) {
-        console.error('Error fetching user profile', error);
-      }
-    };
-
     fetchData();
+    expiredProduct();
+    expiredDrugs();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await axios.get('http://localhost:4000/api/v1/user/profile', {
+        withCredentials: true,
+      });
+
+      if (res.status === 200) {
+        setUserInfo(res?.data?.data);
+      } else {
+        console.error('Failed to fetch user profile', res);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile', error);
+    }
+  };
+
+  const expiredProduct = async () => {
+    try {
+      const res = await axios.get(
+        'http://localhost:4000/api/v1/inventory/product/expire',
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (res.status === 200) {
+        setExProductsCount(res.data.length);
+      } else {
+        console.error('Failed to fetch expired products', res);
+      }
+    } catch (error) {
+      console.error('Error fetching expired products', error);
+    }
+  };
+
+  const expiredDrugs = async () => {
+    try {
+      const res = await axios.get(
+        'http://localhost:4000/api/v1/pharmacy/expire',
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (res.status === 200) {
+        setExDrugsCount(res.data.length);
+      } else {
+        console.error('Failed to fetch expired drugs', res);
+      }
+    } catch (error) {
+      console.error('Error fetching expired drugs', error);
+    }
+  };
+
+  const totalExpiredCount = exProductsCount + exDrugsCount; // Calculate total
 
   return (
     <>
@@ -70,19 +112,32 @@ export default function Header() {
                   </div>
                   <div className='hidden md:block'>
                     <div className='ml-4 flex items-center md:ml-6'>
-                      <Link to="/ExpiredProduct">
+                      <Link to='/ExpiredProduct'>
                         <button
                           type='button'
                           className='relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
-                          aria-label="View notifications"
+                          aria-label='View notifications'
                         >
-                          <Bell className="h-6 w-6" aria-hidden="true" />
-                          {messageCount > 0 && (
+                          <Bell className='h-6 w-6' aria-hidden='true' />
+
+                          {/* Conditional Rendering Based on Role */}
+                          {user.role === 'admin' && totalExpiredCount > 0 && (
                             <span
-                              className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full"
-                              aria-label={`You have ${messageCount} new notifications`}
+                              className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                              aria-label={`You have ${totalExpiredCount} expired items`}
                             >
-                              {messageCount > 99 ? '99+' : messageCount}
+                              {totalExpiredCount > 99
+                                ? '99+'
+                                : totalExpiredCount}
+                            </span>
+                          )}
+
+                          {user.role === 'pharmacist' && exDrugsCount > 0 && (
+                            <span
+                              className='absolute top-0 right-6 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                              aria-label={`You have ${exDrugsCount} expired drugs`}
+                            >
+                              {exDrugsCount > 99 ? '99+' : exDrugsCount}
                             </span>
                           )}
                         </button>
@@ -132,81 +187,8 @@ export default function Header() {
                       </Menu>
                     </div>
                   </div>
-                  <div className='-mr-2 flex md:hidden'>
-                    {/* Mobile menu button */}
-                    <Disclosure.Button className='inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'>
-                      <span className='sr-only'>Open main menu</span>
-                      {open ? (
-                        <XMarkIcon className='block h-6 w-6' aria-hidden='true' />
-                      ) : (
-                        <Bars3Icon className='block h-6 w-6' aria-hidden='true' />
-                      )}
-                    </Disclosure.Button>
-                  </div>
                 </div>
               </div>
-
-              <Disclosure.Panel className='md:hidden'>
-                <div className='space-y-1 px-2 pb-3 pt-2 sm:px-3'>
-                  {navigation.map((item) => (
-                    <Link to={item.href} key={item.name}>
-                      <Disclosure.Button
-                        key={item.name}
-                        as='a'
-                        className={classNames(
-                          item.current
-                            ? 'bg-gray-900 text-white'
-                            : 'text-gray-300 hover:bg-gray-700 hover:text-white',
-                          'block rounded-md px-3 py-2 text-base font-medium'
-                        )}
-                        aria-current={item.current ? 'page' : undefined}
-                      >
-                        {item.name}
-                      </Disclosure.Button>
-                    </Link>
-                  ))}
-                </div>
-                <div className='border-t border-gray-700 pt-4 pb-3'>
-                  <div className='flex items-center px-5'>
-                    <div className='flex-shrink-0'>
-                      <img
-                        className='h-10 w-10 rounded-full'
-                        src={`http://localhost:4000/public/img/users/${userInfo.imageUrl}`}
-                        alt='profile'
-                      />
-                    </div>
-                    <div className='ml-3'>
-                      <div className='text-base font-medium leading-none text-white'>
-                        {userInfo.firstName + ' ' + userInfo.lastName}
-                      </div>
-                      <div className='text-sm font-medium leading-none text-gray-400'>
-                        {userInfo.email}
-                      </div>
-                    </div>
-                    <button
-                      type='button'
-                      className='ml-auto flex-shrink-0 rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
-                    >
-                      <span className='sr-only'>View notifications</span>
-                      <Bell className='h-6 w-6' aria-hidden='true' />
-                    </button>
-                  </div>
-                  <div className='mt-3 space-y-1 px-2'>
-                    {userNavigation.map((item) => (
-                      <Disclosure.Button
-                        key={item.name}
-                        as='a'
-                        href={item.href}
-                        className='block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white'
-                      >
-                        <span onClick={() => authContext.signout()}>
-                          {item.name}{' '}
-                        </span>
-                      </Disclosure.Button>
-                    ))}
-                  </div>
-                </div>
-              </Disclosure.Panel>
             </>
           )}
         </Disclosure>
