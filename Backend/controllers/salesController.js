@@ -136,6 +136,32 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
   }
 });
 
+// Get sum of all Sales for a specific category (e.g., 'drug')
+const getSalesCategoryTotal = asyncHandler(async (req, res) => {
+  const category = req.query.category || 'drug'; // Get category from query params, default to 'drug'
+
+  try {
+    // Sum all income for the provided category
+    const totalSales = await Sale.aggregate([
+      { $match: { category: category } }, // Match the exact category
+      { $group: { _id: null, total: { $sum: '$totalNetIncome' } } }, // Sum the 'totalNetIncome' field
+    ]);
+
+    // Check for total income and format the response
+    const total = totalSales.length > 0 ? totalSales[0].total : 0;
+
+    res.status(200).json({
+      category,
+      totalSales: total, // Set the field to totalSales as requested
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error calculating total Sales',
+      error: error.message,
+    });
+  }
+});
+
 // Get summarized data by day for a given month (generic for any model)
 const getDataByMonth = asyncHandler(async (req, res, Model) => {
   const { year, month } = req.params;
@@ -306,4 +332,5 @@ module.exports = {
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
   deleteSale,
+  getSalesCategoryTotal,
 };

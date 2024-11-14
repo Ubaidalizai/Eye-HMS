@@ -89,8 +89,6 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new Error('Please fill all the inputs.');
   }
-  console.log(req.body);
-  console.log(req.file);
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(409);
