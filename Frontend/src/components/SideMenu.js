@@ -12,6 +12,7 @@ import {
   FaCapsules,
   FaFileMedical,
   FaWarehouse,
+  FaUsers,
 } from "react-icons/fa";
 
 function SideMenu({ setActiveComponent }) {
@@ -42,12 +43,22 @@ function SideMenu({ setActiveComponent }) {
     <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
       <div className='px-4 py-6'>
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
+          
           <Link
             to='/'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
           >
             <FaClipboard className='text-lg text-gray-500' />
             <span className='text-sm font-medium'>Dashboard</span>
+          </Link>
+
+
+          <Link
+            to='/Admin-panel'
+            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
+          >
+             <FaUsers className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Admain Panel</span>
           </Link>
 
           <Link
