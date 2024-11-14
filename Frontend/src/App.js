@@ -10,7 +10,6 @@ import NoPageFound from './pages/NoPageFound';
 import AuthContext from './AuthContext';
 import ProtectedWrapper from './ProtectedWrapper';
 import { useEffect, useState } from 'react';
-import Store from './pages/Store';
 import Sales from './pages/Sales';
 import Patient from './pages/Patient';
 import PurchaseDetails from './pages/PurchaseDetails';
@@ -29,6 +28,8 @@ import { PrescriptionForm } from './components/PrescriptionForm';
 import { PrescriptionList } from './components/PrescriptionList';
 import { PrescriptionDetail } from './components/PrescriptionDetail';
 import Pharmacy from './pages/Pharmacy';
+import ExpiredProduct from './pages/ExpiredProduct';
+import AdminPanel from './pages/Admin-panel';
 const App = () => {
   const [user, setUser] = useState('');
   const [loader, setLoader] = useState(true);
@@ -116,7 +117,6 @@ const App = () => {
               <Route path='/inventory' element={<Inventory />} />
               <Route path='/purchase-details' element={<PurchaseDetails />} />
               <Route path='/sales' element={<Sales />} />
-              <Route path='/manage-store' element={<Store />} />
               <Route path='/move' element={<Move />} />
 
               <Route path='/patient' element={<Patient />} />
@@ -127,6 +127,8 @@ const App = () => {
               <Route path='/branches/operation' element={<Operation />} />
               <Route path='/pharmacy' element={<Pharmacy />} />
               <Route path='/incomeReport' element={<IncomeReport />} />
+              <Route path="/ExpiredProduct" element={<ExpiredProduct />} />
+              <Route path="/Admin-panel" element={<AdminPanel />} />
             </Route>
 
             <Route path='*' element={<NoPageFound />} />

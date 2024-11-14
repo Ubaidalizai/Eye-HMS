@@ -10,7 +10,8 @@ import {
 import AddPurchaseDetails from "../components/AddPurchaseDetails";
 import EditPurchaseDetails from "../components/EditPurchaseDetails";
 import AuthContext from "../AuthContext";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import { HiSearch } from "react-icons/hi";
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -101,12 +102,13 @@ function PurchaseDetails() {
           }
         );
         if (!response.ok) {
+          console.log(response);
           throw new Error(`Error: ${response.status}`);
         }
         fetchPurchaseData(); // Refresh the purchase list
       } catch (err) {
-        toast.error("Error deleting purchase:", err);
-        setError("Failed to delete purchase Please try again.");
+        setError("Failed to delete purchase. Please try again.");
+        toast.error("Error deleting purchase:", err.message);
       }
     }
   };
@@ -130,6 +132,7 @@ function PurchaseDetails() {
 
       setShowEditModal(false);
       fetchPurchaseData(); // Refresh the purchase list
+      toast.success("Purchase added successfully");
     } catch (err) {
       toast.error("Error updating purchase:", err);
       setError("Failed to update purchase. Please try again.");
@@ -139,6 +142,7 @@ function PurchaseDetails() {
   return (
     <div className='min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
+        <ToastContainer />
         <div className='text-center'>
           <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
             Purchase Details
@@ -171,6 +175,14 @@ function PurchaseDetails() {
             <h3 className='text-lg leading-6 font-medium text-gray-900'>
               Purchase Records
             </h3>
+            <div className='flex items-center justify-center z-0'>
+              <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+              <input
+                type='text'
+                placeholder='Search patients...'
+                className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+              />
+            </div>
             <div className='flex  items-center space-x-4'>
               <div className='flex items-center'>
                 <label htmlFor='category' className='sr-only'>
@@ -186,9 +198,13 @@ function PurchaseDetails() {
                   >
                     <option value=''>All Categories</option>
                     <option value='drug'>Drug</option>
-                    <option value='sunglasses'>Sunglasses</option>
+                    <option value='glasses'>Glasses</option>
+                    <option value='glass'>Glass</option>
                     <option value='frame'>Frame</option>
                   </select>
+                  {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+                    <FaFilter className='h-4 w-4' aria-hidden='true' />
+                  </div> */}
                 </div>
               </div>
               <button
@@ -261,7 +277,7 @@ function PurchaseDetails() {
                           ? new Date(element.date).toLocaleDateString() ===
                             new Date().toLocaleDateString()
                             ? "Today"
-                            : new Date(element.date).toLocaleDateString()
+                            : element.date.split("T")[0]
                           : "N/A"}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>

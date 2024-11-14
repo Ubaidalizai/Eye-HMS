@@ -1,35 +1,25 @@
-// models/Prescription.js
-
 const mongoose = require('mongoose');
 
 const PrescriptionSchema = new mongoose.Schema(
   {
     date: { type: Date, default: Date.now, required: true },
-    doctor: { type: String, required: true },
-    // Nested structure for right eye
+    doctor: { type: String, default: '' },
     rightEye: {
-      sphere: {
-        type: Number,
-        required: true,
-      },
-      cylinder: { type: Number, required: true },
-      axis: { type: Number, required: true },
+      sphere: { type: Number, default: null },
+      cylinder: { type: Number, default: null },
+      axis: { type: Number, default: null },
     },
-
-    // Nested structure for left eye
     leftEye: {
-      sphere: { type: Number, required: true },
-      cylinder: { type: Number, required: true },
-      axis: { type: Number, required: true },
+      sphere: { type: Number, default: null },
+      cylinder: { type: Number, default: null },
+      axis: { type: Number, default: null },
     },
-
-    pdDistance: { type: Number, required: true },
-    pdNear: { type: Number, required: true },
-    pdPower: { type: Number, required: true },
+    pdDistance: { type: Number, default: null },
+    pdNear: { type: Number, default: null },
+    pdPower: { type: Number, default: null },
     lensType: {
       type: String,
-      required: true,
-      enum: ['Bifocal', 'Progressive', 'Single Vision'], // Restrict to valid types
+      enum: ['Bifocal', 'Progressive', 'Single Vision'],
     },
   },
   { timestamps: true }

@@ -16,7 +16,7 @@ const createPrescription = async (req, res) => {
         message: 'Patient not found',
       });
     }
-
+    console.log(req.body);
     // Create a new prescription and associate it with the patient
     const newPrescription = new Prescription({
       ...req.body,

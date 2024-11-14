@@ -8,11 +8,12 @@ const {
   getOneMonthSales,
   getOneMonthSalesWithFullDetails,
   deleteSale,
+  getSalesCategoryTotal,
 } = require('../controllers/salesController');
 const { authenticate } = require('../middlewares/authMiddleware');
 
 router.use(authenticate); // Enable authentication middleware for all routes in this file
-
+router.get('/totaleSalecategoties', getSalesCategoryTotal);
 // Get Sales Monthly Data
 router.get('/:year/:month', getOneMonthSales);
 router.get('/:year', getOneYearSales);

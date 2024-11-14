@@ -9,7 +9,6 @@ const connectDB = require('./config/db');
 
 const userRoutes = require('./routes/userRoutes');
 const productRoute = require('./routes/product');
-const storeRoute = require('./routes/store');
 const purchaseRoute = require('./routes/purchase');
 const salesRoute = require('./routes/salesRoutes');
 const pharmacyRoute = require('./routes/pharmacyRoutes');
@@ -18,6 +17,7 @@ const expensesRoute = require('./routes/ExpensesRoute');
 const incomeRoute = require('./routes/incomeRoute');
 const prescriptionRoute = require('./routes/PrescriptionRoute');
 const dashboardRoute = require('./routes/dashboaredRoutes');
+const OperationRoute = require('./routes/operationRoute');
 
 const app = express();
 const PORT = 4000;
@@ -40,7 +40,6 @@ app.use(
 
 // Routes
 app.use('/api/v1/user', userRoutes); // User API
-app.use('/api/store', storeRoute); // Store API
 app.use('/api/v1/inventory', productRoute); // Products API
 app.use('/api/v1/purchase', purchaseRoute); // Purchase API
 app.use('/api/v1/sales', salesRoute); // Sales API
@@ -50,6 +49,7 @@ app.use('/api/v1/expense', expensesRoute); // Expenses API
 app.use('/api/v1/income', incomeRoute); // Income API
 app.use('/api/v1/prescriptions', prescriptionRoute); // Prescriptions API
 app.use('/api/v1/dashboard', dashboardRoute); // Dashboard API
+app.use('/api/v1/operation', OperationRoute);
 
 // ------------- Signin --------------
 let userAuthCheck;

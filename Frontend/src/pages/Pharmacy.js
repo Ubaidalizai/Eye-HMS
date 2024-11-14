@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import {
   FaPills,
   FaGlasses,
@@ -7,7 +7,7 @@ import {
   FaExclamationTriangle,
   FaChevronLeft,
   FaChevronRight,
-} from "react-icons/fa";
+} from 'react-icons/fa';
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
@@ -17,7 +17,7 @@ const Pharmacy = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem('user'));
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -25,16 +25,16 @@ const Pharmacy = () => {
 
     let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
-    if (user.role === "sunglassesSeller") {
-      baseUrl += "&category=sunglasses,frame";
-    } else if (user.role === "pharmacist") {
-      baseUrl += "&category=drug";
+    if (user.role === 'sunglassesSeller') {
+      baseUrl += '&category=glasses,frame, glass';
+    } else if (user.role === 'pharmacist') {
+      baseUrl += '&category=drug';
     }
 
     try {
       const res = await fetch(baseUrl, {
-        credentials: "include",
-        method: "GET",
+        credentials: 'include',
+        method: 'GET',
       });
 
       if (!res.ok) {
@@ -101,9 +101,9 @@ const Pharmacy = () => {
       <div className='max-w-7xl mx-auto'>
         <div className='text-center'>
           <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
-            {user.role === "sunglassesSeller"
-              ? "Sunglasses Inventory"
-              : "Pharmacy Inventory"}
+            {user.role === 'sunglassesSeller'
+              ? 'Sunglasses Inventory'
+              : 'Pharmacy Inventory'}
           </h2>
           <p className='mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4'>
             Manage your inventory with ease and efficiency
@@ -140,7 +140,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
-                        {user.role === "sunglassesSeller" ? (
+                        {user.role === 'sunglassesSeller' ? (
                           <FaGlasses className='h-6 w-6 text-white' />
                         ) : (
                           <FaPills className='h-6 w-6 text-white' />
@@ -149,9 +149,9 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            {user.role === "sunglassesSeller"
-                              ? "Total Products"
-                              : "Total Drugs"}
+                            {user.role === 'sunglassesSeller'
+                              ? 'Total Products'
+                              : 'Total Drugs'}
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugs.length}
@@ -191,13 +191,19 @@ const Pharmacy = () => {
                 >
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center'>
-                      {user.role === "sunglassesSeller" ? (
+                      {user.role === 'sunglassesSeller' ? (
                         <FaGlasses className='flex-shrink-0 mr-3 h-6 w-6 text-gray-400' />
                       ) : (
                         <FaPills className='flex-shrink-0 mr-3 h-6 w-6 text-gray-400' />
                       )}
                       <p className='text-sm font-medium text-indigo-600 truncate'>
                         {drug.name}
+                      </p>
+                    </div>
+                    <div className='ml-2 flex-shrink-0 flex'>
+                      <p className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
+                        Expiry Date:{' '}
+                        {new Date(drug.expiryDate).toLocaleDateString()}
                       </p>
                     </div>
                     <div className='ml-2 flex-shrink-0 flex'>
@@ -234,14 +240,14 @@ const Pharmacy = () => {
           <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
             <div>
               <p className='text-sm text-gray-700'>
-                Showing{" "}
+                Showing{' '}
                 <span className='font-medium'>
                   {(currentPage - 1) * limit + 1}
-                </span>{" "}
-                to{" "}
+                </span>{' '}
+                to{' '}
                 <span className='font-medium'>
                   {Math.min(currentPage * limit, drugs.length)}
-                </span>{" "}
+                </span>{' '}
                 of <span className='font-medium'>{drugs.length}</span> results
               </p>
             </div>

@@ -1,5 +1,6 @@
 const Income = require('../models/incomeModule');
 const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError');
 
 const getAll = require('./handleFactory');
 const {
@@ -11,57 +12,68 @@ const {
   populateDataArray,
 } = require('../utils/aggregationUtils');
 
-// Get summarized data by month for a given year (generic for any model)
-const getDataByYear = asyncHandler(async (req, res, Model) => {
-  const { year } = req.params;
-  const { category } = req.query;
+// Helper function to get data by year (generic for any model)
+const getDataByYear = (Model) =>
+  asyncHandler(async (req, res) => {
+    const { year } = req.params;
+    const { category } = req.query;
 
-  const { startDate, endDate } = getDateRangeForYear(year);
+    const { startDate, endDate } = getDateRangeForYear(year);
 
-  const matchCriteria = {
-    date: { $gte: startDate, $lte: endDate },
-  };
-  if (category) matchCriteria.category = category;
+    const matchCriteria = {
+      date: { $gte: startDate, $lte: endDate },
+    };
+    if (category) matchCriteria.category = category;
 
-  const groupBy = {
-    _id: { month: { $month: '$date' } },
-    totalAmount: { $sum: '$totalNetIncome' },
-  };
+    const groupBy = {
+      _id: { month: { $month: '$date' } },
+      totalAmount: { $sum: '$totalNetIncome' },
+    };
 
-  try {
     const data = await getAggregatedData(Model, matchCriteria, groupBy);
     const totalAmountsByMonth = populateDataArray(data, 12, 'month');
     res.status(200).json({ data: totalAmountsByMonth });
-  } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
-  }
-});
+  });
 
-// Get summarized data by day for a given month (generic for any model)
-const getDataByMonth = asyncHandler(async (req, res, Model) => {
-  const { year, month } = req.params;
-  const { category } = req.query;
+// Helper function to get data by month (generic for any model)
+const getDataByMonth = (Model) =>
+  asyncHandler(async (req, res) => {
+    const { year, month } = req.params;
+    const { category } = req.query;
 
-  const { startDate, endDate } = getDateRangeForMonth(year, month);
+    const { startDate, endDate } = getDateRangeForMonth(year, month);
 
-  const matchCriteria = {
-    date: { $gte: startDate, $lte: endDate },
-  };
-  if (category) matchCriteria.category = category;
+    const matchCriteria = {
+      date: { $gte: startDate, $lte: endDate },
+    };
+    if (category) matchCriteria.category = category;
 
-  const groupBy = {
-    _id: { day: { $dayOfMonth: '$date' } },
-    totalAmount: { $sum: '$totalNetIncome' },
-  };
+    const groupBy = {
+      _id: { day: { $dayOfMonth: '$date' } },
+      totalAmount: { $sum: '$totalNetIncome' },
+    };
 
-  try {
     const daysInMonth = new Date(year, month, 0).getDate();
     const data = await getAggregatedData(Model, matchCriteria, groupBy);
     const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
     res.status(200).json({ data: totalAmountsByDay });
-  } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
-  }
+  });
+
+// Get sum of all income for a specific category
+const getIncomeCategoryTotal = asyncHandler(async (req, res) => {
+  const category = req.query.category || 'drug';
+
+  const totalIncome = await Income.aggregate([
+    { $match: { category: category } },
+    { $group: { _id: null, total: { $sum: '$totalNetIncome' } } },
+  ]);
+
+  const total = totalIncome.length > 0 ? totalIncome[0].total : 0;
+
+  res.status(200).json({
+    category,
+    totalIncome: total,
+  });
 });
 
 // Create new income record
@@ -134,4 +146,5 @@ module.exports = {
   deleteIncome,
   filterIncomeByYear,
   filterIncomeByYearAndMonth,
+  getIncomeCategoryTotal,
 };
