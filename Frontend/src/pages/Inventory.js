@@ -26,9 +26,7 @@ function Inventory() {
   const [summary, setSummary] = useState({});
   const [products, setAllProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [updatePage, setUpdatePage] = useState(true);
-  const [stores, setAllStores] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [category, setCategory] = useState('');
@@ -53,7 +51,6 @@ function Inventory() {
   useEffect(() => {
     fetchInventorySummary();
     fetchProductsData();
-    fetchSalesData();
     constructUrl(currentPage, category, searchTerm);
   }, [updatePage, url, currentPage, category, searchTerm]);
 
@@ -102,18 +99,6 @@ function Inventory() {
       console.log(err);
       toast.error('Failed to fetch products');
     }
-  };
-
-  const fetchSalesData = () => {
-    fetch(`http://localhost:4000/api/store/get/${authContext.user}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setAllStores(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching sales data:', error);
-        toast.error('Failed to fetch sales data');
-      });
   };
 
   const openMoveModal = (item) => {
@@ -417,7 +402,7 @@ function Inventory() {
                     {item.stock}
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {new Date(item.expiryDate).toLocaleDateString()}
+                    {item.expiryDate.split('T')[0]}
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     <button
