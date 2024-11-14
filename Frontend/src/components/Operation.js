@@ -1,45 +1,74 @@
-import React, { useState, useEffect } from "react";
-import FormModal from "../components/FormModal";
-import DataTable from "../components/DataTable";
+import React, { useState, useEffect } from 'react';
+import FormModal from '../components/FormModal';
+import DataTable from '../components/DataTable';
 
 function Operation() {
-  const [id, setId] = useState("");
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [time, setTime] = useState("");
-  const [date, setDate] = useState("");
-  const [doctor, setDoctor] = useState("");
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [time, setTime] = useState('');
+  const [date, setDate] = useState('');
+  const [doctor, setDoctor] = useState('');
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [editIndex, setEditIndex] = useState(null); // To keep track of the index of the record being edited
+  const [editIndex, setEditIndex] = useState(null);
 
+  // Fetch data from the API on component mount
   useEffect(() => {
-    const storedData = localStorage.getItem("operationSubmittedData");
-    if (storedData) {
-      setSubmittedData(JSON.parse(storedData));
-    }
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:4000/api/v1/operation/');
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const data = await response.json();
+        setSubmittedData(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const entry = { id, name, price, time, date, doctor };
 
     if (editMode) {
-      const updatedData = [...submittedData];
-      updatedData[editIndex] = entry; // Update the existing record
-      setSubmittedData(updatedData);
-      localStorage.setItem(
-        "operationSubmittedData",
-        JSON.stringify(updatedData)
-      );
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:4000/api/v1/operation/${entry.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry),
+          }
+        );
+        if (!response.ok) throw new Error('Failed to update data');
+
+        const updatedData = [...submittedData];
+        updatedData[editIndex] = entry;
+        setSubmittedData(updatedData);
+      } catch (error) {
+        console.error('Error updating data:', error);
+      }
     } else {
-      const newSubmittedData = [...submittedData, entry];
-      setSubmittedData(newSubmittedData);
-      localStorage.setItem(
-        "operationSubmittedData",
-        JSON.stringify(newSubmittedData)
-      );
+      try {
+        const response = await fetch(
+          'http://127.0.0.1:4000/api/v1/operation/',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry),
+          }
+        );
+        if (!response.ok) throw new Error('Failed to add data');
+
+        const newEntry = await response.json();
+        setSubmittedData([...submittedData, newEntry]);
+      } catch (error) {
+        console.error('Error adding data:', error);
+      }
     }
 
     clearForm();
@@ -52,13 +81,13 @@ function Operation() {
   };
 
   const clearForm = () => {
-    setId("");
-    setName("");
-    setPrice("");
-    setTime("");
-    setDate("");
-    setDoctor("");
-    setEditMode(false); // Reset edit mode when form is cleared
+    setId('');
+    setName('');
+    setPrice('');
+    setTime('');
+    setDate('');
+    setDoctor('');
+    setEditMode(false);
   };
 
   const handleEdit = (index) => {
@@ -69,18 +98,36 @@ function Operation() {
     setTime(recordToEdit.time);
     setDate(recordToEdit.date);
     setDoctor(recordToEdit.doctor);
-    setEditMode(true); // Switch to edit mode
-    setEditIndex(index); // Store the index of the record being edited
+    setEditMode(true);
+    setEditIndex(index);
     setIsOpen(true);
   };
 
+  const handleRemove = async (index) => {
+    try {
+      const { id } = submittedData[index];
+      const response = await fetch(
+        `http://127.0.0.1:4000/api/v1/operation/${id}`, // Use custom ID in URL
+        {
+          method: 'DELETE',
+        }
+      );
+      if (!response.ok) throw new Error('Failed to delete data');
+
+      const updatedData = submittedData.filter((_, i) => i !== index);
+      setSubmittedData(updatedData);
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
+  };
+
   const fields = [
-    { label: "ID", type: "text", name: "id" },
-    { label: "Name", type: "text", name: "name" },
-    { label: "Price", type: "text", name: "price" },
-    { label: "Time", type: "time", name: "time" },
-    { label: "Date", type: "date", name: "date" },
-    { label: "Doctor", type: "text", name: "doctor" },
+    { label: 'ID', type: 'text', name: 'id' },
+    { label: 'Name', type: 'text', name: 'name' },
+    { label: 'Price', type: 'text', name: 'price' },
+    { label: 'Time', type: 'time', name: 'time' },
+    { label: 'Date', type: 'date', name: 'date' },
+    { label: 'Doctor', type: 'text', name: 'doctor' },
   ];
 
   const fieldValues = { id, name, price, time, date, doctor };
@@ -99,7 +146,7 @@ function Operation() {
         <h1 className='text-2xl font-bold'>Operation Management</h1>
         <button
           onClick={() => {
-            clearForm(); // Clear the form before adding a new record
+            clearForm();
             setIsOpen(true);
           }}
           className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition'
@@ -109,7 +156,7 @@ function Operation() {
       </div>
 
       <FormModal
-        title={editMode ? "Edit Operation Record" : "Add New Operation Record"}
+        title={editMode ? 'Edit Operation Record' : 'Add New Operation Record'}
         isOpen={isOpen}
         handleSubmit={handleSubmit}
         handleCancel={handleCancel}
@@ -121,15 +168,8 @@ function Operation() {
       <DataTable
         submittedData={submittedData}
         fields={fields}
-        handleEdit={handleEdit} // Pass the handleEdit function to DataTable
-        handleRemove={(index) => {
-          const updatedData = submittedData.filter((_, i) => i !== index);
-          setSubmittedData(updatedData);
-          localStorage.setItem(
-            "operationSubmittedData",
-            JSON.stringify(updatedData)
-          );
-        }}
+        handleEdit={handleEdit}
+        handleRemove={handleRemove}
       />
     </div>
   );

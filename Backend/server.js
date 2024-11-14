@@ -17,8 +17,9 @@ const expensesRoute = require('./routes/ExpensesRoute');
 const incomeRoute = require('./routes/incomeRoute');
 const prescriptionRoute = require('./routes/PrescriptionRoute');
 const dashboardRoute = require('./routes/dashboaredRoutes');
-const OperationRoute = require('./routes/operationRoute');
-
+const operationRoute = require('./routes/operationRoute');
+const ultrasoundRoute = require('./routes/ultrasoundRoute');
+const bedroomRoute = require('./routes/bedroomRoute');
 const app = express();
 const PORT = 4000;
 
@@ -49,7 +50,9 @@ app.use('/api/v1/expense', expensesRoute); // Expenses API
 app.use('/api/v1/income', incomeRoute); // Income API
 app.use('/api/v1/prescriptions', prescriptionRoute); // Prescriptions API
 app.use('/api/v1/dashboard', dashboardRoute); // Dashboard API
-app.use('/api/v1/operation', OperationRoute);
+app.use('/api/v1/operation', operationRoute);
+app.use('/api/v1/ultrasound', ultrasoundRoute);
+app.use('/api/v1/bedroom', bedroomRoute);
 
 // ------------- Signin --------------
 let userAuthCheck;
