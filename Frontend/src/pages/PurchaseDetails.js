@@ -24,6 +24,7 @@ function PurchaseDetails() {
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const limit = 10;
   const authContext = useContext(AuthContext);
@@ -179,7 +180,7 @@ function PurchaseDetails() {
               <HiSearch className=' translate-x-7 text-gray-400' size={20} />
               <input
                 type='text'
-                placeholder='Search patients...'
+                placeholder='Search purchases by date'
                 className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
               />
             </div>

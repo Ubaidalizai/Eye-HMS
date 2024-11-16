@@ -4,7 +4,8 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 
 const getAll = (Model, userID = false, popOptions = null) =>
   asyncHandler(async (req, res, next) => {
-    const { page, limit, checkQuantity, category, searchTerm } = req.query;
+    const { page, limit, checkQuantity, category, searchTerm, fieldName } =
+      req.query;
     const query = {};
 
     if (userID) {
@@ -21,9 +22,9 @@ const getAll = (Model, userID = false, popOptions = null) =>
       const categories = category.split(',').map((cat) => cat.trim());
       query.category = { $in: categories };
     }
-
-    if (searchTerm && searchTerm.trim()) {
-      query.name = { $regex: searchTerm, $options: 'i' };
+    console.log(req.query);
+    if (searchTerm && searchTerm.trim() && fieldName && fieldName.trim()) {
+      query[fieldName] = { $regex: searchTerm, $options: 'i' };
     }
 
     let queryBuilder = Model.find(query).sort({ createdAt: -1 });
