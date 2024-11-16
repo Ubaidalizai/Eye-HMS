@@ -137,7 +137,6 @@ function Inventory() {
           manufacturer: selectedItem.manufacturer,
           category: selectedItem.category,
           salePrice: salePriceNum,
-          expiryDate: selectedItem.expiryDate,
         },
         quantity: quantityNum,
       })
@@ -382,9 +381,6 @@ function Inventory() {
                   Stock
                 </th>
                 <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Expiry Date
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
                   Actions
                 </th>
               </tr>
@@ -400,9 +396,6 @@ function Inventory() {
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     {item.stock}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.expiryDate.split('T')[0]}
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     <button
