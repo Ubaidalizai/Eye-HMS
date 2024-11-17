@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { HiSearch } from 'react-icons/hi';
 
@@ -21,7 +20,6 @@ export default function AdminPanel() {
     fetchUsers();
   }, []);
 
-  // Fetch users from the backend
   const fetchUsers = async () => {
     try {
       const res = await fetch('http://localhost:4000/api/v1/user', {
@@ -36,7 +34,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Add a new user
   const addUser = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -47,13 +44,11 @@ export default function AdminPanel() {
     try {
       const response = await fetch(
         'http://localhost:4000/api/v1/user/register',
-        { credentials: 'include', method: 'POST', body: formData },
-
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
+        { credentials: 'include', method: 'POST', body: formData }
       );
-      setUsers([...users, response.data]);
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const data = await response.json();
+      setUsers([...users, data.user]);
       setNewUser({
         firstName: '',
         lastName: '',
@@ -69,7 +64,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Update an existing user
   const updateUser = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -79,14 +73,13 @@ export default function AdminPanel() {
 
     try {
       const response = await fetch(
-        `http://localhost:4000/api/users/${editingUser._id}`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
+        `http://localhost:4000/api/v1/user/${editingUser._id}`,
+        { credentials: 'include', method: 'PUT', body: formData }
       );
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const data = await response.json();
       setUsers(
-        users.map((user) => (user.id === editingUser.id ? response.data : user))
+        users.map((user) => (user._id === editingUser._id ? data.user : user))
       );
       setEditingUser(null);
     } catch (error) {
@@ -94,7 +87,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Delete a user
   const deleteUser = async (id) => {
     try {
       await fetch(`http://localhost:4000/api/v1/user/${id}`, {
@@ -107,7 +99,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     setNewUser({ ...newUser, imageAttachment: file });
@@ -133,16 +124,23 @@ export default function AdminPanel() {
           <thead className='bg-gray-50'>
             <tr>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                First Name
+                Profile
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Last Name
+                Full Name
               </th>
+            
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Email
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Role
+              </th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Password
+              </th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Phone Number
               </th>
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Actions
@@ -153,9 +151,15 @@ export default function AdminPanel() {
             {users.map((user) => (
               <tr key={user._id}>
                 <td className='px-6 py-4 whitespace-nowrap'>
-                  {user.firstName}
+                  <img
+                    src={user.imageAttachment || '/placeholder.svg'}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    className='h-10 w-10 rounded-full'
+                  />
                 </td>
-                <td className='px-6 py-4 whitespace-nowrap'>{user.lastName}</td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  {`${user.firstName} ${user.lastName}`}
+                </td>
                 <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
                 <td
                   className={`px-6 py-4 whitespace-nowrap ${
@@ -170,7 +174,12 @@ export default function AdminPanel() {
                     user.role
                   )}
                 </td>
-
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  {user.password ? '********' : 'N/A'}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  {user.phoneNumber}
+                </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                   <button
                     onClick={() => setEditingUser(user)}
@@ -327,6 +336,25 @@ export default function AdminPanel() {
                 className='border p-2 rounded w-full mb-2'
                 required
               />
+              <input
+                type='password'
+                placeholder='New Password (leave blank to keep current)'
+                value={editingUser.password || ''}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, password: e.target.value })
+                }
+                className='border p-2 rounded w-full mb-2'
+              />
+              <input
+                type='tel'
+                placeholder='Phone Number'
+                value={editingUser.phoneNumber}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, phoneNumber: e.target.value })
+                }
+                className='border p-2 rounded w-full mb-2'
+                required
+              />
               <select
                 value={editingUser.role}
                 onChange={(e) =>
@@ -340,6 +368,12 @@ export default function AdminPanel() {
                 <option value='Nurse'>Nurse</option>
                 <option value='Doctor'>Doctor</option>
               </select>
+              <input
+                type='file'
+                accept='image/*'
+                onChange={(e) => setEditingUser({ ...editingUser, imageAttachment: e.target.files[0] })}
+                className='border p-2 rounded w-full mb-4'
+              />
               <div className='flex justify-end'>
                 <button
                   type='button'

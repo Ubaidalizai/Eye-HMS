@@ -46,7 +46,7 @@ const updateOperation = asyncHandler(async (req, res) => {
 const deleteOperation = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
-    const operation = await Operation.findByIdAndDelete(id);
+    const operation = await Operation.findOneAndDelete({ id: id }); // Find by custom ID
     if (!operation) {
       return res.status(404).json({ message: 'Operation not found' });
     }

@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { FaTimes } from "react-icons/fa";
+import React, { useState } from 'react';
+import { FaTimes } from 'react-icons/fa';
 
 const FormModal = ({
   title,
   isOpen,
-  handleSubmit,
   handleCancel,
   fields,
   fieldValues,
   setFieldValues,
 }) => {
   const [errors, setErrors] = useState({});
+  const [submissionStatus, setSubmissionStatus] = useState(null);
 
   if (!isOpen) return null;
 
@@ -25,11 +25,41 @@ const FormModal = ({
     return Object.keys(newErrors).length === 0; // Return true if no errors
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (validateFields()) {
-      handleSubmit(e);
-      setErrors({}); // Clear errors on successful submission
+      try {
+        // Make the API request to the backend
+        const response = await fetch(
+          'http://127.0.0.1:4000/api/v1/operation/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(fieldValues),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to submit data');
+        }
+
+        const result = await response.json();
+        console.log('Operation Record Created: ', result);
+
+        // Clear the form, close modal, and show success message
+        setFieldValues(
+          fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
+        );
+        setErrors({});
+        setSubmissionStatus('Operation record created successfully!');
+      } catch (error) {
+        console.error('Error submitting data:', error);
+        setSubmissionStatus(
+          'Failed to create operation record. Please try again.'
+        );
+      }
     }
   };
 
@@ -46,7 +76,7 @@ const FormModal = ({
               <input
                 type={field.type}
                 className={`border p-3 rounded w-full focus:outline-none focus:ring transition ${
-                  errors[field.name] ? "border-red-500" : "border-gray-300"
+                  errors[field.name] ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={fieldValues[field.name]}
                 onChange={(e) =>
@@ -80,6 +110,19 @@ const FormModal = ({
             </button>
           </div>
         </form>
+
+        {/* Display submission status */}
+        {submissionStatus && (
+          <p
+            className={`mt-4 text-center ${
+              submissionStatus.includes('success')
+                ? 'text-green-600'
+                : 'text-red-600'
+            }`}
+          >
+            {submissionStatus}
+          </p>
+        )}
       </div>
     </div>
   );
