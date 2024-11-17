@@ -187,15 +187,15 @@ const findUserByID = asyncHandler(async (req, res) => {
 const updateUserById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDBId(id);
-
-  const { firstName, lastName, email, phoneNumber } = req.body;
-  const user = await User.findById({ _id: id });
+  const { firstName, lastName, email, phoneNumber, role } = req.body;
+  const user = await User.findById(id);
 
   if (user) {
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.email = email || user.email;
     user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.role = role || user.role;
 
     const updatedUser = await user.save();
     res.status(200).json({
@@ -204,6 +204,7 @@ const updateUserById = asyncHandler(async (req, res) => {
       lastName: updatedUser.lastName,
       email: updatedUser.email,
       phoneNumber: user.phoneNumber,
+      role: user.role,
     });
   } else {
     res.status(404);

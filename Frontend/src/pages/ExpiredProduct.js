@@ -45,7 +45,6 @@ const ExpiredProduct = () => {
 
       if (res.status === 200) {
         setExpiredDrugs(res.data.data.expireProducts);
-        console.log('Expired drugs:', res.data);
       } else {
         console.error('Failed to fetch expired drugs', res);
       }

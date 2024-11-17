@@ -2,7 +2,10 @@ const express = require('express');
 const router = express.Router();
 
 const userController = require('../controllers/userController');
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdmin,
+} = require('../middlewares/authMiddleware');
 
 router
   .route('/register')
@@ -15,7 +18,7 @@ router.route('/login').post(userController.loginUser);
 
 router.use(authenticate);
 
-router.route('/').get(userController.getAllUsers);
+router.route('/').get(authorizeAdmin, userController.getAllUsers);
 router.route('/logout').post(userController.logoutCurrentUser);
 router.route('/updatePassword').patch(userController.updatePassword);
 router.patch(
