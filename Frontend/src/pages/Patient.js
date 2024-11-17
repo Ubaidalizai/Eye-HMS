@@ -41,9 +41,12 @@ export default function PatientManagement() {
   const fetchPatients = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}?searchTerm=${searchTerm}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}`,
+        {
+          credentials: 'include',
+        }
+      );
       if (!response.ok) throw new Error('Failed to fetch patients');
       const data = await response.json();
       setPatients(data.data.results);

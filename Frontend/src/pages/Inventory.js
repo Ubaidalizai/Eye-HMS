@@ -62,7 +62,7 @@ function Inventory() {
     }
 
     if (searchTerm) {
-      baseUrl += `&searchTerm=${searchTerm}`; // Add search term to the URL
+      baseUrl += `&fieldName=name&searchTerm=${searchTerm}`; // Add search term to the URL
     }
     console.log(baseUrl);
     setUrl(baseUrl);
