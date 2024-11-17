@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
-import { HiSearch } from 'react-icons/hi';
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -11,7 +10,7 @@ export default function AdminPanel() {
     role: '',
     password: '',
     phoneNumber: '',
-    imageAttachment: null,
+    image: null,
   });
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -40,7 +39,6 @@ export default function AdminPanel() {
     Object.keys(newUser).forEach((key) => {
       formData.append(key, newUser[key]);
     });
-
     try {
       const response = await fetch(
         'http://localhost:4000/api/v1/user/register',
@@ -56,7 +54,7 @@ export default function AdminPanel() {
         role: '',
         password: '',
         phoneNumber: '',
-        imageAttachment: null,
+        image: null,
       });
       setIsAddModalOpen(false);
     } catch (error) {
@@ -66,21 +64,20 @@ export default function AdminPanel() {
 
   const updateUser = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.keys(editingUser).forEach((key) => {
-      formData.append(key, editingUser[key]);
-    });
 
     try {
       const response = await fetch(
         `http://localhost:4000/api/v1/user/${editingUser._id}`,
-        { credentials: 'include', method: 'PUT', body: formData }
+        {
+          credentials: 'include',
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editingUser), // Send JSON instead
+        }
       );
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
-      setUsers(
-        users.map((user) => (user._id === editingUser._id ? data.user : user))
-      );
+      fetchUsers();
       setEditingUser(null);
     } catch (error) {
       console.error('Error updating user:', error);
@@ -101,7 +98,7 @@ export default function AdminPanel() {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    setNewUser({ ...newUser, imageAttachment: file });
+    setNewUser({ ...newUser, image: file });
   };
 
   return (
@@ -129,7 +126,7 @@ export default function AdminPanel() {
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Full Name
               </th>
-            
+
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Email
               </th>
@@ -152,7 +149,7 @@ export default function AdminPanel() {
               <tr key={user._id}>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <img
-                    src={user.imageAttachment || '/placeholder.svg'}
+                    src={`http://localhost:4000/public/img/users/${user?.image}`}
                     alt={`${user.firstName} ${user.lastName}`}
                     className='h-10 w-10 rounded-full'
                   />
@@ -267,10 +264,10 @@ export default function AdminPanel() {
                 required
               >
                 <option value=''>Select Role</option>
-                <option value='Pharmacist'>Pharmacist</option>
-                <option value='Admin'>Admin</option>
-                <option value='Nurse'>Nurse</option>
-                <option value='Doctor'>Doctor</option>
+                <option value='pharmacist'>Pharmacist</option>
+                <option value='admin'>Admin</option>
+                <option value='nurse'>Nurse</option>
+                <option value='doctor'>Doctor</option>
               </select>
               <input
                 type='file'
@@ -350,7 +347,10 @@ export default function AdminPanel() {
                 placeholder='Phone Number'
                 value={editingUser.phoneNumber}
                 onChange={(e) =>
-                  setEditingUser({ ...editingUser, phoneNumber: e.target.value })
+                  setEditingUser({
+                    ...editingUser,
+                    phoneNumber: e.target.value,
+                  })
                 }
                 className='border p-2 rounded w-full mb-2'
                 required
@@ -363,17 +363,11 @@ export default function AdminPanel() {
                 className='border p-2 rounded w-full mb-4'
                 required
               >
-                <option value='Pharmacist'>Pharmacist</option>
-                <option value='Admin'>Admin</option>
-                <option value='Nurse'>Nurse</option>
-                <option value='Doctor'>Doctor</option>
+                <option value='pharmacist'>Pharmacist</option>
+                <option value='admin'>Admin</option>
+                <option value='nurse'>Nurse</option>
+                <option value='doctor'>Doctor</option>
               </select>
-              <input
-                type='file'
-                accept='image/*'
-                onChange={(e) => setEditingUser({ ...editingUser, imageAttachment: e.target.files[0] })}
-                className='border p-2 rounded w-full mb-4'
-              />
               <div className='flex justify-end'>
                 <button
                   type='button'
