@@ -14,6 +14,7 @@ import {
   FaWarehouse,
   FaUsers,
 } from "react-icons/fa";
+import BranchesMenu from "./BranchesMenu";
 
 function SideMenu({ setActiveComponent }) {
   const [userInfo, setUserInfo] = useState({});
@@ -43,7 +44,6 @@ function SideMenu({ setActiveComponent }) {
     <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
       <div className='px-4 py-6'>
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
-          
           <Link
             to='/'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
@@ -52,12 +52,11 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Dashboard</span>
           </Link>
 
-
           <Link
             to='/Admin-panel'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
           >
-             <FaUsers className='text-lg text-gray-500' />
+            <FaUsers className='text-lg text-gray-500' />
             <span className='text-sm font-medium'>Admain Panel</span>
           </Link>
 
@@ -133,51 +132,7 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Manage Store</span>
           </Link> */}
 
-          <details className='group [&_summary::-webkit-details-marker]:hidden'>
-            <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
-              <span className='flex items-center gap-2'>
-                <FaClipboard className='text-lg text-gray-500' />
-                <span className='text-sm font-medium'>Branches</span>
-              </span>
-            </summary>
-
-            <div className='space-y-2 pl-4'>
-              {[
-                {
-                  name: "Operation",
-                  path: "/branches/operation",
-                  icon: <FaUserMd />,
-                },
-                {
-                  name: "Ultrasound",
-                  path: "/branches/ultrasound",
-                  icon: <FaStethoscope />,
-                },
-                {
-                  name: "Bedroom",
-                  path: "/branches/bedroom",
-                  icon: <FaBed />,
-                },
-              ].map(({ name, path, icon }, index) => (
-                <Link
-                  key={index}
-                  to={path}
-                  className='flex items-center gap-3 rounded-lg transition-all duration-300 hover:bg-blue-50 px-4 py-3 text-gray-700 group'
-                  onClick={() => setActiveComponent(name)}
-                >
-                  <span className='text-lg text-blue-500 group-hover:text-blue-600'>
-                    {icon}
-                  </span>
-                  <span className='text-sm font-semibold group-hover:text-blue-600'>
-                    {name}
-                  </span>
-                  <span className='ml-auto text-xs text-gray-400 group-hover:text-blue-400 transition duration-300'>
-                    →
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </details>
+          <BranchesMenu setActiveComponent={setActiveComponent} />
         </nav>
       </div>
 

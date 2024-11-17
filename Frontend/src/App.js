@@ -1,39 +1,42 @@
-import React from 'react';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import './index.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import Inventory from './pages/Inventory';
-import NoPageFound from './pages/NoPageFound';
-import AuthContext from './AuthContext';
-import ProtectedWrapper from './ProtectedWrapper';
-import { useEffect, useState } from 'react';
-import Sales from './pages/Sales';
-import Patient from './pages/Patient';
-import PurchaseDetails from './pages/PurchaseDetails';
-import Move from './pages/Move';
-import { Provider } from 'react-redux';
-import store from './redux/store';
-import PrescriptionPage from './pages/PrescriptionPage';
-import Bedroom from './components/Bedroom';
-import Ultrasound from './components/Altrasound';
-import Operation from './components/Operation';
-import IncomeReport from './pages/IncomeReport';
-import ExpenseManagement from './pages/ExpenseManagement';
+import React from "react";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import "./index.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Inventory from "./pages/Inventory";
+import NoPageFound from "./pages/NoPageFound";
+import AuthContext from "./AuthContext";
+import ProtectedWrapper from "./ProtectedWrapper";
+import { useEffect, useState } from "react";
+import Sales from "./pages/Sales";
+import Patient from "./pages/Patient";
+import PurchaseDetails from "./pages/PurchaseDetails";
+import Move from "./pages/Move";
+import { Provider } from "react-redux";
+import store from "./redux/store";
+import PrescriptionPage from "./pages/PrescriptionPage";
+import Bedroom from "./components/Bedroom";
+import Ultrasound from "./components/Altrasound";
+import Operation from "./components/Operation";
+import IncomeReport from "./pages/IncomeReport";
+import ExpenseManagement from "./pages/ExpenseManagement";
 // import PrescriptionPage from './pages/PrescriptionPage';
 // import Patient from './pages/Patient';
-import { PrescriptionForm } from './components/PrescriptionForm';
-import { PrescriptionList } from './components/PrescriptionList';
-import { PrescriptionDetail } from './components/PrescriptionDetail';
-import Pharmacy from './pages/Pharmacy';
-import ExpiredProduct from './pages/ExpiredProduct';
-import AdminPanel from './pages/Admin-panel';
+import { PrescriptionForm } from "./components/PrescriptionForm";
+import { PrescriptionList } from "./components/PrescriptionList";
+import { PrescriptionDetail } from "./components/PrescriptionDetail";
+import Pharmacy from "./pages/Pharmacy";
+import ExpiredProduct from "./pages/ExpiredProduct";
+import AdminPanel from "./pages/Admin-panel";
+import Laboratory from "./components/Laboratory";
+import OCT from "./components/OCT";
+import OPD from "./components/OPD";
 const App = () => {
-  const [user, setUser] = useState('');
+  const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
-  let myLoginUser = JSON.parse(localStorage.getItem('user'));
+  let myLoginUser = JSON.parse(localStorage.getItem("user"));
   // console.log("USER: ",user)
 
   useEffect(() => {
@@ -42,7 +45,7 @@ const App = () => {
       setLoader(false);
       // console.log("inside effect", myLoginUser)
     } else {
-      setUser('');
+      setUser("");
       setLoader(false);
     }
   }, [myLoginUser]);
@@ -54,7 +57,7 @@ const App = () => {
 
   const signout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
   };
 
   let value = { user, signin, signout };
@@ -64,9 +67,9 @@ const App = () => {
       <div
         style={{
           flex: 1,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <h1>LOADING...</h1>
@@ -125,10 +128,13 @@ const App = () => {
               <Route path='/branches/bedroom' element={<Bedroom />} />
               <Route path='/branches/ultrasound' element={<Ultrasound />} />
               <Route path='/branches/operation' element={<Operation />} />
+              <Route path='/branches/laboratory' element={<Laboratory />} />
+              <Route path='/branches/oct' element={<OCT />} />
+              <Route path='/branches/opd' element={<OPD />} />
               <Route path='/pharmacy' element={<Pharmacy />} />
               <Route path='/incomeReport' element={<IncomeReport />} />
-              <Route path="/ExpiredProduct" element={<ExpiredProduct />} />
-              <Route path="/Admin-panel" element={<AdminPanel />} />
+              <Route path='/ExpiredProduct' element={<ExpiredProduct />} />
+              <Route path='/Admin-panel' element={<AdminPanel />} />
             </Route>
 
             <Route path='*' element={<NoPageFound />} />

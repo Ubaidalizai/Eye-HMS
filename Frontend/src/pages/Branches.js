@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
-import Altrasound from '../components/Altrasound';
-import Bedroom from '../components/Bedroom';
-import Operation from '../components/Operation';
+import React, { useState } from "react";
+import Altrasound from "../components/Altrasound";
+import Bedroom from "../components/Bedroom";
+import Operation from "../components/Operation";
+import Laboratory from "../components/Laboratory";
+import OCT from "../components/OCT";
+import OPD from "../components/OPD";
 import "./task.css";
 
 function Branches() {
-  const [activeComponent, setActiveComponent] = useState('Bedroom'); // Default component
+  const [activeComponent, setActiveComponent] = useState("Bedroom"); // Default component
 
   const renderComponent = () => {
     switch (activeComponent) {
-      case 'Bedroom':
+      case "Bedroom":
         return <Bedroom />;
-      case 'Altrasound':
+      case "Altrasound":
         return <Altrasound />;
-      case 'Operation':
+      case "Operation":
         return <Operation />;
+      case "Laboratory":
+        return <Laboratory />;
+      case "OCT":
+        return <OCT />;
+      case "OPD":
+        return <OPD />;
       default:
         return <Bedroom />;
     }
@@ -23,13 +32,18 @@ function Branches() {
   return (
     <div>
       <div className='flex space-x-4'>
-        <button onClick={() => setActiveComponent('Bedroom')}>Bedroom</button>
-        <button onClick={() => setActiveComponent('Altrasound')}>
+        <button onClick={() => setActiveComponent("Bedroom")}>Bedroom</button>
+        <button onClick={() => setActiveComponent("Altrasound")}>
           Ultrasound
         </button>
-        <button onClick={() => setActiveComponent('Operation')}>
+        <button onClick={() => setActiveComponent("Operation")}>
           Operation
         </button>
+        <button onClick={() => setActiveComponent("Laboratory")}>
+          Laboratory
+        </button>
+        <button onClick={() => setActiveComponent("OCT")}>OCT</button>
+        <button onClick={() => setActiveComponent("OPD")}>OPD</button>
       </div>
       {renderComponent()}
     </div>
