@@ -21,6 +21,7 @@ export default function Sales() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingSale, setEditingSale] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const limit = 10;
   const user = JSON.parse(localStorage.getItem('user'));
@@ -28,7 +29,7 @@ export default function Sales() {
   useEffect(() => {
     fetchSales();
     fetchProductsData();
-  }, [currentPage, category]);
+  }, [currentPage, category, searchTerm]);
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
@@ -49,6 +50,10 @@ export default function Sales() {
 
       if (category) {
         baseUrl += `&category=${category}`;
+      }
+
+      if (searchTerm) {
+        baseUrl += `&fieldName=date&searchTerm=${searchTerm}`;
       }
 
       const response = await fetch(baseUrl, {
@@ -165,8 +170,10 @@ export default function Sales() {
             <div className='flex items-center justify-center z-0'>
               <HiSearch className=' translate-x-7 text-gray-400' size={20} />
               <input
-                type='text'
-                placeholder='Search patients...'
+                type='date'
+                placeholder='Search by date'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
               />
             </div>

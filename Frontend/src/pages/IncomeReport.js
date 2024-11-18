@@ -128,11 +128,12 @@ export default function IncomeReport() {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const limit = 10;
 
   useEffect(() => {
     fetchIncome();
-  }, [currentPage, selectedCategory]);
+  }, [currentPage, selectedCategory, searchTerm]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -144,7 +145,7 @@ export default function IncomeReport() {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/income?page=${currentPage}&limit=${limit}&category=${selectedCategory}`,
+        `http://localhost:4000/api/v1/income?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}&category=${selectedCategory}`,
         { credentials: 'include' }
       );
 
@@ -233,13 +234,15 @@ export default function IncomeReport() {
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-2xl font-semibold'>Income List</h2>
           <div className='flex items-center justify-center z-0'>
-          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
-          <input
-            type='text'
-            placeholder='Search patients...'
-            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
-          />
-        </div>
+            <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+            <input
+              type='date'
+              placeholder='Search by date'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+            />
+          </div>
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
             onClick={() => setShowModal(true)}

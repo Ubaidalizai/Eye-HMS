@@ -24,7 +24,21 @@ const getAll = (Model, userID = false, popOptions = null) =>
     }
     console.log(req.query);
     if (searchTerm && searchTerm.trim() && fieldName && fieldName.trim()) {
-      query[fieldName] = { $regex: searchTerm, $options: 'i' };
+      if (fieldName === 'date') {
+        // If the field is a date, parse the search term to a Date object and match
+        const searchDate = new Date(searchTerm);
+        if (!isNaN(searchDate)) {
+          query[fieldName] = {
+            $gte: new Date(searchDate.setHours(0, 0, 0, 0)), // Start of the day
+            $lt: new Date(searchDate.setHours(23, 59, 59, 999)), // End of the day
+          };
+        } else {
+          return next(new AppError('Invalid date format', 400));
+        }
+      } else {
+        // For other fields, apply regex
+        query[fieldName] = { $regex: searchTerm, $options: 'i' };
+      }
     }
 
     let queryBuilder = Model.find(query).sort({ createdAt: -1 });

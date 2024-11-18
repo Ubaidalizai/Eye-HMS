@@ -84,9 +84,9 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
 
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password, phoneNumber } = req.body;
+  const { firstName, lastName, email, password, phoneNumber, role } = req.body;
 
-  if (!firstName || !lastName || !email || !password || !phoneNumber) {
+  if (!firstName || !lastName || !email || !password || !phoneNumber || !role) {
     throw new Error('Please fill all the inputs.');
   }
   const userExists = await User.findOne({ email });
@@ -101,6 +101,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     password,
     phoneNumber,
+    role,
     image: req.file ? req.file.filename : null,
   });
 
@@ -113,6 +114,7 @@ const registerUser = asyncHandler(async (req, res) => {
       lastName: newUser.lastName,
       email: newUser.email,
       phoneNumber: newUser.phoneNumber,
+      role: newUser.role,
       image: newUser.image,
     });
   } catch (error) {
@@ -188,6 +190,7 @@ const updateUserById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDBId(id);
   const { firstName, lastName, email, phoneNumber, role } = req.body;
+  console.log(req.body);
   const user = await User.findById(id);
 
   if (user) {
@@ -347,27 +350,39 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 });
 
 const updatePassword = asyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  validMongoDBId(_id);
-  const { password } = req.body;
+  const { _id } = req.user; // User's ID from authentication middleware
+  validateMongoDBId(_id);
 
-  // 1) Get user from collection
-  const user = await User.findOne({ _id: _id });
+  const { currentPassword, newPassword } = req.body;
 
-  // 2) Check if the POSTed current password is correct
-  if (!user.isPasswordValid(password)) {
-    res.status(401);
-    throw new Error('Your current password is wrong');
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Current and new password are required');
   }
-  // 3) If so, update the password
-  user.password = password;
+
+  // 1) Get user from the database
+  const user = await User.findById(_id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // 2) Validate current password
+  const isMatch = await user.isPasswordValid(currentPassword); // Compare with hashed password
+  if (!isMatch) {
+    res.status(401);
+    throw new Error('Your current password is incorrect');
+  }
+
+  // 3) Update to new password
+  user.password = newPassword; // This should trigger hashing in Mongoose middleware
   await user.save();
 
-  // 4) Log in user, send jwt
-  generateToken(res, user._id);
+  // 4) Respond with success message
   res.status(200).json({
     status: 'success',
-    message: 'Your password changed successfully',
+    message: 'Your password was updated successfully',
   });
 });
 
