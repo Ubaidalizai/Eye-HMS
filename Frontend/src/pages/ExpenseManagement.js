@@ -185,6 +185,7 @@ const ExpenseManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const limit = 10; // Number of items per page
 
   useEffect(() => {
@@ -194,7 +195,14 @@ const ExpenseManagement = () => {
       fetchYearlyExpenses();
     }
     fetchExpenses(); // Fetch paginated expenses for the list
-  }, [currentPage, selectedCategory, selectedMonth, selectedYear, summaryType]);
+  }, [
+    currentPage,
+    selectedCategory,
+    selectedMonth,
+    selectedYear,
+    summaryType,
+    searchTerm,
+  ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -204,7 +212,7 @@ const ExpenseManagement = () => {
   const fetchExpenses = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}`,
+        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -426,18 +434,20 @@ const ExpenseManagement = () => {
     <div className='parent'>
       <h1>Expense Management</h1>
 
-      <div className="expense-list-detail">
-        <div className="summary-display">
-          <div className="Add-btn">
-            <h2 className="list-header">Expense List</h2>
+      <div className='expense-list-detail'>
+        <div className='summary-display'>
+          <div className='Add-btn'>
+            <h2 className='list-header'>Expense List</h2>
             <div className='flex items-center justify-center z-0'>
-          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
-          <input
-            type='text'
-            placeholder='Search patients...'
-            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
-          />
-        </div>
+              <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+              <input
+                type='date'
+                placeholder='Search by date'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+              />
+            </div>
 
             <button
               className='add-expense-button'
@@ -511,7 +521,7 @@ const ExpenseManagement = () => {
               onChange={handleCategoryChange}
               value={selectedCategory}
             >
-              <option value='All Categories'>All Categories</option>
+              <option value=''>All Categories</option>
               {categories.map((category, index) => (
                 <option key={index} value={category}>
                   {category}

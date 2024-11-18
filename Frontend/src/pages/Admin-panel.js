@@ -363,6 +363,7 @@ export default function AdminPanel() {
                 className='border p-2 rounded w-full mb-4'
                 required
               >
+                <option value=''>Role</option>
                 <option value='pharmacist'>Pharmacist</option>
                 <option value='admin'>Admin</option>
                 <option value='nurse'>Nurse</option>
