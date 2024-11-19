@@ -57,10 +57,10 @@ export default function Header() {
         }
       );
 
-      if (res.status === 200) {
+      if (res.status === 200 && res.data.length > 0) {
         setExProductsCount(res.data.length);
       } else {
-        console.error('Failed to fetch expired products', res);
+        setExProductsCount(0);
       }
     } catch (error) {
       console.error('Error fetching expired products', error);
@@ -76,10 +76,10 @@ export default function Header() {
         }
       );
 
-      if (res.status === 200) {
+      if (res.status === 200 && res.data.length > 0) {
         setExDrugsCount(res.data.length);
       } else {
-        console.error('Failed to fetch expired drugs', res);
+        setExDrugsCount(0);
       }
     } catch (error) {
       console.error('Error fetching expired drugs', error);
@@ -87,7 +87,6 @@ export default function Header() {
   };
 
   const totalExpiredCount = exProductsCount + exDrugsCount; // Calculate total
-
   return (
     <>
       <div className='min-h-full'>
