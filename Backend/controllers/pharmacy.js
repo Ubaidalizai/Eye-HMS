@@ -70,12 +70,12 @@ exports.checkDrugExpiry = asyncHandler(async (req, res) => {
   const beforeThirtyDays = new Date();
   beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);
 
-  const expireProducts = await Pharmacy.find({
+  const expireDrugs = await Pharmacy.find({
     expiryDate: { $lte: beforeThirtyDays },
     quantity: { $gt: 0 },
   });
 
-  if (expireProducts.length === 0) {
+  if (expireDrugs.length === 0) {
     return res.status(200).json({
       status: 'success',
       message: 'No expired products found',
@@ -84,7 +84,7 @@ exports.checkDrugExpiry = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    length: expireProducts.length,
-    data: { expireProducts },
+    length: expireDrugs.length,
+    data: { expireDrugs },
   });
 });

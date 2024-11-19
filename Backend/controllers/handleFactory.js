@@ -22,7 +22,7 @@ const getAll = (Model, userID = false, popOptions = null) =>
       const categories = category.split(',').map((cat) => cat.trim());
       query.category = { $in: categories };
     }
-    console.log(req.query);
+
     if (searchTerm && searchTerm.trim() && fieldName && fieldName.trim()) {
       if (fieldName === 'date') {
         // If the field is a date, parse the search term to a Date object and match

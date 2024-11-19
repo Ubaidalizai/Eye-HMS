@@ -56,46 +56,68 @@ const updateDrugStock = async (drug, quantity) => {
 
 // Main sellItems function
 const sellItems = asyncHandler(async (req, res) => {
-  const { productRefId, quantity, category, date } = req.body;
+  const { soldItems } = req.body;
+  console.log(req.body);
+  // Validate request body
+  if (!Array.isArray(soldItems) || !soldItems.length) {
+    return res.status(400).json({ message: 'No sold items provided.' });
+  }
+
+  const sales = []; // Array to hold individual sale records for the response
+  let totalIncome = 0; // Track total income for all sold items
 
   try {
-    // Step 1: Validate the product exists in pharmacy or inventory
-    const product = await Pharmacy.findById(productRefId);
-    if (!product) {
-      throw new Error(`Product with ID ${productRefId} not found in pharmacy`);
+    // Step 1: Process each sold item
+    for (const soldItem of soldItems) {
+      const { productRefId, quantity, category, date } = soldItem;
+
+      // Validate the product exists in pharmacy or inventory
+      const product = await Pharmacy.findById(productRefId);
+      if (!product) {
+        throw new Error(
+          `Product with ID ${productRefId} not found in pharmacy`
+        );
+      }
+
+      // Validate stock and calculate income for the product
+      const income = await validateDrugAndCalculateIncome(product, {
+        quantity,
+      });
+      const purchaseCost = await calculateNetIncome(product, { quantity });
+      const productNetIncome = income - purchaseCost;
+
+      // Create a sale record for the individual product
+      const sale = await Sale.create({
+        productRefId: product._id,
+        quantity,
+        income,
+        date,
+        category,
+        userID: req.user._id,
+      });
+
+      // Update product quantity in the pharmacy or inventory
+      await updateDrugStock(product, quantity);
+
+      // Create an income record associated with this sale
+      await Income.create({
+        saleId: sale._id, // Link this income entry to the sale record
+        date,
+        totalNetIncome: productNetIncome,
+        category,
+        description: `Sale of ${product.name} (${category})`,
+        userID: req.user._id,
+      });
+
+      // Add the sale record to the response array
+      sales.push(sale);
+      totalIncome += productNetIncome; // Update total income
     }
 
-    // Step 2: Validate stock and calculate income for the product
-    const income = await validateDrugAndCalculateIncome(product, { quantity });
-    const purchaseCost = await calculateNetIncome(product, { quantity });
-    const productNetIncome = income - purchaseCost;
-
-    // Step 3: Create a sale record for the single product (now using productRefId)
-    const sale = await Sale.create({
-      productRefId: product._id,
-      quantity,
-      income,
-      date,
-      category,
-      userID: req.user._id,
-    });
-
-    // Step 4: Update product quantity in the pharmacy or inventory
-    await updateDrugStock(product, quantity);
-
-    // Step 5: Create an income record associated with this sale
-    await Income.create({
-      saleId: sale._id, // Link this income entry to the sale record
-      date,
-      totalNetIncome: productNetIncome,
-      category,
-      description: `Sale of ${product.name} (${category})`,
-      userID: req.user._id,
-    });
-
+    // Respond with all the sale records created
     res.status(201).json({
       status: 'success',
-      data: { sale },
+      data: { sales, totalIncome },
     });
   } catch (error) {
     res.status(500).json({
