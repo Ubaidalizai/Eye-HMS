@@ -7,57 +7,91 @@ export default function AddSale({
   products,
   handlePageUpdate,
 }) {
-  const [sale, setSale] = useState({
-    productRefId: '',
-    quantity: 0,
-    date: new Date().toISOString().split('T')[0], // Initialize date with today's date
-    category: '',
-  });
+  const [sales, setSales] = useState([
+    {
+      productRefId: '',
+      quantity: 0,
+      date: new Date().toISOString().split('T')[0], // Today's date
+      category: '', // Default empty category
+    },
+  ]);
 
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
-  // Get user role from localStorage
   const user = JSON.parse(localStorage.getItem('user'));
 
   // Set the category based on user role
   useEffect(() => {
     if (user.role === 'pharmacist' || user.role === 'admin') {
-      setSale((prevSale) => ({ ...prevSale, category: 'drug' }));
+      setSales((prevSales) =>
+        prevSales.map((sale) => ({ ...sale, category: 'drug' }))
+      );
     } else if (user.role === 'sunglassesSeller') {
-      setSale((prevSale) => ({ ...prevSale, category: 'glasses' }));
+      setSales((prevSales) =>
+        prevSales.map((sale) => ({ ...sale, category: 'glasses' }))
+      );
     }
   }, [user.role]);
 
   // Handle Input Change
-  const handleInputChange = (name, value) => {
-    setSale({ ...sale, [name]: value });
+  const handleInputChange = (index, name, value) => {
+    setSales((prevSales) =>
+      prevSales.map((sale, i) =>
+        i === index ? { ...sale, [name]: value } : sale
+      )
+    );
   };
 
-  // Validate sale
-  const isSaleValid = sale.productRefId && sale.quantity > 0;
+  const isSaleValid = () => !sales.productRefId || sales.quantity <= 0;
 
-  // POST Data
-  const addSale = () => {
-    if (!sale.date) {
-      alert('Please specify a sale date.');
-      return;
-    }
+  const validateSales = () => {
+    return sales.every((sale) => sale.productRefId && sale.quantity > 0);
+  };
 
-    fetch('http://localhost:4000/api/v1/sales', {
+  const sendSalesToBackend = async (sales) => {
+    const response = await fetch('http://localhost:4000/api/v1/sales', {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(sale),
-    })
-      .then((result) => {
-        alert('Sale ADDED');
-        handlePageUpdate();
-        addSaleModalSetting();
-      })
-      .catch((err) => console.log(err));
+      body: JSON.stringify({ soldItems: sales }),
+    });
+  };
+  // POST Data
+  const addSales = async () => {
+    // Step 1: Validate sales
+    if (!validateSales()) {
+      alert('Please fill all product and quantity fields correctly.');
+      return;
+    }
+
+    try {
+      // Step 2: Send valid sales data to the backend
+      const data = await sendSalesToBackend(sales);
+
+      // Step 3: Handle success (UI updates)
+      alert('Sales Added Successfully');
+      handlePageUpdate();
+      addSaleModalSetting(); // Close the modal
+    } catch (err) {
+      // Step 4: Handle errors
+      console.error('Error adding sales:', err);
+      alert(err.message || 'Something went wrong while adding sales.');
+    }
+  };
+
+  const addNewProduct = () => {
+    setSales((prevSales) => [
+      ...prevSales,
+      {
+        productRefId: '',
+        quantity: 0,
+        date: new Date().toISOString().split('T')[0],
+        category: prevSales[0]?.category || '', // Preserve the category of existing entries
+      },
+    ]);
   };
 
   return (
@@ -105,74 +139,77 @@ export default function AddSale({
                         as='h3'
                         className='text-lg font-semibold leading-6 text-gray-900'
                       >
-                        Add Sale
+                        Add sales
                       </Dialog.Title>
                       <form>
-                        <div className='grid gap-4 mb-4 sm:grid-cols-2'>
-                          <div>
-                            <label
-                              htmlFor='productRefId'
-                              className='block mb-2 text-sm font-medium text-gray-900'
+                        {Array.isArray(sales) &&
+                          sales.map((sale, index) => (
+                            <div
+                              key={index}
+                              className='grid gap-4 mb-4 sm:grid-cols-2'
                             >
-                              Product Name
-                            </label>
-                            <select
-                              id='productRefId'
-                              name='productRefId'
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
-                              value={sale.productRefId}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  'productRefId',
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option>Select Product</option>
-                              {products.map((product) => (
-                                <option key={product._id} value={product._id}>
-                                  {product.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div>
-                            <label
-                              htmlFor='quantity'
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                            >
-                              Quantity
-                            </label>
-                            <input
-                              type='number'
-                              name='quantity'
-                              id='quantity'
-                              value={sale.quantity}
-                              onChange={(e) =>
-                                handleInputChange('quantity', e.target.value)
-                              }
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
-                            />
-                          </div>
-                        </div>
-                        <div className='mt-4'>
-                          <label
-                            htmlFor='date'
-                            className='block mb-2 text-sm font-medium text-gray-900'
-                          >
-                            Sale Date
-                          </label>
-                          <input
-                            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
-                            type='date'
-                            id='date'
-                            name='date'
-                            value={sale.date}
-                            onChange={(e) =>
-                              handleInputChange('date', e.target.value)
-                            }
-                          />
-                        </div>
+                              <div>
+                                <label
+                                  htmlFor={`productRefId-${index}`}
+                                  className='block mb-2 text-sm font-medium text-gray-900'
+                                >
+                                  Product Name
+                                </label>
+                                <select
+                                  id={`productRefId-${index}`}
+                                  name='productRefId'
+                                  className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
+                                  value={sale.productRefId}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      index,
+                                      'productRefId',
+                                      e.target.value
+                                    )
+                                  }
+                                >
+                                  <option>Select Product</option>
+                                  {products.map((product) => (
+                                    <option
+                                      key={product._id}
+                                      value={product._id}
+                                    >
+                                      {product.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label
+                                  htmlFor={`quantity-${index}`}
+                                  className='block mb-2 text-sm font-medium text-gray-900'
+                                >
+                                  Quantity
+                                </label>
+                                <input
+                                  type='number'
+                                  name='quantity'
+                                  id={`quantity-${index}`}
+                                  className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg'
+                                  value={sale.quantity}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      index,
+                                      'quantity',
+                                      parseInt(e.target.value)
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        <button
+                          type='button'
+                          onClick={addNewProduct}
+                          className='mt-3 bg-blue-600 text-white px-3 py-2 rounded-md'
+                        >
+                          Add Another Product
+                        </button>
                       </form>
                     </div>
                   </div>
@@ -186,10 +223,11 @@ export default function AddSale({
                         : 'bg-gray-300 text-gray-500'
                     }`}
                     disabled={!isSaleValid}
-                    onClick={addSale}
+                    onClick={addSales}
                   >
                     Add Sale
                   </button>
+
                   <button
                     type='button'
                     className='mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto'
