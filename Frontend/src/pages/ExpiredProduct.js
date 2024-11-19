@@ -24,11 +24,8 @@ const ExpiredProduct = () => {
         { withCredentials: true }
       );
 
-      if (res.status === 200) {
+      if (res.status === 200 && res.data.length > 0) {
         setExpiredProducts(res.data.data);
-        console.log('Expired products:', res.data);
-      } else {
-        console.error('Failed to fetch expired products', res);
       }
     } catch (error) {
       console.error('Error fetching expired products', error);
@@ -43,10 +40,8 @@ const ExpiredProduct = () => {
         { withCredentials: true }
       );
 
-      if (res.status === 200) {
-        setExpiredDrugs(res.data.data.expireProducts);
-      } else {
-        console.error('Failed to fetch expired drugs', res);
+      if (res.status === 200 && res.data.length > 0) {
+        setExpiredDrugs(res.data.data.expireDrugs);
       }
     } catch (error) {
       console.error('Error fetching expired drugs', error);
