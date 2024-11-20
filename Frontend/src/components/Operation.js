@@ -9,12 +9,12 @@ function Operation() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
+  const [percentage, setPercentage] = useState('');
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
-  // Fetch data from the API on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -26,18 +26,17 @@ function Operation() {
         console.error('Error fetching data:', error);
       }
     };
-
     fetchData();
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const entry = { id, name, price, time, date, doctor };
+    const entry = { id, name, price, time, date, doctor, percentage };
 
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/operation/${entry.id}`,
+          `http://127.0.0.1:4000/api/v1/operation/${id}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -87,17 +86,23 @@ function Operation() {
     setTime('');
     setDate('');
     setDoctor('');
+    setPercentage('');
     setEditMode(false);
+    setEditIndex(null);
   };
 
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
-    setId(recordToEdit.id);
-    setName(recordToEdit.name);
-    setPrice(recordToEdit.price);
-    setTime(recordToEdit.time);
-    setDate(recordToEdit.date);
-    setDoctor(recordToEdit.doctor);
+    console.log('Editing record:', recordToEdit); // Log record to edit
+    setFieldValues({
+      id: recordToEdit.id || '',
+      name: recordToEdit.name || '',
+      price: recordToEdit.price || '',
+      time: recordToEdit.time || '',
+      date: recordToEdit.date || '',
+      doctor: recordToEdit.doctor || '',
+      percentage: recordToEdit.percentage || '',
+    });
     setEditMode(true);
     setEditIndex(index);
     setIsOpen(true);
@@ -107,7 +112,7 @@ function Operation() {
     try {
       const { id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/operation/${id}`, // Use custom ID in URL
+        `http://127.0.0.1:4000/api/v1/operation/${id}`,
         {
           method: 'DELETE',
         }
@@ -128,16 +133,26 @@ function Operation() {
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Percentage', type: 'number', name: 'percentage' },
   ];
 
-  const fieldValues = { id, name, price, time, date, doctor };
-  const setFieldValues = ({ id, name, price, time, date, doctor }) => {
+  const fieldValues = { id, name, price, time, date, doctor, percentage };
+  const setFieldValues = ({
+    id,
+    name,
+    price,
+    time,
+    date,
+    doctor,
+    percentage,
+  }) => {
     setId(id);
     setName(name);
     setPrice(price);
     setTime(time);
     setDate(date);
     setDoctor(doctor);
+    setPercentage(percentage);
   };
 
   return (
@@ -158,11 +173,16 @@ function Operation() {
       <FormModal
         title={editMode ? 'Edit Operation Record' : 'Add New Operation Record'}
         isOpen={isOpen}
-        handleSubmit={handleSubmit}
         handleCancel={handleCancel}
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
+        url={
+          editMode
+            ? `http://127.0.0.1:4000/api/v1/operation/${id}`
+            : 'http://127.0.0.1:4000/api/v1/operation/'
+        }
+        method={editMode ? 'PATCH' : 'POST'}
       />
 
       <DataTable

@@ -8,6 +8,8 @@ const FormModal = ({
   fields,
   fieldValues,
   setFieldValues,
+  url, // API endpoint (handles POST for adding and PATCH for editing)
+  method, // HTTP method (POST or PATCH)
 }) => {
   const [errors, setErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
@@ -15,58 +17,100 @@ const FormModal = ({
   if (!isOpen) return null;
 
   const validateFields = () => {
+    console.log('Validating fields:', fieldValues); // Log field values
     const newErrors = {};
+
     fields.forEach((field) => {
-      if (!fieldValues[field.name]) {
-        newErrors[field.name] = `${field.label} is required`;
+      const value = fieldValues[field.name];
+
+      // Validate based on type
+      if (
+        field.type === 'text' ||
+        field.type === 'textarea' ||
+        field.type === 'email'
+      ) {
+        if (!value || (typeof value === 'string' && !value.trim())) {
+          newErrors[field.name] = `${field.label} is required`;
+        }
+      } else if (field.type === 'number') {
+        if (value == null || value === '') {
+          newErrors[field.name] = `${field.label} is required`;
+        }
+      } else if (field.type === 'date' || field.type === 'time') {
+        if (!value) {
+          newErrors[field.name] = `${field.label} is required`;
+        }
       }
     });
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    console.log('Validation errors:', newErrors); // Log validation errors
+    return Object.keys(newErrors).length === 0; // No errors = valid
   };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (validateFields()) {
-      try {
-        // Make the API request to the backend
-        const response = await fetch(
-          'http://127.0.0.1:4000/api/v1/operation/',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(fieldValues),
-          }
-        );
 
-        if (!response.ok) {
-          throw new Error('Failed to submit data');
-        }
+    if (!validateFields()) {
+      console.error('Validation failed, cannot submit form.');
+      return;
+    }
 
-        const result = await response.json();
-        console.log('Operation Record Created: ', result);
+    try {
+      console.log('Submitting data:', fieldValues); // Log submitted data
 
-        // Clear the form, close modal, and show success message
-        setFieldValues(
-          fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
-        );
-        setErrors({});
-        setSubmissionStatus('Operation record created successfully!');
-      } catch (error) {
-        console.error('Error submitting data:', error);
-        setSubmissionStatus(
-          'Failed to create operation record. Please try again.'
-        );
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fieldValues),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Failed to submit: ${errorMessage}`);
       }
+
+      const result = await response.json();
+      console.log(`${method === 'POST' ? 'Created' : 'Updated'}:`, result);
+
+      setFieldValues(
+        fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
+      );
+      setErrors({});
+      setSubmissionStatus(
+        `Operation record ${
+          method === 'POST' ? 'created' : 'updated'
+        } successfully!`
+      );
+
+      setTimeout(() => {
+        setSubmissionStatus(null);
+        handleCancel();
+      }, 1500);
+    } catch (error) {
+      console.error('Error submitting data:', error);
+      setSubmissionStatus(
+        `Failed to ${
+          method === 'POST' ? 'create' : 'update'
+        } record. Please try again.`
+      );
     }
   };
 
   return (
     <div className='fixed inset-0 bg-gray-800 bg-opacity-50 z-50 flex items-center justify-center'>
       <div className='bg-white p-6 rounded-lg shadow-lg w-full max-w-md h-full max-h-screen flex flex-col overflow-auto z-60'>
-        <h2 className='text-xl font-semibold mb-6 text-center'>{title}</h2>
+        <div className='flex justify-between items-center mb-4'>
+          <h2 className='text-xl font-semibold'>{title}</h2>
+          <button
+            onClick={handleCancel}
+            className='text-gray-500 hover:text-red-500'
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
         <form onSubmit={handleFormSubmit} className='space-y-4'>
           {fields.map((field, index) => (
             <div key={index} className='flex flex-col'>
@@ -78,7 +122,7 @@ const FormModal = ({
                 className={`border p-3 rounded w-full focus:outline-none focus:ring transition ${
                   errors[field.name] ? 'border-red-500' : 'border-gray-300'
                 }`}
-                value={fieldValues[field.name]}
+                value={fieldValues[field.name] || ''}
                 onChange={(e) =>
                   setFieldValues({
                     ...fieldValues,
@@ -106,7 +150,7 @@ const FormModal = ({
               type='submit'
               className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition'
             >
-              Submit
+              {method === 'POST' ? 'Add' : 'Update'}
             </button>
           </div>
         </form>

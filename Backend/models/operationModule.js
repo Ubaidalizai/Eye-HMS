@@ -7,6 +7,7 @@ const operationSchema = new mongoose.Schema({
   time: { type: String, required: true },
   date: { type: Date, required: true },
   doctor: { type: String, required: true },
+  percentage: { type: Number, required: true },
 });
 
 const Operation = mongoose.model('Operation', operationSchema);
