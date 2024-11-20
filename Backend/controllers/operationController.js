@@ -25,18 +25,39 @@ const getAllOperations = asyncHandler(async (req, res) => {
 });
 
 // Update an operation by ID
+// const updateOperation = asyncHandler(async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const operation = await Operation.findByIdAndUpdate(id, req.body, {
+//       new: true,
+//     });
+//     if (!operation) {
+//       return res.status(404).json({ message: 'Operation not found' });
+//     }
+//     res
+//       .status(200)
+//       .json({ message: 'Operation updated successfully', operation });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Failed to update operation', error });
+//   }
+// });
+
 const updateOperation = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
-    const operation = await Operation.findByIdAndUpdate(id, req.body, {
-      new: true,
+    // Update the operation by the custom 'id' field
+    const operation = await Operation.findOneAndUpdate({ id: id }, req.body, {
+      new: true, // Return the updated operation
     });
+
     if (!operation) {
       return res.status(404).json({ message: 'Operation not found' });
     }
-    res
-      .status(200)
-      .json({ message: 'Operation updated successfully', operation });
+
+    res.status(200).json({
+      message: 'Operation updated successfully',
+      operation,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Failed to update operation', error });
   }
