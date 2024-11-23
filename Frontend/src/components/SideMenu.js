@@ -6,7 +6,6 @@ import {
   FaStethoscope,
   FaBed,
   FaClipboard,
-  FaStore,
   FaFileInvoice,
   FaShoppingBag,
   FaCapsules,
@@ -40,10 +39,9 @@ function SideMenu({ setActiveComponent }) {
   }, []);
 
   return (
-    <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
-      <div className='px-4 py-6'>
+    <div className='flex flex-col h-full bg-white'>
+      <div className='flex-grow overflow-y-auto px-4 py-6'>
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
-          
           <Link
             to='/'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
@@ -52,13 +50,12 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Dashboard</span>
           </Link>
 
-
           <Link
             to='/Admin-panel'
             className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
           >
-             <FaUsers className='text-lg text-gray-500' />
-            <span className='text-sm font-medium'>Admain Panel</span>
+            <FaUsers className='text-lg text-gray-500' />
+            <span className='text-sm font-medium'>Admin Panel</span>
           </Link>
 
           <Link
@@ -93,14 +90,6 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Patient</span>
           </Link>
 
-          {/* <Link
-            to='/move'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
-          >
-            <FaUserMd className='text-lg text-gray-500' />
-            <span className='text-sm font-medium'>Move</span>
-          </Link> */}
-
           <Link
             to='/expenseManagement'
             className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
@@ -124,14 +113,6 @@ function SideMenu({ setActiveComponent }) {
             <FaCapsules className='text-lg text-gray-500' />
             <span className='text-sm font-medium'>Pharmacy</span>
           </Link>
-
-          {/* <Link
-            to='/manage-store'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
-          >
-            <FaStore className='text-lg text-gray-500' />
-            <span className='text-sm font-medium'>Manage Store</span>
-          </Link> */}
 
           <details className='group [&_summary::-webkit-details-marker]:hidden'>
             <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
