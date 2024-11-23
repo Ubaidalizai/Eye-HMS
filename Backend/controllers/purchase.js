@@ -2,6 +2,7 @@ const Purchase = require('../models/purchase');
 const Product = require('../models/product');
 const purchaseStock = require('./purchaseStock');
 const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError'); // Custom error handler
 const getAll = require('./handleFactory');
 const mongoose = require('mongoose');
 const {
@@ -190,7 +191,7 @@ const getTotalPurchaseAmount = asyncHandler(async (req, res) => {
   }
 });
 
-const updatePurchase = asyncHandler(async (req, res) => {
+const updatePurchase = asyncHandler(async (req, res, next) => {
   const _id = req.params.id;
   console.log(req.body);
   // Validate MongoDB ID
@@ -254,8 +255,7 @@ const updatePurchase = asyncHandler(async (req, res) => {
       updatedProduct.stock += stockDifference; // Adjust stock based on the difference
       // Prevent negative stock
       if (updatedProduct.stock < 0) {
-        res.status(400);
-        throw new Error('Insufficient stock quantity');
+        return next(new AppError('Insufficient stock quantity', 400));
       }
       // Save the updated purchase first before updating stock
       const updatedPurchase = await originalPurchase.save();
@@ -282,7 +282,7 @@ const validateMongoDBId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
-const deletePurchase = asyncHandler(async (req, res) => {
+const deletePurchase = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
 
   // Validate MongoDB ID
@@ -300,26 +300,20 @@ const deletePurchase = asyncHandler(async (req, res) => {
     }
 
     // Update the product stock before deleting the purchase
-    const updatedProduct = await Product.findByIdAndUpdate(
-      purchase.ProductID,
-      {
-        $inc: { stock: -purchase.QuantityPurchased }, // Decrease stock by the quantity of the deleted purchase
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!updatedProduct) {
-      throw new Error('Failed to update product stock');
+    const product = await Product.findById(purchase.ProductID);
+    if (!product) {
+      res.status(404);
+      throw new Error('Associated product not found');
     }
 
+    const stockDifference = -purchase.QuantityPurchased;
+    product.stock += stockDifference; // Adjust stock based on the difference
     // Prevent negative stock
     if (updatedProduct.stock < 0) {
-      res.status(400);
-      throw new Error('Insufficient stock quantity');
+      return next(new AppError('Insufficient stock quantity', 400));
     }
+
+    await product.save();
 
     // Delete the purchase
     await purchase.deleteOne();

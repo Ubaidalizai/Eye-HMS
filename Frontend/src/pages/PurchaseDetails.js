@@ -204,7 +204,7 @@ function PurchaseDetails() {
                   >
                     <option value=''>All Categories</option>
                     <option value='drug'>Drug</option>
-                    <option value='glasses'>Glasses</option>
+                    <option value='sunglasses'>sunglasses</option>
                     <option value='glass'>Glass</option>
                     <option value='frame'>Frame</option>
                   </select>
