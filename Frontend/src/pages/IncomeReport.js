@@ -3,7 +3,7 @@ import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaRegEdit } from 'react-icons/fa';
 import { HiSearch } from 'react-icons/hi';
 
-const categories = ['drug', 'glasses', 'glass', 'frame'];
+const categories = ['drug', 'sunglasses', 'glass', 'frame'];
 
 const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
   if (!isOpen) return null;

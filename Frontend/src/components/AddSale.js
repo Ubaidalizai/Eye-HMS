@@ -35,7 +35,7 @@ export default function AddSale({
       );
     } else if (user.role === 'sunglassesSeller') {
       setSales((prevSales) =>
-        prevSales.map((sale) => ({ ...sale, category: 'glasses' }))
+        prevSales.map((sale) => ({ ...sale, category: 'sunglasses' }))
       );
     }
   }, [user.role]);
