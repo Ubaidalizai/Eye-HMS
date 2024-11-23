@@ -296,7 +296,7 @@ function Inventory() {
                   >
                     <option value=''>Select a category</option>
                     <option value='drug'>Drug</option>
-                    <option value='glasses'>glasses</option>
+                    <option value='sunglasses'>sunglasses</option>
                     <option value='glass'>glass</option>
                     <option value='frame'>Frame</option>
                   </select>
@@ -358,7 +358,7 @@ function Inventory() {
                 >
                   <option value=''>All Categories</option>
                   <option value='drug'>Drug</option>
-                  <option value='glasses'>Glasses</option>
+                  <option value='sunglasses'>sunglasses</option>
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>

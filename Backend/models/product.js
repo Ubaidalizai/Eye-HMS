@@ -17,7 +17,7 @@ const ProductSchema = new mongoose.Schema(
     description: String,
     category: {
       type: String,
-      enum: ['drug', 'glasses', 'glass', 'frame'],
+      enum: ['drug', 'sunglasses', 'sunglasses', 'frame'],
       required: true,
     },
     expiryDate: {

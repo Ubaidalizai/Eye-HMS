@@ -159,7 +159,7 @@ export default function UpdateProduct({
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
                             >
                               <option value=''>Select a category</option>
-                              <option value='glasses'>Glasses</option>
+                              <option value='sunglasses'>sunglasses</option>
                               <option value='glass'>Glass</option>
                               <option value='frame'>Frame</option>
                               <option value='drug'>Drug</option>

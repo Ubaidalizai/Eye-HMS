@@ -130,7 +130,7 @@ export default function AddPurchaseDetails({
                             >
                               <option value=''>Select a category</option>
                               <option value='drug'>Drug</option>
-                              <option value='glasses'>Glasses</option>
+                              <option value='sunglasses'>sunglasses</option>
                               <option value='glass'>Glass</option>
                               <option value='frame'>frame</option>
                             </select>
