@@ -7,6 +7,8 @@ const { authenticate } = require('../middlewares/authMiddleware');
 
 router.use(authenticate); // Enable authentication middleware for all routes in this file
 
+router.route('/drugs-summary').get(pharmacy.getDrugsSummary);
+
 // Check for expired drugs
 router.get('/expire', pharmacy.checkDrugExpiry);
 
