@@ -33,6 +33,7 @@ import AdminPanel from "./pages/Admin-panel";
 import Laboratory from "./components/Laboratory";
 import OCT from "./components/OCT";
 import OPD from "./components/OPD";
+import Yeglizer from "./components/Yeglizer";
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
@@ -135,8 +136,9 @@ const App = () => {
               <Route path='/incomeReport' element={<IncomeReport />} />
               <Route path='/ExpiredProduct' element={<ExpiredProduct />} />
               <Route path='/Admin-panel' element={<AdminPanel />} />
+              <Route path='/branches/yeglizer' element={<Yeglizer />} />
             </Route>
-
+            Yeglizer
             <Route path='*' element={<NoPageFound />} />
           </Routes>
         </BrowserRouter>

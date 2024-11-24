@@ -42,6 +42,11 @@ export default function BranchesMenu({ setActiveComponent }) {
       path: "/branches/opd",
       icon: <FaEbay />,
     },
+    {
+      name: "Yezliger",
+      path: "/branches/yeglizer",
+      icon: <FaEbay />,
+    },
   ];
 
   return (
