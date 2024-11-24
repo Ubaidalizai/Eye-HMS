@@ -112,7 +112,7 @@ const sellItems = asyncHandler(async (req, res) => {
 
       // Add the sale record to the response array
       sales.push(sale);
-      totalIncome += productNetIncome; // Update total income
+      totalIncome += income; // Update total income
 
       // Add details to the receipt
       receipt.push({

@@ -7,6 +7,35 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 
 exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
+exports.getDrugsSummary = asyncHandler(async (req, res) => {
+  try {
+    const total = await Pharmacy.aggregate([
+      {
+        $match: { category: 'drug' }, // Filter for only the drug category
+      },
+      {
+        $project: {
+          totalValue: { $multiply: ['$salePrice', '$quantity'] }, // Calculate total value (salePrice * quantity)
+        },
+      },
+      {
+        $group: {
+          _id: null, // No specific group, calculate a single total
+          totalDrugSalesValue: { $sum: '$totalValue' }, // Sum up the total values
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      totalSalePrice: total[0]?.totalDrugSalesValue || 0,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: 'Error fetching data', error: error.message });
+  }
+});
+
 exports.getDrug = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDBId(id);
