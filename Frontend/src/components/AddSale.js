@@ -1,7 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { AddSaleForm } from "./AddSaleForm";
-import { BillPrintModal } from "./BillPrintModal";
+import React, { useRef, useState, useEffect } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { AddSaleForm } from './AddSaleForm';
+import { BillPrintModal } from './BillPrintModal';
 
 export default function AddSale({
   addSaleModalSetting,
@@ -10,10 +10,10 @@ export default function AddSale({
 }) {
   const [sales, setSales] = useState([
     {
-      productRefId: "",
+      productRefId: '',
       quantity: 0,
-      date: new Date().toISOString().split("T")[0],
-      category: "",
+      date: new Date().toISOString().split('T')[0],
+      category: '',
     },
   ]);
 
@@ -21,29 +21,27 @@ export default function AddSale({
   const cancelButtonRef = useRef(null);
   const [showBill, setShowBill] = useState(false);
   const [soldItems, setSoldItems] = useState({
-    date: "",
+    date: '',
     totalIncome: 0,
     soldItems: [],
   });
 
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  useEffect(() => {
-    if (user.role === "pharmacist" || user.role === "admin") {
-      setSales((prevSales) =>
-        prevSales.map((sale) => ({ ...sale, category: "drug" }))
-      );
-    } else if (user.role === "sunglassesSeller") {
-      setSales((prevSales) =>
-        prevSales.map((sale) => ({ ...sale, category: "glasses" }))
-      );
-    }
-  }, [user.role]);
+  const user = JSON.parse(localStorage.getItem('user'));
 
   const handleInputChange = (index, name, value) => {
     setSales((prevSales) =>
       prevSales.map((sale, i) =>
-        i === index ? { ...sale, [name]: value } : sale
+        i === index
+          ? {
+              ...sale,
+              [name]: value,
+              category:
+                name === 'productRefId'
+                  ? products.find((product) => product._id === value)
+                      ?.category || ''
+                  : sale.category,
+            }
+          : sale
       )
     );
   };
@@ -53,17 +51,17 @@ export default function AddSale({
   };
 
   const sendSalesToBackend = async (sales) => {
-    const response = await fetch("http://localhost:4000/api/v1/sales", {
-      method: "POST",
+    const response = await fetch('http://localhost:4000/api/v1/sales', {
+      method: 'POST',
       headers: {
-        "Content-type": "application/json",
+        'Content-type': 'application/json',
       },
-      credentials: "include",
+      credentials: 'include',
       body: JSON.stringify({ soldItems: sales }),
     });
 
     if (!response.ok) {
-      throw new Error("Failed to add sales");
+      throw new Error('Failed to add sales');
     }
 
     return response.json();
@@ -71,7 +69,7 @@ export default function AddSale({
 
   const addSales = async () => {
     if (!isSaleValid()) {
-      alert("Please fill all product and quantity fields correctly.");
+      alert('Please fill all product and quantity fields correctly.');
       return;
     }
 
@@ -79,7 +77,7 @@ export default function AddSale({
       const data = await sendSalesToBackend(sales);
 
       setSoldItems({
-        date: new Date().toISOString().split("T")[0],
+        date: new Date().toISOString().split('T')[0],
         totalIncome: data.data.receipt.totalIncome || 0,
         soldItems: data.data.receipt.soldItems || [],
       });
@@ -88,8 +86,8 @@ export default function AddSale({
       setShowBill(true); // Open the bill modal
       handlePageUpdate();
     } catch (err) {
-      console.error("Error adding sales:", err);
-      alert(err.message || "Something went wrong while adding sales.");
+      console.error('Error adding sales:', err);
+      alert(err.message || 'Something went wrong while adding sales.');
     }
   };
 
@@ -97,10 +95,10 @@ export default function AddSale({
     setSales((prevSales) => [
       ...prevSales,
       {
-        productRefId: "",
+        productRefId: '',
         quantity: 0,
-        date: new Date().toISOString().split("T")[0],
-        category: prevSales[0]?.category || "",
+        date: new Date().toISOString().split('T')[0],
+        category: prevSales[0]?.category || '',
       },
     ]);
   };
