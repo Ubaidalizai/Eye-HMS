@@ -15,7 +15,7 @@ exports.getDashboardSummary = asyncHandler(async (req, res, next) => {
     {
       $group: {
         _id: null,
-        totalSaleAmount: { $sum: '$totalSale' },
+        totalSaleAmount: { $sum: '$income' },
       },
     },
   ]);
