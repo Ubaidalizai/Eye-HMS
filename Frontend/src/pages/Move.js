@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useDispatch } from "react-redux";
-import { moveItemAPI } from "../redux/inventorySlice"; // Ensure this is correct
-import AuthContext from "../AuthContext";
-import { Dialog, Transition } from "@headlessui/react"; // Modal
+import React, { useState, useEffect, useContext } from 'react';
+import { useDispatch } from 'react-redux';
+import { moveItemAPI } from '../redux/inventorySlice'; // Ensure this is correct
+import AuthContext from '../AuthContext';
+import { Dialog, Transition } from '@headlessui/react'; // Modal
 
 const Move = () => {
   const dispatch = useDispatch();
@@ -14,7 +14,7 @@ const Move = () => {
   const [isOpen, setIsOpen] = useState(false); // For modal
   const [selectedItem, setSelectedItem] = useState(null); // Current item for modal
   const [quantity, setQuantity] = useState(1); // Modal quantity input
-  const [salePrice, setSalePrice] = useState(""); // Modal sale price input
+  const [salePrice, setSalePrice] = useState(''); // Modal sale price input
   const authContext = useContext(AuthContext);
   const limit = 10;
 
@@ -23,13 +23,13 @@ const Move = () => {
       try {
         const response = await fetch(
           `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}`,
-          { credentials: "include" }
+          { credentials: 'include' }
         );
         const data = await response.json();
         setProducts(data.data.results);
         setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } catch (error) {
-        setError("Failed to fetch products.");
+        setError('Failed to fetch products.');
       } finally {
         setLoading(false);
       }
@@ -41,7 +41,7 @@ const Move = () => {
   const openModal = (item) => {
     setSelectedItem(item);
     setQuantity(1);
-    setSalePrice(item.salePrice || "");
+    setSalePrice(item.salePrice || '');
     setIsOpen(true);
   };
 
@@ -58,17 +58,21 @@ const Move = () => {
       quantityNum <= 0 ||
       quantityNum > selectedItem.stock
     ) {
-      alert("Please enter a valid quantity.");
+      alert('Please enter a valid quantity.');
       return;
     }
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
-      alert("Please enter a valid sale price.");
+      alert('Please enter a valid sale price.');
       return;
     }
 
     dispatch(
       moveItemAPI({
-        item: { name: selectedItem.name, salePrice: salePriceNum },
+        item: {
+          name: selectedItem.name,
+          salePrice: salePriceNum,
+          expiryDate: selectedItem.expiryDate,
+        },
         quantity: quantityNum,
       })
     );
@@ -100,6 +104,9 @@ const Move = () => {
               <p className='text-gray-600 mt-2'>Stock: {item.stock}</p>
               <p className='text-gray-600 mt-2 capitalize'>
                 Category: {item.category}
+              </p>
+              <p className='text-gray-600 mt-2 capitalize'>
+                ExpiryDate: {item.expiryDate}
               </p>
             </div>
             <button
