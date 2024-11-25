@@ -25,7 +25,7 @@ const saleSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['drug', 'sunglasses', 'sunglasses', 'frame'],
+      enum: ['drug', 'sunglasses', 'glass', 'frame'],
       required: [
         true,
         'A sale must have a category (either drug or sunglasses)',
