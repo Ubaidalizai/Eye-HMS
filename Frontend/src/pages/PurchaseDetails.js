@@ -16,7 +16,6 @@ import { HiSearch } from 'react-icons/hi';
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingPurchase, setEditingPurchase] = useState(null);
   const [purchases, setAllPurchasesData] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,12 +88,6 @@ function PurchaseDetails() {
     setPurchaseModal(!showPurchaseModal);
   };
 
-  const handleEdit = (purchase) => {
-    setEditingPurchase(purchase);
-    setShowEditModal(true);
-    toast.success('Purchase Updated Successfully');
-  };
-
   const handleDelete = async (purchaseId) => {
     if (window.confirm('Are you sure you want to delete this purchase?')) {
       try {
@@ -114,32 +107,6 @@ function PurchaseDetails() {
         setError('Failed to delete purchase. Please try again.');
         toast.error('Error deleting purchase:', err.message);
       }
-    }
-  };
-  const handleEditSubmit = async (editedPurchase) => {
-    try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/purchase/${editedPurchase._id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(editedPurchase),
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      setShowEditModal(false);
-      fetchPurchaseData(); // Refresh the purchase list
-      toast.success('Purchase added successfully');
-    } catch (err) {
-      toast.error('Error updating purchase:', err);
-      setError('Failed to update purchase. Please try again.');
     }
   };
 
@@ -162,15 +129,6 @@ function PurchaseDetails() {
             products={products}
             handlePageUpdate={fetchPurchaseData}
             authContext={authContext}
-          />
-        )}
-
-        {showEditModal && (
-          <EditPurchaseDetails
-            purchase={editingPurchase}
-            products={products}
-            onClose={() => setShowEditModal(false)}
-            onUpdate={handleEditSubmit} // Pass the actual submit function
           />
         )}
 
@@ -204,7 +162,7 @@ function PurchaseDetails() {
                   >
                     <option value=''>All Categories</option>
                     <option value='drug'>Drug</option>
-                    <option value='glasses'>Glasses</option>
+                    <option value='sunglasses'>sunglasses</option>
                     <option value='glass'>Glass</option>
                     <option value='frame'>Frame</option>
                   </select>
@@ -297,12 +255,6 @@ function PurchaseDetails() {
                           : 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        <button
-                          onClick={() => handleEdit(element)}
-                          className='text-indigo-600 hover:text-indigo-900 mr-2'
-                        >
-                          <FaEdit />
-                        </button>
                         <button
                           onClick={() => handleDelete(element._id)}
                           className='text-red-600 hover:text-red-900'

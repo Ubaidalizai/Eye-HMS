@@ -24,7 +24,7 @@ const drugMovementSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['drug', 'glasses', 'glass', 'frame'],
+      enum: ['drug', 'sunglasses', 'glass', 'frame'],
       required: true,
     },
     expiryDate: {

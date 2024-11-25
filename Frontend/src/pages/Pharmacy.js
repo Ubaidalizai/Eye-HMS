@@ -12,12 +12,18 @@ import {
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
   const [drugs, setDrugs] = useState([]);
+  const [totalSalePrice, setTotalSalePrice] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 10;
   const user = JSON.parse(localStorage.getItem('user'));
+
+  useEffect(() => {
+    fetchData();
+    fetchDrugsSummary();
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -26,7 +32,7 @@ const Pharmacy = () => {
     let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
     if (user.role === 'sunglassesSeller') {
-      baseUrl += '&category=glasses,frame, glass';
+      baseUrl += '&category=sunglasses,frame, glass';
     } else if (user.role === 'pharmacist') {
       baseUrl += '&category=drug';
     }
@@ -42,6 +48,7 @@ const Pharmacy = () => {
       }
 
       const data = await res.json();
+      console.log(data.data.results);
       setDrugs(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
@@ -51,9 +58,32 @@ const Pharmacy = () => {
     }
   }, [currentPage, user.role]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const fetchDrugsSummary = async () => {
+    try {
+      const response = await fetch(
+        'http://localhost:4000/api/v1/pharmacy/drugs-summary',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies for authentication if required
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch drugs summary');
+      }
+
+      const data = await response.json();
+      setTotalSalePrice(data.totalSalePrice);
+    } catch (err) {
+      console.error('Error fetching drugs summary:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -114,6 +144,25 @@ const Pharmacy = () => {
           <div className='bg-white shadow overflow-hidden sm:rounded-md'>
             <div className='px-4 py-5 sm:p-6'>
               <div className='grid grid-cols-1 gap-5 sm:grid-cols-3'>
+                <div className='bg-blue-100 overflow-hidden shadow rounded-lg'>
+                  <div className='px-4 py-5 sm:p-6'>
+                    <div className='flex items-center'>
+                      <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
+                        <FaBoxOpen className='h-6 w-6 text-white' />
+                      </div>
+                      <div className='ml-5 w-0 flex-1'>
+                        <dl>
+                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                            Total sale Price
+                          </dt>
+                          <dd className='text-lg font-medium text-gray-900'>
+                            {totalSalePrice}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className='bg-blue-100 overflow-hidden shadow rounded-lg'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
@@ -202,8 +251,7 @@ const Pharmacy = () => {
                     </div>
                     <div className='ml-2 flex-shrink-0 flex'>
                       <p className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
-                        Expiry Date:{' '}
-                        {new Date(drug.expiryDate).toLocaleDateString()}
+                        Expiry Date: {drug.expiryDate}
                       </p>
                     </div>
                     <div className='ml-2 flex-shrink-0 flex'>

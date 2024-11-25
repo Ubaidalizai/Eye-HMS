@@ -8,7 +8,7 @@ const saleSchema = new mongoose.Schema(
   {
     productRefId: {
       type: mongoose.Schema.ObjectId,
-      required: [true, 'Each sold item must reference a glasses or drug'],
+      required: [true, 'Each sold item must reference a sunglasses or drug'],
       ref: 'Pharmacy',
     },
     quantity: {
@@ -25,7 +25,7 @@ const saleSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['drug', 'glasses', 'glass', 'frame'],
+      enum: ['drug', 'sunglasses', 'glass', 'frame'],
       required: [
         true,
         'A sale must have a category (either drug or sunglasses)',

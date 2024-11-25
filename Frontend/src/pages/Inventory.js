@@ -296,7 +296,7 @@ function Inventory() {
                   >
                     <option value=''>Select a category</option>
                     <option value='drug'>Drug</option>
-                    <option value='glasses'>glasses</option>
+                    <option value='sunglasses'>sunglasses</option>
                     <option value='glass'>glass</option>
                     <option value='frame'>Frame</option>
                   </select>
@@ -358,7 +358,7 @@ function Inventory() {
                 >
                   <option value=''>All Categories</option>
                   <option value='drug'>Drug</option>
-                  <option value='glasses'>Glasses</option>
+                  <option value='sunglasses'>sunglasses</option>
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>
@@ -381,6 +381,9 @@ function Inventory() {
                   Stock
                 </th>
                 <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
+                  Category
+                </th>
+                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
                   Actions
                 </th>
               </tr>
@@ -396,6 +399,9 @@ function Inventory() {
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     {item.stock}
+                  </td>
+                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    {item.category}
                   </td>
                   <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                     <button

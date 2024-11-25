@@ -57,7 +57,7 @@ const updateDrugStock = async (drug, quantity) => {
 // Main sellItems function
 const sellItems = asyncHandler(async (req, res) => {
   const { soldItems } = req.body;
-  console.log(req.body);
+
   // Validate request body
   if (!Array.isArray(soldItems) || !soldItems.length) {
     return res.status(400).json({ message: 'No sold items provided.' });
@@ -65,6 +65,7 @@ const sellItems = asyncHandler(async (req, res) => {
 
   const sales = []; // Array to hold individual sale records for the response
   let totalIncome = 0; // Track total income for all sold items
+  const receipt = []; // Array to hold receipt details
 
   try {
     // Step 1: Process each sold item
@@ -111,13 +112,31 @@ const sellItems = asyncHandler(async (req, res) => {
 
       // Add the sale record to the response array
       sales.push(sale);
-      totalIncome += productNetIncome; // Update total income
+      totalIncome += income; // Update total income
+
+      // Add details to the receipt
+      receipt.push({
+        productName: product.name,
+        quantity,
+        income,
+        category,
+        date,
+      });
     }
 
-    // Respond with all the sale records created
+    // Generate a printable receipt-like object
+    const generatedReceipt = {
+      date: new Date().toISOString(),
+      soldItems: receipt,
+      totalIncome,
+    };
+
+    // Respond with all the sale records created and the receipt
     res.status(201).json({
       status: 'success',
-      data: { sales, totalIncome },
+      data: {
+        receipt: generatedReceipt, // Include the receipt in the response
+      },
     });
   } catch (error) {
     res.status(500).json({
