@@ -1,175 +1,105 @@
-import React, { useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import FormModal from '../components/FormModal';
+import DataTable from '../components/DataTable';
 
-const FormModal = ({
-  title,
-  isOpen,
-  handleCancel,
-  fields,
-  fieldValues,
-  setFieldValues,
-  url, // API endpoint (handles POST for adding and PATCH for editing)
-  method, // HTTP method (POST or PATCH)
-}) => {
-  const [errors, setErrors] = useState({});
-  const [submissionStatus, setSubmissionStatus] = useState(null);
+function Bedroom() {
+  const [fieldValues, setFieldValues] = useState({
+    id: '',
+    name: '',
+    time: '',
+    date: '',
+    rent: '',
+  });
+  const [submittedData, setSubmittedData] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [method, setMethod] = useState('POST'); // Default to POST for adding new records
+  const [url, setUrl] = useState('http://127.0.0.1:4000/api/v1/bedroom/');
 
-  if (!isOpen) return null;
-
-  const validateFields = () => {
-    console.log('Validating fields:', fieldValues); // Log field values
-    const newErrors = {};
-
-    fields.forEach((field) => {
-      const value = fieldValues[field.name];
-
-      // Validate based on type
-      if (
-        field.type === 'text' ||
-        field.type === 'textarea' ||
-        field.type === 'email'
-      ) {
-        if (!value || (typeof value === 'string' && !value.trim())) {
-          newErrors[field.name] = `${field.label} is required`;
-        }
-      } else if (field.type === 'number') {
-        if (value == null || value === '') {
-          newErrors[field.name] = `${field.label} is required`;
-        }
-      } else if (field.type === 'date' || field.type === 'time') {
-        if (!value) {
-          newErrors[field.name] = `${field.label} is required`;
-        }
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:4000/api/v1/bedroom/');
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const data = await response.json();
+        setSubmittedData(data.data || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-    });
+    };
+    fetchData();
+  }, []);
 
-    setErrors(newErrors);
-    console.log('Validation errors:', newErrors); // Log validation errors
-    return Object.keys(newErrors).length === 0; // No errors = valid
+  const openAddModal = () => {
+    setFieldValues({ id: '', name: '', time: '', date: '', rent: '' });
+    setMethod('POST');
+    setUrl('http://127.0.0.1:4000/api/v1/bedroom/');
+    setIsOpen(true);
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+  const openEditModal = (index) => {
+    const recordToEdit = submittedData[index];
+    setFieldValues(recordToEdit);
+    setMethod('PATCH');
+    setUrl(`http://127.0.0.1:4000/api/v1/bedroom/${recordToEdit.id}`);
+    setIsOpen(true);
+  };
 
-    if (!validateFields()) {
-      console.error('Validation failed, cannot submit form.');
-      return;
-    }
-
+  const handleRemove = async (index) => {
+    const recordId = submittedData[index]?.id;
     try {
-      console.log('Submitting data:', fieldValues); // Log submitted data
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(fieldValues),
-      });
-
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Failed to submit: ${errorMessage}`);
-      }
-
-      const result = await response.json();
-      console.log(`${method === 'POST' ? 'Created' : 'Updated'}:`, result);
-
-      setFieldValues(
-        fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
+      const response = await fetch(
+        `http://127.0.0.1:4000/api/v1/bedroom/${recordId}`,
+        { method: 'DELETE' }
       );
-      setErrors({});
-      setSubmissionStatus(
-        `Operation record ${
-          method === 'POST' ? 'created' : 'updated'
-        } successfully!`
-      );
-
-      setTimeout(() => {
-        setSubmissionStatus(null);
-        handleCancel();
-      }, 1500);
+      if (!response.ok) throw new Error('Failed to delete record');
+      setSubmittedData((prevData) => prevData.filter((_, i) => i !== index));
     } catch (error) {
-      console.error('Error submitting data:', error);
-      setSubmissionStatus(
-        `Failed to ${
-          method === 'POST' ? 'create' : 'update'
-        } record. Please try again.`
-      );
+      console.error('Error deleting record:', error);
     }
   };
+
+  const fields = [
+    { label: 'ID', type: 'text', name: 'id' },
+    { label: 'Name', type: 'text', name: 'name' },
+    { label: 'Time', type: 'time', name: 'time' },
+    { label: 'Date', type: 'date', name: 'date' },
+    { label: 'Rent', type: 'number', name: 'rent' },
+  ];
 
   return (
-    <div className='fixed inset-0 bg-gray-800 bg-opacity-50 z-50 flex items-center justify-center'>
-      <div className='bg-white p-6 rounded-lg shadow-lg w-full max-w-md h-full max-h-screen flex flex-col overflow-auto z-60'>
-        <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-xl font-semibold'>{title}</h2>
-          <button
-            onClick={handleCancel}
-            className='text-gray-500 hover:text-red-500'
-          >
-            <FaTimes size={20} />
-          </button>
-        </div>
-        <form onSubmit={handleFormSubmit} className='space-y-4'>
-          {fields.map((field, index) => (
-            <div key={index} className='flex flex-col'>
-              <label className='block text-sm font-medium'>
-                {field.label}:
-              </label>
-              <input
-                type={field.type}
-                className={`border p-3 rounded w-full focus:outline-none focus:ring transition ${
-                  errors[field.name] ? 'border-red-500' : 'border-gray-300'
-                }`}
-                value={fieldValues[field.name] || ''}
-                onChange={(e) =>
-                  setFieldValues({
-                    ...fieldValues,
-                    [field.name]: e.target.value,
-                  })
-                }
-              />
-              {errors[field.name] && (
-                <span className='text-red-500 text-sm mt-1'>
-                  {errors[field.name]}
-                </span>
-              )}
-            </div>
-          ))}
-
-          <div className='flex justify-end space-x-4 mt-6'>
-            <button
-              type='button'
-              onClick={handleCancel}
-              className='bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition'
-            >
-              Cancel
-            </button>
-            <button
-              type='submit'
-              className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition'
-            >
-              {method === 'POST' ? 'Add' : 'Update'}
-            </button>
-          </div>
-        </form>
-
-        {/* Display submission status */}
-        {submissionStatus && (
-          <p
-            className={`mt-4 text-center ${
-              submissionStatus.includes('success')
-                ? 'text-green-600'
-                : 'text-red-600'
-            }`}
-          >
-            {submissionStatus}
-          </p>
-        )}
+    <div className='p-8 bg-gray-100 min-h-screen'>
+      <div className='mb-4 flex justify-between items-center'>
+        <h1 className='text-2xl font-bold'>Bedroom Management</h1>
+        <button
+          onClick={openAddModal}
+          className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition'
+        >
+          + Add Record
+        </button>
       </div>
+
+      <FormModal
+        title={
+          method === 'POST' ? 'Add New Bedroom Record' : 'Edit Bedroom Record'
+        }
+        isOpen={isOpen}
+        handleCancel={() => setIsOpen(false)}
+        fields={fields}
+        fieldValues={fieldValues}
+        setFieldValues={setFieldValues}
+        url={url}
+        method={method}
+      />
+
+      <DataTable
+        submittedData={submittedData}
+        fields={fields}
+        handleEdit={openEditModal}
+        handleRemove={handleRemove}
+      />
     </div>
   );
-};
+}
 
-export default FormModal;
+export default Bedroom;
