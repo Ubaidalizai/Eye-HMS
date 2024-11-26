@@ -48,7 +48,6 @@ const Pharmacy = () => {
       }
 
       const data = await res.json();
-      console.log(data.data.results);
       setDrugs(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
