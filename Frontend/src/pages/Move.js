@@ -26,6 +26,7 @@ const Move = () => {
           { credentials: 'include' }
         );
         const data = await response.json();
+        console.log(data.data.results);
         setProducts(data.data.results);
         setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } catch (error) {

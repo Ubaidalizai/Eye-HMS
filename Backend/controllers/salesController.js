@@ -5,6 +5,8 @@ const Product = require('../models/product');
 const Purchase = require('../models/purchase');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError');
+
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const {
   getDateRangeForYear,
@@ -16,46 +18,59 @@ const {
 } = require('../utils/aggregationUtils');
 
 // Helper function to validate stock and calculate income
-const validateDrugAndCalculateIncome = async (drug, soldItem) => {
-  if (drug.quantity < soldItem.quantity) {
-    throw new Error(`Insufficient stock for drug: ${drug.name}`);
+const validateDrugAndCalculateIncome = (drug, { quantity }) => {
+  // Check for sufficient stock
+  if (drug.quantity < quantity) {
+    throw new AppError(`Insufficient stock for drug: ${drug.name}`, 400);
   }
 
-  if (isNaN(drug.salePrice) || isNaN(soldItem.quantity)) {
-    throw new Error(`Invalid sale price or quantity for drug: ${drug.name}`);
+  // Validate sale price and quantity
+  if (isNaN(drug.salePrice) || isNaN(quantity)) {
+    throw new AppError(
+      `Invalid sale price or quantity for drug: ${drug.name}`,
+      400
+    );
   }
 
-  return drug.salePrice * soldItem.quantity; // Returns the income
+  const income = drug.salePrice * quantity; // Calculate income
+  return income; // Return the income
 };
 
 // Helper function to calculate net income
-const calculateNetIncome = async (drug, soldItem) => {
+const calculateNetIncome = async (drug, { quantity }) => {
+  // Find the product in inventory by name
   const productInInventory = await Product.findOne({ name: drug.name });
 
   if (!productInInventory) {
-    throw new Error(`Product with name ${drug.name} not found in inventory`);
+    throw new AppError(
+      `Product with name ${drug.name} not found in inventory`,
+      404
+    );
   }
 
+  // Find the purchase record associated with the product
   const purchaseRecord = await Purchase.findOne({
     ProductID: productInInventory._id,
   });
 
   if (!purchaseRecord) {
-    throw new Error(`No purchase record found for drug: ${drug.name}`);
+    throw new AppError(`No purchase record found for drug: ${drug.name}`, 404);
   }
 
-  const purchaseCost = purchaseRecord.UnitPurchaseAmount * soldItem.quantity;
+  // Calculate the purchase cost
+  const purchaseCost = purchaseRecord.UnitPurchaseAmount * quantity;
   return purchaseCost; // Return the purchase cost for net income calculation
 };
 
 // Helper function to update drug quantity in the pharmacy
-const updateDrugStock = async (drug, quantity) => {
+const updateDrugStock = asyncHandler(async (drug, quantity) => {
+  console.log(drug, quantity);
   drug.quantity -= quantity;
   await drug.save();
-};
+});
 
 // Main sellItems function
-const sellItems = asyncHandler(async (req, res) => {
+const sellItems = asyncHandler(async (req, res, next) => {
   const { soldItems } = req.body;
 
   // Validate request body
@@ -81,10 +96,19 @@ const sellItems = asyncHandler(async (req, res) => {
       }
 
       // Validate stock and calculate income for the product
-      const income = await validateDrugAndCalculateIncome(product, {
-        quantity,
-      });
-      const purchaseCost = await calculateNetIncome(product, { quantity });
+      const income = validateDrugAndCalculateIncome(
+        product,
+        {
+          quantity,
+        },
+        next
+      );
+
+      const purchaseCost = await calculateNetIncome(
+        product,
+        { quantity },
+        next
+      );
       const productNetIncome = income - purchaseCost;
 
       // Create a sale record for the individual product
