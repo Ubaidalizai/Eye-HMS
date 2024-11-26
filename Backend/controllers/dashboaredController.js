@@ -2,6 +2,7 @@ const Sale = require('../models/salesModel'); // Sale model
 const Purchase = require('../models/purchase'); // Purchase model
 const Expense = require('../models/ExpensesModule'); // Expense model
 const Product = require('../models/product'); // Product model
+const Income = require('../models/incomeModule'); // Product model
 const asyncHandler = require('../middlewares/asyncHandler'); // asyncHandler to wrap async functions
 const AppError = require('../utils/appError'); // Custom error handler
 
@@ -41,14 +42,14 @@ exports.getDashboardSummary = asyncHandler(async (req, res, next) => {
   ]);
 
   // Total Income (Total Sales - Total Purchases - Total Expenses)
-  const totalIncome =
-    (totalSales[0]?.totalSaleAmount || 0) -
-    (totalPurchases[0]?.totalPurchaseAmount || 0) -
-    (totalExpenses[0]?.totalExpenseAmount || 0);
-
-  if (isNaN(totalIncome)) {
-    return next(new AppError('Failed to calculate total income.', 500));
-  }
+  const totalIncome = await Income.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalIncomeAmount: { $sum: '$totalNetIncome' },
+      },
+    },
+  ]);
 
   res.status(200).json({
     status: 'success',
@@ -57,7 +58,7 @@ exports.getDashboardSummary = asyncHandler(async (req, res, next) => {
       totalSales: totalSales[0]?.totalSaleAmount || 0,
       totalPurchases: totalPurchases[0]?.totalPurchaseAmount || 0,
       totalExpenses: totalExpenses[0]?.totalExpenseAmount || 0,
-      totalIncome,
+      totalIncome: totalIncome[0]?.totalIncomeAmount || 0,
     },
   });
 });
