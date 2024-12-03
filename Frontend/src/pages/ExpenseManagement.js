@@ -248,7 +248,6 @@ const ExpenseManagement = () => {
 
       const data = await response.json();
       setSummary(data.data); // Assuming the backend returns a "summary" field
-      console.log(data);
     } catch (err) {
       console.log(err);
     }
@@ -269,7 +268,6 @@ const ExpenseManagement = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       setSummary(data.data); // Assuming the backend returns a "summary" field
     } catch (err) {
       console.log(err);

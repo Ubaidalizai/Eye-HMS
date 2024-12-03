@@ -73,45 +73,35 @@ const updateDrugStock = asyncHandler(async (drug, quantity) => {
 const sellItems = asyncHandler(async (req, res, next) => {
   const { soldItems } = req.body;
 
-  // Validate request body
   if (!Array.isArray(soldItems) || !soldItems.length) {
-    return res.status(400).json({ message: 'No sold items provided.' });
+    return next(new AppError('No sold items provided.', 400));
   }
 
-  const sales = []; // Array to hold individual sale records for the response
-  let totalIncome = 0; // Track total income for all sold items
-  const receipt = []; // Array to hold receipt details
+  const sales = [];
+  const receipt = [];
+  let totalIncome = 0;
+
+  // Track changes for manual rollback
+  const stockUpdates = [];
+  const createdSales = [];
+  const createdIncomes = [];
 
   try {
-    // Step 1: Process each sold item
     for (const soldItem of soldItems) {
       const { productRefId, quantity, category, date } = soldItem;
 
-      // Validate the product exists in pharmacy or inventory
       const product = await Pharmacy.findById(productRefId);
       if (!product) {
-        throw new Error(
-          `Product with ID ${productRefId} not found in pharmacy`
-        );
+        throw new AppError(`Product with ID ${productRefId} not found.`, 404);
       }
 
-      // Validate stock and calculate income for the product
-      const income = validateDrugAndCalculateIncome(
-        product,
-        {
-          quantity,
-        },
-        next
-      );
-
-      const purchaseCost = await calculateNetIncome(
-        product,
-        { quantity },
-        next
-      );
+      const income = await validateDrugAndCalculateIncome(product, {
+        quantity,
+      });
+      const purchaseCost = await calculateNetIncome(product, { quantity });
       const productNetIncome = income - purchaseCost;
 
-      // Create a sale record for the individual product
+      // Create a sale record
       const sale = await Sale.create({
         productRefId: product._id,
         quantity,
@@ -120,25 +110,27 @@ const sellItems = asyncHandler(async (req, res, next) => {
         category,
         userID: req.user._id,
       });
+      createdSales.push(sale);
 
-      // Update product quantity in the pharmacy or inventory
+      // Update product stock
+      const previousStock = product.stock; // Capture current stock for rollback
       await updateDrugStock(product, quantity);
+      stockUpdates.push({ product, previousStock }); // Record state for rollback
 
-      // Create an income record associated with this sale
-      await Income.create({
-        saleId: sale._id, // Link this income entry to the sale record
+      // Create an income record
+      const incomeRecord = await Income.create({
+        saleId: sale._id,
         date,
         totalNetIncome: productNetIncome,
         category,
         description: `Sale of ${product.name} (${category})`,
         userID: req.user._id,
       });
+      createdIncomes.push(incomeRecord);
 
-      // Add the sale record to the response array
+      // Update response and receipt data
       sales.push(sale);
-      totalIncome += income; // Update total income
-
-      // Add details to the receipt
+      totalIncome += income;
       receipt.push({
         productName: product.name,
         quantity,
@@ -148,25 +140,39 @@ const sellItems = asyncHandler(async (req, res, next) => {
       });
     }
 
-    // Generate a printable receipt-like object
+    // Generate the receipt object
     const generatedReceipt = {
       date: new Date().toISOString(),
       soldItems: receipt,
       totalIncome,
     };
 
-    // Respond with all the sale records created and the receipt
+    // Respond with the generated receipt
     res.status(201).json({
       status: 'success',
       data: {
-        receipt: generatedReceipt, // Include the receipt in the response
+        receipt: generatedReceipt,
       },
     });
   } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to complete the sale: ${error.message}`,
-    });
+    // Rollback Changes
+    console.error('Error encountered, rolling back changes:', error);
+
+    // Rollback stock updates
+    for (const { product, previousStock } of stockUpdates) {
+      await Pharmacy.updateOne({ _id: product._id }, { stock: previousStock });
+    }
+
+    // Delete created sales and incomes
+    for (const sale of createdSales) {
+      await Sale.deleteOne({ _id: sale._id });
+    }
+    for (const income of createdIncomes) {
+      await Income.deleteOne({ _id: income._id });
+    }
+
+    // Forward the error
+    next(error);
   }
 });
 
@@ -176,10 +182,16 @@ const getAllSales = getAll(Sale, false, [
 ]);
 
 // Get summarized data by month for a given year (generic for any model)
-const getDataByYear = asyncHandler(async (req, res, Model) => {
+const getDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
   const { category } = req.query;
 
+  // Validate year parameter
+  if (!year || isNaN(year)) {
+    throw new AppError('Invalid year provided.', 400);
+  }
+
+  // Get the date range for the provided year
   const { startDate, endDate } = getDateRangeForYear(year);
 
   const matchCriteria = {
@@ -188,50 +200,57 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
   if (category) matchCriteria.category = category;
 
   const groupBy = {
-    _id: { month: { $month: '$date' } },
-    totalAmount: { $sum: '$income' },
+    _id: { month: { $month: '$date' } }, // Group by month
+    totalAmount: { $sum: '$income' }, // Sum the income
   };
 
-  try {
-    const data = await getAggregatedData(Model, matchCriteria, groupBy);
-    const totalAmountsByDay = populateDataArray(data, 12, 'month');
-    res.status(200).json({ data: totalAmountsByDay });
-  } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
+  // Fetch aggregated data
+  const data = await getAggregatedData(Model, matchCriteria, groupBy);
+
+  if (!data.length) {
+    throw new AppError('No data found for the specified year.', 404);
   }
+
+  // Populate data for each month (ensure all months are included)
+  const totalAmountsByDay = populateDataArray(data, 12, 'month');
+
+  // Send response
+  res.status(200).json({ data: totalAmountsByDay });
 });
 
 // Get sum of all Sales for a specific category (e.g., 'drug')
 const getSalesCategoryTotal = asyncHandler(async (req, res) => {
-  const category = req.query.category || 'drug'; // Get category from query params, default to 'drug'
+  const category = req.query.category || 'drug'; // Default to 'drug'
 
-  try {
-    // Sum all income for the provided category
-    const totalSales = await Sale.aggregate([
-      { $match: { category: category } }, // Match the exact category
-      { $group: { _id: null, total: { $sum: '$totalNetIncome' } } }, // Sum the 'totalNetIncome' field
-    ]);
+  // Aggregate total sales for the specified category
+  const totalSales = await Sale.aggregate([
+    { $match: { category } }, // Match the category
+    { $group: { _id: null, total: { $sum: '$totalNetIncome' } } }, // Sum the 'totalNetIncome'
+  ]);
 
-    // Check for total income and format the response
-    const total = totalSales.length > 0 ? totalSales[0].total : 0;
+  // Ensure valid response even if no data is found
+  const total = totalSales.length > 0 ? totalSales[0].total : 0;
 
-    res.status(200).json({
+  res.status(200).json({
+    status: 'success',
+    data: {
       category,
-      totalSales: total, // Set the field to totalSales as requested
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error calculating total Sales',
-      error: error.message,
-    });
-  }
+      totalSales: total,
+    },
+  });
 });
 
 // Get summarized data by day for a given month (generic for any model)
-const getDataByMonth = asyncHandler(async (req, res, Model) => {
+const getDataByMonth = asyncHandler(async (req, res) => {
   const { year, month } = req.params;
   const { category } = req.query;
 
+  // Validate year and month parameters
+  if (!year || isNaN(year) || !month || isNaN(month)) {
+    throw new AppError('Invalid year or month provided.', 400);
+  }
+
+  // Get the date range for the given month
   const { startDate, endDate } = getDateRangeForMonth(year, month);
 
   const matchCriteria = {
@@ -240,18 +259,25 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   if (category) matchCriteria.category = category;
 
   const groupBy = {
-    _id: { day: { $dayOfMonth: '$date' } },
-    totalAmount: { $sum: '$income' },
+    _id: { day: { $dayOfMonth: '$date' } }, // Group by day
+    totalAmount: { $sum: '$income' }, // Sum the income
   };
 
-  try {
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const data = await getAggregatedData(Model, matchCriteria, groupBy);
-    const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
-    res.status(200).json({ data: totalAmountsByDay });
-  } catch (error) {
-    res.status(500).json({ message: error.message || 'Server error' });
+  // Fetch aggregated data
+  const data = await getAggregatedData(Model, matchCriteria, groupBy);
+
+  if (!data.length) {
+    throw new AppError('No data found for the specified month.', 404);
   }
+
+  // Populate missing days for the month
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
+
+  res.status(200).json({
+    status: 'success',
+    data: totalAmountsByDay,
+  });
 });
 
 // Get monthly sales ( total income and total net income, total sold items )
@@ -266,128 +292,119 @@ const getOneYearSales = asyncHandler(async (req, res) =>
 const getOneMonthSalesWithFullDetails = asyncHandler(async (req, res) => {
   const { year, month } = req.params;
 
-  try {
-    // Get the first and last days of the specified month
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-
-    // Aggregate sales data for the specified month
-    const sales = await Sale.aggregate([
-      {
-        $match: {
-          date: {
-            $gte: startDate,
-            $lt: endDate,
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: 'pharmacies', // Assuming the collection for products is named 'pharmacies'
-          localField: 'soldDetails.productRefId',
-          foreignField: '_id',
-          as: 'productDetails',
-        },
-      },
-      {
-        $lookup: {
-          from: 'users', // Assuming the collection for users is named 'users'
-          localField: 'userID',
-          foreignField: '_id',
-          as: 'userDetails',
-        },
-      },
-      {
-        $unwind: '$userDetails', // Unwind the user details to get a single object
-      },
-      {
-        $project: {
-          soldDetails: 1,
-          totalSale: 1,
-          totalNetIncome: 1,
-          date: 1,
-          category: 1,
-          user: {
-            _id: '$userDetails._id',
-            firstName: '$userDetails.firstName',
-            lastName: '$userDetails.lastName',
-          },
-          productDetails: {
-            _id: '$productDetails._id',
-            name: '$productDetails.name',
-            salePrice: '$productDetails.salePrice',
-          },
-        },
-      },
-      {
-        $sort: { date: 1 }, // Sort by date in ascending order
-      },
-    ]);
-
-    // If no sales found for the month
-    if (!sales.length) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'No sales found for the given month',
-      });
-    }
-
-    // Return sales details for the month
-    res.status(200).json({
-      status: 'success',
-      data: sales, // Detailed sales data
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to retrieve monthly sales: ${error.message}`,
-    });
+  // Validate year and month
+  if (
+    !year ||
+    isNaN(year) ||
+    !month ||
+    isNaN(month) ||
+    month < 1 ||
+    month > 12
+  ) {
+    throw new AppError('Invalid year or month provided.', 400);
   }
+
+  // Get the first and last days of the specified month
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0, 23, 59, 59);
+
+  // Aggregate sales data
+  const sales = await Sale.aggregate([
+    {
+      $match: {
+        date: {
+          $gte: startDate,
+          $lt: endDate,
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: 'pharmacies', // Assuming the collection for products is named 'pharmacies'
+        localField: 'soldDetails.productRefId',
+        foreignField: '_id',
+        as: 'productDetails',
+      },
+    },
+    {
+      $lookup: {
+        from: 'users', // Assuming the collection for users is named 'users'
+        localField: 'userID',
+        foreignField: '_id',
+        as: 'userDetails',
+      },
+    },
+    {
+      $unwind: '$userDetails', // Unwind user details
+    },
+    {
+      $project: {
+        soldDetails: 1,
+        totalSale: 1,
+        totalNetIncome: 1,
+        date: 1,
+        category: 1,
+        user: {
+          _id: '$userDetails._id',
+          firstName: '$userDetails.firstName',
+          lastName: '$userDetails.lastName',
+        },
+        productDetails: {
+          _id: '$productDetails._id',
+          name: '$productDetails.name',
+          salePrice: '$productDetails.salePrice',
+        },
+      },
+    },
+    {
+      $sort: { date: 1 }, // Sort by date in ascending order
+    },
+  ]);
+
+  if (!sales.length) {
+    throw new AppError('No sales found for the given month.', 404);
+  }
+
+  // Send response
+  res.status(200).json({
+    status: 'success',
+    data: sales,
+  });
 });
 
 const deleteSale = asyncHandler(async (req, res) => {
   const saleId = req.params.id;
+
   // Validate MongoDB ID
   validateMongoDBId(saleId);
 
-  try {
-    // Fetch the original sale record
-    const sale = await Sale.findById(saleId);
-    if (!sale) {
-      res.status(404);
-      throw new Error('Sale not found');
-    }
-
-    // Step 1: Restore the product quantity in the pharmacy based on the sale
-    const product = await Pharmacy.findById(sale.productRefId);
-    if (product) {
-      product.quantity += sale.quantity; // Restore the stock
-      await product.save();
-    }
-
-    // Step 2: Delete or adjust the income record associated with the sale
-    const incomeRecord = await Income.findOne({
-      saleId: saleId, // Assuming saleId is stored in the income record
-    });
-
-    if (incomeRecord) {
-      await Income.findByIdAndDelete(incomeRecord._id); // Delete associated income record
-    }
-
-    // Step 3: Delete the sale record
-    await Sale.findByIdAndDelete(saleId);
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Sale deleted successfully',
-    });
-  } catch (error) {
-    console.error('Error deleting sale:', error);
-    res.status(500).json({
-      status: 'error',
-      message: `Failed to delete the sale: ${error.message}`,
-    });
+  // Fetch the sale record
+  const sale = await Sale.findById(saleId);
+  if (!sale) {
+    throw new AppError('Sale not found.', 404);
   }
+
+  // Restore product quantity
+  const product = await Pharmacy.findById(sale.productRefId);
+  if (product) {
+    product.quantity += sale.quantity; // Restore stock
+    await product.save();
+  }
+
+  // Delete the income record associated with the sale
+  const incomeRecord = await Income.findOne({ saleId });
+  if (incomeRecord) {
+    await Income.findByIdAndDelete(incomeRecord._id);
+  }
+
+  // Delete the sale record
+  await Sale.findByIdAndDelete(saleId);
+
+  // Send success response
+  res.status(200).json({
+    status: 'success',
+    message: 'Sale deleted successfully.',
+  });
 });
 
 module.exports = {

@@ -268,9 +268,7 @@ export default function IncomeReport() {
             {income.map((item) => (
               <tr key={item._id} className='hover:bg-gray-50'>
                 <td className='border p-2'>{item.totalNetIncome}</td>
-                <td className='border p-2'>
-                  {new Date(item.date).toLocaleDateString()}
-                </td>
+                <td className='border p-2'>{item.date.split('T')[0]}</td>
                 <td className='border p-2'>{item.description}</td>
                 <td className='border p-2'>{item.category}</td>
                 <td className='border p-2'>

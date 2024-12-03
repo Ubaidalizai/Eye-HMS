@@ -5,136 +5,164 @@ const Pharmacy = require('../models/pharmacyModel');
 const DrugMovement = require('../models/drugMovmentModel');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError');
+
 const getAll = require('./handleFactory');
 
 // Add Post
-const addProduct = asyncHandler((req, res) => {
+const addProduct = asyncHandler(async (req, res, next) => {
   const { _id } = req.user;
-  validateMongoDBId(_id); // Check if _id is valid
-  const addProduct = new Product({
-    name: req.body.name,
-    manufacturer: req.body.manufacturer,
-    stock: 0,
-    description: req.body.description,
-    category: req.body.category,
-    // batchNumber: req.body.batchNumber,
-    // expiryDate: req.body.expiryDate,
+
+  // Validate MongoDB ID
+  validateMongoDBId(_id);
+
+  // Validate required fields
+  const { name, manufacturer, description, category } = req.body;
+  if (!name || !manufacturer || !description || !category) {
+    return next(
+      new AppError(
+        'All fields (name, manufacturer, description, category) are required.',
+        400
+      )
+    );
+  }
+
+  // Create a new product
+  const newProduct = await Product.create({
+    name,
+    manufacturer,
+    stock: 0, // Default stock is 0
+    description,
+    category,
   });
 
-  addProduct
-    .save()
-    .then((result) => {
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      res.status(402).send(err);
-    });
+  // Send success response
+  res.status(201).json({
+    status: 'success',
+    data: newProduct,
+  });
 });
 
 const getAllProducts = getAll(Product);
 
 // Delete Selected Product
-const deleteSelectedProduct = asyncHandler(async (req, res) => {
-  const productId = req.params.id; // Get the product ID from the request parameters
-  validateMongoDBId(productId); // Check if product ID is valid
+const deleteSelectedProduct = asyncHandler(async (req, res, next) => {
+  const productId = req.params.id;
 
-  const productExist = await Product.findOne({ _id: productId });
+  // Validate MongoDB ID
+  validateMongoDBId(productId);
+
+  // Check if product exists
+  const productExist = await Product.findById(productId);
   if (!productExist) {
-    return res.status(404).json({ message: 'Product not found' });
+    return next(new AppError('Product not found.', 404));
   }
 
-  await Product.findByIdAndDelete({ _id: productId });
+  // Delete the product
+  await Product.findByIdAndDelete(productId);
 
-  // Send back the deletion results
+  // Send success response
   res.status(200).json({
-    message: `${productExist.name}  deleted successfully`,
+    status: 'success',
+    message: `${productExist.name} deleted successfully.`,
   });
 });
 
 // Update Selected Product
-const updateSelectedProduct = asyncHandler(async (req, res) => {
+const updateSelectedProduct = asyncHandler(async (req, res, next) => {
   const productID = req.params.id;
-  validateMongoDBId(productID); // Check if ProductID is valid
 
-  try {
-    // First, find the original product to get its name and manufacturer before updating
-    const originalProduct = await Product.findById(productID);
-    if (!originalProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+  // Validate MongoDB ID
+  validateMongoDBId(productID);
 
-    // Update the product details
-    const updatedResult = await Product.findByIdAndUpdate(
-      productID,
-      {
-        name: req.body.name,
-        manufacturer: req.body.manufacturer,
-        description: req.body.description,
-        category: req.body.category,
-      },
-      { new: true }
-    );
-
-    if (!updatedResult) {
-      return res.status(400).json({ message: 'Failed to update product' });
-    }
-
-    // Now update the products in the Pharmacy collection
-    const updatedPharmacyProducts = await Pharmacy.updateMany(
-      {
-        name: originalProduct.name,
-        manufacturer: originalProduct.manufacturer,
-      }, // Find by original name and manufacturer
-      {
-        $set: {
-          name: updatedResult.name,
-          manufacturer: updatedResult.manufacturer,
-        },
-      }
-    );
-
-    if (!updatedPharmacyProducts) {
-      throw new Error('Failed to update product details in the pharmacy');
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        updatedProduct: updatedResult,
-        updatedPharmacyProducts,
-      },
-    });
-  } catch (error) {
-    console.error('Error in updating product and pharmacy:', error);
-    res.status(500).send({ message: 'Error updating product and pharmacy' });
+  // Find the original product to retrieve its name and manufacturer before updating
+  const originalProduct = await Product.findById(productID);
+  if (!originalProduct) {
+    throw new AppError('Product not found.', 404);
   }
+
+  // Update the product details in the Product collection
+  const updatedResult = await Product.findByIdAndUpdate(
+    productID,
+    {
+      name: req.body.name,
+      manufacturer: req.body.manufacturer,
+      description: req.body.description,
+      category: req.body.category,
+    },
+    { new: true } // Return the updated document
+  );
+
+  if (!updatedResult) {
+    throw new AppError('Failed to update product.', 400);
+  }
+
+  // Update the products in the Pharmacy collection with the new name and manufacturer
+  const updatedPharmacyProducts = await Pharmacy.updateMany(
+    {
+      name: originalProduct.name,
+      manufacturer: originalProduct.manufacturer,
+    }, // Match by original name and manufacturer
+    {
+      $set: {
+        name: updatedResult.name,
+        manufacturer: updatedResult.manufacturer,
+      },
+    }
+  );
+
+  // Send the success response
+  res.status(200).json({
+    status: 'success',
+    data: {
+      updatedProduct: updatedResult,
+      updatedPharmacyProducts,
+    },
+  });
 });
 
 // Search Products
 const searchProduct = getAll(Product, true);
 
 // move drug from inventory to pharmacy
-const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
-  // Function to update inventory stock
-  const updateInventoryStock = async (product, quantity) => {
+const moveDrugsToPharmacy = asyncHandler(async (req, res, next) => {
+  const { name, manufacturer, quantity, salePrice, category, expiryDate } =
+    req.body;
+
+  if (!name || !manufacturer || !quantity || !salePrice || !category) {
+    return next(new AppError('All fields are required', 400));
+  }
+
+  // Track changes for rollback
+  let updatedInventory = null;
+  let createdPharmacyDrug = null;
+  let updatedPharmacyDrug = null;
+  let createdDrugMovement = null;
+
+  try {
+    // Find the product in inventory
+    const product = await Product.findOne({ name, manufacturer });
+    if (!product) {
+      throw new AppError('Drug not found in inventory', 404);
+    }
+
+    // Update inventory stock
+    if (product.stock < quantity) {
+      throw new AppError('Insufficient stock in inventory', 400);
+    }
+    const previousStock = product.stock; // Capture current stock for rollback
     product.stock -= quantity;
     await product.save();
-  };
+    updatedInventory = { product, previousStock }; // Record for rollback
 
-  // Function to add or update drug in pharmacy
-  const addOrUpdatePharmacyDrug = async (
-    name,
-    manufacturer,
-    quantity,
-    salePrice,
-    category,
-    expiryDate
-  ) => {
+    // Add or update drug in pharmacy
     let pharmacyDrug = await Pharmacy.findOne({ name, manufacturer });
-
     if (pharmacyDrug) {
+      const previousQuantity = pharmacyDrug.quantity; // For rollback
       pharmacyDrug.quantity += quantity;
       pharmacyDrug.salePrice = salePrice; // Update sale price if needed
+      await pharmacyDrug.save();
+      updatedPharmacyDrug = { pharmacyDrug, previousQuantity }; // Track rollback info
     } else {
       pharmacyDrug = await Pharmacy.create({
         name,
@@ -144,59 +172,55 @@ const moveDrugsToPharmacy = asyncHandler(async (req, res) => {
         category,
         expiryDate,
       });
+      createdPharmacyDrug = pharmacyDrug; // Track for rollback
     }
 
-    await pharmacyDrug.save();
-    return pharmacyDrug;
-  };
-
-  try {
-    const { name, manufacturer, quantity, salePrice, category, expiryDate } =
-      req.body;
-    console.log(req.body);
-    // Step 1: Validate the product exists in inventory
-    const product = await Product.findOne({ name, manufacturer });
-    if (!product) {
-      res.status(404);
-      throw new Error('Drug not found in inventory');
-    }
-    // Step 2: Validate available stock
-    if (product.stock < quantity) {
-      res.status(400);
-      throw new Error('Insufficient quantity in inventory');
-    }
-
-    // Step 3: Update inventory stock
-    await updateInventoryStock(product, quantity);
-
-    // Step 4: Add or update pharmacy drug record
-    const pharmacyDrug = await addOrUpdatePharmacyDrug(
-      name,
-      manufacturer,
-      quantity,
-      salePrice,
-      category,
-      expiryDate
-    );
-
-    // Step 5: Record the movement in drug movement log
-    await DrugMovement.create({
+    // Create a drug movement record
+    const drugMovement = await DrugMovement.create({
       inventory_id: product._id,
       pharmacy_id: pharmacyDrug._id,
       quantity_moved: quantity,
-      moved_by: req.user._id, // Assuming user is available in req.user
+      moved_by: req.user._id,
       category,
       expiryDate,
     });
+    createdDrugMovement = drugMovement; // Track for rollback
 
-    // Step 6: Respond with success
+    // Respond with success
     res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
   } catch (error) {
-    res.status(500);
-    console.log(error);
-    throw new Error('Internal server error');
+    console.error('Error encountered, rolling back changes:', error);
+
+    // Rollback inventory stock update
+    if (updatedInventory) {
+      const { product, previousStock } = updatedInventory;
+      await Product.updateOne({ _id: product._id }, { stock: previousStock });
+    }
+
+    // Rollback pharmacy drug changes
+    if (updatedPharmacyDrug) {
+      const { pharmacyDrug, previousQuantity } = updatedPharmacyDrug;
+      await Pharmacy.updateOne(
+        { _id: pharmacyDrug._id },
+        { quantity: previousQuantity }
+      );
+    }
+
+    // Rollback pharmacy drug creation
+    if (createdPharmacyDrug) {
+      await Pharmacy.deleteOne({ _id: createdPharmacyDrug._id });
+    }
+
+    // Rollback drug movement record creation
+    if (createdDrugMovement) {
+      await DrugMovement.deleteOne({ _id: createdDrugMovement._id });
+    }
+
+    // Forward the error
+    next(error);
   }
 });
+
 const checkProductExpiry = asyncHandler(async (req, res) => {
   const beforeThirtyDays = new Date();
   beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);

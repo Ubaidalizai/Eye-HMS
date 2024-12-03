@@ -4,19 +4,19 @@ const asyncHandler = require('../middlewares/asyncHandler');
 
 const purchaseStock = asyncHandler(
   async (productID, purchaseStockData, expiryDate) => {
-    // Updating Purchase stock
-    try {
-      const product = await Product.findById({ _id: productID });
-      if (!product) {
-        res.status(404);
-        throw new Error('The product not found, for updating stoke');
-      }
-      product.stock += Number(purchaseStockData);
-      product.expiryDate = expiryDate;
-      await product.save();
-    } catch (error) {
-      console.error('Error updating Purchase stock ', error);
+    // Find the product by ID
+    const product = await Product.findById(productID);
+
+    if (!product) {
+      throw new AppError('The product not found, unable to update stock.', 404);
     }
+
+    // Update stock and expiry date
+    product.stock += Number(purchaseStockData);
+    product.expiryDate = expiryDate;
+
+    // Save the updated product
+    await product.save();
   }
 );
 
