@@ -256,12 +256,22 @@ export default function IncomeReport() {
 
         <table className='w-full border-collapse border border-gray-300'>
           <thead>
-            <tr className='bg-gray-100'>
-              <th className='border p-2'>Total Net Income</th>
-              <th className='border p-2'>Date</th>
-              <th className='border p-2'>Description</th>
-              <th className='border p-2'>Category</th>
-              <th className='border p-2'>Actions</th>
+            <tr className='bg-gray-50'>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Total Net Income
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Date
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Description
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Category
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>

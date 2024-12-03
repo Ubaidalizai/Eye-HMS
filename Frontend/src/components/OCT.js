@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import FormModal from "../components/FormModal";
-import DataTable from "../components/DataTable";
+import React, { useState, useEffect } from 'react';
+import FormModal from '../components/FormModal';
+import DataTable from '../components/DataTable';
 
 function OCT() {
   const [fieldValues, setFieldValues] = useState({
-    patientId: "",
-    patientName: "",
-    date: "",
-    time: "",
-    eyeExamined: "",
-    scanType: "",
-    results: "",
+    patientId: '',
+    patientName: '',
+    date: '',
+    time: '',
+    eyeExamined: '',
+    scanType: '',
+    results: '',
   });
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +18,7 @@ function OCT() {
   const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
-    const storedData = localStorage.getItem("octSubmittedData");
+    const storedData = localStorage.getItem('octSubmittedData');
     if (storedData) {
       setSubmittedData(JSON.parse(storedData));
     }
@@ -30,12 +30,12 @@ function OCT() {
       const updatedData = [...submittedData];
       updatedData[editIndex] = fieldValues;
       setSubmittedData(updatedData);
-      localStorage.setItem("octSubmittedData", JSON.stringify(updatedData));
+      localStorage.setItem('octSubmittedData', JSON.stringify(updatedData));
     } else {
       const newSubmittedData = [...submittedData, fieldValues];
       setSubmittedData(newSubmittedData);
       localStorage.setItem(
-        "octSubmittedData",
+        'octSubmittedData',
         JSON.stringify(newSubmittedData)
       );
     }
@@ -53,34 +53,34 @@ function OCT() {
 
   const clearForm = () => {
     setFieldValues({
-      patientId: "",
-      patientName: "",
-      date: "",
-      time: "",
-      eyeExamined: "",
-      scanType: "",
-      results: "",
+      patientId: '',
+      patientName: '',
+      date: '',
+      time: '',
+      eyeExamined: '',
+      scanType: '',
+      results: '',
     });
     setEditMode(false);
   };
 
   const fields = [
-    { label: "Patient ID", type: "text", name: "patientId" },
-    { label: "Patient Name", type: "text", name: "patientName" },
-    { label: "Date", type: "date", name: "date" },
-    { label: "Time", type: "time", name: "time" },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'Patient Name', type: 'text', name: 'patientName' },
+    { label: 'Date', type: 'date', name: 'date' },
+    { label: 'Time', type: 'time', name: 'time' },
     {
-      label: "Eye Examined",
-      type: "select",
-      name: "eyeExamined",
-      options: ["Left", "Right", "Both"],
+      label: 'Eye Examined',
+      type: 'select',
+      name: 'eyeExamined',
+      options: ['Left', 'Right', 'Both'],
     },
-    { label: "Scan Type", type: "text", name: "scanType" },
-    { label: "Results", type: "textarea", name: "results" },
+    { label: 'Scan Type', type: 'text', name: 'scanType' },
+    { label: 'Results', type: 'textarea', name: 'results' },
   ];
 
   return (
-    <div className='p-8 bg-gray-100 min-h-screen'>
+    <div className='p-8 min-h-screen'>
       <div className='mb-4 flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>OCT Management</h1>
         <button
@@ -95,7 +95,7 @@ function OCT() {
       </div>
 
       <FormModal
-        title={editMode ? "Edit OCT Record" : "Add New OCT Record"}
+        title={editMode ? 'Edit OCT Record' : 'Add New OCT Record'}
         isOpen={isOpen}
         handleSubmit={handleSubmit}
         handleCancel={() => setIsOpen(false)}
@@ -111,7 +111,7 @@ function OCT() {
         handleRemove={(index) => {
           const updatedData = submittedData.filter((_, i) => i !== index);
           setSubmittedData(updatedData);
-          localStorage.setItem("octSubmittedData", JSON.stringify(updatedData));
+          localStorage.setItem('octSubmittedData', JSON.stringify(updatedData));
         }}
       />
     </div>
