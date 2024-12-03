@@ -1,4 +1,5 @@
 const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError');
 const Patient = require('../models/patientModel');
 const getAll = require('../controllers/handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
@@ -7,24 +8,19 @@ const getAllPatients = getAll(Patient);
 
 // Add Patient
 const addPatient = asyncHandler(async (req, res) => {
-  const {
-    name,
-    age,
-    contact,
-    patientID,
-    patientGender,
-    insuranceContact,
-  } = req.body;
+  const { name, age, contact, patientID, patientGender, insuranceContact } =
+    req.body;
 
   if (!name || !age || !contact || !patientID || !patientGender) {
-    return res.status(400).json({ message: 'All fields required!' });
+    throw new AppError('All fields required!', 400);
   }
 
   const patientExist = await Patient.findOne({ patientID: patientID });
   if (patientExist) {
-    return res.status(409).json({
-      message: 'Patient already exist with the requested patient ID!',
-    });
+    throw new AppError(
+      'Patient already exist with the requested patient ID!',
+      409
+    );
   }
 
   // Create new patient
@@ -50,21 +46,14 @@ const updatePatient = asyncHandler(async (req, res) => {
   const patientId = req.params.id;
   validateMongoDBId(patientId);
 
-  const {
-    name,
-    age,
-    contact,
-    patientID,
-    patientGender,
-    insuranceContact,
-  } = req.body;
+  const { name, age, contact, patientID, patientGender, insuranceContact } =
+    req.body;
 
   // Find and update patient
   const patient = await Patient.findById(patientId);
 
   if (!patient) {
-    res.status(404).json({ message: 'Patient not found' });
-    return;
+    throw new AppError('Patient not found', 404);
   }
 
   patient.name = name || patient.name;
@@ -90,8 +79,7 @@ const deletePatient = asyncHandler(async (req, res) => {
   const patient = await Patient.findById(id);
 
   if (!patient) {
-    res.status(404).json({ message: 'Patient not found' });
-    return;
+    throw new AppError('Patient not found', 404);
   }
 
   await patient.deleteOne();

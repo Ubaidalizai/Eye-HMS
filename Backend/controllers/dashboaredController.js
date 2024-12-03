@@ -7,7 +7,7 @@ const asyncHandler = require('../middlewares/asyncHandler'); // asyncHandler to 
 const AppError = require('../utils/appError'); // Custom error handler
 
 // Get Dashboard Summary
-exports.getDashboardSummary = asyncHandler(async (req, res, next) => {
+exports.getDashboardSummary = asyncHandler(async (req, res) => {
   // Total Products
   const totalProductsCount = await Product.countDocuments();
 
