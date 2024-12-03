@@ -3,27 +3,21 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 
 function Bedroom() {
-  // State for form fields, including the new 'percentage' field
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [rent, setRent] = useState('');
-  const [percentage, setPercentage] = useState(''); // New field for percentage
+  const [percentage, setPercentage] = useState('');
 
-  // State to store submitted data
   const [submittedData, setSubmittedData] = useState([]);
 
-  // Modal visibility state
   const [isOpen, setIsOpen] = useState(false);
 
-  // State to track if we are in edit mode
   const [editMode, setEditMode] = useState(false);
 
-  // Index of the record being edited
   const [editIndex, setEditIndex] = useState(null);
 
-  // Fetch data on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -36,12 +30,10 @@ function Bedroom() {
       }
     };
     fetchData();
-  }, []); // Empty dependency array to fetch once on mount
-
-  // Handle form submission (Add or Edit)
+  }, []);
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const entry = { id, name, time, date, rent, percentage }; // Include percentage
+    const entry = { id, name, time, date, rent, percentage };
 
     if (editMode) {
       try {
@@ -55,7 +47,6 @@ function Bedroom() {
         );
         if (!response.ok) throw new Error('Failed to update data');
 
-        // Update the submitted data array with the new entry
         const updatedData = [...submittedData];
         updatedData[editIndex] = entry;
         setSubmittedData(updatedData);
@@ -78,30 +69,26 @@ function Bedroom() {
       }
     }
 
-    // Clear the form and close the modal
     clearForm();
     setIsOpen(false);
   };
 
-  // Cancel button for modal
   const handleCancel = () => {
     clearForm();
     setIsOpen(false);
   };
 
-  // Clear form state
   const clearForm = () => {
     setId('');
     setName('');
     setTime('');
     setDate('');
     setRent('');
-    setPercentage(''); // Clear percentage
+    setPercentage('');
     setEditMode(false);
     setEditIndex(null);
   };
 
-  // Handle editing a record
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
     setId(recordToEdit.id);
@@ -109,14 +96,13 @@ function Bedroom() {
     setTime(recordToEdit.time);
     setDate(recordToEdit.date);
     setRent(recordToEdit.rent);
-    setPercentage(recordToEdit.percentage); // Set percentage for edit
+    setPercentage(recordToEdit.percentage);
 
     setEditMode(true);
     setEditIndex(index);
     setIsOpen(true);
   };
 
-  // Handle deleting a record
   const handleRemove = async (index) => {
     try {
       const { id } = submittedData[index];
@@ -135,17 +121,15 @@ function Bedroom() {
     }
   };
 
-  // Fields for the form, including the new 'percentage' field
   const fields = [
     { label: 'ID', type: 'text', name: 'id' },
     { label: 'Name', type: 'text', name: 'name' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Rent', type: 'text', name: 'rent' },
-    { label: 'Percentage', type: 'number', name: 'percentage' }, // New field for percentage
+    { label: 'Percentage', type: 'number', name: 'percentage' },
   ];
 
-  // The values for the fields and the function to set them
   const fieldValues = { id, name, time, date, rent, percentage };
   const setFieldValues = ({ id, name, time, date, rent, percentage }) => {
     setId(id);
@@ -153,7 +137,7 @@ function Bedroom() {
     setTime(time);
     setDate(date);
     setRent(rent);
-    setPercentage(percentage); // Set percentage field
+    setPercentage(percentage);
   };
 
   return (
@@ -188,7 +172,7 @@ function Bedroom() {
         method={editMode ? 'PATCH' : 'POST'}
       />
 
-      {/* Data Table displaying records */}
+      {}
       <DataTable
         submittedData={submittedData}
         fields={fields}

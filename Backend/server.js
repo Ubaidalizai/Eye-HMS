@@ -20,6 +20,8 @@ const dashboardRoute = require('./routes/dashboaredRoutes');
 const operationRoute = require('./routes/operationRoute');
 const ultrasoundRoute = require('./routes/ultrasoundRoute');
 const bedroomRoute = require('./routes/bedroomRoute');
+const labratoryRoute = require('./routes/labratoryRoute');
+const OctRoute = require('./routes/octRoute');
 const app = express();
 const PORT = 4000;
 
@@ -53,7 +55,8 @@ app.use('/api/v1/dashboard', dashboardRoute); // Dashboard API
 app.use('/api/v1/operation', operationRoute);
 app.use('/api/v1/ultrasound', ultrasoundRoute);
 app.use('/api/v1/bedroom', bedroomRoute);
-
+app.use('/api/v1/labratory', labratoryRoute);
+app.use('/api/v1/oct', OctRoute);
 // ------------- Signin --------------
 let userAuthCheck;
 app.post('/api/login', async (req, res) => {
