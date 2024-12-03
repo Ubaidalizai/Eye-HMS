@@ -153,9 +153,9 @@ export default function PatientManagement() {
   };
 
   return (
-    <div className='max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-lg'>
+    <div className='max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r to-indigo-50 rounded-lg'>
       <ToastContainer />
-      <h1 className='text-4xl font-bold text-center mb-8 text-indigo-800'>
+      <h1 className='text-4xl font-bold text-center mb-8 text-gray-900'>
         Patient Management
       </h1>
 
@@ -191,27 +191,27 @@ export default function PatientManagement() {
 
       <div className='overflow-x-auto bg-white rounded-lg shadow'>
         <table className='min-w-full'>
-          <thead className='bg-indigo-100'>
+          <thead className='bg-gray-50'>
             <tr>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Name
               </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Age
               </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Contact
               </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Patient ID
               </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Gender
               </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Insurance
               </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-indigo-800 uppercase tracking-wider'>
+              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                 Actions
               </th>
             </tr>

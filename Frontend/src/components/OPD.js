@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react";
-import FormModal from "../components/FormModal";
-import DataTable from "../components/DataTable";
+import React, { useState, useEffect } from 'react';
+import FormModal from '../components/FormModal';
+import DataTable from '../components/DataTable';
 
 function OPD() {
   const [fieldValues, setFieldValues] = useState({
-    patientId: "",
-    patientName: "",
-    date: "",
-    time: "",
-    department: "",
-    doctor: "",
-    diagnosis: "",
-    prescription: "",
+    patientId: '',
+    patientName: '',
+    date: '',
+    time: '',
+    department: '',
+    doctor: '',
+    diagnosis: '',
+    prescription: '',
   });
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +19,7 @@ function OPD() {
   const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
-    const storedData = localStorage.getItem("opdSubmittedData");
+    const storedData = localStorage.getItem('opdSubmittedData');
     if (storedData) {
       setSubmittedData(JSON.parse(storedData));
     }
@@ -31,12 +31,12 @@ function OPD() {
       const updatedData = [...submittedData];
       updatedData[editIndex] = fieldValues;
       setSubmittedData(updatedData);
-      localStorage.setItem("opdSubmittedData", JSON.stringify(updatedData));
+      localStorage.setItem('opdSubmittedData', JSON.stringify(updatedData));
     } else {
       const newSubmittedData = [...submittedData, fieldValues];
       setSubmittedData(newSubmittedData);
       localStorage.setItem(
-        "opdSubmittedData",
+        'opdSubmittedData',
         JSON.stringify(newSubmittedData)
       );
     }
@@ -54,31 +54,31 @@ function OPD() {
 
   const clearForm = () => {
     setFieldValues({
-      patientId: "",
-      patientName: "",
-      date: "",
-      time: "",
-      department: "",
-      doctor: "",
-      diagnosis: "",
-      prescription: "",
+      patientId: '',
+      patientName: '',
+      date: '',
+      time: '',
+      department: '',
+      doctor: '',
+      diagnosis: '',
+      prescription: '',
     });
     setEditMode(false);
   };
 
   const fields = [
-    { label: "Patient ID", type: "text", name: "patientId" },
-    { label: "Patient Name", type: "text", name: "patientName" },
-    { label: "Date", type: "date", name: "date" },
-    { label: "Time", type: "time", name: "time" },
-    { label: "Department", type: "text", name: "department" },
-    { label: "Doctor", type: "text", name: "doctor" },
-    { label: "Diagnosis", type: "textarea", name: "diagnosis" },
-    { label: "Prescription", type: "textarea", name: "prescription" },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'Patient Name', type: 'text', name: 'patientName' },
+    { label: 'Date', type: 'date', name: 'date' },
+    { label: 'Time', type: 'time', name: 'time' },
+    { label: 'Department', type: 'text', name: 'department' },
+    { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Diagnosis', type: 'textarea', name: 'diagnosis' },
+    { label: 'Prescription', type: 'textarea', name: 'prescription' },
   ];
 
   return (
-    <div className='p-8 bg-gray-100 min-h-screen'>
+    <div className='p-8 min-h-screen'>
       <div className='mb-4 flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>OPD Management</h1>
         <button
@@ -93,7 +93,7 @@ function OPD() {
       </div>
 
       <FormModal
-        title={editMode ? "Edit OPD Record" : "Add New OPD Record"}
+        title={editMode ? 'Edit OPD Record' : 'Add New OPD Record'}
         isOpen={isOpen}
         handleSubmit={handleSubmit}
         handleCancel={() => setIsOpen(false)}
@@ -109,7 +109,7 @@ function OPD() {
         handleRemove={(index) => {
           const updatedData = submittedData.filter((_, i) => i !== index);
           setSubmittedData(updatedData);
-          localStorage.setItem("opdSubmittedData", JSON.stringify(updatedData));
+          localStorage.setItem('opdSubmittedData', JSON.stringify(updatedData));
         }}
       />
     </div>
