@@ -108,7 +108,7 @@ export default function AdminPanel() {
       <div className='flex justify-end mb-4'>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+          className='bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600'
         >
           <Plus className='inline-block mr-2 h-5 w-5' />
           Add User
@@ -116,7 +116,7 @@ export default function AdminPanel() {
       </div>
 
       {/* User Table */}
-      <div className='bg-white rounded-lg shadow overflow-x-auto'>
+      <div className='bg-white rounded-sm shadow overflow-x-auto'>
         <table className='w-full'>
           <thead className='bg-gray-50'>
             <tr>
