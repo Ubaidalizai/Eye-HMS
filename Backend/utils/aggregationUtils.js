@@ -1,16 +1,15 @@
-// aggregationUtils.js
-
 const getAggregatedData = async (Model, matchCriteria, groupBy) => {
-  try {
-    const aggregation = await Model.aggregate([
-      { $match: matchCriteria },
-      { $group: groupBy },
-      { $sort: { _id: 1 } },
-    ]);
-    return aggregation;
-  } catch (error) {
-    throw new Error(`Failed to aggregate data: ${error.message}`);
+  const aggregation = await Model.aggregate([
+    { $match: matchCriteria },
+    { $group: groupBy },
+    { $sort: { _id: 1 } },
+  ]);
+
+  if (!aggregation) {
+    res.status(500);
+    throw new Error('Aggregation failed');
   }
+  return aggregation;
 };
 
 // Populate data array based on grouping (days or months)

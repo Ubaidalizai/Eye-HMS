@@ -13,10 +13,12 @@ const pharmacySchema = new mongoose.Schema(
     quantity: {
       type: Number,
       required: [true, 'Pharmacy product must have a quantity'],
+      min: 0,
     },
     salePrice: {
       type: Number,
       required: [true, 'Pharmacy product must have a sale price'],
+      min: 0,
     },
     category: {
       type: String,

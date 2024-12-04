@@ -182,7 +182,7 @@ const getAllSales = getAll(Sale, false, [
 ]);
 
 // Get summarized data by month for a given year (generic for any model)
-const getDataByYear = asyncHandler(async (req, res) => {
+const getDataByYear = asyncHandler(async (req, res, Model) => {
   const { year } = req.params;
   const { category } = req.query;
 
@@ -241,7 +241,7 @@ const getSalesCategoryTotal = asyncHandler(async (req, res) => {
 });
 
 // Get summarized data by day for a given month (generic for any model)
-const getDataByMonth = asyncHandler(async (req, res) => {
+const getDataByMonth = asyncHandler(async (req, res, Model) => {
   const { year, month } = req.params;
   const { category } = req.query;
 
