@@ -13,75 +13,73 @@ const {
 } = require('../utils/aggregationUtils');
 
 // Helper function to get data by year (generic for any model)
-const getDataByYear = (Model) =>
-  asyncHandler(async (req, res) => {
-    const { year } = req.params;
-    const { category } = req.query;
+const getDataByYear = asyncHandler(async (req, res, Model) => {
+  const { year } = req.params;
+  const { category } = req.query;
 
-    if (!year) {
-      throw new AppError('Year is required', 400);
-    }
+  if (!year) {
+    throw new AppError('Year is required', 400);
+  }
 
-    const { startDate, endDate } = getDateRangeForYear(year);
+  const { startDate, endDate } = getDateRangeForYear(year);
 
-    if (!startDate || !endDate) {
-      throw new AppError('Invalid year', 400);
-    }
+  if (!startDate || !endDate) {
+    throw new AppError('Invalid year', 400);
+  }
 
-    const matchCriteria = {
-      date: { $gte: startDate, $lte: endDate },
-    };
-    if (category) matchCriteria.category = category;
+  const matchCriteria = {
+    date: { $gte: startDate, $lte: endDate },
+  };
+  if (category) matchCriteria.category = category;
 
-    const groupBy = {
-      _id: { month: { $month: '$date' } },
-      totalAmount: { $sum: '$totalNetIncome' },
-    };
+  const groupBy = {
+    _id: { month: { $month: '$date' } },
+    totalAmount: { $sum: '$totalNetIncome' },
+  };
 
-    const data = await getAggregatedData(Model, matchCriteria, groupBy);
-    if (!data) {
-      throw new AppError('No data found', 404);
-    }
+  const data = await getAggregatedData(Model, matchCriteria, groupBy);
+  if (!data) {
+    throw new AppError('No data found', 404);
+  }
 
-    const totalAmountsByMonth = populateDataArray(data, 12, 'month');
-    res.status(200).json({ data: totalAmountsByMonth });
-  });
+  const totalAmountsByMonth = populateDataArray(data, 12, 'month');
+  res.status(200).json({ data: totalAmountsByMonth });
+});
 
 // Helper function to get data by month (generic for any model)
-const getDataByMonth = (Model) =>
-  asyncHandler(async (req, res) => {
-    const { year, month } = req.params;
-    const { category } = req.query;
+const getDataByMonth = asyncHandler(async (req, res, Model) => {
+  const { year, month } = req.params;
+  const { category } = req.query;
 
-    if (!year || !month) {
-      throw new AppError('Year and month are required', 400);
-    }
+  if (!year || !month) {
+    throw new AppError('Year and month are required', 400);
+  }
 
-    const { startDate, endDate } = getDateRangeForMonth(year, month);
+  const { startDate, endDate } = getDateRangeForMonth(year, month);
 
-    if (!startDate || !endDate) {
-      throw new AppError('Invalid year or month', 400);
-    }
+  if (!startDate || !endDate) {
+    throw new AppError('Invalid year or month', 400);
+  }
 
-    const matchCriteria = {
-      date: { $gte: startDate, $lte: endDate },
-    };
-    if (category) matchCriteria.category = category;
+  const matchCriteria = {
+    date: { $gte: startDate, $lte: endDate },
+  };
+  if (category) matchCriteria.category = category;
 
-    const groupBy = {
-      _id: { day: { $dayOfMonth: '$date' } },
-      totalAmount: { $sum: '$totalNetIncome' },
-    };
+  const groupBy = {
+    _id: { day: { $dayOfMonth: '$date' } },
+    totalAmount: { $sum: '$totalNetIncome' },
+  };
 
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const data = await getAggregatedData(Model, matchCriteria, groupBy);
-    if (!data) {
-      throw new AppError('No data found', 404);
-    }
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const data = await getAggregatedData(Model, matchCriteria, groupBy);
+  if (!data) {
+    throw new AppError('No data found', 404);
+  }
 
-    const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
-    res.status(200).json({ data: totalAmountsByDay });
-  });
+  const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
+  res.status(200).json({ data: totalAmountsByDay });
+});
 
 // Get sum of all income for a specific category
 const getIncomeCategoryTotal = asyncHandler(async (req, res) => {

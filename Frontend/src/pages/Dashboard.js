@@ -80,7 +80,6 @@ function Dashboard() {
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      console.log(data);
       setSummary(data);
     } catch (err) {
       console.log(err);

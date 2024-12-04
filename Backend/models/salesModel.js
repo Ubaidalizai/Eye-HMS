@@ -14,10 +14,12 @@ const saleSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       required: [true, 'A sold item must have a quantity'],
+      min: 0,
     },
     income: {
       type: Number,
       required: [true, 'A sold item must have an income'],
+      min: 0,
     },
     date: {
       type: Date,

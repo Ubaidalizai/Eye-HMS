@@ -149,6 +149,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     QuantityPurchased,
     date,
     unitPurchaseAmount,
+    salePrice,
     category,
     expiryDate,
   } = req.body;
@@ -186,6 +187,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     }
 
     product.stock += QuantityPurchased;
+    product.salePrice = salePrice;
     product.expiryDate = expiryDate;
     await product.save();
 
