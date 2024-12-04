@@ -254,7 +254,7 @@ export default function IncomeReport() {
         {isLoading && <p>Loading...</p>}
         {error && <p className='text-red-500'>{error}</p>}
 
-        <table className='w-full border-collapse border border-gray-300'>
+        <table className='w-full border-collapse shadow rounded-md'>
           <thead>
             <tr className='bg-gray-50'>
               <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>

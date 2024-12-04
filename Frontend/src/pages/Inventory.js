@@ -211,15 +211,13 @@ function Inventory() {
   };
 
   return (
-    <div className='col-span-12 lg:col-span-10 flex justify-center'>
-      <div className='flex flex-col gap-5 w-11/12'>
+    <div className=' flex justify-center'>
+      <div className='flex flex-col gap-5 w-full px-6'>
         <ToastContainer />
-        <div className='bg-white rounded p-3'>
-          <span className='font-semibold px-4 text-xl'>
-            Inventory Dashboard
-          </span>
-          <div className='flex flex-wrap justify-around items-center mt-4'>
-            <div className='flex items-center p-4'>
+        <div className='bg-white rounded'>
+          <span className='font-semibold text-xl'>Inventory Dashboard</span>
+          <div className='flex flex-wrap justify-between items-center mt-7'>
+            <div className='flex items-center'>
               <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
               <div>
                 <p className='text-sm text-gray-500'>Total Products</p>
@@ -228,14 +226,14 @@ function Inventory() {
                 </p>
               </div>
             </div>
-            <div className='flex items-center p-4'>
+            <div className='flex items-center'>
               <FaWarehouse className='text-3xl text-green-500 mr-3' />
               <div>
                 <p className='text-sm text-gray-500'>Total Stock</p>
                 <p className='text-xl font-semibold'>{summary.totalStock}</p>
               </div>
             </div>
-            <div className='flex items-center p-4'>
+            <div className='flex items-center'>
               <FaExchangeAlt className='text-3xl text-yellow-500 mr-3' />
               <div>
                 <p className='text-sm text-gray-500'>Low Stock Items</p>
@@ -244,13 +242,6 @@ function Inventory() {
             </div>
           </div>
         </div>
-
-        <button
-          className='bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center'
-          onClick={() => setShowProductModal(true)}
-        >
-          <FaPlus className='mr-2' /> Add Product
-        </button>
 
         {showProductModal && (
           <div
@@ -344,10 +335,10 @@ function Inventory() {
           />
         )}
 
-        <div className='overflow-x-auto rounded-lg border bg-white border-gray-200'>
-          <div className='flex justify-between pt-5 pb-3 px-3'>
-            <div className='flex items-center justify-center'>
-              <FaSearch className=' translate-x-8 text-gray-400' />
+        <div className='overflow-x-auto rounded-lg bg-white '>
+          <div className='flex justify-between items-center pt-5 pb-3'>
+            <div className=''>
+              <FaSearch className=' translate-x-3 translate-y-10 text-gray-400' />
               <input
                 type='text'
                 placeholder='Search products...'
@@ -361,6 +352,7 @@ function Inventory() {
               <label htmlFor='category' className='sr-only'>
                 Category
               </label>
+
               <div className='relative'>
                 <select
                   id='category'
@@ -379,67 +371,77 @@ function Inventory() {
                   <FaFilter className='h-4 w-4' aria-hidden='true' />
                 </div>
               </div>
+
+              <button
+                className='bg-green-500 mt-3 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center'
+                onClick={() => setShowProductModal(true)}
+              >
+                <FaPlus className='mr-2' /> Add Product
+              </button>
             </div>
           </div>
-          <table className='min-w-full divide-y-2 divide-gray-200 text-sm'>
-            <thead>
-              <tr>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Products
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Manufacturer
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Stock
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Category
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200'>
-              {products.map((item) => (
-                <tr key={item._id}>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-900'>
-                    {item.name}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.manufacturer}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.stock}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.category}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    <button
-                      className='text-indigo-600 hover:text-indigo-900 mr-2'
-                      onClick={() => openMoveModal(item)}
-                    >
-                      <FaExchangeAlt />
-                    </button>
-                    <button
-                      className='text-yellow-500 hover:text-yellow-700 mr-2'
-                      onClick={() => handleEdit(item)}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className='text-red-500 hover:text-red-700'
-                      onClick={() => handleDelete(item._id)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
+
+          <div className='bg-white rounded-sm shadow overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Products
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Manufacturer
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Stock
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Category
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className='divide-y divide-gray-200'>
+                {products.map((item) => (
+                  <tr key={item._id}>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-900'>
+                      {item.name}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      {item.manufacturer}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      {item.stock}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      {item.category}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      <button
+                        className='text-indigo-600 hover:text-indigo-900 mr-2'
+                        onClick={() => openMoveModal(item)}
+                      >
+                        <FaExchangeAlt />
+                      </button>
+                      <button
+                        className='text-yellow-500 hover:text-yellow-700 mr-2'
+                        onClick={() => handleEdit(item)}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className='text-red-500 hover:text-red-700'
+                        onClick={() => handleDelete(item._id)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <Transition appear show={isOpen} as={React.Fragment}>
@@ -523,7 +525,7 @@ function Inventory() {
 
         <div className='flex justify-between mt-4'>
           <button
-            className='px-4 py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
+            className=' py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1 || totalPages === 0}
           >
@@ -535,7 +537,7 @@ function Inventory() {
           </span>
 
           <button
-            className='px-4 py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
+            className=' py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }

@@ -464,8 +464,8 @@ const ExpenseManagement = () => {
             />
           </div>
 
-          <table className='min-w-full'>
-            <thead className='bg-gray-50'>
+          <table className='min-w-full rounded-sm'>
+            <thead className='bg-gray-50 '>
               <tr className='flex flex-row items-center justify-between'>
                 <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
                   Amount

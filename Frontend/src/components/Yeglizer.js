@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import FormModal from "../components/FormModal";
-import DataTable from "../components/DataTable";
+import React, { useState, useEffect } from 'react';
+import FormModal from '../components/FormModal';
+import DataTable from '../components/DataTable';
 
 function Yeglizer() {
   const [fieldValues, setFieldValues] = useState({
-    id: "",
-    patientName: "",
-    appointmentTime: "",
-    appointmentDate: "",
-    eyePower: "",
-    prescription: "",
+    id: '',
+    patientName: '',
+    appointmentTime: '',
+    appointmentDate: '',
+    eyePower: '',
+    prescription: '',
   });
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +17,7 @@ function Yeglizer() {
   const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
-    const storedData = localStorage.getItem("yeglizerSubmittedData");
+    const storedData = localStorage.getItem('yeglizerSubmittedData');
     if (storedData) {
       setSubmittedData(JSON.parse(storedData));
     }
@@ -30,14 +30,14 @@ function Yeglizer() {
       updatedData[editIndex] = fieldValues;
       setSubmittedData(updatedData);
       localStorage.setItem(
-        "yeglizerSubmittedData",
+        'yeglizerSubmittedData',
         JSON.stringify(updatedData)
       );
     } else {
       const newSubmittedData = [...submittedData, fieldValues];
       setSubmittedData(newSubmittedData);
       localStorage.setItem(
-        "yeglizerSubmittedData",
+        'yeglizerSubmittedData',
         JSON.stringify(newSubmittedData)
       );
     }
@@ -55,27 +55,27 @@ function Yeglizer() {
 
   const clearForm = () => {
     setFieldValues({
-      id: "",
-      patientName: "",
-      appointmentTime: "",
-      appointmentDate: "",
-      eyePower: "",
-      prescription: "",
+      id: '',
+      patientName: '',
+      appointmentTime: '',
+      appointmentDate: '',
+      eyePower: '',
+      prescription: '',
     });
     setEditMode(false);
   };
 
   const fields = [
-    { label: "Patient ID", type: "text", name: "id" },
-    { label: "Patient Name", type: "text", name: "patientName" },
-    { label: "Appointment Time", type: "time", name: "appointmentTime" },
-    { label: "Appointment Date", type: "date", name: "appointmentDate" },
-    { label: "Eye Power", type: "text", name: "eyePower" },
-    { label: "Prescription", type: "text", name: "prescription" },
+    { label: 'Patient ID', type: 'text', name: 'id' },
+    { label: 'Patient Name', type: 'text', name: 'patientName' },
+    { label: 'Appointment Time', type: 'time', name: 'appointmentTime' },
+    { label: 'Appointment Date', type: 'date', name: 'appointmentDate' },
+    { label: 'Eye Power', type: 'text', name: 'eyePower' },
+    { label: 'Prescription', type: 'text', name: 'prescription' },
   ];
 
   return (
-    <div className='p-8 bg-gray-100 min-h-screen'>
+    <div className='p-8  min-h-screen'>
       <div className='mb-4 flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>Yeglizer Management</h1>
         <button
@@ -90,7 +90,7 @@ function Yeglizer() {
       </div>
 
       <FormModal
-        title={editMode ? "Edit Yeglizer Record" : "Add New Yeglizer Record"}
+        title={editMode ? 'Edit Yeglizer Record' : 'Add New Yeglizer Record'}
         isOpen={isOpen}
         handleSubmit={handleSubmit}
         handleCancel={() => setIsOpen(false)}
@@ -107,7 +107,7 @@ function Yeglizer() {
           const updatedData = submittedData.filter((_, i) => i !== index);
           setSubmittedData(updatedData);
           localStorage.setItem(
-            "yeglizerSubmittedData",
+            'yeglizerSubmittedData',
             JSON.stringify(updatedData)
           );
         }}
