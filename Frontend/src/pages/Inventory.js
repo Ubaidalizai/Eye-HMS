@@ -392,10 +392,19 @@ function Inventory() {
                     Manufacturer
                   </th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Stock
+                    Purchase
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Sale
                   </th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Category
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Stock
+                  </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Status
                   </th>
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Actions
@@ -412,10 +421,31 @@ function Inventory() {
                       {item.manufacturer}
                     </td>
                     <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                      {item.stock}
+                      {item.purchasePrice}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      {item.salePrice}
                     </td>
                     <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                       {item.category}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      {item.stock}
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-4 py-2 text-xs font-medium ${
+                        item.stock === 0
+                          ? 'text-red-500'
+                          : item.stock <= 10
+                          ? 'text-yellow-500'
+                          : 'text-green-500'
+                      }`}
+                    >
+                      {item.stock === 0
+                        ? 'Out of stock'
+                        : item.stock <= 10
+                        ? 'Low'
+                        : 'Available'}
                     </td>
                     <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
                       <button

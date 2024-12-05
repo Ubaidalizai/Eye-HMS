@@ -160,6 +160,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     !QuantityPurchased ||
     !date ||
     !unitPurchaseAmount ||
+    !salePrice ||
     !category ||
     !expiryDate
   ) {
@@ -175,6 +176,7 @@ const addPurchase = asyncHandler(async (req, res) => {
       userID,
       ProductID: productID,
       QuantityPurchased,
+      salePrice,
       date,
       UnitPurchaseAmount: unitPurchaseAmount,
       category,
@@ -186,8 +188,9 @@ const addPurchase = asyncHandler(async (req, res) => {
       throw new AppError('Product not found', 404);
     }
 
-    product.stock += QuantityPurchased;
-    product.salePrice = salePrice;
+    product.stock += Number(QuantityPurchased);
+    product.purchasePrice = Number(unitPurchaseAmount);
+    product.salePrice = Number(salePrice);
     product.expiryDate = expiryDate;
     await product.save();
 
