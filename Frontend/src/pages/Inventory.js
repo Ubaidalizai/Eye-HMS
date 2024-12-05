@@ -212,11 +212,11 @@ function Inventory() {
 
   return (
     <div className=' flex justify-center'>
-      <div className='flex flex-col gap-5 w-full px-6'>
+      <div className='flex flex-col gap-5  w-full px-6'>
         <ToastContainer />
         <div className='bg-white rounded'>
-          <span className='font-semibold text-xl'>Inventory Dashboard</span>
-          <div className='flex flex-wrap justify-between items-center mt-7'>
+          <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
+          <div className='flex flex-wrap justify-between items-center mt-12'>
             <div className='flex items-center'>
               <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
               <div>
@@ -335,20 +335,20 @@ function Inventory() {
           />
         )}
 
-        <div className='overflow-x-auto rounded-lg bg-white '>
-          <div className='flex justify-between items-center pt-5 pb-3'>
+        <div className='overflow-x-auto rounded-lg bg-white border '>
+          <div className='flex flex-row justify-between items-end  px-5 pb-3'>
             <div className=''>
-              <FaSearch className=' translate-x-3 translate-y-10 text-gray-400' />
+              <FaSearch className=' translate-x-3 translate-y-9 text-gray-400' />
               <input
                 type='text'
                 placeholder='Search products...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
               />
             </div>
 
-            <div className='flex items-center'>
+            <div className='flex flex-row items-center justify-center gap-3'>
               <label htmlFor='category' className='sr-only'>
                 Category
               </label>
@@ -373,7 +373,7 @@ function Inventory() {
               </div>
 
               <button
-                className='bg-green-500 mt-3 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center'
+                className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowProductModal(true)}
               >
                 <FaPlus className='mr-2' /> Add Product
@@ -385,28 +385,52 @@ function Inventory() {
             <table className='w-full'>
               <thead className='bg-gray-50'>
                 <tr>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Products
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Manufacturer
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Purchase
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Sale
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Category
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Stock
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Status
                   </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
                     Actions
                   </th>
                 </tr>
@@ -414,26 +438,26 @@ function Inventory() {
               <tbody className='divide-y divide-gray-200'>
                 {products.map((item) => (
                   <tr key={item._id}>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-900'>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-900'>
                       {item.name}
                     </td>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
                       {item.manufacturer}
                     </td>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
                       {item.purchasePrice}
                     </td>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
                       {item.salePrice}
                     </td>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
                       {item.category}
                     </td>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
                       {item.stock}
                     </td>
                     <td
-                      className={`whitespace-nowrap px-4 py-2 text-xs font-medium ${
+                      className={`whitespace-nowrap px-6 py-3 text-left text-xs font-medium ${
                         item.stock === 0
                           ? 'text-red-500'
                           : item.stock <= 10

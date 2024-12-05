@@ -12,6 +12,7 @@ import EditPurchaseDetails from '../components/EditPurchaseDetails';
 import AuthContext from '../AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
+import { MdDateRange } from 'react-icons/md';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -111,17 +112,18 @@ function PurchaseDetails() {
   };
 
   return (
-    <div className='min-h-screen py-12 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen py-6 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
-        <div className='text-center'>
+        <h2 className='font-semibold text-xl'>Purchase Records</h2>
+        {/* <div className='text-center'>
           <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
             Purchase Details
           </h2>
           <p className='mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4'>
             Manage and track your purchase history
           </p>
-        </div>
+        </div> */}
 
         {showPurchaseModal && (
           <AddPurchaseDetails
@@ -132,22 +134,19 @@ function PurchaseDetails() {
           />
         )}
 
-        <div className='mt-10 bg-white overflow-hidden '>
+        <div className='mt-10 bg-white overflow-hidden border rounded-lg'>
           <div className=' py-5 flex justify-between items-center'>
-            <h3 className='text-lg leading-6 font-medium text-gray-900'>
-              Purchase Records
-            </h3>
             <div className='flex items-center justify-center z-0'>
               <HiSearch className=' translate-x-7 text-gray-400' size={20} />
               <input
                 type='date'
-                placeholder='Search by date'
+                placeholder='Search by date '
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+                className='pl-12 h-9 pr-4 py-2 border border-gray-300 rounded w-72 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm transition'
               />
             </div>
-            <div className='flex  items-center space-x-4'>
+            <div className='flex  items-center gap-4 mr-5'>
               <div className='flex items-center'>
                 <label htmlFor='category' className='sr-only'>
                   Category
