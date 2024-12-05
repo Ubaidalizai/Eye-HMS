@@ -32,6 +32,8 @@ const addProduct = asyncHandler(async (req, res, next) => {
     name,
     manufacturer,
     stock: 0, // Default stock is 0
+    purchasePrice: 0, // Default purchase price is 0
+    salePrice: 0, // Default sale price is 0
     description,
     category,
   });
