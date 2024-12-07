@@ -248,7 +248,6 @@ const ExpenseManagement = () => {
 
       const data = await response.json();
       setSummary(data.data); // Assuming the backend returns a "summary" field
-      console.log(data);
     } catch (err) {
       console.log(err);
     }
@@ -269,7 +268,6 @@ const ExpenseManagement = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       setSummary(data.data); // Assuming the backend returns a "summary" field
     } catch (err) {
       console.log(err);
@@ -466,20 +464,32 @@ const ExpenseManagement = () => {
             />
           </div>
 
-          <table className='expense-table'>
-            <thead>
-              <tr>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Reason</th>
-                <th>Category</th>
-                <th>Actions</th>
+          <table className='min-w-full rounded-sm'>
+            <thead className='bg-gray-50 '>
+              <tr className='flex flex-row items-center justify-between'>
+                <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Amount
+                </th>
+                <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Date
+                </th>
+                <th className='py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Reason
+                </th>
+                <th className='py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Category
+                </th>
+                <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {expenses.length === 0 ? (
                 <tr>
-                  <td>No expenses added yet.</td>
+                  <td className=' text-center font-semibold'>
+                    No expenses added yet.
+                  </td>
                 </tr>
               ) : (
                 expenses.map((expense) => (

@@ -75,11 +75,10 @@ function Dashboard() {
           credentials: 'include',
         }
       );
-      console.log(selectedYear, selectedMonth);
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-
       const data = await response.json();
       setSummary(data);
     } catch (err) {
@@ -98,7 +97,6 @@ function Dashboard() {
       );
 
       const data = await response.json();
-
       setSummary(data);
     } catch (err) {
       console.log(err);

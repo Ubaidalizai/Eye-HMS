@@ -13,10 +13,10 @@ const {
 } = require('../utils/aggregationUtils');
 
 // Get summarized data by month for a given year (generic for any model)
-const getDataByYear = asyncHandler(async (req, res, next, Model) => {
+const getDataByYear = asyncHandler(async (req, res, Model) => {
   const { year } = req.params;
   const { category } = req.query;
-
+  console.log(year);
   const { startDate, endDate } = getDateRangeForYear(year);
   const matchCriteria = { date: { $gte: startDate, $lte: endDate } };
   if (category) matchCriteria.category = category;
@@ -27,15 +27,13 @@ const getDataByYear = asyncHandler(async (req, res, next, Model) => {
   };
 
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
-  if (!data)
-    return next(new AppError('No data found for the specified year', 404));
 
   const totalAmountsByMonth = populateDataArray(data, 12, 'month');
   res.status(200).json({ data: totalAmountsByMonth });
 });
 
 // Get summarized data by day for a given month (generic for any model)
-const getDataByMonth = asyncHandler(async (req, res, next, Model) => {
+const getDataByMonth = asyncHandler(async (req, res, Model) => {
   const { year, month } = req.params;
   const { category } = req.query;
 
@@ -50,34 +48,28 @@ const getDataByMonth = asyncHandler(async (req, res, next, Model) => {
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
-  if (!data)
-    return next(new AppError('No data found for the specified month', 404));
 
   const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
   res.status(200).json({ data: totalAmountsByDay });
 });
 
 // Example usage for expenses
-const getExpensesByYear = (req, res, next) =>
-  getDataByYear(req, res, next, Expense);
-const getExpensesByMonth = (req, res, next) =>
-  getDataByMonth(req, res, next, Expense);
+const getExpensesByYear = (req, res) => getDataByYear(req, res, Expense);
+const getExpensesByMonth = (req, res) => getDataByMonth(req, res, Expense);
 
 // Get all expenses
 const getExpenses = getAll(Expense);
 
 // Add a new expense
 // Add a new expense
-const addExpense = asyncHandler(async (req, res, next) => {
+const addExpense = asyncHandler(async (req, res) => {
   const { amount, date, reason, category } = req.body;
 
   // Validate required fields
   if (!amount || !date || !reason || !category) {
-    return next(
-      new AppError(
-        'All fields (amount, date, reason, category) are required',
-        400
-      )
+    throw new AppError(
+      'All fields (amount, date, reason, category) are required',
+      400
     );
   }
 
@@ -88,7 +80,7 @@ const addExpense = asyncHandler(async (req, res, next) => {
 });
 
 // Get total sum of expenses for a specific category
-const getCategoryTotal = asyncHandler(async (req, res, next) => {
+const getCategoryTotal = asyncHandler(async (req, res) => {
   const category = req.query.category || 'other'; // Default to 'other' if category not provided
 
   const totalExpense = await Expense.aggregate([
@@ -103,7 +95,7 @@ const getCategoryTotal = asyncHandler(async (req, res, next) => {
 });
 
 // Update an expense by ID
-const updateExpense = asyncHandler(async (req, res, next) => {
+const updateExpense = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { amount, date, reason, category } = req.body;
 
@@ -116,7 +108,7 @@ const updateExpense = asyncHandler(async (req, res, next) => {
 
   // Check if the expense was found
   if (!updatedExpense) {
-    return next(new AppError('Expense not found', 404));
+    throw new AppError('Expense not found', 404);
   }
 
   res.status(200).json({
@@ -126,7 +118,7 @@ const updateExpense = asyncHandler(async (req, res, next) => {
 });
 
 // Delete an expense by ID
-const deleteExpense = asyncHandler(async (req, res, next) => {
+const deleteExpense = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // Find and delete the expense
@@ -134,7 +126,7 @@ const deleteExpense = asyncHandler(async (req, res, next) => {
 
   // Check if the expense was found
   if (!deletedExpense) {
-    return next(new AppError('Expense not found', 404));
+    throw new AppError('Expense not found', 404);
   }
 
   res.status(204).json({

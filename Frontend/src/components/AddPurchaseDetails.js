@@ -12,7 +12,8 @@ export default function AddPurchaseDetails({
     productID: '',
     QuantityPurchased: 0,
     date: '',
-    unitPurchaseAmount: '',
+    unitPurchaseAmount: 0,
+    salePrice: 0,
     category: '', // New category field
     expiryDate: null,
   });
@@ -192,6 +193,26 @@ export default function AddPurchaseDetails({
                               name='unitPurchaseAmount'
                               id='unitPurchaseAmount'
                               value={purchase.unitPurchaseAmount}
+                              onChange={(e) =>
+                                handleInputChange(e.target.name, e.target.value)
+                              }
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              placeholder='$20'
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor='totalPurchaseAmount'
+                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                            >
+                              Unit Sale Price
+                            </label>
+                            <input
+                              type='number'
+                              name='salePrice'
+                              id='salePrice'
+                              value={purchase.salePrice}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }

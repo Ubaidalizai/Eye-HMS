@@ -28,7 +28,6 @@ export const moveItemAPI = createAsyncThunk(
     if (!response.ok) {
       throw new Error('Failed to move item');
     }
-    console.log(payload);
     return { ...payload };
   }
 );

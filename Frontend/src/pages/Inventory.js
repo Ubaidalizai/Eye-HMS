@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useDispatch } from "react-redux";
-import { Dialog, Transition } from "@headlessui/react";
+import React, { useState, useEffect, useContext } from 'react';
+import { useDispatch } from 'react-redux';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   FaEdit,
   FaTrash,
@@ -12,12 +12,12 @@ import {
   FaChevronRight,
   FaSearch,
   FaFilter,
-} from "react-icons/fa";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import AuthContext from "../AuthContext";
-import { moveItemAPI } from "../redux/inventorySlice";
-import UpdateProduct from ".././components/UpdateProduct";
+} from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import AuthContext from '../AuthContext';
+import { moveItemAPI } from '../redux/inventorySlice';
+import UpdateProduct from '.././components/UpdateProduct';
 
 function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
@@ -25,20 +25,21 @@ function Inventory() {
   const [updateProduct, setUpdateProduct] = useState(null);
   const [summary, setSummary] = useState({});
   const [products, setAllProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [salePrice, setSalePrice] = useState("");
+  const [salePrice, setSalePrice] = useState('');
   const [newProduct, setNewProduct] = useState({
-    name: "",
-    manufacturer: "",
+    name: '',
+    manufacturer: '',
+    description: '',
     stock: 0,
-    category: "",
+    category: '',
   });
   const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
@@ -64,7 +65,6 @@ function Inventory() {
     if (searchTerm) {
       baseUrl += `&fieldName=name&searchTerm=${searchTerm}`; // Add search term to the URL
     }
-    console.log(baseUrl);
     setUrl(baseUrl);
   };
 
@@ -72,39 +72,39 @@ function Inventory() {
   const fetchInventorySummary = async () => {
     try {
       const response = await fetch(
-        "http://localhost:4000/api/v1/inventory/product/summary",
+        'http://localhost:4000/api/v1/inventory/product/summary',
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
       const data = await response.json();
       setSummary(data.data);
     } catch (err) {
       console.log(err);
-      toast.error("Failed to fetch inventory summary");
+      toast.error('Failed to fetch inventory summary');
     }
   };
 
   const fetchProductsData = async () => {
     try {
       const response = await fetch(url, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
       const data = await response.json();
       setAllProducts(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
       console.log(err);
-      toast.error("Failed to fetch products");
+      toast.error('Failed to fetch products');
     }
   };
 
   const openMoveModal = (item) => {
     setSelectedItem(item);
     setQuantity(1);
-    setSalePrice(item.salePrice || "");
+    setSalePrice(item.salePrice || '');
     setIsOpen(true);
   };
 
@@ -121,16 +121,15 @@ function Inventory() {
       quantityNum <= 0 ||
       quantityNum > selectedItem.stock
     ) {
-      toast.error("Please enter a valid quantity.");
+      toast.error('Please enter a valid quantity.');
       return;
     }
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
-      toast.error("Please enter a valid sale price.");
+      toast.error('Please enter a valid sale price.');
       return;
     }
 
     // Add the additional properties from selectedItem
-    console.log(selectedItem);
     dispatch(
       moveItemAPI({
         item: {
@@ -144,7 +143,7 @@ function Inventory() {
       })
     );
     closeMoveModal();
-    toast.success("Item moved successfully");
+    toast.success('Item moved successfully');
     setUpdatePage((show) => !show);
   };
   const handleProductUpdate = (updatedProduct) => {
@@ -160,24 +159,24 @@ function Inventory() {
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         const response = await fetch(
           `http://localhost:4000/api/v1/inventory/product/${productId}`,
           {
-            method: "DELETE",
-            credentials: "include",
+            method: 'DELETE',
+            credentials: 'include',
           }
         );
         if (response.ok) {
           setUpdatePage(!updatePage);
-          toast.success("Product deleted successfully");
+          toast.success('Product deleted successfully');
         } else {
-          toast.error("Failed to delete the product");
+          toast.error('Failed to delete the product');
         }
       } catch (err) {
         console.log(err);
-        toast.error("An error occurred while deleting the product");
+        toast.error('An error occurred while deleting the product');
       }
     }
   };
@@ -186,41 +185,39 @@ function Inventory() {
     e.preventDefault();
     try {
       const response = await fetch(
-        "http://localhost:4000/api/v1/inventory/product",
+        'http://localhost:4000/api/v1/inventory/product',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(newProduct),
-          credentials: "include",
+          credentials: 'include',
         }
       );
 
       if (response.ok) {
         setShowProductModal(false);
-        setNewProduct({ name: "", manufacturer: "", stock: 0, category: "" });
+        setNewProduct({ name: '', manufacturer: '', stock: 0, category: '' });
         setUpdatePage(!updatePage);
-        toast.success("Product added successfully");
+        toast.success('Product added successfully');
       } else {
-        toast.error("Failed to add product");
+        toast.error('Failed to add product');
       }
     } catch (error) {
-      console.error("Error adding product:", error);
-      toast.error("An error occurred while adding the product");
+      console.error('Error adding product:', error);
+      toast.error('An error occurred while adding the product');
     }
   };
 
   return (
-    <div className='col-span-12 lg:col-span-10 flex justify-center'>
-      <div className='flex flex-col gap-5 w-11/12'>
+    <div className=' flex justify-center'>
+      <div className='flex flex-col gap-5  w-full px-6'>
         <ToastContainer />
-        <div className='bg-white rounded p-3'>
-          <span className='font-semibold px-4 text-xl'>
-            Inventory Dashboard
-          </span>
-          <div className='flex flex-wrap justify-around items-center mt-4'>
-            <div className='flex items-center p-4'>
+        <div className='bg-white rounded'>
+          <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
+          <div className='flex flex-wrap justify-between items-center mt-12'>
+            <div className='flex items-center'>
               <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
               <div>
                 <p className='text-sm text-gray-500'>Total Products</p>
@@ -229,14 +226,14 @@ function Inventory() {
                 </p>
               </div>
             </div>
-            <div className='flex items-center p-4'>
+            <div className='flex items-center'>
               <FaWarehouse className='text-3xl text-green-500 mr-3' />
               <div>
                 <p className='text-sm text-gray-500'>Total Stock</p>
                 <p className='text-xl font-semibold'>{summary.totalStock}</p>
               </div>
             </div>
-            <div className='flex items-center p-4'>
+            <div className='flex items-center'>
               <FaExchangeAlt className='text-3xl text-yellow-500 mr-3' />
               <div>
                 <p className='text-sm text-gray-500'>Low Stock Items</p>
@@ -245,13 +242,6 @@ function Inventory() {
             </div>
           </div>
         </div>
-
-        <button
-          className='bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center'
-          onClick={() => setShowProductModal(true)}
-        >
-          <FaPlus className='mr-2' /> Add Product
-        </button>
 
         {showProductModal && (
           <div
@@ -287,7 +277,19 @@ function Inventory() {
                     className='mt-2 p-2 w-full border rounded'
                     required
                   />
-
+                  <input
+                    type='text'
+                    placeholder='Description'
+                    value={newProduct.description}
+                    onChange={(e) =>
+                      setNewProduct({
+                        ...newProduct,
+                        description: e.target.value,
+                      })
+                    }
+                    className='mt-2 p-2 w-full border rounded'
+                    required
+                  />
                   <select
                     value={newProduct.category}
                     onChange={(e) =>
@@ -333,23 +335,24 @@ function Inventory() {
           />
         )}
 
-        <div className='overflow-x-auto rounded-lg border bg-white border-gray-200'>
-          <div className='flex justify-between pt-5 pb-3 px-3'>
-            <div className='flex items-center justify-center'>
-              <FaSearch className=' translate-x-8 text-gray-400' />
+        <div className='overflow-x-auto rounded-lg bg-white border '>
+          <div className='flex flex-row justify-between items-end  px-5 pb-3'>
+            <div className=''>
+              <FaSearch className=' translate-x-3 translate-y-9 text-gray-400' />
               <input
                 type='text'
                 placeholder='Search products...'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-2 border border-gray-300 rounded-full w-64 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
               />
             </div>
 
-            <div className='flex items-center'>
+            <div className='flex flex-row items-center justify-center gap-3'>
               <label htmlFor='category' className='sr-only'>
                 Category
               </label>
+
               <div className='relative'>
                 <select
                   id='category'
@@ -368,67 +371,131 @@ function Inventory() {
                   <FaFilter className='h-4 w-4' aria-hidden='true' />
                 </div>
               </div>
+
+              <button
+                className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                onClick={() => setShowProductModal(true)}
+              >
+                <FaPlus className='mr-2' /> Add Product
+              </button>
             </div>
           </div>
-          <table className='min-w-full divide-y-2 divide-gray-200 text-sm'>
-            <thead>
-              <tr>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Products
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Manufacturer
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Stock
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Category
-                </th>
-                <th className='whitespace-nowrap px-4 py-2 text-left font-medium text-gray-900'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200'>
-              {products.map((item) => (
-                <tr key={item._id}>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-900'>
-                    {item.name}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.manufacturer}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.stock}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    {item.category}
-                  </td>
-                  <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                    <button
-                      className='text-indigo-600 hover:text-indigo-900 mr-2'
-                      onClick={() => openMoveModal(item)}
-                    >
-                      <FaExchangeAlt />
-                    </button>
-                    <button
-                      className='text-yellow-500 hover:text-yellow-700 mr-2'
-                      onClick={() => handleEdit(item)}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className='text-red-500 hover:text-red-700'
-                      onClick={() => handleDelete(item._id)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
+
+          <div className='bg-white rounded-sm shadow overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Products
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Manufacturer
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Purchase
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Sale
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Category
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Stock
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className='divide-y divide-gray-200'>
+                {products.map((item) => (
+                  <tr key={item._id}>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-900'>
+                      {item.name}
+                    </td>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                      {item.manufacturer}
+                    </td>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                      {item.purchasePrice}
+                    </td>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                      {item.salePrice}
+                    </td>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                      {item.category}
+                    </td>
+                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                      {item.stock}
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-6 py-3 text-left text-xs font-medium ${
+                        item.stock === 0
+                          ? 'text-red-500'
+                          : item.stock <= 10
+                          ? 'text-yellow-500'
+                          : 'text-green-500'
+                      }`}
+                    >
+                      {item.stock === 0
+                        ? 'Out of stock'
+                        : item.stock <= 10
+                        ? 'Low'
+                        : 'Available'}
+                    </td>
+                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
+                      <button
+                        className='text-indigo-600 hover:text-indigo-900 mr-2'
+                        onClick={() => openMoveModal(item)}
+                      >
+                        <FaExchangeAlt />
+                      </button>
+                      <button
+                        className='text-yellow-500 hover:text-yellow-700 mr-2'
+                        onClick={() => handleEdit(item)}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className='text-red-500 hover:text-red-700'
+                        onClick={() => handleDelete(item._id)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <Transition appear show={isOpen} as={React.Fragment}>
@@ -512,7 +579,7 @@ function Inventory() {
 
         <div className='flex justify-between mt-4'>
           <button
-            className='px-4 py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
+            className=' py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1 || totalPages === 0}
           >
@@ -524,7 +591,7 @@ function Inventory() {
           </span>
 
           <button
-            className='px-4 py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
+            className=' py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }

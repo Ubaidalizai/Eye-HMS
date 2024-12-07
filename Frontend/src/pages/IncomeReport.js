@@ -254,23 +254,31 @@ export default function IncomeReport() {
         {isLoading && <p>Loading...</p>}
         {error && <p className='text-red-500'>{error}</p>}
 
-        <table className='w-full border-collapse border border-gray-300'>
+        <table className='w-full border-collapse shadow rounded-md'>
           <thead>
-            <tr className='bg-gray-100'>
-              <th className='border p-2'>Total Net Income</th>
-              <th className='border p-2'>Date</th>
-              <th className='border p-2'>Description</th>
-              <th className='border p-2'>Category</th>
-              <th className='border p-2'>Actions</th>
+            <tr className='bg-gray-50'>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Total Net Income
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Date
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Description
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Category
+              </th>
+              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {income.map((item) => (
               <tr key={item._id} className='hover:bg-gray-50'>
                 <td className='border p-2'>{item.totalNetIncome}</td>
-                <td className='border p-2'>
-                  {new Date(item.date).toLocaleDateString()}
-                </td>
+                <td className='border p-2'>{item.date.split('T')[0]}</td>
                 <td className='border p-2'>{item.description}</td>
                 <td className='border p-2'>{item.category}</td>
                 <td className='border p-2'>

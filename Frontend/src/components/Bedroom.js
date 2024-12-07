@@ -142,7 +142,7 @@ function Bedroom() {
   };
 
   return (
-    <div className='p-8 bg-gray-100 min-h-screen'>
+    <div className='p-8 min-h-screen'>
       <div className='mb-4 flex justify-between items-center'>
         <h1 className='text-2xl font-bold'>Bedroom Management</h1>
         <button

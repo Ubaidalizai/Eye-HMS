@@ -3,49 +3,49 @@ const Product = require('../models/product');
 const Purchase = require('../models/purchase');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 
 exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
+// Get summary of drug sales
 exports.getDrugsSummary = asyncHandler(async (req, res) => {
-  try {
-    const total = await Pharmacy.aggregate([
-      {
-        $match: { category: 'drug' }, // Filter for only the drug category
+  const total = await Pharmacy.aggregate([
+    {
+      $match: { category: 'drug' }, // Filter for only the drug category
+    },
+    {
+      $project: {
+        totalValue: { $multiply: ['$salePrice', '$quantity'] }, // Calculate total value (salePrice * quantity)
       },
-      {
-        $project: {
-          totalValue: { $multiply: ['$salePrice', '$quantity'] }, // Calculate total value (salePrice * quantity)
-        },
+    },
+    {
+      $group: {
+        _id: null, // No specific group, calculate a single total
+        totalDrugSalesValue: { $sum: '$totalValue' }, // Sum up the total values
       },
-      {
-        $group: {
-          _id: null, // No specific group, calculate a single total
-          totalDrugSalesValue: { $sum: '$totalValue' }, // Sum up the total values
-        },
-      },
-    ]);
+    },
+  ]);
+  const totalSalePrice = total.length > 0 ? total[0].totalDrugSalesValue : 0;
 
-    res.status(200).json({
-      totalSalePrice: total[0]?.totalDrugSalesValue || 0,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Error fetching data', error: error.message });
-  }
+  res.status(200).json({
+    totalSalePrice,
+  });
 });
 
+// Get details of a specific drug
 exports.getDrug = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDBId(id);
+
+  // Validate MongoDB ID
+  if (!validateMongoDBId(id)) {
+    throw new AppError('Invalid Drug ID', 400);
+  }
 
   const drug = await Pharmacy.findById(id);
+
   if (!drug) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Drug not found',
-    });
+    throw new AppError('Drug not found', 404);
   }
 
   res.status(200).json({
@@ -54,9 +54,14 @@ exports.getDrug = asyncHandler(async (req, res) => {
   });
 });
 
+// Update a specific drug
 exports.updateDrug = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDBId(id);
+
+  // Validate MongoDB ID
+  if (!validateMongoDBId(id)) {
+    throw new AppError('Invalid Drug ID', 400);
+  }
 
   const drug = await Pharmacy.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -64,10 +69,7 @@ exports.updateDrug = asyncHandler(async (req, res) => {
   });
 
   if (!drug) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Drug not found',
-    });
+    throw new AppError('Drug not found', 404);
   }
 
   res.status(200).json({
@@ -76,17 +78,19 @@ exports.updateDrug = asyncHandler(async (req, res) => {
   });
 });
 
+// Delete a specific drug
 exports.deleteDrug = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDBId(id);
+
+  // Validate MongoDB ID
+  if (!validateMongoDBId(id)) {
+    throw new AppError('Invalid Drug ID', 400);
+  }
 
   const drug = await Pharmacy.findByIdAndDelete(id);
 
   if (!drug) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Drug not found',
-    });
+    throw new AppError('Drug not found', 404);
   }
 
   res.status(204).json({
@@ -95,6 +99,7 @@ exports.deleteDrug = asyncHandler(async (req, res) => {
   });
 });
 
+// Check for drugs expiring within 30 days
 exports.checkDrugExpiry = asyncHandler(async (req, res) => {
   const beforeThirtyDays = new Date();
   beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);
@@ -105,10 +110,7 @@ exports.checkDrugExpiry = asyncHandler(async (req, res) => {
   });
 
   if (expireDrugs.length === 0) {
-    return res.status(200).json({
-      status: 'success',
-      message: 'No expired products found',
-    });
+    return res.status(200).json({ message: 'No expired drugs found' });
   }
 
   res.status(200).json({

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel.js');
 const asyncHandler = require('./asyncHandler.js');
+const AppError = require('../utils/appError'); // Adjust the path as necessary
 
 const authenticate = asyncHandler(async (req, res, next) => {
   let token;
@@ -14,25 +15,25 @@ const authenticate = asyncHandler(async (req, res, next) => {
       // 3) Check if user is still there
       const currentUser = await User.findById(decoded.userId);
       if (!currentUser) {
-        res.status(401);
-        throw new Error('The user belonging to this token no longer exist!');
+        throw new AppError(
+          'The user belonging to this token no longer exists!',
+          401
+        );
       }
       // 4) Check if the user changed password after token was issued
       if (currentUser.changedPasswordAfter(decoded.iat)) {
-        res.status(401);
-        throw new Error(
-          'User recently changed the password, please try again!'
+        throw new AppError(
+          'User recently changed the password, please try again!',
+          401
         );
       }
       req.user = currentUser;
       next();
     } catch (error) {
-      res.status(401);
-      throw new Error('Not authorized, token failed.');
+      throw new AppError('Not authorized, token failed.', 401);
     }
   } else {
-    res.status(401);
-    throw new Error('Not authorized, no token.');
+    throw new AppError('Not authorized, no token.', 401);
   }
 });
 

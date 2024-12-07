@@ -10,6 +10,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const AppError = require('../utils/appError.js');
 
 // Configure Multer Storage in memory
 const multerStorage = multer.memoryStorage();
@@ -42,7 +43,7 @@ const resizeUserPhoto = asyncHandler(async (req, res, next) => {
     try {
       fs.mkdirSync(dir, { recursive: true });
     } catch (error) {
-      throw new Error('Failed to create image directory');
+      throw new AppError('Failed to create image directory', 500);
     }
   }
 
@@ -56,7 +57,7 @@ const resizeUserPhoto = asyncHandler(async (req, res, next) => {
       .jpeg({ quality: 90 })
       .toFile(path.join(dir, req.file.filename));
   } catch (error) {
-    throw new Error('Error processing image');
+    throw new AppError('Error processing image', 500);
   }
 
   next();
@@ -87,12 +88,12 @@ const registerUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password, phoneNumber, role } = req.body;
 
   if (!firstName || !lastName || !email || !password || !phoneNumber || !role) {
-    throw new Error('Please fill all the inputs.');
+    throw new AppError('Please fill all the inputs.', 400);
   }
+
   const userExists = await User.findOne({ email });
   if (userExists) {
-    res.status(409);
-    throw new Error('User already exists');
+    throw new AppError('User already exists', 409);
   }
 
   const newUser = new User({
@@ -118,8 +119,7 @@ const registerUser = asyncHandler(async (req, res) => {
       image: newUser.image,
     });
   } catch (error) {
-    res.status(400);
-    throw new Error(error);
+    throw new AppError('Error saving user', 400);
   }
 });
 
@@ -127,16 +127,17 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
-  // 1) Check if email and password is exist!
+
+  // 1) Check if email and password exist
   if (!email || !password) {
-    res.status(400);
-    throw new Error('Please provide email and password!');
+    throw new AppError('Please provide email and password!', 400);
   }
+
   const existingUser = await User.findOne({ email });
 
   // 2) Check if user exists and password is correct
   if (existingUser && (await existingUser.isPasswordValid(password))) {
-    // 3) If every thing ok, send token to client
+    // 3) If everything is okay, send token to client
     const token = generateToken(res, existingUser._id);
     res.status(200).json({
       _id: existingUser._id,
@@ -147,8 +148,7 @@ const loginUser = asyncHandler(async (req, res) => {
       token,
     });
   } else {
-    res.status(401);
-    throw new Error('Email or password is incorrect!');
+    throw new AppError('Email or password is incorrect!', 401);
   }
 });
 
@@ -171,7 +171,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 // Find User By Id (only admin can)
-const findUserByID = asyncHandler(async (req, res) => {
+const findUserByID = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDBId(id);
 
@@ -180,13 +180,12 @@ const findUserByID = asyncHandler(async (req, res) => {
   if (user) {
     res.status(200).json(user);
   } else {
-    res.status(404);
-    throw new Error('USer not found!');
+    throw new AppError('User not found!', 404);
   }
 });
 
 // Update User By Id (only admin can)
-const updateUserById = asyncHandler(async (req, res) => {
+const updateUserById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDBId(id);
   const { firstName, lastName, email, phoneNumber, role } = req.body;
@@ -206,35 +205,33 @@ const updateUserById = asyncHandler(async (req, res) => {
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       email: updatedUser.email,
-      phoneNumber: user.phoneNumber,
-      role: user.role,
+      phoneNumber: updatedUser.phoneNumber,
+      role: updatedUser.role,
     });
   } else {
-    res.status(404);
-    throw new Error('User not found!');
+    throw new AppError('User not found!', 404);
   }
 });
 
 // Delete User By Id (only admin can)
-const deleteUserByID = asyncHandler(async (req, res) => {
+const deleteUserByID = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDBId(id);
 
   const user = await User.findById({ _id: id });
   if (user) {
     if (user.isAdmin) {
-      res.status(400);
-      throw new Error('Can not delete user as admin!');
+      throw new AppError('Cannot delete user as admin!', 400);
     }
 
     await User.deleteOne({ _id: user._id });
     res.status(204).json({ message: 'User removed successfully' });
   } else {
-    res.status(404).json({ message: 'User not found!' });
+    throw new AppError('User not found!', 404);
   }
 });
 
-const getCurrentUserProfile = asyncHandler(async (req, res) => {
+const getCurrentUserProfile = asyncHandler(async (req, res, next) => {
   const { _id } = req.user;
   validateMongoDBId(_id);
 
@@ -252,12 +249,11 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
       },
     });
   } else {
-    res.status(404);
-    throw new Error('User not found.');
+    throw new AppError('User not found.', 404);
   }
 });
 
-const updateCurrentUserProfile = asyncHandler(async (req, res) => {
+const updateCurrentUserProfile = asyncHandler(async (req, res, next) => {
   const { _id } = req.user;
   validMongoDBId(_id);
   const { firstName, lastName, email, phoneNumber } = req.body;
@@ -280,17 +276,15 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
       phoneNumber: user.phoneNumber,
     });
   } else {
-    res.status(404);
-    throw new Error('User not found');
+    throw new AppError('User not found', 404);
   }
 });
 
-const forgotPassword = asyncHandler(async (req, res) => {
+const forgotPassword = asyncHandler(async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
-    res.status(404);
-    throw new Error('There is no user with email address.');
+    throw new AppError('There is no user with email address.', 404);
   }
 
   // 2) Generate the random reset token
@@ -312,9 +306,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    res.status(500);
     console.log(err);
-    throw new Error('There was an error sending the email. Try again later!');
+    throw new AppError(
+      'There was an error sending the email. Try again later!',
+      500
+    );
   }
 });
 
@@ -330,49 +326,45 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     passwordResetExpires: { $gt: Date.now() },
   });
 
-  // 2) if the token has not expired and then is the user, set the new password
+  // 2) If the token has not expired and then is the user, set the new password
   if (!user) {
-    res.status(400);
-    throw new Error('Token is invalid or has expired!');
+    throw new AppError('Token is invalid or has expired!', 400);
   }
   user.password = req.body.password;
-  // user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   await user.save();
-  // 3) update passwordChangedAt property for the user
+
+  // 3) Update passwordChangedAt property for the user
   // 4) Log the user in, send JWT
   generateToken(res, user._id);
   res.status(200).json({
     status: 'success',
-    message: 'Your password reseed successfully',
+    message: 'Your password was reset successfully',
   });
 });
 
-const updatePassword = asyncHandler(async (req, res) => {
+const updatePassword = asyncHandler(async (req, res, next) => {
   const { _id } = req.user; // User's ID from authentication middleware
   validateMongoDBId(_id);
 
   const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
-    res.status(400);
-    throw new Error('Current and new password are required');
+    throw new AppError('Current and new password are required', 400);
   }
 
   // 1) Get user from the database
   const user = await User.findById(_id);
 
   if (!user) {
-    res.status(404);
-    throw new Error('User not found');
+    throw new AppError('User not found', 404);
   }
 
   // 2) Validate current password
   const isMatch = await user.isPasswordValid(currentPassword); // Compare with hashed password
   if (!isMatch) {
-    res.status(401);
-    throw new Error('Your current password is incorrect');
+    throw new AppError('Your current password is incorrect', 401);
   }
 
   // 3) Update to new password

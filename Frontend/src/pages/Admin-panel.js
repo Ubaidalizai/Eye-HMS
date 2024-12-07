@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import { FaPlus } from 'react-icons/fa';
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -103,98 +104,96 @@ export default function AdminPanel() {
 
   return (
     <div className='container mx-auto p-6'>
-      <h1 className='text-3xl font-bold mb-6'>Admin Panel</h1>
+      <h2 className='font-semibold text-xl'>Admin Panel</h2>
 
-      <div className='flex justify-end mb-4'>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
-        >
-          <Plus className='inline-block mr-2 h-5 w-5' />
-          Add User
-        </button>
-      </div>
+      <div className='border pt-5 rounded-lg mt-10'>
+        <div className='flex justify-end mb-4'>
+          <button className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-10 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
+            <FaPlus className='mr-2' /> Add User
+          </button>
+        </div>
 
-      {/* User Table */}
-      <div className='bg-white rounded-lg shadow overflow-x-auto'>
-        <table className='w-full'>
-          <thead className='bg-gray-50'>
-            <tr>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Profile
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Full Name
-              </th>
+        {/* User Table */}
+        <div className='bg-white rounded-sm shadow overflow-x-auto'>
+          <table className='w-full'>
+            <thead className='bg-gray-50'>
+              <tr>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Profile
+                </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Full Name
+                </th>
 
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Email
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Role
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Password
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Phone Number
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className='bg-white divide-y divide-gray-200'>
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <img
-                    src={`http://localhost:4000/public/img/users/${user?.image}`}
-                    alt={`${user.firstName} ${user.lastName}`}
-                    className='h-10 w-10 rounded-full'
-                  />
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  {`${user.firstName} ${user.lastName}`}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
-                <td
-                  className={`px-6 py-4 whitespace-nowrap ${
-                    user.role === 'admin' ? 'text-blue-600 font-semibold' : ''
-                  }`}
-                >
-                  {user.role === 'admin' ? (
-                    <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
-                      {user.role}
-                    </span>
-                  ) : (
-                    user.role
-                  )}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  {user.password ? '********' : 'N/A'}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  {user.phoneNumber}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                  <button
-                    onClick={() => setEditingUser(user)}
-                    className='text-indigo-600 hover:text-indigo-900 mr-4'
-                  >
-                    <Pencil className='inline-block h-5 w-5' />
-                  </button>
-                  <button
-                    onClick={() => deleteUser(user._id)}
-                    className='text-red-600 hover:text-red-900'
-                  >
-                    <Trash2 className='inline-block h-5 w-5' />
-                  </button>
-                </td>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Email
+                </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Role
+                </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Password
+                </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Phone Number
+                </th>
+                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className='bg-white divide-y divide-gray-200'>
+              {users.map((user) => (
+                <tr key={user._id}>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <img
+                      src={`http://localhost:4000/public/img/users/${user?.image}`}
+                      alt={`${user.firstName} ${user.lastName}`}
+                      className='h-10 w-10 rounded-full'
+                    />
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    {`${user.firstName} ${user.lastName}`}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
+                  <td
+                    className={`px-6 py-4 whitespace-nowrap ${
+                      user.role === 'admin' ? 'text-blue-600 font-semibold' : ''
+                    }`}
+                  >
+                    {user.role === 'admin' ? (
+                      <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+                        {user.role}
+                      </span>
+                    ) : (
+                      user.role
+                    )}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    {user.password ? '********' : 'N/A'}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    {user.phoneNumber}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                    <button
+                      onClick={() => setEditingUser(user)}
+                      className='text-indigo-600 hover:text-indigo-900 mr-4'
+                    >
+                      <Pencil className='inline-block h-5 w-5' />
+                    </button>
+                    <button
+                      onClick={() => deleteUser(user._id)}
+                      className='text-red-600 hover:text-red-900'
+                    >
+                      <Trash2 className='inline-block h-5 w-5' />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Add User Modal */}
