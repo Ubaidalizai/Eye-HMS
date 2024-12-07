@@ -9,28 +9,26 @@ function Bedroom() {
   const [date, setDate] = useState('');
   const [rent, setRent] = useState('');
   const [percentage, setPercentage] = useState('');
-
   const [submittedData, setSubmittedData] = useState([]);
-
   const [isOpen, setIsOpen] = useState(false);
-
   const [editMode, setEditMode] = useState(false);
-
   const [editIndex, setEditIndex] = useState(null);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('http://127.0.0.1:4000/api/v1/bedroom/');
         if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
-        setSubmittedData(data);
+        console.log('Fetched Data:', data); // Debug fetched data
+        setSubmittedData(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setSubmittedData([]);
       }
     };
     fetchData();
   }, []);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const entry = { id, name, time, date, rent, percentage };
@@ -46,9 +44,9 @@ function Bedroom() {
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
-
         const updatedData = [...submittedData];
         updatedData[editIndex] = entry;
+        console.log('Updated Data:', updatedData); // Debug updated data
         setSubmittedData(updatedData);
       } catch (error) {
         console.error('Error updating data:', error);
@@ -61,8 +59,8 @@ function Bedroom() {
           body: JSON.stringify(entry),
         });
         if (!response.ok) throw new Error('Failed to add data');
-
         const newEntry = await response.json();
+        console.log('New Entry:', newEntry); // Debug new entry
         setSubmittedData([...submittedData, newEntry]);
       } catch (error) {
         console.error('Error adding data:', error);
@@ -72,12 +70,12 @@ function Bedroom() {
     clearForm();
     setIsOpen(false);
   };
-
   const handleCancel = () => {
     clearForm();
     setIsOpen(false);
   };
 
+  // Clear form values
   const clearForm = () => {
     setId('');
     setName('');
@@ -89,20 +87,23 @@ function Bedroom() {
     setEditIndex(null);
   };
 
+  // Handle record edit
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
-    setId(recordToEdit.id);
-    setName(recordToEdit.name);
-    setTime(recordToEdit.time);
-    setDate(recordToEdit.date);
-    setRent(recordToEdit.rent);
-    setPercentage(recordToEdit.percentage);
-
+    setFieldValues({
+      id: recordToEdit.id || '',
+      name: recordToEdit.name || '',
+      time: recordToEdit.time || '',
+      date: recordToEdit.date || '',
+      rent: recordToEdit.rent || '',
+      percentage: recordToEdit.percentage || '',
+    });
     setEditMode(true);
     setEditIndex(index);
     setIsOpen(true);
   };
 
+  // Handle record removal
   const handleRemove = async (index) => {
     try {
       const { id } = submittedData[index];
@@ -155,12 +156,10 @@ function Bedroom() {
         </button>
       </div>
 
-      {/* Form Modal for adding/editing record */}
       <FormModal
         title={editMode ? 'Edit Bedroom Record' : 'Add New Bedroom Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
-        handleSubmit={handleSubmit}
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
@@ -172,7 +171,6 @@ function Bedroom() {
         method={editMode ? 'PATCH' : 'POST'}
       />
 
-      {}
       <DataTable
         submittedData={submittedData}
         fields={fields}
