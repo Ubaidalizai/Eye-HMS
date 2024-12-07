@@ -21,7 +21,7 @@ const operationRoute = require('./routes/operationRoute');
 const ultrasoundRoute = require('./routes/ultrasoundRoute');
 const bedroomRoute = require('./routes/bedroomRoute');
 const labratoryRoute = require('./routes/labratoryRoute');
-const OctRoute = require('./routes/octRoute');
+const OctRoute = require('./routes/octRoute.js');
 const app = express();
 const PORT = 4000;
 
