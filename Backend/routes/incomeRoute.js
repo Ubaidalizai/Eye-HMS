@@ -10,9 +10,12 @@ const {
   filterIncomeByYearAndMonth,
   getIncomeCategoryTotal,
 } = require('../controllers/IncomeController');
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdmin,
+} = require('../middlewares/authMiddleware');
 
-router.use(authenticate);
+router.use(authenticate, authorizeAdmin);
 router.get('/categoryIncome', getIncomeCategoryTotal);
 
 router.get('/:year', filterIncomeByYear);

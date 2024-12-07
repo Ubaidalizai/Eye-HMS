@@ -7,7 +7,7 @@ const {
 } = require('../middlewares/authMiddleware');
 
 // Enable authentication middleware and admin authorization for all routes in this file
-router.use(authenticate);
+router.use(authenticate, authorizeAdmin);
 
 // Check for expired products
 router.get('/product/expire', product.checkProductExpiry);

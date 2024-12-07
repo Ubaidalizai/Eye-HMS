@@ -57,15 +57,7 @@ const authorizeSunglassesSeller = (req, res, next) => {
   if (req.user && req.user.role === 'sunglassesSeller') {
     next();
   } else {
-    res.status(401).send('Not authorized as an pharmacist.');
-  }
-};
-
-const authorizeDoctor = (req, res, next) => {
-  if (req.user && req.user.role === 'doctor') {
-    next();
-  } else {
-    res.status(401).send('Not authorized as an doctor.');
+    res.status(401).send('Not authorized as an sunglasses seller.');
   }
 };
 
@@ -73,5 +65,5 @@ module.exports = {
   authenticate,
   authorizeAdmin,
   authorizePharmacist,
-  authorizeDoctor,
+  authorizeSunglassesSeller,
 };
