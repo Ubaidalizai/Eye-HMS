@@ -11,6 +11,7 @@ import {
   HiChevronLeft,
   HiChevronRight,
 } from 'react-icons/hi';
+import { FaPlus } from 'react-icons/fa';
 
 const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
@@ -155,109 +156,130 @@ export default function PatientManagement() {
   return (
     <div className='max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r to-indigo-50 rounded-lg'>
       <ToastContainer />
-      <h1 className='text-4xl font-bold text-center mb-8 text-gray-900'>
-        Patient Management
-      </h1>
 
-      <div className='mb-6 flex justify-between items-center'>
-        <div className='flex items-center justify-center z-0'>
-          <HiSearch className=' translate-x-7 text-gray-400' size={20} />
-          <input
-            type='text'
-            placeholder='Search patients...'
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
-          />
+      <h2 className='font-semibold text-xl '> Patient List</h2>
+
+      <div className='border sm:rounded-lg mt-10'>
+        <div className='mb-6 flex justify-between items-center'>
+          <div className='flex items-center justify-center z-0'>
+            <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+            <input
+              type='text'
+              placeholder='Search patients...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
+            />
+          </div>
+          <button
+            onClick={() => {
+              setCurrentPatient(null);
+              setFormData({
+                name: '',
+                age: '',
+                contact: '',
+                patientID: '',
+                patientGender: '',
+                insuranceContact: '',
+              });
+              setIsModalOpen(true);
+            }}
+            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2  focus:ring-indigo-500'
+          >
+            <FaPlus className='mr-2' /> Add Patient
+          </button>
         </div>
-        <button
-          onClick={() => {
-            setCurrentPatient(null);
-            setFormData({
-              name: '',
-              age: '',
-              contact: '',
-              patientID: '',
-              patientGender: '',
-              insuranceContact: '',
-            });
-            setIsModalOpen(true);
-          }}
-          className='px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition flex items-center'
-        >
-          <HiPlus className='mr-2' /> Add New Patient
-        </button>
-      </div>
 
-      <div className='overflow-x-auto bg-white rounded-lg shadow'>
-        <table className='min-w-full'>
-          <thead className='bg-gray-50'>
-            <tr>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Name
-              </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Age
-              </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Contact
-              </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Patient ID
-              </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Gender
-              </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Insurance
-              </th>
-              <th className='py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className='divide-y divide-gray-200'>
-            {patients.map((patient) => (
-              <tr
-                key={patient._id}
-                className='hover:bg-indigo-50 transition-colors duration-150'
-              >
-                <td className='py-4 px-4'>{patient.name}</td>
-                <td className='py-4 px-4'>{patient.age}</td>
-                <td className='py-4 px-4'>{patient.contact}</td>
-                <td className='py-4 px-4'>{patient.patientID}</td>
-                <td className='py-4 px-4'>{patient.patientGender}</td>
-                <td className='py-4 px-4'>{patient.insuranceContact}</td>
-                <td className='py-4 px-4'>
-                  <div className='flex space-x-2'>
-                    <button
-                      onClick={() => handleEdit(patient)}
-                      className='text-blue-600 hover:text-blue-800'
-                    >
-                      <HiPencil size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(patient._id)}
-                      className='text-red-600 hover:text-red-800'
-                    >
-                      <HiTrash size={20} />
-                    </button>
-                    <button
-                      onClick={() =>
-                        navigate(`/patients/${patient.name}/prescriptions`)
-                      }
-                      className='text-green-600 hover:text-green-800'
-                    >
-                      <HiDocumentAdd size={20} />
-                    </button>
-                  </div>
-                </td>
+        <div className='overflow-x-auto bg-white rounded-lg shadow'>
+          <table className='min-w-full'>
+            <thead className='bg-gray-50'>
+              <tr className='flex items-center justify-between'>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Name
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Age
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Contact
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Patient ID
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Gender
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Insurance
+                </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className='divide-y divide-gray-200'>
+              {patients.map((patient) => (
+                <tr
+                  key={patient._id}
+                  className='hover:bg-indigo-50 transition-colors duration-150'
+                >
+                  <td className='py-4 px-4'>{patient.name}</td>
+                  <td className='py-4 px-4'>{patient.age}</td>
+                  <td className='py-4 px-4'>{patient.contact}</td>
+                  <td className='py-4 px-4'>{patient.patientID}</td>
+                  <td className='py-4 px-4'>{patient.patientGender}</td>
+                  <td className='py-4 px-4'>{patient.insuranceContact}</td>
+                  <td className='py-4 px-4'>
+                    <div className='flex space-x-2'>
+                      <button
+                        onClick={() => handleEdit(patient)}
+                        className='text-blue-600 hover:text-blue-800'
+                      >
+                        <HiPencil size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(patient._id)}
+                        className='text-red-600 hover:text-red-800'
+                      >
+                        <HiTrash size={20} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(`/patients/${patient.name}/prescriptions`)
+                        }
+                        className='text-green-600 hover:text-green-800'
+                      >
+                        <HiDocumentAdd size={20} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-
       {/* Pagination */}
       <div className='mt-4 flex justify-between items-center'>
         <button

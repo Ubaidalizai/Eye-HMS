@@ -216,7 +216,7 @@ function Inventory() {
         <ToastContainer />
         <div className='bg-white rounded'>
           <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
-          <div className='flex flex-wrap justify-between items-center mt-12'>
+          <div className='flex flex-wrap justify-between items-center mb-10 mt-12'>
             <div className='flex items-center'>
               <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
               <div>
@@ -373,7 +373,7 @@ function Inventory() {
               </div>
 
               <button
-                className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-1 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowProductModal(true)}
               >
                 <FaPlus className='mr-2' /> Add Product
@@ -387,55 +387,55 @@ function Inventory() {
                 <tr>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Products
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Manufacturer
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Purchase
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Sale
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Category
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Stock
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Status
                   </th>
                   <th
                     scope='col'
-                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
                   >
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className='divide-y divide-gray-200'>
+              <tbody className='bg-white divide-y divide-gray-200'>
                 {products.map((item) => (
                   <tr key={item._id}>
                     <td className='whitespace-nowrap px-6 py-3 text-left text-gray-900'>
