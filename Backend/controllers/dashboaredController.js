@@ -50,6 +50,9 @@ exports.getDashboardSummary = asyncHandler(async (req, res) => {
       },
     },
   ]);
+  const totalNetIncome = totalExpenses[0]?.totalExpenseAmount
+    ? totalIncome[0]?.totalIncomeAmount - totalExpenses[0]?.totalExpenseAmount
+    : totalIncome[0]?.totalIncomeAmount;
 
   res.status(200).json({
     status: 'success',
@@ -58,7 +61,7 @@ exports.getDashboardSummary = asyncHandler(async (req, res) => {
       totalSales: totalSales[0]?.totalSaleAmount || 0,
       totalPurchases: totalPurchases[0]?.totalPurchaseAmount || 0,
       totalExpenses: totalExpenses[0]?.totalExpenseAmount || 0,
-      totalIncome: totalIncome[0]?.totalIncomeAmount || 0,
+      totalIncome: totalNetIncome || 0,
     },
   });
 });
