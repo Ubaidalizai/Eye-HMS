@@ -97,7 +97,6 @@ function Dashboard() {
       );
 
       const data = await response.json();
-
       setSummary(data);
     } catch (err) {
       console.log(err);

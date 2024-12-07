@@ -207,10 +207,6 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
   // Fetch aggregated data
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
 
-  if (!data.length) {
-    throw new AppError('No data found for the specified year.', 404);
-  }
-
   // Populate data for each month (ensure all months are included)
   const totalAmountsByDay = populateDataArray(data, 12, 'month');
 
@@ -265,10 +261,6 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
 
   // Fetch aggregated data
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
-
-  if (!data.length) {
-    throw new AppError('No data found for the specified month.', 404);
-  }
 
   // Populate missing days for the month
   const daysInMonth = new Date(year, month, 0).getDate();

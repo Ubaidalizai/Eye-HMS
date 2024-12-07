@@ -38,9 +38,6 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
   };
 
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
-  if (!data) {
-    throw new AppError('No data found', 404);
-  }
 
   const totalAmountsByMonth = populateDataArray(data, 12, 'month');
   res.status(200).json({ data: totalAmountsByMonth });
@@ -73,9 +70,6 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
-  if (!data) {
-    throw new AppError('No data found', 404);
-  }
 
   const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
   res.status(200).json({ data: totalAmountsByDay });
