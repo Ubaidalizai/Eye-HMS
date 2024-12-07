@@ -156,7 +156,7 @@ export default function Sales() {
           // />
         )} */}
 
-        <div className='mt-10 bg-white shadow overflow-hidden sm:rounded-lg'>
+        <div className='mt-10 bg-white border overflow-hidden sm:rounded-lg'>
           <div className=' py-5 flex justify-between items-center'>
             <div className='flex items-center justify-center z-0'>
               <HiSearch className=' translate-x-7 text-gray-400' size={20} />
@@ -165,7 +165,7 @@ export default function Sales() {
                 placeholder='Search by date'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
               />
             </div>
             <div className='flex items-center space-x-4'>
@@ -195,10 +195,10 @@ export default function Sales() {
                 </div>
               )}
               <button
-                className='inline-flex items-center px-4 mr-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-9 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowSaleModal(true)}
               >
-                <FaPlus className='mr-2 -ml-1 h-5 w-5' aria-hidden='true' />
+                <FaPlus className='mr-2' />
                 Add Sale
               </button>
             </div>
@@ -214,43 +214,43 @@ export default function Sales() {
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
-                      Product Name
+                      Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Stock Sold
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sale Price
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sales Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sales By
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
-                      Total Sale Amount
+                      Total Sale
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Actions
                     </th>
