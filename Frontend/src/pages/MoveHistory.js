@@ -19,7 +19,7 @@ export default function MoveHistory() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/move-history?page=${
+          `/api/move-history?p age=${
             pageIndex + 1
           }&pageSize=${pageSize}&search=${globalFilter}`
         );
