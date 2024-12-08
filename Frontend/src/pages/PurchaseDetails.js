@@ -143,10 +143,10 @@ function PurchaseDetails() {
                 placeholder='Search by date '
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-12 h-9 pr-4 py-2 border border-gray-300 rounded w-72 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm transition'
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
               />
             </div>
-            <div className='flex  items-center gap-4 mr-5'>
+            <div className='flex  items-center gap-3 mr-5'>
               <div className='flex items-center'>
                 <label htmlFor='category' className='sr-only'>
                   Category
@@ -171,10 +171,10 @@ function PurchaseDetails() {
                 </div>
               </div>
               <button
-                className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-2 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={addSaleModalSetting}
               >
-                <FaPlus className='mr-2 -ml-1 h-5 w-5' aria-hidden='true' />
+                <FaPlus className='mr-2' />
                 Add Purchase
               </button>
             </div>
@@ -190,37 +190,37 @@ function PurchaseDetails() {
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
-                      Product Name
+                      Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Quantity Purchased
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Purchase Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
-                      Unit Purchase Amount
+                      Unit Purchase
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
-                      Total Purchase Amount
+                      Total Purchase
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Actions
                     </th>

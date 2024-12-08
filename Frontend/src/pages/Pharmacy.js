@@ -8,6 +8,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from 'react-icons/fa';
+import { FcSalesPerformance } from 'react-icons/fc';
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
@@ -128,16 +129,11 @@ const Pharmacy = () => {
   return (
     <div className='min-h-screen  py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
-        <div className='text-center'>
-          <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
-            {user.role === 'sunglassesSeller'
-              ? 'Sunglasses Inventory'
-              : 'Pharmacy Inventory'}
-          </h2>
-          <p className='mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4'>
-            Manage your inventory with ease and efficiency
-          </p>
-        </div>
+        <h2 className='font-semibold text-xl'>
+          {user.role === 'sunglassesSeller'
+            ? 'Sunglasses Inventory'
+            : 'Pharmacy Inventory'}
+        </h2>
 
         <div className='mt-10'>
           <div className='bg-white shadow overflow-hidden sm:rounded-md'>
@@ -147,12 +143,12 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FaBoxOpen className='h-6 w-6 text-white' />
+                        <FcSalesPerformance />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Total sale Price
+                            sales Price
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {totalSalePrice}
@@ -171,7 +167,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Total Items
+                            Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugs.reduce(
@@ -198,8 +194,8 @@ const Pharmacy = () => {
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
                             {user.role === 'sunglassesSeller'
-                              ? 'Total Products'
-                              : 'Total Drugs'}
+                              ? 'Products'
+                              : 'Drugs'}
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugs.length}

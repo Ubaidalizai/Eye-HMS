@@ -1,7 +1,10 @@
 // routes/expenseRoutes.js
 const express = require('express');
 
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdmin,
+} = require('../middlewares/authMiddleware');
 const {
   getExpenses,
   getExpensesByYear,
@@ -14,7 +17,7 @@ const {
 
 const router = express.Router();
 
-router.use(authenticate);
+router.use(authenticate, authorizeAdmin);
 
 router.get('/:year/:month', getExpensesByMonth);
 router.get('/categoryExpense', getCategoryTotal);

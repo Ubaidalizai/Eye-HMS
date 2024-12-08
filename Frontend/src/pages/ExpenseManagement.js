@@ -10,7 +10,7 @@ import {
   BarElement,
 } from 'chart.js';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
-import { FaRegEdit } from 'react-icons/fa';
+import { FaPlus, FaRegEdit } from 'react-icons/fa';
 
 import './newManagement.css';
 import { HiSearch } from 'react-icons/hi';
@@ -430,12 +430,11 @@ const ExpenseManagement = () => {
 
   return (
     <div className='parent'>
-      <h1>Expense Management</h1>
+      <h2 className='font-semibold text-xl mb-12 mt-6'>Expense List</h2>
 
       <div className='expense-list-detail'>
         <div className='summary-display'>
           <div className='Add-btn'>
-            <h2 className='list-header'>Expense List</h2>
             <div className='flex items-center justify-center z-0'>
               <HiSearch className=' translate-x-7 text-gray-400' size={20} />
               <input
@@ -443,15 +442,15 @@ const ExpenseManagement = () => {
                 placeholder='Search by date'
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
               />
             </div>
 
             <button
-              className='add-expense-button'
+              className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
               onClick={() => setShowModal(true)}
             >
-              Add Expense
+              <FaPlus className='mr-2' /> Add Expense
             </button>
 
             {/* Modal for adding expense */}
@@ -464,22 +463,37 @@ const ExpenseManagement = () => {
             />
           </div>
 
-          <table className='min-w-full rounded-sm'>
+          <table className='w-full rounded-sm'>
             <thead className='bg-gray-50 '>
-              <tr className='flex flex-row items-center justify-between'>
-                <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <tr>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Amount
                 </th>
-                <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Date
                 </th>
-                <th className='py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Reason
                 </th>
-                <th className='py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Category
                 </th>
-                <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Actions
                 </th>
               </tr>
