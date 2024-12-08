@@ -20,7 +20,9 @@ router.use(authenticate);
 
 router.route('/').get(authorizeAdmin, userController.getAllUsers);
 router.route('/logout').post(userController.logoutCurrentUser);
-router.route('/updatePassword').patch(userController.updatePassword);
+router
+  .route('/updatePassword')
+  .patch(authorizeAdmin, userController.updatePassword);
 router.patch(
   '/updateMe',
   userController.resizeUserPhoto,
@@ -33,6 +35,7 @@ router
   .patch(userController.updateCurrentUserProfile);
 
 // Admin routes
+router.use(authorizeAdmin);
 
 router
   .route('/:id')

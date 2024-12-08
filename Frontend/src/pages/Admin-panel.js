@@ -107,8 +107,8 @@ export default function AdminPanel() {
       <h2 className='font-semibold text-xl'>Admin Panel</h2>
 
       <div className='border pt-5 rounded-lg mt-10'>
-        <div className='flex justify-end mb-4'>
-          <button className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-10 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
+        <div className='flex justify-end items-center mb-4'>
+          <button className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-8 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
             <FaPlus className='mr-2' /> Add User
           </button>
         </div>
@@ -118,26 +118,47 @@ export default function AdminPanel() {
           <table className='w-full'>
             <thead className='bg-gray-50'>
               <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Profile
                 </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Full Name
                 </th>
 
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Email
                 </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Role
                 </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Password
                 </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Phone Number
                 </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                <th
+                  scope='col'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                >
                   Actions
                 </th>
               </tr>
