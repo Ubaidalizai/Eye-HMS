@@ -34,6 +34,7 @@ import Laboratory from "./components/Laboratory";
 import OCT from "./components/OCT";
 import OPD from "./components/OPD";
 import Yeglizer from "./components/Yeglizer";
+import MoveHistory from "./pages/MoveHistory";
 const App = () => {
   const [user, setUser] = useState("");
   const [loader, setLoader] = useState(true);
@@ -137,6 +138,7 @@ const App = () => {
               <Route path='/ExpiredProduct' element={<ExpiredProduct />} />
               <Route path='/Admin-panel' element={<AdminPanel />} />
               <Route path='/branches/yeglizer' element={<Yeglizer />} />
+              <Route path='/move/history' element={<MoveHistory />} />
             </Route>
             Yeglizer
             <Route path='*' element={<NoPageFound />} />
