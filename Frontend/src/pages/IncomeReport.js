@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
-import { FaRegEdit } from 'react-icons/fa';
+import { FaPlus, FaRegEdit } from 'react-icons/fa';
 import { HiSearch } from 'react-icons/hi';
 
 const categories = ['drug', 'sunglasses', 'glass', 'frame'];
@@ -228,11 +228,9 @@ export default function IncomeReport() {
 
   return (
     <div className='container mx-auto px-4 py-8'>
-      <h1 className='text-3xl font-bold mb-8'>Income Management</h1>
-
-      <div className='mb-8'>
+      <h2 className='font-semibold text-xl '> Income List</h2>
+      <div className='mb-8 border sm:rounded-lg'>
         <div className='flex justify-between items-center mb-4'>
-          <h2 className='text-2xl font-semibold'>Income List</h2>
           <div className='flex items-center justify-center z-0'>
             <HiSearch className=' translate-x-7 text-gray-400' size={20} />
             <input
@@ -240,14 +238,14 @@ export default function IncomeReport() {
               placeholder='Search by date'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='pl-12  pr-4 py-2 border border-gray-300 rounded-full w-72 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition'
+              className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
             />
           </div>
           <button
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-17 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             onClick={() => setShowModal(true)}
           >
-            Add Income
+            <FaPlus className='mr-2' /> Add Income
           </button>
         </div>
 
@@ -257,19 +255,34 @@ export default function IncomeReport() {
         <table className='w-full border-collapse shadow rounded-md'>
           <thead>
             <tr className='bg-gray-50'>
-              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+              >
                 Total Net Income
               </th>
-              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+              >
                 Date
               </th>
-              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+              >
                 Description
               </th>
-              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+              >
                 Category
               </th>
-              <th className='py-3 px-4  text-xs font-medium text-gray-500 uppercase tracking-wider'>
+              <th
+                scope='col'
+                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+              >
                 Actions
               </th>
             </tr>
@@ -299,28 +312,27 @@ export default function IncomeReport() {
             ))}
           </tbody>
         </table>
-
-        <div className='mt-4 flex justify-between items-center'>
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l'
-          >
-            Previous
-          </button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-            className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r'
-          >
-            Next
-          </button>
-        </div>
+      </div>
+      <div className='mt-4 flex justify-between items-center'>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l'
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r'
+        >
+          Next
+        </button>
       </div>
 
       <Modal
