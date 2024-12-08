@@ -9,28 +9,26 @@ function Bedroom() {
   const [date, setDate] = useState('');
   const [rent, setRent] = useState('');
   const [percentage, setPercentage] = useState('');
-
   const [submittedData, setSubmittedData] = useState([]);
-
   const [isOpen, setIsOpen] = useState(false);
-
   const [editMode, setEditMode] = useState(false);
-
   const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/bedroom/');
+        const response = await fetch('http://localhost:4000/api/v1/bedroom/');
         if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
-        setSubmittedData(data);
+        console.log(data);
+        setSubmittedData(Array.isArray(data.data) ? data.data : []); // Ensure data is an array
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     fetchData();
   }, []);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const entry = { id, name, time, date, rent, percentage };
@@ -38,7 +36,7 @@ function Bedroom() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/bedroom/${id}`,
+          `http://localhost:4000/api/v1/bedroom/${id}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -55,7 +53,7 @@ function Bedroom() {
       }
     } else {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/bedroom/', {
+        const response = await fetch('http://localhost:4000/api/v1/bedroom/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry),
@@ -91,13 +89,14 @@ function Bedroom() {
 
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
-    setId(recordToEdit.id);
-    setName(recordToEdit.name);
-    setTime(recordToEdit.time);
-    setDate(recordToEdit.date);
-    setRent(recordToEdit.rent);
-    setPercentage(recordToEdit.percentage);
-
+    setFieldValues({
+      id: recordToEdit.id || '',
+      name: recordToEdit.name || '',
+      time: recordToEdit.time || '',
+      date: recordToEdit.date || '',
+      rent: recordToEdit.rent || '',
+      percentage: recordToEdit.percentage || '',
+    });
     setEditMode(true);
     setEditIndex(index);
     setIsOpen(true);
@@ -107,7 +106,7 @@ function Bedroom() {
     try {
       const { id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/bedroom/${id}`,
+        `http://localhost:4000/api/v1/bedroom/${id}`,
         {
           method: 'DELETE',
         }
@@ -155,26 +154,23 @@ function Bedroom() {
         </button>
       </div>
 
-      {/* Form Modal for adding/editing record */}
       <FormModal
         title={editMode ? 'Edit Bedroom Record' : 'Add New Bedroom Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
-        handleSubmit={handleSubmit}
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
         url={
           editMode
-            ? `http://127.0.0.1:4000/api/v1/bedroom/${id}`
-            : 'http://127.0.0.1:4000/api/v1/bedroom/'
+            ? `http://localhost:4000/api/v1/bedroom/${id}`
+            : 'http://localhost:4000/api/v1/bedroom/'
         }
         method={editMode ? 'PATCH' : 'POST'}
       />
 
-      {}
       <DataTable
-        submittedData={submittedData}
+        submittedData={Array.isArray(submittedData) ? submittedData : []}
         fields={fields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}

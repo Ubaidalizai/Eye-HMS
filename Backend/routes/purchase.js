@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const purchase = require('../controllers/purchase');
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdmin,
+} = require('../middlewares/authMiddleware');
 
-router.use(authenticate);
+router.use(authenticate, authorizeAdmin);
+
 router.get('/totalPurchesbycategory', purchase.getPurchesCategoryTotal);
 router.get('/totalPurchaseAmount', purchase.getTotalPurchaseAmount);
 
