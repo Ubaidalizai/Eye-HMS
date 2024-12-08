@@ -227,10 +227,10 @@ export default function IncomeReport() {
   };
 
   return (
-    <div className='container mx-auto px-4 py-8'>
+    <div className='container mx-auto px-4 py-5'>
       <h2 className='font-semibold text-xl '> Income List</h2>
-      <div className='mb-8 border sm:rounded-lg'>
-        <div className='flex justify-between items-center mb-4'>
+      <div className='border sm:rounded-lg my-10 '>
+        <div className='flex flex-row items-center justify-between my-5'>
           <div className='flex items-center justify-center z-0'>
             <HiSearch className=' translate-x-7 text-gray-400' size={20} />
             <input
@@ -242,7 +242,7 @@ export default function IncomeReport() {
             />
           </div>
           <button
-            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-17 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             onClick={() => setShowModal(true)}
           >
             <FaPlus className='mr-2' /> Add Income
@@ -252,49 +252,36 @@ export default function IncomeReport() {
         {isLoading && <p>Loading...</p>}
         {error && <p className='text-red-500'>{error}</p>}
 
-        <table className='w-full border-collapse shadow rounded-md'>
-          <thead>
-            <tr className='bg-gray-50'>
-              <th
-                scope='col'
-                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-              >
+        {/* <table className='w-full'>
+          <thead className='bg-gray-50'>
+            <tr>
+              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
                 Total Net Income
               </th>
-              <th
-                scope='col'
-                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-              >
+              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
                 Date
               </th>
-              <th
-                scope='col'
-                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-              >
+              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
                 Description
               </th>
-              <th
-                scope='col'
-                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-              >
+              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
                 Category
               </th>
-              <th
-                scope='col'
-                className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-              >
+              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
                 Actions
               </th>
             </tr>
           </thead>
           <tbody>
             {income.map((item) => (
-              <tr key={item._id} className='hover:bg-gray-50'>
-                <td className='border p-2'>{item.totalNetIncome}</td>
-                <td className='border p-2'>{item.date.split('T')[0]}</td>
-                <td className='border p-2'>{item.description}</td>
-                <td className='border p-2'>{item.category}</td>
-                <td className='border p-2'>
+              <tr key={item._id}>
+                <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                  {item.totalNetIncome}
+                </td>
+                <td>{item.date.split('T')[0]}</td>
+                <td>{item.description}</td>
+                <td>{item.category}</td>
+                <td>
                   <button
                     onClick={() => editIncome(item)}
                     className='text-blue-600 hover:text-blue-800 mr-2'
@@ -307,6 +294,55 @@ export default function IncomeReport() {
                   >
                     <MdOutlineDeleteOutline />
                   </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table> */}
+        <table className='w-full text-sm text-left text-gray-500'>
+          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+            <tr>
+              <th className='px-5 py-3 font-bold tracking-wider'>
+                Total Net Income
+              </th>
+              <th className='px-5 py-3 font-bold tracking-wider'>Date</th>
+              <th className='px-5 py-3 font-bold tracking-wider'>
+                Description
+              </th>
+              <th className='px-5 py-3 font-bold tracking-wider'>Category</th>
+              <th className='px-5 py-3 font-bold tracking-wider'>Actions</th>
+            </tr>
+          </thead>
+          <tbody className='bg-white divide-y divide-gray-200'>
+            {income.map((item) => (
+              <tr key={item._id} className='hover:bg-gray-50'>
+                <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
+                  {item.totalNetIncome}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                  {item.date.split('T')[0]}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                  {item.description}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                  {item.category}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                  <div className='flex space-x-2'>
+                    <button
+                      onClick={() => editIncome(item)}
+                      className='text-indigo-600 hover:text-indigo-900'
+                    >
+                      <FaRegEdit />
+                    </button>
+                    <button
+                      onClick={() => deleteIncome(item._id)}
+                      className='text-red-500 hover:text-red-700'
+                    >
+                      <MdOutlineDeleteOutline />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

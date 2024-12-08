@@ -160,7 +160,7 @@ export default function PatientManagement() {
       <h2 className='font-semibold text-xl '> Patient List</h2>
 
       <div className='border sm:rounded-lg mt-10'>
-        <div className='mb-6 flex justify-between items-center'>
+        <div className='mb-6 pt-6 flex justify-between items-center'>
           <div className='flex items-center justify-center z-0'>
             <HiSearch className=' translate-x-7 text-gray-400' size={20} />
             <input
@@ -191,48 +191,48 @@ export default function PatientManagement() {
         </div>
 
         <div className='overflow-x-auto bg-white rounded-lg shadow'>
-          <table className='min-w-full'>
+          {/* <table className='w-full'>
             <thead className='bg-gray-50'>
-              <tr className='flex items-center justify-between'>
+              <tr>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Name
                 </th>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Age
                 </th>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Contact
                 </th>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Patient ID
                 </th>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Gender
                 </th>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Insurance
                 </th>
                 <th
                   scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                 >
                   Actions
                 </th>
@@ -240,17 +240,26 @@ export default function PatientManagement() {
             </thead>
             <tbody className='divide-y divide-gray-200'>
               {patients.map((patient) => (
-                <tr
-                  key={patient._id}
-                  className='hover:bg-indigo-50 transition-colors duration-150'
-                >
-                  <td className='py-4 px-4'>{patient.name}</td>
-                  <td className='py-4 px-4'>{patient.age}</td>
-                  <td className='py-4 px-4'>{patient.contact}</td>
-                  <td className='py-4 px-4'>{patient.patientID}</td>
-                  <td className='py-4 px-4'>{patient.patientGender}</td>
-                  <td className='py-4 px-4'>{patient.insuranceContact}</td>
-                  <td className='py-4 px-4'>
+                <tr key={patient._id}>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                    {patient.name}
+                  </td>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                    {patient.age}
+                  </td>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                    {patient.contact}
+                  </td>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                    {patient.patientID}
+                  </td>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                    {patient.patientGender}
+                  </td>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
+                    {patient.insuranceContact}
+                  </td>
+                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
                     <div className='flex space-x-2'>
                       <button
                         onClick={() => handleEdit(patient)}
@@ -269,6 +278,81 @@ export default function PatientManagement() {
                           navigate(`/patients/${patient.name}/prescriptions`)
                         }
                         className='text-green-600 hover:text-green-800'
+                      >
+                        <HiDocumentAdd size={20} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table> */}
+          <table className='w-full text-sm text-left text-gray-500'>
+            <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+              <tr>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Name
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Age
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Contact
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Patient ID
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Gender
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Insurance
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className='bg-white divide-y divide-gray-200'>
+              {patients.map((patient) => (
+                <tr key={patient._id} className='hover:bg-gray-50'>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
+                    {patient.name}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.age}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.contact}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.patientID}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.patientGender}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.insuranceContact}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                    <div className='flex space-x-2'>
+                      <button
+                        onClick={() => handleEdit(patient)}
+                        className='text-indigo-600 hover:text-indigo-900'
+                      >
+                        <HiPencil size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(patient._id)}
+                        className='text-red-500 hover:text-red-700'
+                      >
+                        <HiTrash size={20} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(`/patients/${patient.name}/prescriptions`)
+                        }
+                        className='text-green-500 hover:text-green-700'
                       >
                         <HiDocumentAdd size={20} />
                       </button>
