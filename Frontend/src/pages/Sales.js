@@ -195,7 +195,7 @@ export default function Sales() {
                 </div>
               )}
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-9 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-8 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowSaleModal(true)}
               >
                 <FaPlus className='mr-2' />
@@ -214,43 +214,43 @@ export default function Sales() {
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Stock Sold
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sale Price
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sales Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sales By
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Total Sale
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Actions
                     </th>

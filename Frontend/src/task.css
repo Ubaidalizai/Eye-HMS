@@ -1,4 +1,4 @@
-table {
+/* table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
@@ -47,28 +47,28 @@ th {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000; /* Ensure it covers the form */
+  z-index: 1000; 
 }
 .form-container {
   position: fixed;
   top: 50%;
-  left: 50%; /* Positioning the form on the left */
+  left: 50%; 
   transform: translate(-50%, -50%);
-  width: 30rem; /* Width of the form */
-  padding: 20px; /* Padding inside the form */
+  width: 30rem; 
+  padding: 20px; 
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1001; /* Place the form above the overlay */
+  z-index: 1001; 
 }
 .grid-container {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Two columns */
-  gap: 10px; /* Space between columns */
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px; 
 }
 .input-field {
-  width: 100%; /* Full width of the column */
-  padding: 10px;
+  width: 100%; 
+  /* padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
@@ -95,4 +95,4 @@ th {
 }
 .close-button {
   margin-top: 0.5rem;
-}
+} */

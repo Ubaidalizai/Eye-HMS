@@ -1,4 +1,4 @@
-.parent {
+/* .parent {
   width: 1000px;
   height: auto;
   font-family: 'Arial', sans-serif;
@@ -24,17 +24,17 @@ h1 {
 }
 
 .list-header {
-  margin: 0; /* Remove default margin */
+  margin: 0; 
 }
 
-/* Responsive Adjustments for .parent and h1 */
+
 @media (max-width: 1000px) {
   .parent {
-    padding: 20px; /* Reduce padding on smaller screens */
+    padding: 20px;
   }
 
   h1 {
-    font-size: 1.8em; /* Slightly decrease font size */
+    font-size: 1.8em; 
   }
 }
 
@@ -44,11 +44,10 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Responsive Adjustments for expense-form */
+
 @media (max-width: 600px) {
   .expense-form {
-    padding: 15px; /* Adjust padding for smaller screens */
-  }
+    padding: 15px;
 }
 
 input,
@@ -61,12 +60,12 @@ select {
   transition: border-color 0.3s;
 }
 
-/* Responsive Adjustments for input/select */
+
 @media (max-width: 600px) {
   input,
   select {
-    font-size: 14px; /* Smaller font size for inputs */
-    width: 100%; /* Full width for inputs */
+    font-size: 14px; 
+    width: 100%; 
   }
 }
 
@@ -87,16 +86,14 @@ select:focus {
   cursor: pointer;
   font-size: 12px;
   transition: background-color 0.3s, transform 0.3s;
-  /* margin: 10px; */
-  align-items: center;
+    align-items: center;
 }
 
-/* Responsive Adjustments for buttons */
 @media (max-width: 600px) {
   .add-expense-button {
-    width: 100%; /* Full width for buttons */
-    margin: 10px 0; /* Adjust margin */
-    font-size: 14px; /* Adjust font size */
+    width: 100%; 
+    margin: 10px 0; 
+    font-size: 14px;
   }
 }
 
@@ -120,20 +117,20 @@ select:focus {
   align-items: center;
 }
 
-/* Responsive Adjustments for Update and Cancel buttons */
+
 @media (max-width: 600px) {
   .UpdateBtn,
   .cancel {
-    width: 100%; /* Full width for buttons */
-    font-size: 14px; /* Adjust font size */
+    width: 100%;
+    font-size: 14px; 
   }
 }
 
 .list-header {
-  /* margin-top: 15px; */
+
   color: #555;
   padding: 0 15px;
-  /* font-weight: 500; */
+
 }
 
 .expense-list-container {
@@ -144,10 +141,10 @@ select:focus {
   padding: 20px;
 }
 
-/* Responsive Adjustments for .expense-list-container */
+
 @media (max-width: 600px) {
   .expense-list-container {
-    padding: 15px; /* Adjust padding */
+    padding: 15px; 
   }
 }
 
@@ -163,11 +160,11 @@ select:focus {
   transition: background-color 0.3s;
 }
 
-/* Responsive Adjustments for .expense-item */
+
 @media (max-width: 600px) {
   .expense-item {
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-start; /* Align items to the left */
+    flex-direction: column; 
+    align-items: flex-start; 
   }
 }
 
@@ -180,9 +177,8 @@ select:focus {
   justify-content: center;
 }
 .edit-button {
-  /* width: 40px; */
+ 
   background-color: #fff;
-  /* margin-right: 10px; */
   border: none;
   color: black;
   padding: 5px 10px;
@@ -190,11 +186,11 @@ select:focus {
   cursor: pointer;
 }
 
-/* Responsive Adjustments for edit-button */
+
 @media (max-width: 600px) {
   .edit-button {
-    width: auto; /* Allow buttons to adjust size */
-    margin-top: 5px; /* Add margin for spacing */
+    width: auto; 
+    margin-top: 5px;
   }
 }
 
@@ -213,16 +209,16 @@ select:focus {
 
 .general-div {
   display: flex;
-  align-items: center; /* Align items in a single line */
+  align-items: center; 
   padding: 5px;
   margin-top: 20px;
 }
 
-/* Responsive Adjustments for general-div */
+
 @media (max-width: 600px) {
   .general-div {
-    flex-direction: column; /* Stack items on smaller screens */
-    align-items: flex-start; /* Align items to the left */
+    flex-direction: column; 
+    align-items: flex-start; 
   }
 }
 
@@ -230,39 +226,39 @@ select:focus {
 .summery-type,
 .month-selection,
 .year-selection {
-  margin-right: 15px; /* Space between inputs */
+  margin-right: 15px;
 }
 
-/* Responsive Adjustments for filter inputs */
+
 @media (max-width: 600px) {
   .filter-category,
   .summery-type,
   .month-selection,
   .year-selection {
-    margin-right: 0; /* Remove spacing in mobile view */
-    margin-bottom: 10px; /* Add space below each dropdown */
+    margin-right: 0; 
+    margin-bottom: 10px; 
   }
 }
 
 .dropdown,
 .year-input {
-  padding: 5px; /* Adjust padding */
+  padding: 5px; 
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 14px; /* Consistent font size */
-  width: 10rem; /* Fixed width */
+  font-size: 14px; 
+  width: 10rem;
 }
 
-/* Responsive Adjustments for dropdowns */
+
 @media (max-width: 600px) {
   .dropdown,
   .year-input {
-    width: 100%; /* Full width for dropdowns */
+    width: 100%;
   }
 }
 
 .year-label {
-  margin: 0 10px; /* Adjust margin for spacing */
+  margin: 0 10px; 
 }
 
 .summary {
@@ -276,17 +272,14 @@ select:focus {
   border: 1px solid #ddd;
   border-radius: 5px;
 }
-/* .Add-btn h2{
-    font-size: 1.5em;
-    /* padding: 0 0 0 10px; 
-} */
+
 .summary-display h2 {
-  /* margin-bottom: 15px; */
+
   font-size: 1.5em;
   padding: 0 0 0 10px;
 }
 
-/* Table Styling */
+
 .expense-table {
   width: 100%;
   border-collapse: collapse;
@@ -295,47 +288,44 @@ select:focus {
   background-color: #ffffff;
 }
 
-/* Responsive Adjustments for expense-table */
 @media (max-width: 600px) {
   .expense-table {
-    font-size: 14px; /* Adjust font size */
+    font-size: 14px; 
   }
 }
 
-/* Table header styling */
 .expense-table thead {
   background-color: #0b72ef;
   opacity: 0.4;
   color: #fff;
-  /* text-align: left; */
+
 }
 .expense-table th {
   padding: 5px;
   font-weight: 600;
-  /* text-align: left; */
+
 }
 
-/* Table body styling */
+
 .expense-table tbody tr {
   border-bottom: 1px solid #dddddd;
   transition: background-color 0.2s ease;
 }
 
-/* Table cell styling */
+
 .expense-table td {
   padding: 5px;
   color: #777;
 }
 
-/* Column styling */
 .expense-table th,
 .expense-table td {
   text-align: center;
 }
 
 .chart {
-  width: 100%; /* Full width of the page */
-  height: auto; /* Reduced height for the chart */
+  width: 100%; 
+  height: auto; 
   margin: 20px auto;
   padding: 10px;
   text-align: center;
@@ -343,14 +333,7 @@ select:focus {
   border-radius: 10px;
 }
 
-.chart h2 {
-  margin-bottom: 10px; /* Reduced space between title and chart */
-}
 
-.graph {
-  width: 300px;
-  height: 300px;
-}
 
 .fixed {
   position: fixed;
@@ -361,7 +344,7 @@ select:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 50; /* Higher than the overlay */
+  z-index: 50;
 }
 
 .overlay {
@@ -370,18 +353,18 @@ select:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  z-index: 40; /* Lower than the modal */
+  background-color: rgba(0, 0, 0, 0.5); 
+  z-index: 40; 
 }
 
 .relative {
-  z-index: 60; /* Ensure modal is above the overlay */
+  z-index: 60; 
 }
 
-/* Responsive table styling */
+
 @media (max-width: 800px) {
   .expense-table thead {
-    font-size: 15px; /* Adjust header font size */
+    font-size: 15px; 
   }
 
   .edit-button,
@@ -395,16 +378,17 @@ select:focus {
   input,
   select,
   button {
-    font-size: 14px; /* Smaller font size for inputs and buttons */
+    font-size: 14px; 
   }
 
   .edit-button {
     margin-left: 0;
-    margin-top: 5px; /* Adjust margin for layout */
+    margin-top: 5px;
   }
 
   .expense-item {
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-start; /* Align items to the left */
+    flex-direction: column; 
+    align-items: flex-start;
   }
 }
+} */
