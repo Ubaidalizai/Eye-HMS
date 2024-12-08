@@ -13,17 +13,17 @@ function Bedroom() {
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/bedroom/');
+        const response = await fetch('http://localhost:4000/api/v1/bedroom/');
         if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
-        console.log('Fetched Data:', data); // Debug fetched data
-        setSubmittedData(Array.isArray(data) ? data : []);
+        console.log(data);
+        setSubmittedData(Array.isArray(data.data) ? data.data : []); // Ensure data is an array
       } catch (error) {
         console.error('Error fetching data:', error);
-        setSubmittedData([]);
       }
     };
     fetchData();
@@ -36,7 +36,7 @@ function Bedroom() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/bedroom/${id}`,
+          `http://localhost:4000/api/v1/bedroom/${id}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -44,23 +44,23 @@ function Bedroom() {
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
+
         const updatedData = [...submittedData];
         updatedData[editIndex] = entry;
-        console.log('Updated Data:', updatedData); // Debug updated data
         setSubmittedData(updatedData);
       } catch (error) {
         console.error('Error updating data:', error);
       }
     } else {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/bedroom/', {
+        const response = await fetch('http://localhost:4000/api/v1/bedroom/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry),
         });
         if (!response.ok) throw new Error('Failed to add data');
+
         const newEntry = await response.json();
-        console.log('New Entry:', newEntry); // Debug new entry
         setSubmittedData([...submittedData, newEntry]);
       } catch (error) {
         console.error('Error adding data:', error);
@@ -70,12 +70,12 @@ function Bedroom() {
     clearForm();
     setIsOpen(false);
   };
+
   const handleCancel = () => {
     clearForm();
     setIsOpen(false);
   };
 
-  // Clear form values
   const clearForm = () => {
     setId('');
     setName('');
@@ -87,7 +87,6 @@ function Bedroom() {
     setEditIndex(null);
   };
 
-  // Handle record edit
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
     setFieldValues({
@@ -103,12 +102,11 @@ function Bedroom() {
     setIsOpen(true);
   };
 
-  // Handle record removal
   const handleRemove = async (index) => {
     try {
       const { id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/bedroom/${id}`,
+        `http://localhost:4000/api/v1/bedroom/${id}`,
         {
           method: 'DELETE',
         }
@@ -165,14 +163,14 @@ function Bedroom() {
         setFieldValues={setFieldValues}
         url={
           editMode
-            ? `http://127.0.0.1:4000/api/v1/bedroom/${id}`
-            : 'http://127.0.0.1:4000/api/v1/bedroom/'
+            ? `http://localhost:4000/api/v1/bedroom/${id}`
+            : 'http://localhost:4000/api/v1/bedroom/'
         }
         method={editMode ? 'PATCH' : 'POST'}
       />
 
       <DataTable
-        submittedData={submittedData}
+        submittedData={Array.isArray(submittedData) ? submittedData : []}
         fields={fields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
