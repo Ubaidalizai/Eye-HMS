@@ -12,9 +12,6 @@ router.use(authenticate, authorizeAdmin);
 // Check for expired products
 router.get('/product/expire', product.checkProductExpiry);
 
-// Move Drugs From Inventory to pharmacy
-router.post('/product/move', product.moveDrugsToPharmacy);
-
 // Route to get inventory summary
 router.get('/product/summary', product.getInventorySummary);
 

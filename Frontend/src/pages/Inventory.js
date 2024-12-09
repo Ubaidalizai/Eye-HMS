@@ -338,7 +338,7 @@ function Inventory() {
         <div className='overflow-x-auto rounded-lg bg-white border '>
           <div className='flex flex-row justify-between items-end  px-5 pb-3'>
             <div className=''>
-              <FaSearch className=' translate-x-3 translate-y-9 text-gray-400' />
+              <FaSearch className=' translate-x-3 translate-y-7 text-gray-400' />
               <input
                 type='text'
                 placeholder='Search products...'
@@ -373,7 +373,7 @@ function Inventory() {
               </div>
 
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-1 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowProductModal(true)}
               >
                 <FaPlus className='mr-2' /> Add Product
@@ -381,7 +381,7 @@ function Inventory() {
             </div>
           </div>
 
-          <div className='bg-white rounded-sm shadow overflow-x-auto'>
+          {/* <div className='bg-white rounded-sm shadow overflow-x-auto'>
             <table className='w-full'>
               <thead className='bg-gray-50'>
                 <tr>
@@ -438,26 +438,26 @@ function Inventory() {
               <tbody className='bg-white divide-y divide-gray-200'>
                 {products.map((item) => (
                   <tr key={item._id}>
-                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-900'>
+                    <td className='whitespace-nowrap px-6 py-3  text-gray-900'>
                       {item.name}
                     </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3  text-gray-700'>
                       {item.manufacturer}
                     </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-gray-700'>
                       {item.purchasePrice}
                     </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3 text-gray-700'>
                       {item.salePrice}
                     </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3  text-gray-700'>
                       {item.category}
                     </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-left text-gray-700'>
+                    <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
                       {item.stock}
                     </td>
                     <td
-                      className={`whitespace-nowrap px-6 py-3 text-left text-xs font-medium ${
+                      className={`whitespace-nowrap px-6 py-3  text-xs font-medium ${
                         item.stock === 0
                           ? 'text-red-500'
                           : item.stock <= 10
@@ -495,6 +495,128 @@ function Inventory() {
                 ))}
               </tbody>
             </table>
+          </div> */}
+
+          <div className='px-4 sm:px-6 lg:px-0'>
+            <div className='overflow-x-auto shadow-md sm:rounded-lg'>
+              <table className='w-full text-sm text-left text-gray-500'>
+                <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+                  <tr>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Products
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Manufacturer
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Purchase
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Sale
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Category
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Stock
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Status
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='bg-white divide-y divide-gray-200'>
+                  {products.map((item) => (
+                    <tr key={item._id} className='hover:bg-gray-50'>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
+                        {item.name}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.manufacturer}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.purchasePrice}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.salePrice}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.category}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.stock}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <span
+                          className={`text-xs font-medium ${
+                            item.stock === 0
+                              ? 'text-red-500'
+                              : item.stock <= 10
+                              ? 'text-yellow-500'
+                              : 'text-green-500'
+                          }`}
+                        >
+                          {item.stock === 0
+                            ? 'Out of stock'
+                            : item.stock <= 10
+                            ? 'Low'
+                            : 'Available'}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                        <div className='flex space-x-2'>
+                          <button
+                            onClick={() => openMoveModal(item)}
+                            className='text-indigo-600 hover:text-indigo-900'
+                          >
+                            <FaExchangeAlt className='w-5 h-5' />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className='text-yellow-500 hover:text-yellow-700'
+                          >
+                            <FaEdit className='w-5 h-5' />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item._id)}
+                            className='text-red-500 hover:text-red-700'
+                          >
+                            <FaTrash className='w-5 h-5' />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 

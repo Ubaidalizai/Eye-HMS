@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
 export default function MoveHistory() {
   const [data, setData] = useState([]);
@@ -11,7 +11,7 @@ export default function MoveHistory() {
   const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
 
   // Fetch data dynamically
   useEffect(() => {
@@ -19,15 +19,24 @@ export default function MoveHistory() {
       setIsLoading(true);
       try {
         const response = await fetch(
+<<<<<<< HEAD
           `/api/move-history?p age=${
+=======
+          `http://localhost:4000/api/v1/move-product?fieldName=date&page=${
+>>>>>>> 465ae23ea44bf51e744a6376f029fc277ba81ef1
             pageIndex + 1
-          }&pageSize=${pageSize}&search=${globalFilter}`
+          }&pageSize=${pageSize}&searchTerm=${globalFilter}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+          }
         );
         const result = await response.json();
-        setData(result.data);
+        console.log(result);
+        setData(result.data.results);
         setTotalPages(result.totalPages);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -38,17 +47,24 @@ export default function MoveHistory() {
 
   const columns = React.useMemo(
     () => [
-      { accessorKey: "Name", header: "Name" },
-      { accessorKey: "quantity_moved", header: "Quantity Moved" },
-      { accessorKey: "moved_by", header: "Moved By" },
-      { accessorKey: "category", header: "Category" },
+      { accessorKey: 'inventory_id.name', header: 'Name' },
+      { accessorKey: 'quantity_moved', header: 'Quantity Moved' },
       {
-        accessorKey: "date_moved",
-        header: "Date Moved",
+        accessorKey: 'moved_by', // This should match the key in your data
+        header: 'Moved By',
+        cell: ({ row }) => {
+          const { firstName, lastName } = row.original.moved_by;
+          return `${firstName} ${lastName}`;
+        },
+      },
+      { accessorKey: 'category', header: 'Category' },
+      {
+        accessorKey: 'date_moved',
+        header: 'Date Moved',
         cell: (info) =>
-          new Date(info.getValue()).toLocaleString("en-US", {
-            dateStyle: "medium",
-            timeStyle: "short",
+          new Date(info.getValue()).toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
           }),
       },
     ],
@@ -72,7 +88,7 @@ export default function MoveHistory() {
       {/* Filter Input */}
       <div className='mb-4'>
         <input
-          type='text'
+          type='date'
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder='Search...'

@@ -171,7 +171,7 @@ function PurchaseDetails() {
                 </div>
               </div>
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-2 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-1  font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={addSaleModalSetting}
               >
                 <FaPlus className='mr-2' />
@@ -185,42 +185,42 @@ function PurchaseDetails() {
             ) : error ? (
               <div className='text-center py-4 text-red-600'>{error}</div>
             ) : (
-              <table className='min-w-full divide-y divide-gray-200'>
+              <table className='w-full'>
                 <thead className='bg-gray-50'>
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Quantity Purchased
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Purchase Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Unit Purchase
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Total Purchase
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Actions
                     </th>
