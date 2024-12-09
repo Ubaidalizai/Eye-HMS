@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaPlus, FaRegEdit } from 'react-icons/fa';
+import Pagination from '../components/Pagination';
 
 import './newManagement.css';
 import { HiSearch } from 'react-icons/hi';
@@ -183,10 +184,10 @@ const ExpenseManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const limit = 10; // Number of items per page
 
   useEffect(() => {
     if (summaryType === 'monthly') {
@@ -202,6 +203,7 @@ const ExpenseManagement = () => {
     selectedYear,
     summaryType,
     searchTerm,
+    limit,
   ]);
 
   const handleChange = (e) => {
@@ -532,79 +534,14 @@ const ExpenseManagement = () => {
               </tbody>
             </table>
           </div>
-          {/* <table className='w-full mt-5'>
-            <thead className='bg-gray-50 '>
-              <tr>
-                <th
-                  scope='col'
-                  className='w-10  py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Amount
-                </th>
-                <th
-                  scope='col'
-                  className='w-10  py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Date
-                </th>
-                <th
-                  scope='col'
-                  className='w-10  py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Reason
-                </th>
-                <th
-                  scope='col'
-                  className='w-10  py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Category
-                </th>
-                <th
-                  scope='col'
-                  className='w-10  py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {expenses.length === 0 ? (
-                <tr>
-                  <td className=' text-center font-semibold'>
-                    No expenses added yet.
-                  </td>
-                </tr>
-              ) : (
-                expenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td className='ml-10'>{expense.amount}</td>
-                    <td>{new Date(expense.date).toLocaleDateString()}</td>
-                    <td>{expense.reason}</td>
-                    <td>{expense.category}</td>
-                    <td>
-                      <div className='edit-parent'>
-                        <button
-                          onClick={() => editExpense(expense)}
-                          className='edit-button'
-                        >
-                          <FaRegEdit />
-                        </button>
-
-                        <button
-                          onClick={() => deleteExpense(expense._id)}
-                          className='edit-button'
-                        >
-                          <div className='del-icon'>
-                            <MdOutlineDeleteOutline />
-                          </div>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table> */}
+          <Pagination
+            totalItems={expenses.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
         </div>
 
         <div className='flex items-center justify-start gap-3 mt-10'>
