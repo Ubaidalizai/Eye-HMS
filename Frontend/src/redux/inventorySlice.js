@@ -13,17 +13,14 @@ export const moveItemAPI = createAsyncThunk(
       expiryDate,
     };
 
-    const response = await fetch(
-      `http://localhost:4000/api/v1/inventory/product/move`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      }
-    );
+    const response = await fetch(`http://localhost:4000/api/v1/move-product`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
 
     if (!response.ok) {
       throw new Error('Failed to move item');
