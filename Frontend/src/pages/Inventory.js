@@ -304,20 +304,21 @@ function Inventory() {
                     <option value='glass'>glass</option>
                     <option value='frame'>Frame</option>
                   </select>
-                  <div className='items-center px-4 py-3'>
-                    <button
-                      id='ok-btn'
-                      type='submit'
-                      className='px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300'
-                    >
-                      Add Product
-                    </button>
+                  <div className='flex items-center justify-end gap-3 mt-10'>
                     <button
                       type='button'
                       onClick={() => setShowProductModal(false)}
-                      className='mt-2 px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300'
+                      className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                     >
                       Cancel
+                    </button>
+
+                    <button
+                      id='ok-btn'
+                      type='submit'
+                      className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    >
+                      Add Product
                     </button>
                   </div>
                 </form>
@@ -381,124 +382,8 @@ function Inventory() {
             </div>
           </div>
 
-          {/* <div className='bg-white rounded-sm shadow overflow-x-auto'>
-            <table className='w-full'>
-              <thead className='bg-gray-50'>
-                <tr>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Products
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Manufacturer
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Purchase
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Sale
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Category
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Stock
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {products.map((item) => (
-                  <tr key={item._id}>
-                    <td className='whitespace-nowrap px-6 py-3  text-gray-900'>
-                      {item.name}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-3  text-gray-700'>
-                      {item.manufacturer}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-gray-700'>
-                      {item.purchasePrice}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-3 text-gray-700'>
-                      {item.salePrice}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-3  text-gray-700'>
-                      {item.category}
-                    </td>
-                    <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                      {item.stock}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-3  text-xs font-medium ${
-                        item.stock === 0
-                          ? 'text-red-500'
-                          : item.stock <= 10
-                          ? 'text-yellow-500'
-                          : 'text-green-500'
-                      }`}
-                    >
-                      {item.stock === 0
-                        ? 'Out of stock'
-                        : item.stock <= 10
-                        ? 'Low'
-                        : 'Available'}
-                    </td>
-                    <td className='whitespace-nowrap px-4 py-2 text-gray-700'>
-                      <button
-                        className='text-indigo-600 hover:text-indigo-900 mr-2'
-                        onClick={() => openMoveModal(item)}
-                      >
-                        <FaExchangeAlt />
-                      </button>
-                      <button
-                        className='text-yellow-500 hover:text-yellow-700 mr-2'
-                        onClick={() => handleEdit(item)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className='text-red-500 hover:text-red-700'
-                        onClick={() => handleDelete(item._id)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div> */}
-
           <div className='px-4 sm:px-6 lg:px-0'>
-            <div className='overflow-x-auto shadow-md sm:rounded-lg'>
+            <div className='overflow-x-auto'>
               <table className='w-full text-sm text-left text-gray-500'>
                 <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>

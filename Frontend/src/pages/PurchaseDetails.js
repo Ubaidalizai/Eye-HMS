@@ -179,7 +179,7 @@ function PurchaseDetails() {
               </button>
             </div>
           </div>
-          <div className='border-t border-gray-200'>
+          <div>
             {isLoading ? (
               <div className='text-center py-4'>Loading...</div>
             ) : error ? (
