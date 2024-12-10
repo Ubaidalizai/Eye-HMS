@@ -12,6 +12,7 @@ import {
   FaChevronRight,
   FaSearch,
   FaFilter,
+  FaRegEdit,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -304,11 +305,11 @@ function Inventory() {
                     <option value='glass'>glass</option>
                     <option value='frame'>Frame</option>
                   </select>
-                  <div className='flex items-center justify-end gap-3 mt-10'>
+                  <div className='flex items-center justify-end gap-2 mt-10'>
                     <button
                       type='button'
                       onClick={() => setShowProductModal(false)}
-                      className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                      className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                     >
                       Cancel
                     </button>
@@ -316,7 +317,7 @@ function Inventory() {
                     <button
                       id='ok-btn'
                       type='submit'
-                      className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                      className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                     >
                       Add Product
                     </button>
@@ -479,19 +480,19 @@ function Inventory() {
                         <div className='flex space-x-2'>
                           <button
                             onClick={() => openMoveModal(item)}
-                            className='text-indigo-600 hover:text-indigo-900'
+                            className='text-green-600 hover:text-green-900'
                           >
                             <FaExchangeAlt className='w-5 h-5' />
                           </button>
                           <button
                             onClick={() => handleEdit(item)}
-                            className='text-yellow-500 hover:text-yellow-700'
+                            className='font-medium text-indigo-600 hover:text-indigo-900'
                           >
-                            <FaEdit className='w-5 h-5' />
+                            <FaRegEdit className='w-5 h-5' />
                           </button>
                           <button
                             onClick={() => handleDelete(item._id)}
-                            className='text-red-500 hover:text-red-700'
+                            className='font-medium text-red-600 hover:text-red-700'
                           >
                             <FaTrash className='w-5 h-5' />
                           </button>

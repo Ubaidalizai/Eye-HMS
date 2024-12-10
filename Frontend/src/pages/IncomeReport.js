@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
-import { FaPlus, FaRegEdit } from 'react-icons/fa';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import { HiSearch } from 'react-icons/hi';
 
 const categories = ['drug', 'sunglasses', 'glass', 'frame'];
@@ -93,17 +93,17 @@ const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
               </select>
             </div>
           </div>
-          <div className='flex justify-end gap-4'>
+          <div className='flex items-center justify-end gap-2'>
             <button
               type='button'
-              className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+              className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type='submit'
-              className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+              className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             >
               Add Income
             </button>
@@ -332,15 +332,15 @@ export default function IncomeReport() {
                   <div className='flex space-x-2'>
                     <button
                       onClick={() => editIncome(item)}
-                      className='text-indigo-600 hover:text-indigo-900'
+                      className='font-medium text-indigo-600 hover:text-indigo-900'
                     >
-                      <FaRegEdit />
+                      <FaRegEdit className='w-5 h-5' />
                     </button>
                     <button
                       onClick={() => deleteIncome(item._id)}
-                      className='text-red-500 hover:text-red-700'
+                      className='font-medium text-red-600 hover:text-red-700'
                     >
-                      <MdOutlineDeleteOutline />
+                      <FaTrash className='w-5 h-5' />
                     </button>
                   </div>
                 </td>

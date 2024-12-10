@@ -10,7 +10,7 @@ import {
   BarElement,
 } from 'chart.js';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
-import { FaPlus, FaRegEdit } from 'react-icons/fa';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
 
 import './newManagement.css';
@@ -151,11 +151,18 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
                     </select>
                   </div>
                 </div>
-                <div className='mt-4'>
-                  <button type='button' className='cancel' onClick={onClose}>
+                <div className='flex items-center justify-end gap-2'>
+                  <button
+                    type='button'
+                    className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                    onClick={onClose}
+                  >
                     Cancel
                   </button>
-                  <button type='submit' className='UpdateBtn'>
+                  <button
+                    type='submit'
+                    className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  >
                     Add Expense
                   </button>
                 </div>
@@ -516,15 +523,15 @@ const ExpenseManagement = () => {
                         <div className='flex space-x-2'>
                           <button
                             onClick={() => editExpense(expense)}
-                            className='font-medium text-blue-600 hover:underline'
+                            className='font-medium text-indigo-600 hover:text-indigo-900'
                           >
                             <FaRegEdit className='w-5 h-5' />
                           </button>
                           <button
                             onClick={() => deleteExpense(expense._id)}
-                            className='font-medium text-red-600 hover:underline'
+                            className='font-medium text-red-600 hover:text-red-700'
                           >
-                            <MdOutlineDeleteOutline className='w-5 h-5' />
+                            <FaTrash className='w-5 h-5' />
                           </button>
                         </div>
                       </td>
