@@ -8,11 +8,10 @@ import {
   FaTrash,
 } from 'react-icons/fa';
 import AddPurchaseDetails from '../components/AddPurchaseDetails';
-import EditPurchaseDetails from '../components/EditPurchaseDetails';
 import AuthContext from '../AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
-import { MdDateRange } from 'react-icons/md';
+import Pagination from '../components/Pagination';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -20,13 +19,13 @@ function PurchaseDetails() {
   const [purchases, setAllPurchasesData] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const limit = 10;
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
@@ -35,7 +34,7 @@ function PurchaseDetails() {
     }, 500); // Debounce search query (500ms delay)
     fetchProductsData();
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, currentPage, category]);
+  }, [searchTerm, currentPage, category, limit]);
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
@@ -269,72 +268,14 @@ function PurchaseDetails() {
           </div>
         </div>
 
-        <div className='bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4'>
-          <div className='flex-1 flex justify-between sm:hidden'>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1 || totalPages === 0}
-              className='relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              Previous
-            </button>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages || totalPages === 0}
-              className='ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              Next
-            </button>
-          </div>
-          <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
-            <div>
-              <p className='text-sm text-gray-700'>
-                Showing{' '}
-                <span className='font-medium'>
-                  {(currentPage - 1) * limit + 1}
-                </span>{' '}
-                to{' '}
-                <span className='font-medium'>
-                  {Math.min(currentPage * limit, purchases.length)}
-                </span>{' '}
-                of <span className='font-medium'>{purchases.length}</span>{' '}
-                results
-              </p>
-            </div>
-            <div>
-              <nav
-                className=' z-0 inline-flex rounded-md shadow-sm -space-x-px'
-                aria-label='Pagination'
-              >
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1 || totalPages === 0}
-                  className=' inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
-                >
-                  <span className='sr-only'>Previous</span>
-                  <FaChevronLeft className='h-5 w-5' aria-hidden='true' />
-                </button>
-                <span className=' inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700'>
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages || totalPages === 0}
-                  className=' inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
-                >
-                  <span className='sr-only'>Next</span>
-                  <FaChevronRight className='h-5 w-5' aria-hidden='true' />
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
+        <Pagination
+          totalItems={purchases.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
       </div>
     </div>
   );

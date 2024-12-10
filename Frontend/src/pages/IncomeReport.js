@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaPlus, FaRegEdit } from 'react-icons/fa';
 import { HiSearch } from 'react-icons/hi';
+import Pagination from '../components/Pagination';
 
 const categories = ['drug', 'sunglasses', 'glass', 'frame'];
 
@@ -125,15 +126,15 @@ export default function IncomeReport() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const limit = 10;
 
   useEffect(() => {
     fetchIncome();
-  }, [currentPage, selectedCategory, searchTerm]);
+  }, [currentPage, selectedCategory, searchTerm, limit]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -252,53 +253,6 @@ export default function IncomeReport() {
         {isLoading && <p>Loading...</p>}
         {error && <p className='text-red-500'>{error}</p>}
 
-        {/* <table className='w-full'>
-          <thead className='bg-gray-50'>
-            <tr>
-              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
-                Total Net Income
-              </th>
-              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
-                Date
-              </th>
-              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
-                Description
-              </th>
-              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
-                Category
-              </th>
-              <th className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {income.map((item) => (
-              <tr key={item._id}>
-                <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                  {item.totalNetIncome}
-                </td>
-                <td>{item.date.split('T')[0]}</td>
-                <td>{item.description}</td>
-                <td>{item.category}</td>
-                <td>
-                  <button
-                    onClick={() => editIncome(item)}
-                    className='text-blue-600 hover:text-blue-800 mr-2'
-                  >
-                    <FaRegEdit />
-                  </button>
-                  <button
-                    onClick={() => deleteIncome(item._id)}
-                    className='text-red-600 hover:text-red-800'
-                  >
-                    <MdOutlineDeleteOutline />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table> */}
         <table className='w-full text-sm text-left text-gray-500'>
           <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
             <tr>
@@ -349,27 +303,14 @@ export default function IncomeReport() {
           </tbody>
         </table>
       </div>
-      <div className='mt-4 flex justify-between items-center'>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l'
-        >
-          Previous
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-          className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r'
-        >
-          Next
-        </button>
-      </div>
+      <Pagination
+        totalItems={income.length}
+        totalPagesCount={totalPages}
+        itemsPerPage={limit}
+        currentPage={currentPage}
+        onPageChange={(page) => setCurrentPage(page)}
+        onLimitChange={(limit) => setLimit(limit)}
+      />
 
       <Modal
         isOpen={showModal}
