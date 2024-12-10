@@ -1,4 +1,4 @@
-.parent {
+/* .parent {
   width: 1000px;
   height: auto;
   font-family: 'Arial', sans-serif;
@@ -24,17 +24,16 @@ h1 {
 }
 
 .list-header {
-  margin: 0; /* Remove default margin */
+  margin: 0;
 }
 
-/* Responsive Adjustments for .parent and h1 */
 @media (max-width: 1000px) {
   .parent {
-    padding: 20px; /* Reduce padding on smaller screens */
+    padding: 20px;
   }
 
   h1 {
-    font-size: 1.8em; /* Slightly decrease font size */
+    font-size: 1.8em;
   }
 }
 
@@ -44,367 +43,307 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Responsive Adjustments for expense-form */
 @media (max-width: 600px) {
   .expense-form {
-    padding: 15px; /* Adjust padding for smaller screens */
+    padding: 15px;
   }
-}
 
-input,
-select {
-  padding: 12px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-/* Responsive Adjustments for input/select */
-@media (max-width: 600px) {
   input,
   select {
-    font-size: 14px; /* Smaller font size for inputs */
-    width: 100%; /* Full width for inputs */
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
   }
-}
 
-input:focus,
-select:focus {
-  border-color: blue;
-  outline: none;
-}
+  @media (max-width: 600px) {
+    input,
+    select {
+      font-size: 14px;
+      width: 100%;
+    }
+  }
 
-.add-expense-button {
-  width: 100px;
-  background-color: blue;
-  color: white;
-  border: none;
-  padding: 5px;
-  margin-right: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s, transform 0.3s;
-  /* margin: 10px; */
-  align-items: center;
-}
+  input:focus,
+  select:focus {
+    border-color: blue;
+    outline: none;
+  }
 
-/* Responsive Adjustments for buttons */
-@media (max-width: 600px) {
   .add-expense-button {
-    width: 100%; /* Full width for buttons */
-    margin: 10px 0; /* Adjust margin */
-    font-size: 14px; /* Adjust font size */
+    width: 100px;
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 5px;
+    margin-right: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s, transform 0.3s;
+    align-items: center;
   }
-}
 
-.add-expense-button:hover {
-  background-color: darkblue;
-  transform: translateY(-1px);
-}
-
-.UpdateBtn,
-.cancel {
-  width: 100px;
-  background-color: blue;
-  color: white;
-  border: none;
-  padding: 5px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s, transform 0.3s;
-  margin: 10px;
-  align-items: center;
-}
-
-/* Responsive Adjustments for Update and Cancel buttons */
-@media (max-width: 600px) {
-  .UpdateBtn,
-  .cancel {
-    width: 100%; /* Full width for buttons */
-    font-size: 14px; /* Adjust font size */
+  @media (max-width: 600px) {
+    .add-expense-button {
+      width: 100%;
+      margin: 10px 0;
+      font-size: 14px;
+    }
   }
-}
 
-.list-header {
-  /* margin-top: 15px; */
-  color: #555;
-  padding: 0 15px;
-  /* font-weight: 500; */
-}
+  .add-expense-button:hover {
+    background-color: darkblue;
+    transform: translateY(-1px);
+  }
 
-.expense-list-container {
-  margin-top: 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-}
+  .list-header {
+    color: #555;
+    padding: 0 15px;
+  }
 
-/* Responsive Adjustments for .expense-list-container */
-@media (max-width: 600px) {
   .expense-list-container {
-    padding: 15px; /* Adjust padding */
+    margin-top: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
   }
-}
 
-.expense-item {
-  background-color: #f9f9f9;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s;
-}
+  @media (max-width: 600px) {
+    .expense-list-container {
+      padding: 15px;
+    }
+  }
 
-/* Responsive Adjustments for .expense-item */
-@media (max-width: 600px) {
   .expense-item {
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-start; /* Align items to the left */
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
   }
-}
 
-.expense-item:hover {
-  background-color: #e9ecef;
-}
+  @media (max-width: 600px) {
+    .expense-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 
-.edit-parent {
-  display: flex;
-  justify-content: center;
-}
-.edit-button {
-  /* width: 40px; */
-  background-color: #fff;
-  /* margin-right: 10px; */
-  border: none;
-  color: black;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
+  .expense-item:hover {
+    background-color: #e9ecef;
+  }
 
-/* Responsive Adjustments for edit-button */
-@media (max-width: 600px) {
+  .edit-parent {
+    display: flex;
+    justify-content: center;
+  }
   .edit-button {
-    width: auto; /* Allow buttons to adjust size */
-    margin-top: 5px; /* Add margin for spacing */
+    background-color: #fff;
+    border: none;
+    color: black;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
   }
-}
 
-.edit-button:hover {
-  background-color: #fff;
-  color: rgb(0, 179, 255);
-  transform: scale(1.05);
-}
-.del-icon {
-  font-size: 1.1rem;
-}
-.approved {
-  background-color: #d4edda;
-  border-left: 5px solid blue;
-}
+  @media (max-width: 600px) {
+    .edit-button {
+      width: auto;
+      margin-top: 5px;
+    }
+  }
 
-.general-div {
-  display: flex;
-  align-items: center; /* Align items in a single line */
-  padding: 5px;
-  margin-top: 20px;
-}
+  .edit-button:hover {
+    background-color: #fff;
+    color: rgb(0, 179, 255);
+    transform: scale(1.05);
+  }
+  .del-icon {
+    font-size: 1.1rem;
+  }
+  .approved {
+    background-color: #d4edda;
+    border-left: 5px solid blue;
+  }
 
-/* Responsive Adjustments for general-div */
-@media (max-width: 600px) {
   .general-div {
-    flex-direction: column; /* Stack items on smaller screens */
-    align-items: flex-start; /* Align items to the left */
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    margin-top: 20px;
   }
-}
 
-.filter-category,
-.summery-type,
-.month-selection,
-.year-selection {
-  margin-right: 15px; /* Space between inputs */
-}
+  @media (max-width: 600px) {
+    .general-div {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
 
-/* Responsive Adjustments for filter inputs */
-@media (max-width: 600px) {
   .filter-category,
   .summery-type,
   .month-selection,
   .year-selection {
-    margin-right: 0; /* Remove spacing in mobile view */
-    margin-bottom: 10px; /* Add space below each dropdown */
+    margin-right: 15px;
   }
-}
 
-.dropdown,
-.year-input {
-  padding: 5px; /* Adjust padding */
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px; /* Consistent font size */
-  width: 10rem; /* Fixed width */
-}
+  @media (max-width: 600px) {
+    .filter-category,
+    .summery-type,
+    .month-selection,
+    .year-selection {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+  }
 
-/* Responsive Adjustments for dropdowns */
-@media (max-width: 600px) {
   .dropdown,
   .year-input {
-    width: 100%; /* Full width for dropdowns */
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 10rem;
   }
-}
 
-.year-label {
-  margin: 0 10px; /* Adjust margin for spacing */
-}
+  @media (max-width: 600px) {
+    .dropdown,
+    .year-input {
+      width: 100%;
+    }
+  }
 
-.summary {
-  padding: 10px;
-  border-radius: 4px;
-  overflow-x: auto;
-  border: 1px solid #ccc;
-}
+  .year-label {
+    margin: 0 10px;
+  }
 
-.summary-display {
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-/* .Add-btn h2{
+  .summary {
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    border: 1px solid #ccc;
+  }
+
+  .summary-display {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .summary-display h2 {
     font-size: 1.5em;
-    /* padding: 0 0 0 10px; 
-} */
-.summary-display h2 {
-  /* margin-bottom: 15px; */
-  font-size: 1.5em;
-  padding: 0 0 0 10px;
-}
+    padding: 0 0 0 10px;
+  }
 
-/* Table Styling */
-.expense-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 16px;
-  background-color: #ffffff;
-}
-
-/* Responsive Adjustments for expense-table */
-@media (max-width: 600px) {
   .expense-table {
-    font-size: 14px; /* Adjust font size */
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    background-color: #ffffff;
   }
-}
 
-/* Table header styling */
-.expense-table thead {
-  background-color: #0b72ef;
-  opacity: 0.4;
-  color: #fff;
-  /* text-align: left; */
-}
-.expense-table th {
-  padding: 5px;
-  font-weight: 600;
-  /* text-align: left; */
-}
+  @media (max-width: 600px) {
+    .expense-table {
+      font-size: 14px;
+    }
+  }
 
-/* Table body styling */
-.expense-table tbody tr {
-  border-bottom: 1px solid #dddddd;
-  transition: background-color 0.2s ease;
-}
-
-/* Table cell styling */
-.expense-table td {
-  padding: 5px;
-  color: #777;
-}
-
-/* Column styling */
-.expense-table th,
-.expense-table td {
-  text-align: center;
-}
-
-.chart {
-  width: 100%; /* Full width of the page */
-  height: auto; /* Reduced height for the chart */
-  margin: 20px auto;
-  padding: 10px;
-  text-align: center;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-}
-
-.chart h2 {
-  margin-bottom: 10px; /* Reduced space between title and chart */
-}
-
-.graph {
-  width: 300px;
-  height: 300px;
-}
-
-.fixed {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 50; /* Higher than the overlay */
-}
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-  z-index: 40; /* Lower than the modal */
-}
-
-.relative {
-  z-index: 60; /* Ensure modal is above the overlay */
-}
-
-/* Responsive table styling */
-@media (max-width: 800px) {
   .expense-table thead {
-    font-size: 15px; /* Adjust header font size */
+    background-color: #0b72ef;
+    opacity: 0.4;
+    color: #fff;
+  }
+  .expense-table th {
+    padding: 5px;
+    font-weight: 600;
   }
 
-  .edit-button,
-  .delete-button {
-    padding: 6px 10px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 600px) {
-  input,
-  select,
-  button {
-    font-size: 14px; /* Smaller font size for inputs and buttons */
+  .expense-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+    transition: background-color 0.2s ease;
   }
 
-  .edit-button {
-    margin-left: 0;
-    margin-top: 5px; /* Adjust margin for layout */
+  .expense-table td {
+    padding: 5px;
+    color: #777;
   }
 
-  .expense-item {
-    flex-direction: column; /* Stack items vertically */
-    align-items: flex-start; /* Align items to the left */
+  .expense-table th,
+  .expense-table td {
+    text-align: center;
   }
-}
+
+  .chart {
+    width: 100%;
+    height: auto;
+    margin: 20px auto;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+  }
+
+  .fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+
+  .relative {
+    z-index: 60;
+  }
+
+  @media (max-width: 800px) {
+    .expense-table thead {
+      font-size: 15px;
+    }
+
+    .edit-button,
+    .delete-button {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    input,
+    select,
+    button {
+      font-size: 14px;
+    }
+
+    .edit-button {
+      margin-left: 0;
+      margin-top: 5px;
+    }
+
+    .expense-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+} */

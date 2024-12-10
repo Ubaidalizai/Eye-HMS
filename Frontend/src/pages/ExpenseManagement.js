@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaPlus, FaRegEdit } from 'react-icons/fa';
+import Pagination from '../components/Pagination';
 
 import './newManagement.css';
 import { HiSearch } from 'react-icons/hi';
@@ -183,10 +184,10 @@ const ExpenseManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const limit = 10; // Number of items per page
 
   useEffect(() => {
     if (summaryType === 'monthly') {
@@ -202,6 +203,7 @@ const ExpenseManagement = () => {
     selectedYear,
     summaryType,
     searchTerm,
+    limit,
   ]);
 
   const handleChange = (e) => {
@@ -429,12 +431,12 @@ const ExpenseManagement = () => {
   };
 
   return (
-    <div className='parent'>
+    <div className=''>
       <h2 className='font-semibold text-xl mb-12 mt-6'>Expense List</h2>
 
-      <div className='expense-list-detail'>
+      <div className='expense-list-detail border rounded-md'>
         <div className='summary-display'>
-          <div className='Add-btn'>
+          <div className='flex items-center justify-between py-5'>
             <div className='flex items-center justify-center z-0'>
               <HiSearch className=' translate-x-7 text-gray-400' size={20} />
               <input
@@ -463,82 +465,85 @@ const ExpenseManagement = () => {
             />
           </div>
 
-          <table className='w-full rounded-sm'>
-            <thead className='bg-gray-50 '>
-              <tr>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Amount
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Date
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Reason
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Category
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {expenses.length === 0 ? (
+          <div className='overflow-x-auto shadow-md sm:rounded-lg'>
+            <table className='w-full text-sm text-left text-gray-500'>
+              <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
                 <tr>
-                  <td className=' text-center font-semibold'>
-                    No expenses added yet.
-                  </td>
+                  <th scope='col' className='px-6 py-3'>
+                    Amount
+                  </th>
+                  <th scope='col' className='px-6 py-3'>
+                    Date
+                  </th>
+                  <th scope='col' className='px-6 py-3'>
+                    Reason
+                  </th>
+                  <th scope='col' className='px-6 py-3'>
+                    Category
+                  </th>
+                  <th scope='col' className='px-6 py-3'>
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                expenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>{expense.amount}</td>
-                    <td>{new Date(expense.date).toLocaleDateString()}</td>
-                    <td>{expense.reason}</td>
-                    <td>{expense.category}</td>
-                    <td>
-                      <div className='edit-parent'>
-                        <button
-                          onClick={() => editExpense(expense)}
-                          className='edit-button'
-                        >
-                          <FaRegEdit />
-                        </button>
-
-                        <button
-                          onClick={() => deleteExpense(expense._id)}
-                          className='edit-button'
-                        >
-                          <div className='del-icon'>
-                            <MdOutlineDeleteOutline />
-                          </div>
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {!expenses || expenses.length === 0 ? (
+                  <tr className='bg-white border-b'>
+                    <td
+                      colSpan={5}
+                      className='px-6 py-4 font-medium text-gray-500 whitespace-nowrap text-center'
+                    >
+                      No expenses added yet.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  expenses.map((expense) => (
+                    <tr
+                      key={expense.id}
+                      className='bg-white border-b hover:bg-gray-50'
+                    >
+                      <td className='px-6 py-4 font-medium text-gray-900 whitespace-nowrap'>
+                        ${expense.amount?.toFixed(2) ?? '0.00'}
+                      </td>
+                      <td className='px-6 py-4'>
+                        {expense.date
+                          ? new Date(expense.date).toLocaleDateString()
+                          : 'N/A'}
+                      </td>
+                      <td className='px-6 py-4'>{expense.reason ?? 'N/A'}</td>
+                      <td className='px-6 py-4'>{expense.category ?? 'N/A'}</td>
+                      <td className='px-6 py-4'>
+                        <div className='flex space-x-2'>
+                          <button
+                            onClick={() => editExpense(expense)}
+                            className='font-medium text-blue-600 hover:underline'
+                          >
+                            <FaRegEdit className='w-5 h-5' />
+                          </button>
+                          <button
+                            onClick={() => deleteExpense(expense._id)}
+                            className='font-medium text-red-600 hover:underline'
+                          >
+                            <MdOutlineDeleteOutline className='w-5 h-5' />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        <div className='general-div'>
+        <Pagination
+          totalItems={expenses.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+        <div className='flex items-center justify-start gap-3 mt-10'>
           <div className='filter-category'>
             <select
               className='dropdown'
@@ -620,9 +625,9 @@ const ExpenseManagement = () => {
           />
         </div>
 
-        <div className='chart'>
+        <div>
           <h2>Expense by Category</h2>
-          <div className='graph'>
+          <div className='w-80 h-80'>
             <Doughnut
               data={{
                 labels: categories,

@@ -212,7 +212,7 @@ const addPurchase = asyncHandler(async (req, res) => {
 });
 
 // Get All Purchase Data with Product Name And Also By Category
-const getPurchaseData = getAll(Purchase, true, {
+const getPurchaseData = getAll(Purchase, false, {
   path: 'ProductID',
   select: 'name',
 });

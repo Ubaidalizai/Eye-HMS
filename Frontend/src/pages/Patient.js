@@ -12,6 +12,7 @@ import {
   HiChevronRight,
 } from 'react-icons/hi';
 import { FaPlus } from 'react-icons/fa';
+import Pagination from '../components/Pagination';
 
 const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
@@ -28,22 +29,22 @@ export default function PatientManagement() {
     patientGender: '',
     insuranceContact: '',
   });
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const patientsPerPage = 10;
 
   useEffect(() => {
     fetchPatients();
-  }, [searchTerm, currentPage]);
+  }, [searchTerm, currentPage, limit]);
 
   const fetchPatients = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}`,
+        `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}&page=${currentPage}&limit=${limit}`,
         {
           credentials: 'include',
         }
@@ -51,7 +52,7 @@ export default function PatientManagement() {
       if (!response.ok) throw new Error('Failed to fetch patients');
       const data = await response.json();
       setPatients(data.data.results);
-      setTotalPages(Math.ceil(data.data.total / patientsPerPage));
+      setTotalPages(data.totalPages || Math.ceil(data.data.total / limit));
     } catch (error) {
       toast.error('Failed to fetch patients', {
         position: 'top-right',
@@ -160,7 +161,7 @@ export default function PatientManagement() {
       <h2 className='font-semibold text-xl '> Patient List</h2>
 
       <div className='border sm:rounded-lg mt-10'>
-        <div className='mb-6 flex justify-between items-center'>
+        <div className='mb-6 pt-6 flex justify-between items-center'>
           <div className='flex items-center justify-center z-0'>
             <HiSearch className=' translate-x-7 text-gray-400' size={20} />
             <input
@@ -190,77 +191,65 @@ export default function PatientManagement() {
           </button>
         </div>
 
-        <div className='overflow-x-auto bg-white rounded-lg shadow'>
-          <table className='min-w-full'>
-            <thead className='bg-gray-50'>
-              <tr className='flex items-center justify-between'>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+        <div className='overflow-x-auto bg-white'>
+          <table className='w-full text-sm text-left text-gray-500'>
+            <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+              <tr>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Name
                 </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Age
                 </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Contact
                 </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Patient ID
                 </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Gender
                 </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Insurance
                 </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className='divide-y divide-gray-200'>
+            <tbody className='bg-white divide-y divide-gray-200'>
               {patients.map((patient) => (
-                <tr
-                  key={patient._id}
-                  className='hover:bg-indigo-50 transition-colors duration-150'
-                >
-                  <td className='py-4 px-4'>{patient.name}</td>
-                  <td className='py-4 px-4'>{patient.age}</td>
-                  <td className='py-4 px-4'>{patient.contact}</td>
-                  <td className='py-4 px-4'>{patient.patientID}</td>
-                  <td className='py-4 px-4'>{patient.patientGender}</td>
-                  <td className='py-4 px-4'>{patient.insuranceContact}</td>
-                  <td className='py-4 px-4'>
+                <tr key={patient._id} className='hover:bg-gray-50'>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
+                    {patient.name}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.age}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.contact}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.patientID}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.patientGender}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.insuranceContact}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                     <div className='flex space-x-2'>
                       <button
                         onClick={() => handleEdit(patient)}
-                        className='text-blue-600 hover:text-blue-800'
+                        className='text-indigo-600 hover:text-indigo-900'
                       >
                         <HiPencil size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(patient._id)}
-                        className='text-red-600 hover:text-red-800'
+                        className='text-red-500 hover:text-red-700'
                       >
                         <HiTrash size={20} />
                       </button>
@@ -268,7 +257,7 @@ export default function PatientManagement() {
                         onClick={() =>
                           navigate(`/patients/${patient.name}/prescriptions`)
                         }
-                        className='text-green-600 hover:text-green-800'
+                        className='text-green-500 hover:text-green-700'
                       >
                         <HiDocumentAdd size={20} />
                       </button>
@@ -280,32 +269,19 @@ export default function PatientManagement() {
           </table>
         </div>
       </div>
-      {/* Pagination */}
-      <div className='mt-4 flex justify-between items-center'>
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:bg-gray-400'
-        >
-          <HiChevronLeft />
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:bg-gray-400'
-        >
-          <HiChevronRight />
-        </button>
-      </div>
+      <Pagination
+        totalItems={patients.length}
+        totalPagesCount={totalPages}
+        itemsPerPage={limit}
+        currentPage={currentPage}
+        onPageChange={(page) => setCurrentPage(page)}
+        onLimitChange={(limit) => setLimit(limit)}
+      />
 
       {isModalOpen && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
           <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
-            <h2 className='text-2xl font-bold mb-4 text-indigo-800'>
-              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
+            <h2 className='text-2xl font-bold text-center mb-4 text-indigo-800'>
               {currentPatient ? 'Edit Patient' : 'Add New Patient'}
             </h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
@@ -369,13 +345,13 @@ export default function PatientManagement() {
                 <button
                   type='button'
                   onClick={() => setIsModalOpen(false)}
-                  className='px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition'
+                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition'
+                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                   {currentPatient ? 'Update' : 'Add'} Patient
                 </button>

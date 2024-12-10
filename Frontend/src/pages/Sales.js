@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import {
-  FaPlus,
-  FaChevronLeft,
-  FaChevronRight,
-  FaFilter,
-  FaTrash,
-} from 'react-icons/fa';
+import { FaPlus, FaFilter, FaTrash } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
+import Pagination from '../components/Pagination';
 
 export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -16,6 +11,7 @@ export default function Sales() {
   const [sales, setSales] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -23,13 +19,12 @@ export default function Sales() {
   const [editingSale, setEditingSale] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const limit = 10;
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     fetchSales();
     fetchProductsData();
-  }, [currentPage, category, searchTerm]);
+  }, [currentPage, category, searchTerm, limit]);
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
@@ -169,33 +164,31 @@ export default function Sales() {
               />
             </div>
             <div className='flex items-center space-x-4'>
-              {user.role === 'admin' && (
-                <div className='flex items-center'>
-                  <label htmlFor='category' className='sr-only'>
-                    Category
-                  </label>
-                  <div className='relative'>
-                    <select
-                      id='category'
-                      name='category'
-                      value={category}
-                      onChange={handleCategoryChange}
-                      className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
-                    >
-                      <option value=''>All Categories</option>
-                      <option value='drug'>Drug</option>
-                      <option value='sunglasses'>sunglasses</option>
-                      <option value='glass'>Glass</option>
-                      <option value='frame'>Frame</option>
-                    </select>
-                    <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
-                      <FaFilter className='h-4 w-4' aria-hidden='true' />
-                    </div>
+              <div className='flex items-center'>
+                <label htmlFor='category' className='sr-only'>
+                  Category
+                </label>
+                <div className='relative'>
+                  <select
+                    id='category'
+                    name='category'
+                    value={category}
+                    onChange={handleCategoryChange}
+                    className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                  >
+                    <option value=''>All Categories</option>
+                    <option value='drug'>Drug</option>
+                    <option value='sunglasses'>sunglasses</option>
+                    <option value='glass'>Glass</option>
+                    <option value='frame'>Frame</option>
+                  </select>
+                  <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+                    <FaFilter className='h-4 w-4' aria-hidden='true' />
                   </div>
                 </div>
-              )}
+              </div>
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-9 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-8 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowSaleModal(true)}
               >
                 <FaPlus className='mr-2' />
@@ -214,43 +207,43 @@ export default function Sales() {
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Stock Sold
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sale Price
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sales Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Sales By
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Total Sale
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
                       Actions
                     </th>
@@ -302,71 +295,14 @@ export default function Sales() {
           </div>
         </div>
 
-        <div className='bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4'>
-          <div className='flex-1 flex justify-between sm:hidden'>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1 || totalPages === 0}
-              className='relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              Previous
-            </button>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages || totalPages === 0}
-              className='ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              Next
-            </button>
-          </div>
-          <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
-            <div>
-              <p className='text-sm text-gray-700'>
-                Showing{' '}
-                <span className='font-medium'>
-                  {(currentPage - 1) * limit + 1}
-                </span>{' '}
-                to{' '}
-                <span className='font-medium'>
-                  {Math.min(currentPage * limit, sales.length)}
-                </span>{' '}
-                of <span className='font-medium'>{sales.length}</span> results
-              </p>
-            </div>
-            <div>
-              <nav
-                className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
-                aria-label='Pagination'
-              >
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1 || totalPages === 0}
-                  className='relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
-                >
-                  <span className='sr-only'>Previous</span>
-                  <FaChevronLeft className='h-5 w-5' aria-hidden='true' />
-                </button>
-                <span className='relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700'>
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages || totalPages === 0}
-                  className='relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
-                >
-                  <span className='sr-only'>Next</span>
-                  <FaChevronRight className='h-5 w-5' aria-hidden='true' />
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
+        <Pagination
+          totalItems={sales.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
       </div>
     </div>
   );
