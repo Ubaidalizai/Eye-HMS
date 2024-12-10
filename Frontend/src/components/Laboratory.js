@@ -108,7 +108,7 @@ function Laboratory() {
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
     setFieldValues({
-      id: recordToEdit.id || '',
+      patientId: recordToEdit.patientId || '',
       patientName: recordToEdit.patientName || '',
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
@@ -116,6 +116,7 @@ function Laboratory() {
       sampleCollected: recordToEdit.sampleCollected || '',
       results: recordToEdit.results || '',
       remarks: recordToEdit.remarks || '',
+      percentage: recordToEdit.percentage || '',
     });
     setEditMode(true);
     setEditIndex(index);
@@ -141,7 +142,7 @@ function Laboratory() {
   };
 
   const fields = [
-    { label: 'ID', type: 'text', name: 'patientId' },
+    { label: 'patientId', type: 'text', name: 'patientId' },
     { label: 'Patient Name', type: 'text', name: 'patientName' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Time', type: 'time', name: 'time' },
