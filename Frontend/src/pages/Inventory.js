@@ -19,6 +19,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AuthContext from '../AuthContext';
 import { moveItemAPI } from '../redux/inventorySlice';
 import UpdateProduct from '.././components/UpdateProduct';
+import Pagination from '../components/Pagination';
 
 function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
@@ -29,6 +30,7 @@ function Inventory() {
   const [searchTerm, setSearchTerm] = useState('');
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [category, setCategory] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +46,6 @@ function Inventory() {
   });
   const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
-  const limit = 10;
 
   const [url, setUrl] = useState(
     `http://localhost:4000/api/v1/inventory/product`
@@ -54,7 +55,7 @@ function Inventory() {
     fetchInventorySummary();
     fetchProductsData();
     constructUrl(currentPage, category, searchTerm);
-  }, [updatePage, url, currentPage, category, searchTerm]);
+  }, [updatePage, url, currentPage, category, searchTerm, limit]);
 
   const constructUrl = (page, selectedCategory, searchTerm) => {
     let baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${page}&limit=${limit}`;
@@ -585,29 +586,14 @@ function Inventory() {
           </Dialog>
         </Transition>
 
-        <div className='flex justify-between mt-4'>
-          <button
-            className=' py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1 || totalPages === 0}
-          >
-            <FaChevronLeft className='mr-2' /> Previous
-          </button>
-
-          <span className='flex items-center text-gray-700'>
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            className=' py-2 text-gray-700 rounded disabled:opacity-50 flex items-center'
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages || totalPages === 0}
-          >
-            Next <FaChevronRight className='ml-2' />
-          </button>
-        </div>
+        <Pagination
+          totalItems={products.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
       </div>
     </div>
   );

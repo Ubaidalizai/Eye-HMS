@@ -11,7 +11,10 @@ import {
   HiChevronLeft,
   HiChevronRight,
 } from 'react-icons/hi';
+
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import Pagination from '../components/Pagination';
+
 
 const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
@@ -28,22 +31,22 @@ export default function PatientManagement() {
     patientGender: '',
     insuranceContact: '',
   });
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const patientsPerPage = 10;
 
   useEffect(() => {
     fetchPatients();
-  }, [searchTerm, currentPage]);
+  }, [searchTerm, currentPage, limit]);
 
   const fetchPatients = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}`,
+        `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}&page=${currentPage}&limit=${limit}`,
         {
           credentials: 'include',
         }
@@ -51,7 +54,7 @@ export default function PatientManagement() {
       if (!response.ok) throw new Error('Failed to fetch patients');
       const data = await response.json();
       setPatients(data.data.results);
-      setTotalPages(Math.ceil(data.data.total / patientsPerPage));
+      setTotalPages(data.totalPages || Math.ceil(data.data.total / limit));
     } catch (error) {
       toast.error('Failed to fetch patients', {
         position: 'top-right',
@@ -269,26 +272,14 @@ export default function PatientManagement() {
           </table>
         </div>
       </div>
-      {/* Pagination */}
-      <div className='mt-4 flex justify-between items-center'>
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:bg-gray-400'
-        >
-          <HiChevronLeft />
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:bg-gray-400'
-        >
-          <HiChevronRight />
-        </button>
-      </div>
+      <Pagination
+        totalItems={patients.length}
+        totalPagesCount={totalPages}
+        itemsPerPage={limit}
+        currentPage={currentPage}
+        onPageChange={(page) => setCurrentPage(page)}
+        onLimitChange={(limit) => setLimit(limit)}
+      />
 
       {isModalOpen && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
