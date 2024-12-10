@@ -190,103 +190,7 @@ export default function PatientManagement() {
           </button>
         </div>
 
-        <div className='overflow-x-auto bg-white rounded-lg shadow'>
-          {/* <table className='w-full'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Name
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Age
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Contact
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Patient ID
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Gender
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Insurance
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200'>
-              {patients.map((patient) => (
-                <tr key={patient._id}>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    {patient.name}
-                  </td>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    {patient.age}
-                  </td>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    {patient.contact}
-                  </td>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    {patient.patientID}
-                  </td>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    {patient.patientGender}
-                  </td>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    {patient.insuranceContact}
-                  </td>
-                  <td className='whitespace-nowrap px-6 py-3   text-gray-700'>
-                    <div className='flex space-x-2'>
-                      <button
-                        onClick={() => handleEdit(patient)}
-                        className='text-blue-600 hover:text-blue-800'
-                      >
-                        <HiPencil size={20} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(patient._id)}
-                        className='text-red-600 hover:text-red-800'
-                      >
-                        <HiTrash size={20} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigate(`/patients/${patient.name}/prescriptions`)
-                        }
-                        className='text-green-600 hover:text-green-800'
-                      >
-                        <HiDocumentAdd size={20} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table> */}
+        <div className='overflow-x-auto bg-white'>
           <table className='w-full text-sm text-left text-gray-500'>
             <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
               <tr>
@@ -388,8 +292,7 @@ export default function PatientManagement() {
       {isModalOpen && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
           <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
-            <h2 className='text-2xl font-bold mb-4 text-indigo-800'>
-              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
+            <h2 className='text-2xl font-bold text-center mb-4 text-indigo-800'>
               {currentPatient ? 'Edit Patient' : 'Add New Patient'}
             </h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
@@ -453,13 +356,13 @@ export default function PatientManagement() {
                 <button
                   type='button'
                   onClick={() => setIsModalOpen(false)}
-                  className='px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition'
+                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition'
+                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                   {currentPatient ? 'Update' : 'Add'} Patient
                 </button>

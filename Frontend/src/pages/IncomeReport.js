@@ -96,14 +96,14 @@ const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
           <div className='flex justify-end gap-4'>
             <button
               type='button'
-              className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300'
+              className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
               onClick={onClose}
             >
               Cancel
             </button>
             <button
               type='submit'
-              className='px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700'
+              className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             >
               Add Income
             </button>
