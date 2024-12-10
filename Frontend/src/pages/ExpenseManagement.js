@@ -534,16 +534,15 @@ const ExpenseManagement = () => {
               </tbody>
             </table>
           </div>
-          <Pagination
-            totalItems={expenses.length}
-            totalPagesCount={totalPages}
-            itemsPerPage={limit}
-            currentPage={currentPage}
-            onPageChange={(page) => setCurrentPage(page)}
-            onLimitChange={(limit) => setLimit(limit)}
-          />
         </div>
-
+        <Pagination
+          totalItems={expenses.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
         <div className='flex items-center justify-start gap-3 mt-10'>
           <div className='filter-category'>
             <select

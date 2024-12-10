@@ -9,6 +9,7 @@ import {
   FaChevronRight,
 } from 'react-icons/fa';
 import { FcSalesPerformance } from 'react-icons/fc';
+import Pagination from '../components/Pagination';
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
@@ -16,15 +17,15 @@ const Pharmacy = () => {
   const [totalSalePrice, setTotalSalePrice] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     fetchData();
     fetchDrugsSummary();
-  }, []);
+  }, [currentPage, limit]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -261,71 +262,14 @@ const Pharmacy = () => {
           </div>
         </div>
 
-        <div className='bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4'>
-          <div className='flex-1 flex justify-between sm:hidden'>
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className='relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              Previous
-            </button>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className='ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50'
-            >
-              Next
-            </button>
-          </div>
-          <div className='hidden sm:flex-1 sm:flex sm:items-center sm:justify-between'>
-            <div>
-              <p className='text-sm text-gray-700'>
-                Showing{' '}
-                <span className='font-medium'>
-                  {(currentPage - 1) * limit + 1}
-                </span>{' '}
-                to{' '}
-                <span className='font-medium'>
-                  {Math.min(currentPage * limit, drugs.length)}
-                </span>{' '}
-                of <span className='font-medium'>{drugs.length}</span> results
-              </p>
-            </div>
-            <div>
-              <nav
-                className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
-                aria-label='Pagination'
-              >
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                  className='relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
-                >
-                  <span className='sr-only'>Previous</span>
-                  <FaChevronLeft className='h-5 w-5' aria-hidden='true' />
-                </button>
-                <span className='relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700'>
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className='relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50'
-                >
-                  <span className='sr-only'>Next</span>
-                  <FaChevronRight className='h-5 w-5' aria-hidden='true' />
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
+        <Pagination
+          totalItems={drugs.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
       </div>
     </div>
   );
