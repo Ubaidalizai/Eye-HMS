@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
-import FormModal from "../components/FormModal";
-import DataTable from "../components/DataTable";
+import React, { useState, useEffect } from 'react';
+import FormModal from '../components/FormModal';
+import DataTable from '../components/DataTable';
 
 function OPD() {
-
   const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
   const [date, setDate] = useState('');
@@ -13,18 +12,6 @@ function OPD() {
   const [diagnosis, setDiagnosis] = useState('');
   const [prescription, setPrescription] = useState('');
   const [percentage, setPercentage] = useState('');
-
-  const [fieldValues, setFieldValues] = useState({
-    patientId: "",
-    patientName: "",
-    date: "",
-    time: "",
-    department: "",
-    doctor: "",
-    diagnosis: "",
-    prescription: "",
-  });
-
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -32,7 +19,6 @@ function OPD() {
 
   // Fetch data from backend API
   useEffect(() => {
-
     const fetchData = async () => {
       try {
         const response = await fetch('http://127.0.0.1:4000/api/v1/opd/');
@@ -44,12 +30,6 @@ function OPD() {
       }
     };
     fetchData();
-
-    const storedData = localStorage.getItem("opdSubmittedData");
-    if (storedData) {
-      setSubmittedData(JSON.parse(storedData));
-    }
-
   }, []);
 
   const handleSubmit = async (event) => {
@@ -67,7 +47,6 @@ function OPD() {
     };
 
     if (editMode) {
-
       try {
         const response = await fetch(
           `http://127.0.0.1:4000/api/v1/oct/${patientId}`,
@@ -99,19 +78,6 @@ function OPD() {
       } catch (error) {
         console.error('Error adding data:', error);
       }
-
-      const updatedData = [...submittedData];
-      updatedData[editIndex] = fieldValues;
-      setSubmittedData(updatedData);
-      localStorage.setItem("opdSubmittedData", JSON.stringify(updatedData));
-    } else {
-      const newSubmittedData = [...submittedData, fieldValues];
-      setSubmittedData(newSubmittedData);
-      localStorage.setItem(
-        "opdSubmittedData",
-        JSON.stringify(newSubmittedData)
-      );
-
     }
 
     clearForm();
@@ -155,7 +121,6 @@ function OPD() {
     setIsOpen(true);
   };
 
-
   const handleRemove = async (index) => {
     try {
       const { patientId } = submittedData[index];
@@ -184,31 +149,6 @@ function OPD() {
     { label: 'Diagnosis', type: 'textarea', name: 'diagnosis' },
     { label: 'Prescription', type: 'textarea', name: 'prescription' },
     { label: 'Percentage', type: 'number', name: 'percentage' }, // New Field
-
-  const clearForm = () => {
-    setFieldValues({
-      patientId: "",
-      patientName: "",
-      date: "",
-      time: "",
-      department: "",
-      doctor: "",
-      diagnosis: "",
-      prescription: "",
-    });
-    setEditMode(false);
-  };
-
-  const fields = [
-    { label: "Patient ID", type: "text", name: "patientId" },
-    { label: "Patient Name", type: "text", name: "patientName" },
-    { label: "Date", type: "date", name: "date" },
-    { label: "Time", type: "time", name: "time" },
-    { label: "Department", type: "text", name: "department" },
-    { label: "Doctor", type: "text", name: "doctor" },
-    { label: "Diagnosis", type: "textarea", name: "diagnosis" },
-    { label: "Prescription", type: "textarea", name: "prescription" },
-
   ];
 
   const fieldValues = {
@@ -261,11 +201,7 @@ function OPD() {
       </div>
 
       <FormModal
-
         title={editMode ? 'Edit OCT Record' : 'Add New OCT Record'}
-
-        title={editMode ? "Edit OPD Record" : "Add New OPD Record"}
-
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields}
@@ -282,15 +218,7 @@ function OPD() {
         submittedData={submittedData}
         fields={fields}
         handleEdit={handleEdit}
-
         handleRemove={handleRemove}
-
-        handleRemove={(index) => {
-          const updatedData = submittedData.filter((_, i) => i !== index);
-          setSubmittedData(updatedData);
-          localStorage.setItem("opdSubmittedData", JSON.stringify(updatedData));
-        }}
-
       />
     </div>
   );
