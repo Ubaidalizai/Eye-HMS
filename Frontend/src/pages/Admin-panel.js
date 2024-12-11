@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -115,84 +115,6 @@ export default function AdminPanel() {
 
         {/* User Table */}
         <div className='overflow-x-auto'>
-          {/* <table className='w-full text-sm text-left text-gray-500'>
-            <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
-              <tr>
-                <th scope='col' className='px-6 py-3'>
-                  Profile
-                </th>
-                <th scope='col' className='px-6 py-3'>
-                  Full Name
-                </th>
-                <th scope='col' className='px-6 py-3'>
-                  Email
-                </th>
-                <th scope='col' className='px-6 py-3'>
-                  Role
-                </th>
-                <th scope='col' className='px-6 py-3'>
-                  Password
-                </th>
-                <th scope='col' className='px-6 py-3'>
-                  Phone Number
-                </th>
-                <th scope='col' className='px-6 py-3'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user._id}
-                  className='bg-white border-b hover:bg-gray-50'
-                >
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <img
-                      src={`http://localhost:4000/public/img/users/${user?.image}`}
-                      alt={`${user.firstName} ${user.lastName}`}
-                      className='h-10 w-10 rounded-full'
-                    />
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap font-medium text-gray-900'>
-                    {`${user.firstName} ${user.lastName}`}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.role === 'admin' ? (
-                      <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
-                        {user.role}
-                      </span>
-                    ) : (
-                      user.role
-                    )}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.password ? '********' : 'N/A'}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.phoneNumber}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='flex space-x-2'>
-                      <button
-                        onClick={() => setEditingUser(user)}
-                        className='font-medium text-blue-600 hover:underline'
-                      >
-                        <Pencil className='w-5 h-5' />
-                      </button>
-                      <button
-                        onClick={() => deleteUser(user._id)}
-                        className='font-medium text-red-600 hover:underline'
-                      >
-                        <Trash2 className='w-5 h-5' />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table> */}
           <table className='w-full text-sm text-left text-gray-500'>
             <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
               <tr>
@@ -200,7 +122,7 @@ export default function AdminPanel() {
                   Profile
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Full Name
+                  Name
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Email
@@ -212,7 +134,7 @@ export default function AdminPanel() {
                   Password
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Phone Number
+                  P.No
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Actions
@@ -257,13 +179,13 @@ export default function AdminPanel() {
                         onClick={() => setEditingUser(user)}
                         className='font-medium text-indigo-600 hover:text-indigo-900'
                       >
-                        <Pencil className='w-5 h-5' />
+                        <FaRegEdit className='w-5 h-5' />
                       </button>
                       <button
                         onClick={() => deleteUser(user._id)}
                         className='font-medium text-red-600 hover:text-red-700'
                       >
-                        <Trash2 className='w-5 h-5' />
+                        <FaTrash className='w-5 h-5' />
                       </button>
                     </div>
                   </td>
@@ -453,17 +375,17 @@ export default function AdminPanel() {
                 onChange={handleImageUpload}
                 className='border p-2 rounded w-full mb-4'
               />
-              <div className='flex justify-end'>
+              <div className='flex items-center justify-end gap-2'>
                 <button
                   type='button'
                   onClick={() => setIsAddModalOpen(false)}
-                  className='bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2 hover:bg-gray-400'
+                  className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+                  className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                   Add User
                 </button>
@@ -547,17 +469,17 @@ export default function AdminPanel() {
                 <option value='nurse'>Nurse</option>
                 <option value='doctor'>Doctor</option>
               </select>
-              <div className='flex justify-end'>
+              <div className='flex items-center justify-end gap-2'>
                 <button
                   type='button'
                   onClick={() => setEditingUser(null)}
-                  className='bg-gray-300 text-gray-800 px-4 py-2 rounded mr-2 hover:bg-gray-400'
+                  className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+                  className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                   Update User
                 </button>

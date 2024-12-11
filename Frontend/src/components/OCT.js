@@ -3,69 +3,139 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 
 function OCT() {
-  const [fieldValues, setFieldValues] = useState({
-    patientId: '',
-    patientName: '',
-    date: '',
-    time: '',
-    eyeExamined: '',
-    scanType: '',
-    results: '',
-  });
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [eyeExamined, setEyeExamined] = useState('');
+  const [scanType, setScanType] = useState('');
+  const [results, setResults] = useState('');
+  const [percentage, setPercentage] = useState('');
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
   useEffect(() => {
-    const storedData = localStorage.getItem('octSubmittedData');
-    if (storedData) {
-      setSubmittedData(JSON.parse(storedData));
-    }
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:4000/api/v1/oct/');
+        if (!response.ok) throw new Error('Failed to fetch data');
+        const data = await response.json();
+        setSubmittedData(data.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
   }, []);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    const entry = {
+      patientId,
+      patientName,
+      date,
+      time,
+      eyeExamined,
+      scanType,
+      results,
+      percentage,
+    };
+
     if (editMode) {
-      const updatedData = [...submittedData];
-      updatedData[editIndex] = fieldValues;
-      setSubmittedData(updatedData);
-      localStorage.setItem('octSubmittedData', JSON.stringify(updatedData));
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:4000/api/v1/oct/${patientId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry),
+          }
+        );
+        if (!response.ok) throw new Error('Failed to update data');
+
+        const updatedData = [...submittedData];
+        updatedData[editIndex] = entry;
+        setSubmittedData(updatedData);
+      } catch (error) {
+        console.error('Error updating data:', error);
+      }
     } else {
-      const newSubmittedData = [...submittedData, fieldValues];
-      setSubmittedData(newSubmittedData);
-      localStorage.setItem(
-        'octSubmittedData',
-        JSON.stringify(newSubmittedData)
-      );
+      try {
+        const response = await fetch('http://127.0.0.1:4000/api/v1/oct/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry),
+        });
+        if (!response.ok) throw new Error('Failed to add data');
+
+        const newEntry = await response.json();
+        setSubmittedData([...submittedData, newEntry]);
+      } catch (error) {
+        console.error('Error adding data:', error);
+      }
     }
+
     clearForm();
     setIsOpen(false);
   };
 
+  const handleCancel = () => {
+    clearForm();
+    setIsOpen(false);
+  };
+
+  const clearForm = () => {
+    setPatientId('');
+    setPatientName('');
+    setDate('');
+    setTime('');
+    setEyeExamined('');
+    setScanType('');
+    setResults('');
+    setPercentage('');
+    setEditMode(false);
+    setEditIndex(null);
+  };
+
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
-    setFieldValues(recordToEdit);
+    setFieldValues({
+      patientId: recordToEdit.patientId || '',
+      patientName: recordToEdit.patientName || '',
+      date: recordToEdit.date || '',
+      time: recordToEdit.time || '',
+      eyeExamined: recordToEdit.eyeExamined || '',
+      scanType: recordToEdit.scanType || '',
+      results: recordToEdit.results || '',
+      percentage: recordToEdit.percentage || '',
+    });
     setEditMode(true);
     setEditIndex(index);
     setIsOpen(true);
   };
 
-  const clearForm = () => {
-    setFieldValues({
-      patientId: '',
-      patientName: '',
-      date: '',
-      time: '',
-      eyeExamined: '',
-      scanType: '',
-      results: '',
-    });
-    setEditMode(false);
+  const handleRemove = async (index) => {
+    try {
+      const { patientId } = submittedData[index];
+      const response = await fetch(
+        `http://127.0.0.1:4000/api/v1/oct/${patientId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      if (!response.ok) throw new Error('Failed to delete data');
+
+      const updatedData = submittedData.filter((_, i) => i !== index);
+      setSubmittedData(updatedData);
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
   };
 
   const fields = [
-    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'patientId', type: 'text', name: 'patientId' },
     { label: 'Patient Name', type: 'text', name: 'patientName' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Time', type: 'time', name: 'time' },
@@ -77,7 +147,39 @@ function OCT() {
     },
     { label: 'Scan Type', type: 'text', name: 'scanType' },
     { label: 'Results', type: 'textarea', name: 'results' },
+    { label: 'Percentage', type: 'number', name: 'percentage' },
   ];
+
+  const fieldValues = {
+    patientId,
+    patientName,
+    date,
+    time,
+    eyeExamined,
+    scanType,
+    results,
+    percentage,
+  };
+
+  const setFieldValues = ({
+    patientId,
+    patientName,
+    date,
+    time,
+    eyeExamined,
+    scanType,
+    results,
+    percentage,
+  }) => {
+    setPatientId(patientId);
+    setPatientName(patientName);
+    setDate(date);
+    setTime(time);
+    setEyeExamined(eyeExamined);
+    setScanType(scanType);
+    setResults(results);
+    setPercentage(percentage);
+  };
 
   return (
     <div className='p-8 min-h-screen'>
@@ -90,29 +192,30 @@ function OCT() {
           }}
           className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition'
         >
-          + Add OCT Record
+          + Add Record
         </button>
       </div>
 
       <FormModal
         title={editMode ? 'Edit OCT Record' : 'Add New OCT Record'}
         isOpen={isOpen}
-        handleSubmit={handleSubmit}
-        handleCancel={() => setIsOpen(false)}
+        handleCancel={handleCancel}
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
+        url={
+          editMode
+            ? `http://localhost:4000/api/v1/oct/${patientId}`
+            : 'http://localhost:4000/api/v1/oct/'
+        }
+        method={editMode ? 'PATCH' : 'POST'}
       />
 
       <DataTable
         submittedData={submittedData}
         fields={fields}
         handleEdit={handleEdit}
-        handleRemove={(index) => {
-          const updatedData = submittedData.filter((_, i) => i !== index);
-          setSubmittedData(updatedData);
-          localStorage.setItem('octSubmittedData', JSON.stringify(updatedData));
-        }}
+        handleRemove={handleRemove}
       />
     </div>
   );
