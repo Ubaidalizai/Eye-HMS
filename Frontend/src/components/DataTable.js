@@ -18,15 +18,15 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
     : [];
 
   return (
-    <div className='bg-white shadow-lg rounded-lg p-6 mt-8'>
-      <h3 className='text-lg font-semibold mb-4'>Submitted Data</h3>
+    <div className='bg-white border rounded-lg p-6 mt-8'>
+      {/* <h3 className='text-lg font-semibold mb-4'>Submitted Data</h3> */}
 
       <input
         type='text'
-        placeholder='Search...'
+        placeholder='Search ...'
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className='border border-gray-300 rounded-lg p-2 mb-4 w-full focus:outline-none focus:ring focus:ring-blue-300'
+        className='border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
       />
 
       {filteredData.length === 0 ? (
