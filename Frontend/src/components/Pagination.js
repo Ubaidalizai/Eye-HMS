@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { ChevronLeft } from 'lucide-react';
 const Pagination = ({
   totalItems,
   totalPagesCount,
@@ -39,22 +39,22 @@ const Pagination = ({
 
   return (
     <div className='flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6'>
-      <div className='flex justify-between flex-1 sm:hidden'>
-        <button
+      {/* <div className='flex justify-between flex-1 sm:hidden'> */}
+      {/* <button
           onClick={handlePrevPage}
           disabled={currentPage === 1}
           className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50'
         >
           Previous
-        </button>
-        <button
+        </button> */}
+      {/* <button
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
           className='relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50'
         >
           Next
-        </button>
-      </div>
+        </button> */}
+      {/* </div> */}
       <div className='hidden sm:flex sm:flex-1 sm:items-center sm:justify-between'>
         <div>
           <p className='text-sm text-gray-700'>
@@ -73,7 +73,7 @@ const Pagination = ({
           <select
             value={itemsPerPage}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className='block w-full px-3 py-2 mt-1 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            className='flex items-center justify-center w-full  bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
           >
             {[10, 20, 50, 100].map((value) => (
               <option key={value} value={value}>
@@ -81,18 +81,18 @@ const Pagination = ({
               </option>
             ))}
           </select>
-          <nav
-            className='relative z-0 inline-flex rounded-md shadow-sm -space-x-px'
+
+          <div
+            className='relative z-0 inline-flex justify-center items-center rounded-md shadow-sm -space-x-px'
             aria-label='Pagination'
           >
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className='relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50'
+              className='relative inline-flex justify-center items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 mr-3'
             >
-              <span className='sr-only'>Previous</span>
               <svg
-                className='w-5 h-5'
+                className='w-6 h-6'
                 xmlns='http://www.w3.org/2000/svg'
                 viewBox='0 0 20 20'
                 fill='currentColor'
@@ -107,7 +107,7 @@ const Pagination = ({
             </button>
             <form
               onSubmit={handlePageInputSubmit}
-              className='flex items-center'
+              className='flex flex-row items-center justify-center'
             >
               <input
                 type='number'
@@ -115,18 +115,20 @@ const Pagination = ({
                 max={totalPages}
                 value={pageInput}
                 onChange={handlePageInputChange}
-                className='block w-16 px-3 py-2 text-center bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+                className=' h-8 w-16 text-center bg-white border border-gray-300  sm:text-sm'
               />
-              <span className='mx-2'>of {totalPages}</span>
+              <span className='mx-2'>of</span>
+              <span className='mr-2'>{totalPages}</span>
             </form>
+
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className='relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50'
+              className='relative inline-flex justify-center font-bold items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50'
             >
-              <span className='sr-only'>Next</span>
+              {/* <span className='sr-only'>Next</span> */}
               <svg
-                className='w-5 h-5'
+                className='w-6 h-6'
                 xmlns='http://www.w3.org/2000/svg'
                 viewBox='0 0 20 20'
                 fill='currentColor'
@@ -139,7 +141,7 @@ const Pagination = ({
                 />
               </svg>
             </button>
-          </nav>
+          </div>
         </div>
       </div>
     </div>
