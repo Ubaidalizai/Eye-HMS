@@ -129,7 +129,7 @@ const FormModal = ({
               )}
             </div>
           ))}
-          <div className='flex justify-end gap-2 mt-6'>
+          <div className='flex justify-end col-span-2 gap-2 mt-6'>
             <button
               type='button'
               onClick={handleCancel}
