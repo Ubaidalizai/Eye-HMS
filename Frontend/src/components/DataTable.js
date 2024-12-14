@@ -18,7 +18,7 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
     : [];
 
   return (
-    <div className='bg-white border rounded-lg   py-6'>
+    <div className='bg-white border rounded-md'>
       {/* <h3 className='text-lg font-semibold mb-4'>Submitted Data</h3> */}
 
       <input
@@ -26,9 +26,8 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
         placeholder='Search ...'
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className='border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5 ml-5'
+        className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5 ml-5'
       />
-
       {filteredData.length === 0 ? (
         <div className='text-gray-500 text-center mt-10'>
           No data submitted yet.

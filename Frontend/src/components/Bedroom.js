@@ -142,21 +142,21 @@ function Bedroom() {
 
   return (
     <div className='p-6 min-h-screen'>
-      <h2 className='font-semibold text-xl mb-5'>Bedroom</h2>
-      <div className='flex justify-end'>
+      <h2 className='font-semibold text-xl mb-16'>Bedroom</h2>
+      <div className='flex justify-end mb-[-4.4rem]'>
         <button
           onClick={() => {
             clearForm();
             setIsOpen(true);
           }}
-          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mb-2 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 mr-5 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
         >
           <FaPlus className='mr-2' /> Add Record
         </button>
       </div>
 
       <FormModal
-        title={editMode ? 'Edit Bedroom Record' : 'Add New Bedroom Record'}
+        title={editMode ? 'Edit Bedroom Record' : 'Bedroom Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields}
