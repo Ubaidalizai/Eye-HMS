@@ -39,22 +39,6 @@ const Pagination = ({
 
   return (
     <div className='flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6'>
-      {/* <div className='flex justify-between flex-1 sm:hidden'> */}
-      {/* <button
-          onClick={handlePrevPage}
-          disabled={currentPage === 1}
-          className='relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50'
-        >
-          Previous
-        </button> */}
-      {/* <button
-          onClick={handleNextPage}
-          disabled={currentPage === totalPages}
-          className='relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50'
-        >
-          Next
-        </button> */}
-      {/* </div> */}
       <div className='hidden sm:flex sm:flex-1 sm:items-center sm:justify-between'>
         <div>
           <p className='text-sm text-gray-700'>
@@ -73,7 +57,7 @@ const Pagination = ({
           <select
             value={itemsPerPage}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className='flex items-center justify-center w-full  bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            className='flex items-center justify-center w-full  bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
           >
             {[10, 20, 50, 100].map((value) => (
               <option key={value} value={value}>
