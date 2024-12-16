@@ -90,7 +90,7 @@ export default function Header() {
   return (
     <>
       <div className='min-h-full'>
-        <Disclosure as='nav' className='bg-gray-800'>
+        <Disclosure as='nav' className='bg-white'>
           {({ open }) => (
             <>
               <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -99,11 +99,11 @@ export default function Header() {
                     <div className='flex-shrink-0'>
                       <div className='flex justify-center items-center gap-2'>
                         <img
-                          className='h-8 w-8'
+                          className='h-8 w-8 rounded-full border border-gray-600'
                           src={require('../assets/logo.jpg')}
                           alt='Al Sayed Eye HMS'
                         />
-                        <span className='font-bold text-white italic'>
+                        <span className='font-bold italic'>
                           Al Sayed Eye HMS
                         </span>
                       </div>
@@ -114,7 +114,7 @@ export default function Header() {
                       <Link to='/ExpiredProduct'>
                         <button
                           type='button'
-                          className='relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
+                          className='relative rounded-full  p-2 text-slate-700 focus:outline-none hover:bg-slate-200 transition-all  '
                           aria-label='View notifications'
                         >
                           <Bell className='h-6 w-6' aria-hidden='true' />
@@ -145,7 +145,7 @@ export default function Header() {
                       {/* Profile dropdown */}
                       <Menu as='div' className='relative ml-3'>
                         <div>
-                          <Menu.Button className='flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'>
+                          <Menu.Button className='flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white'>
                             <span className='sr-only'>Open user menu</span>
                             <img
                               className='h-8 w-8 rounded-full'

@@ -41,7 +41,7 @@ function SideMenu({ setActiveComponent }) {
   }, []);
 
   return (
-    <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
+    <div className='h-full flex-col justify-between hidden lg:flex'>
       <div className='px-4 py-6'>
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
           <Link

@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AuthContext from '../AuthContext';
 import { Doughnut, Bar } from 'react-chartjs-2';
+
 import {
   Chart as ChartJS,
   ArcElement,
@@ -172,7 +173,7 @@ function Dashboard() {
   return (
     <>
       <div className='grid grid-cols-1 col-span-12 lg:col-span-10 gap-6 md:grid-cols-3 lg:grid-cols-4 p-4'>
-        <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
+        <article className='flex flex-col gap-4 rounded-lg border bg-white p-6'>
           <div className='inline-flex gap-2 self-end rounded bg-green-100 p-1 text-green-600'>
             <span className='text-xs font-medium'>67.81%</span>
           </div>
@@ -325,7 +326,7 @@ function Dashboard() {
           )}
         </div>
 
-        <div className='p-4 border rounded-md shadow-lg bg-white'>
+        <div className='p-4 border rounded-md bg-white'>
           <h2 className='text-xl font-bold mb-4'>
             {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
             for {selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1)}
@@ -352,7 +353,7 @@ function Dashboard() {
           />
         </div>
 
-        <div className='p-4 border rounded-md shadow-lg bg-white'>
+        <div className='p-4 border rounded-md bg-white'>
           <h2 className='text-xl font-bold mb-4'>
             {selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1)} by
             Category

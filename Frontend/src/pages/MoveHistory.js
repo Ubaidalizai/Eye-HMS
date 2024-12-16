@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
 export default function MoveHistory() {
   const [data, setData] = useState([]);
@@ -11,7 +11,7 @@ export default function MoveHistory() {
   const [pageSize, setPageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
 
   // Fetch data dynamically
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function MoveHistory() {
         setData(result.data);
         setTotalPages(result.totalPages);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
@@ -38,17 +38,17 @@ export default function MoveHistory() {
 
   const columns = React.useMemo(
     () => [
-      { accessorKey: "Name", header: "Name" },
-      { accessorKey: "quantity_moved", header: "Quantity Moved" },
-      { accessorKey: "moved_by", header: "Moved By" },
-      { accessorKey: "category", header: "Category" },
+      { accessorKey: 'Name', header: 'Name' },
+      { accessorKey: 'quantity_moved', header: 'Quantity Moved' },
+      { accessorKey: 'moved_by', header: 'Moved By' },
+      { accessorKey: 'category', header: 'Category' },
       {
-        accessorKey: "date_moved",
-        header: "Date Moved",
+        accessorKey: 'date_moved',
+        header: 'Date Moved',
         cell: (info) =>
-          new Date(info.getValue()).toLocaleString("en-US", {
-            dateStyle: "medium",
-            timeStyle: "short",
+          new Date(info.getValue()).toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
           }),
       },
     ],
@@ -65,8 +65,8 @@ export default function MoveHistory() {
   });
 
   return (
-    <div className='p-6 bg-gray-100 min-h-screen'>
-      <h1 className='text-4xl font-bold text-center text-blue-800 mb-8'>
+    <div className='p-6 min-h-screen'>
+      <h1 className='text-4xl font-bold text-center text-gray-900 mb-8'>
         Move History
       </h1>
       {/* Filter Input */}
@@ -76,21 +76,22 @@ export default function MoveHistory() {
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder='Search...'
-          className='w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300'
+          className='border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
         />
       </div>
-      <div className='overflow-x-auto shadow rounded-lg bg-white'>
+      <div className='overflow-x-auto border rounded-lg bg-white'>
         {isLoading ? (
           <div className='text-center py-4'>Loading...</div>
         ) : (
           <table className='min-w-full border-collapse border border-gray-200'>
-            <thead className='bg-blue-600 text-white'>
+            <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className='px-4 py-2 border border-gray-300 text-left font-semibold'
+                      scope='col'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -103,15 +104,9 @@ export default function MoveHistory() {
             </thead>
             <tbody className='bg-white'>
               {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className='hover:bg-gray-100 transition duration-150'
-                >
+                <tr key={row.id} className='bg-white border-b hover:bg-gray-50'>
                   {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className='px-4 py-2 border border-gray-300'
-                    >
+                    <td key={cell.id} className='px-6 py-4 whitespace-nowrap'>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -138,7 +133,7 @@ export default function MoveHistory() {
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
-            className='p-2 border rounded-md'
+            className='pr-7 border rounded-md'
           >
             {[5, 10, 20].map((size) => (
               <option key={size} value={size}>
