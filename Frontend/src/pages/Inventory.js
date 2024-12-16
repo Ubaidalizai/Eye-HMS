@@ -386,7 +386,7 @@ function Inventory() {
 
           <div className='px-4 sm:px-6 lg:px-0'>
             <div className='overflow-x-auto'>
-              <table className='w-full text-sm text-left text-gray-500'>
+              <table className='w-full text-sm text-gray-500'>
                 <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>
                     <th

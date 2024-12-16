@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
+import { FaPlus } from 'react-icons/fa';
 
 function Ultrasound() {
   const [fieldValues, setFieldValues] = useState({
@@ -111,9 +112,9 @@ function Ultrasound() {
   ];
 
   return (
-    <div className='p-8  min-h-screen'>
-      <div className='mb-4 flex justify-between items-center'>
-        <h1 className='text-2xl font-bold'>Ultrasound Management</h1>
+    <div className='p-6  min-h-screen'>
+      <h2 className='font-semibold text-xl mb-16'>Ultrasound</h2>
+      <div className='flex justify-end mb-[-4.4rem]'>
         <button
           onClick={() => {
             setFieldValues({
@@ -128,14 +129,14 @@ function Ultrasound() {
             setEditMode(false);
             setEditIndex(null);
           }}
-          className='bg-blue-500 text-white py-2 px-4 rounded-lg'
+          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 mr-5 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
         >
-          + Add Record
+          <FaPlus className='mr-2' /> Add Record
         </button>
       </div>
 
       <FormModal
-        title={editMode ? 'Edit Ultrasound Record' : 'Add Ultrasound Record'}
+        title={editMode ? 'Edit Ultrasound Record' : 'Ultrasound Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields.filter((field) => field.name !== 'image' || !editMode)} // Exclude image in edit mode

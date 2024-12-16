@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
+import { FaPlus } from 'react-icons/fa';
 
 function Yeglizer() {
   const [id, setId] = useState('');
@@ -133,10 +134,10 @@ function Yeglizer() {
   };
 
   const fields = [
-    { label: 'Patient ID', type: 'text', name: 'id' },
-    { label: 'Patient Name', type: 'text', name: 'patientName' },
-    { label: 'Appointment Time', type: 'time', name: 'appointmentTime' },
-    { label: 'Appointment Date', type: 'date', name: 'appointmentDate' },
+    { label: 'ID', type: 'text', name: 'id' },
+    { label: 'Name', type: 'text', name: 'patientName' },
+    { label: 'Time', type: 'time', name: 'appointmentTime' },
+    { label: 'Date', type: 'date', name: 'appointmentDate' },
     { label: 'Eye Power', type: 'text', name: 'eyePower' },
     { label: 'Prescription', type: 'text', name: 'prescription' },
     { label: 'Percentage', type: 'number', name: 'percentage' },
@@ -171,22 +172,24 @@ function Yeglizer() {
   };
 
   return (
-    <div className='p-8 min-h-screen'>
-      <div className='mb-4 flex justify-between items-center'>
-        <h1 className='text-2xl font-bold'>Yeglizer Management</h1>
+    <div className='p-6 min-h-screen'>
+      {/* <div className='mb-4 flex justify-between items-center'> */}
+      <h2 className='font-semibold text-xl mb-16'>Yeglizer</h2>
+      <div className='flex justify-end mb-[-4.4rem]'>
         <button
           onClick={() => {
             clearForm();
             setIsOpen(true);
           }}
-          className='bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-md transition'
+          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 mr-5 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
         >
-          + Add Record
+          <FaPlus className='mr-2' /> Add Record
         </button>
       </div>
+      {/* </div> */}
 
       <FormModal
-        title={editMode ? 'Edit Yeglizer Record' : 'Add New Yeglizer Record'}
+        title={editMode ? 'Edit Yeglizer Record' : 'Yeglizer Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields}
