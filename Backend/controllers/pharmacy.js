@@ -79,24 +79,58 @@ exports.updateDrug = asyncHandler(async (req, res) => {
 });
 
 // Delete a specific drug
-exports.deleteDrug = asyncHandler(async (req, res) => {
+exports.deleteDrug = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
+  validateMongoDBId(id);
 
-  // Validate MongoDB ID
-  if (!validateMongoDBId(id)) {
-    throw new AppError('Invalid Drug ID', 400);
-  }
-
-  const drug = await Pharmacy.findByIdAndDelete(id);
-
+  // Step 1: Check if the drug exists in the pharmacy
+  const drug = await Pharmacy.findById(id);
   if (!drug) {
-    throw new AppError('Drug not found', 404);
+    return next(new AppError('Drug not found', 404));
   }
 
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
+  // Step 2: Check if the product exists in the inventory
+  const product = await Product.findOne({ name: drug.name });
+  if (!product) {
+    return next(new AppError('Product not found in inventory', 404));
+  }
+
+  // Step 3: Perform manual transaction-like operations
+  try {
+    // Update stock in the product
+    product.stock += drug.quantity;
+
+    // Delete the drug
+    const drugDeleted = await drug.deleteOne();
+    if (!drugDeleted) {
+      throw new Error('Failed to delete drug');
+    }
+
+    // Save the updated product
+    const productUpdated = await product.save();
+    if (!productUpdated) {
+      throw new Error('Failed to update product stock');
+    }
+
+    // If both operations succeed, send the success response
+    return res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (error) {
+    // Manual rollback mechanism
+    console.error('Error during manual transaction:', error);
+
+    // Rollback: Revert product stock if drug deletion succeeded but product update failed
+    const rollbackProduct = await Product.findOne({ name: drug.name });
+    if (rollbackProduct) {
+      rollbackProduct.stock -= drug.quantity;
+      await rollbackProduct.save();
+      console.log('Rollback successful: Product stock reverted');
+    }
+
+    return next(new AppError('Failed to delete drug and update stock', 500));
+  }
 });
 
 // Check for drugs expiring within 30 days
