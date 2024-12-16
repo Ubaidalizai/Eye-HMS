@@ -5,9 +5,10 @@ import {
   FaGlasses,
   FaBoxOpen,
   FaExclamationTriangle,
-  FaChevronLeft,
-  FaChevronRight,
+  FaTrash,
 } from 'react-icons/fa';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { FcSalesPerformance } from 'react-icons/fc';
 import Pagination from '../components/Pagination';
 
@@ -18,6 +19,7 @@ const Pharmacy = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const user = JSON.parse(localStorage.getItem('user'));
@@ -25,7 +27,7 @@ const Pharmacy = () => {
   useEffect(() => {
     fetchData();
     fetchDrugsSummary();
-  }, [currentPage, limit]);
+  }, [updatePage, currentPage, limit]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -86,6 +88,29 @@ const Pharmacy = () => {
     }
   };
 
+  const handleDelete = async (drugId) => {
+    if (window.confirm('Are you sure you want to delete this drug?')) {
+      try {
+        const response = await fetch(
+          `http://localhost:4000/api/v1/pharmacy/${drugId}`,
+          {
+            method: 'DELETE',
+            credentials: 'include',
+          }
+        );
+        if (response.ok) {
+          setUpdatePage(!updatePage);
+          toast.success('Product deleted successfully');
+        } else {
+          toast.error('Failed to delete the product');
+        }
+      } catch (err) {
+        console.log(err);
+        toast.error('An error occurred while deleting the product');
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className='flex items-center justify-center h-screen bg-gray-100'>
@@ -130,12 +155,12 @@ const Pharmacy = () => {
   return (
     <div className='min-h-screen  py-12 px-4 sm:px-6 lg:px-8'>
       <div className='max-w-7xl mx-auto'>
+        <ToastContainer />
         <h2 className='font-semibold text-xl'>
           {user.role === 'sunglassesSeller'
             ? 'Sunglasses Inventory'
             : 'Pharmacy Inventory'}
         </h2>
-
         <div className='mt-10'>
           <div className='bg-white shadow overflow-hidden sm:rounded-md'>
             <div className='px-4 py-5 sm:p-6'>
@@ -255,13 +280,20 @@ const Pharmacy = () => {
                         Quantity: {drug.quantity}
                       </p>
                     </div>
+                    <div className='ml-2 flex-shrink-0 flex'>
+                      <button
+                        onClick={() => handleDelete(drug._id)}
+                        className='font-medium text-red-600 hover:text-red-700'
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
             </ul>
           </div>
         </div>
-
         <Pagination
           totalItems={drugs.length}
           totalPagesCount={totalPages}

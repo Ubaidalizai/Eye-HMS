@@ -1,6 +1,7 @@
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const cron = require('node-cron');
 
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
@@ -39,3 +40,11 @@ exports.backupDatabase = asyncHandler(async (req, res) => {
     });
   });
 });
+
+exports.scheduleNightlyBackup = () => {
+  // Schedule the task at 2 AM every night
+  cron.schedule('* * * * *', () => {
+    console.log('Running nightly backup task...');
+    performBackup();
+  });
+};

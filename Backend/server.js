@@ -4,6 +4,8 @@ const dotenv = require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
+const { scheduleNightlyBackup } = require('./controllers/backupController');
+
 const User = require('./models/userModel');
 const connectDB = require('./config/db');
 
@@ -68,6 +70,7 @@ app.use('/api/v1/yeglizer', yeglizerRoute);
 app.use('/api/v1/move-product', moveProductRoute);
 app.use('/api/v1/backup', backupRoute);
 
+// scheduleNightlyBackup();
 // ------------- Signin --------------
 let userAuthCheck;
 app.post('/api/login', async (req, res) => {
