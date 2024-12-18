@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaTimes, FaEdit } from 'react-icons/fa';
+import { FaTimes, FaEdit, FaTrash, FaRegEdit } from 'react-icons/fa';
 
 const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,54 +18,56 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
     : [];
 
   return (
-    <div className='bg-white shadow-lg rounded-lg p-6 mt-8'>
-      <h3 className='text-lg font-semibold mb-4'>Submitted Data</h3>
+    <div className='bg-white border rounded-md'>
+      {/* <h3 className='text-lg font-semibold mb-4'>Submitted Data</h3> */}
 
       <input
         type='text'
-        placeholder='Search...'
+        placeholder='Search ...'
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className='border border-gray-300 rounded-lg p-2 mb-4 w-full focus:outline-none focus:ring focus:ring-blue-300'
+        className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5 ml-5'
       />
-
       {filteredData.length === 0 ? (
         <div className='text-gray-500 text-center mt-10'>
           No data submitted yet.
         </div>
       ) : (
-        <table className='min-w-full bg-white border border-gray-200'>
-          <thead>
-            <tr className='bg-gray-100 text-left'>
+        <table className='w-full text-sm border-collapse  text-gray-500'>
+          <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
+            <tr className='bg-gray-100  text-left'>
               {fields.map((field, index) => (
-                <th key={index} className='py-2 px-4 border-b'>
+                <th key={index} className='py-2 px-2 border-b'>
                   {field.label}
                 </th>
               ))}
-              <th className='py-2 px-4 border-b'>Actions</th>
+              <th className='py-2 border-b'>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((data, index) => (
-              <tr key={index} className='hover:bg-gray-50'>
+              <tr key={index} className='hover:bg-gray-50 border'>
                 {fields.map((field, idx) => (
-                  <td key={idx} className='py-2 px-4 border-b'>
+                  <td key={idx} className='py-2 px-2'>
                     {data[field.name] || 'N/A'}
                   </td>
                 ))}
-                <td className='py-2 px-4 border-b flex space-x-2'>
-                  <button
-                    onClick={() => handleEdit(index)}
-                    className='text-blue-500 hover:text-blue-700'
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => handleRemove(index)}
-                    className='text-red-500 hover:text-red-700'
-                  >
-                    <FaTimes />
-                  </button>
+                <td className='py-2 px-4 flex space-x-2'>
+                  <div className='flex gap-2'>
+                    {' '}
+                    <button
+                      onClick={() => handleEdit(index)}
+                      className='text-blue-500 hover:text-blue-700'
+                    >
+                      <FaRegEdit className='w-4 h-4' />
+                    </button>
+                    <button
+                      onClick={() => handleRemove(index)}
+                      className='text-red-500 hover:text-red-700'
+                    >
+                      <FaTrash className='w-4 h-4' />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

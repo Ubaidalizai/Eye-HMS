@@ -91,7 +91,7 @@ const FormModal = ({
 
   return (
     <div className='fixed inset-0 bg-gray-800 bg-opacity-50 z-50 flex items-center justify-center'>
-      <div className='bg-white p-6 rounded-lg shadow-lg w-full max-w-md h-full max-h-screen flex flex-col overflow-auto'>
+      <div className='bg-white p-6 rounded-lg shadow-lg max-h-screen flex flex-col overflow-auto'>
         <div className='flex justify-between items-center mb-4'>
           <h2 className='text-xl font-semibold'>{title}</h2>
           <button
@@ -101,7 +101,7 @@ const FormModal = ({
             <FaTimes size={20} />
           </button>
         </div>
-        <form onSubmit={handleFormSubmit} className='space-y-4'>
+        <form onSubmit={handleFormSubmit} className='grid grid-cols-2 gap-4'>
           {fields.map((field, index) => (
             <div key={index} className='flex flex-col'>
               <label htmlFor={field.name} className='mb-1'>
@@ -111,7 +111,7 @@ const FormModal = ({
                 id={field.name}
                 name={field.name}
                 type={field.type}
-                className={`border p-3 rounded w-full focus:outline-none focus:ring transition ${
+                className={`border  rounded w-48 h-8 focus:outline-none focus:ring transition ${
                   errors[field.name] ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={fieldValues[field.name] || ''}
@@ -129,18 +129,17 @@ const FormModal = ({
               )}
             </div>
           ))}
-
-          <div className='flex justify-end space-x-4 mt-6'>
+          <div className='flex justify-end col-span-2 gap-2 mt-6'>
             <button
               type='button'
               onClick={handleCancel}
-              className='bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition'
+              className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
             >
               Cancel
             </button>
             <button
               type='submit'
-              className='bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition'
+              className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             >
               {method === 'POST' ? 'Add' : 'Update'}
             </button>

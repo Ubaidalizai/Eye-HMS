@@ -11,7 +11,12 @@ const {
   addPatient,
   updatePatient,
   deletePatient,
+  getPatientsByMonth,
+  getPatientsByYear,
 } = require('../controllers/patientController');
+
+router.get('/:year/:month', getPatientsByMonth);
+router.get('/:year', getPatientsByYear);
 
 // GET and POST /api/v1/patients – To Get all patients or add a new patient.
 router.route('/').get(getAllPatients).post(addPatient);

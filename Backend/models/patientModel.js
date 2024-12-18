@@ -19,6 +19,10 @@ const patientSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    date: {
+      type: Date,
+      required: true,
+    },
     patientGender: {
       type: String,
       enum: ['Male', 'Female', 'Other'],

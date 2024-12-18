@@ -48,23 +48,13 @@ const calculateNetIncome = async (drug, { quantity }) => {
     );
   }
 
-  // Find the purchase record associated with the product
-  const purchaseRecord = await Purchase.findOne({
-    ProductID: productInInventory._id,
-  });
-
-  if (!purchaseRecord) {
-    throw new AppError(`No purchase record found for drug: ${drug.name}`, 404);
-  }
-
   // Calculate the purchase cost
-  const purchaseCost = purchaseRecord.UnitPurchaseAmount * quantity;
+  const purchaseCost = productInInventory.purchasePrice * quantity;
   return purchaseCost; // Return the purchase cost for net income calculation
 };
 
 // Helper function to update drug quantity in the pharmacy
 const updateDrugStock = asyncHandler(async (drug, quantity) => {
-  console.log(drug, quantity);
   drug.quantity -= quantity;
   await drug.save();
 });
@@ -74,7 +64,7 @@ const sellItems = asyncHandler(async (req, res, next) => {
   const { soldItems } = req.body;
 
   if (!Array.isArray(soldItems) || !soldItems.length) {
-    return next(new AppError('No sold items provided.', 400));
+    throw new AppError('No sold items provided.', 400);
   }
 
   const sales = [];
@@ -90,20 +80,20 @@ const sellItems = asyncHandler(async (req, res, next) => {
     for (const soldItem of soldItems) {
       const { productRefId, quantity, category, date } = soldItem;
 
-      const product = await Pharmacy.findById(productRefId);
-      if (!product) {
-        throw new AppError(`Product with ID ${productRefId} not found.`, 404);
+      const drug = await Pharmacy.findById(productRefId);
+      if (!drug) {
+        throw new AppError(`Drug with ID ${productRefId} not found.`, 404);
       }
 
-      const income = await validateDrugAndCalculateIncome(product, {
+      const income = await validateDrugAndCalculateIncome(drug, {
         quantity,
       });
-      const purchaseCost = await calculateNetIncome(product, { quantity });
+      const purchaseCost = await calculateNetIncome(drug, { quantity });
       const productNetIncome = income - purchaseCost;
 
       // Create a sale record
       const sale = await Sale.create({
-        productRefId: product._id,
+        productRefId: drug._id,
         quantity,
         income,
         date,
@@ -113,9 +103,9 @@ const sellItems = asyncHandler(async (req, res, next) => {
       createdSales.push(sale);
 
       // Update product stock
-      const previousStock = product.stock; // Capture current stock for rollback
-      await updateDrugStock(product, quantity);
-      stockUpdates.push({ product, previousStock }); // Record state for rollback
+      const previousStock = drug.quantity; // Capture current stock for rollback
+      await updateDrugStock(drug, quantity);
+      stockUpdates.push({ drug, previousStock }); // Record state for rollback
 
       // Create an income record
       const incomeRecord = await Income.create({
@@ -123,7 +113,7 @@ const sellItems = asyncHandler(async (req, res, next) => {
         date,
         totalNetIncome: productNetIncome,
         category,
-        description: `Sale of ${product.name} (${category})`,
+        description: `Sale of ${drug.name} (${category})`,
         userID: req.user._id,
       });
       createdIncomes.push(incomeRecord);
@@ -132,7 +122,7 @@ const sellItems = asyncHandler(async (req, res, next) => {
       sales.push(sale);
       totalIncome += income;
       receipt.push({
-        productName: product.name,
+        productName: drug.name,
         quantity,
         income,
         category,

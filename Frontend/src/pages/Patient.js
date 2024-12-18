@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   HiPlus,
   HiSearch,
@@ -12,9 +13,43 @@ import {
   HiChevronRight,
 } from 'react-icons/hi';
 
-import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js';
+
+import { FaPlus } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
 
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
+
+const monthLabels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
 
@@ -28,6 +63,7 @@ export default function PatientManagement() {
     age: '',
     contact: '',
     patientID: '',
+    date: '',
     patientGender: '',
     insuranceContact: '',
   });
@@ -35,12 +71,28 @@ export default function PatientManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
+  const [summaryType, setSummaryType] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchPatients();
-  }, [searchTerm, currentPage, limit]);
+    if (summaryType === 'monthly') {
+      fetchMonthlyPatients();
+    } else {
+      fetchYearlyPatients();
+    }
+    fetchPatients(); // Fetch paginated Patients for the list
+  }, [
+    currentPage,
+    selectedMonth,
+    selectedYear,
+    summaryType,
+    searchTerm,
+    limit,
+  ]);
 
   const fetchPatients = async () => {
     setIsLoading(true);
@@ -66,6 +118,48 @@ export default function PatientManagement() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchMonthlyPatients = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/patient/${selectedYear}/${selectedMonth}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlyPatients = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/v1/patient/${selectedYear}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -156,6 +250,84 @@ export default function PatientManagement() {
     setCurrentPage(newPage);
   };
 
+  const aggregatePatients = () => {
+    const monthlyData = Array(12).fill(0);
+    const yearlyData = {};
+
+    patients.forEach((patient) => {
+      const date = new Date(patient.date);
+      const amount = parseFloat(patient.amount);
+      const month = date.getMonth(); // Zero-based index
+      const year = date.getFullYear();
+
+      // Aggregate for yearly summary
+      if (summaryType === 'yearly') {
+        if (!yearlyData[year]) {
+          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
+        }
+        yearlyData[year][month] += amount; // Sum amount for the respective month
+      }
+
+      // Aggregate for monthly summary
+      if (
+        summaryType === 'monthly' &&
+        month + 1 === selectedMonth &&
+        year === selectedYear
+      ) {
+        monthlyData[month] += amount; // Sum amount for the respective day
+      }
+    });
+
+    return summaryType === 'yearly' ? yearlyData : monthlyData;
+  };
+
+  const updateSummary = () => {
+    const newSummary = aggregatePatients();
+    setSummary(newSummary);
+  };
+
+  const handleSummaryTypeChange = (e) => {
+    setSummaryType(e.target.value);
+    updateSummary();
+  };
+
+  const handleMonthChange = (e) => {
+    const month = Number(e.target.value);
+    setSelectedMonth(month);
+    updateSummary();
+  };
+
+  const handleYearChange = (e) => {
+    const year = Number(e.target.value);
+    setSelectedYear(year);
+    updateSummary();
+  };
+
+  const getBarChartData = () => {
+    let labels, data;
+
+    if (summaryType === 'yearly') {
+      labels = monthLabels; // Month names for the x-axis
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
+    } else {
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Patients',
+          data,
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
   return (
     <div className='max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r to-indigo-50 rounded-lg'>
       <ToastContainer />
@@ -213,6 +385,9 @@ export default function PatientManagement() {
                   Gender
                 </th>
                 <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Date
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Insurance
                 </th>
                 <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
@@ -239,30 +414,32 @@ export default function PatientManagement() {
                     {patient.patientGender}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                    {patient.date?.split('T')[0]}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                     {patient.insuranceContact}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                     <div className='flex space-x-2'>
+                      <button
+                        onClick={() => handleEdit(patient)}
+                        className='text-indigo-600 hover:text-indigo-900'
+                      >
+                        <HiPencil size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(patient._id)}
+                        className='text-red-500 hover:text-red-700'
+                      >
+                        <HiTrash size={20} />
+                      </button>
                       <button
                         onClick={() =>
                           navigate(`/patients/${patient.name}/prescriptions`)
                         }
                         className='text-green-500 hover:text-green-700'
                       >
-                        <HiDocumentAdd className='w-5 h-5' />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(patient)}
-                        className='font-medium text-indigo-600 hover:text-indigo-900'
-                      >
-                        <FaRegEdit className='w-5 h-5' />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(patient._id)}
-                        className='font-medium text-red-600 hover:text-red-700'
-                      >
-                        <FaTrash className='w-5 h-5' />
+                        <HiDocumentAdd size={20} />
                       </button>
                     </div>
                   </td>
@@ -337,6 +514,14 @@ export default function PatientManagement() {
                 <option value='Other'>Other</option>
               </select>
               <input
+                type='date'
+                name='date'
+                value={formData.date}
+                onChange={handleInputChange}
+                placeholder='Insurance Contact'
+                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+              />
+              <input
                 type='text'
                 name='insuranceContact'
                 value={formData.insuranceContact}
@@ -344,17 +529,17 @@ export default function PatientManagement() {
                 placeholder='Insurance Contact'
                 className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
               />
-              <div className='flex items-center justify-end gap-2'>
+              <div className='flex justify-end space-x-2'>
                 <button
                   type='button'
                   onClick={() => setIsModalOpen(false)}
-                  className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
                   {currentPatient ? 'Update' : 'Add'} Patient
                 </button>
@@ -363,6 +548,80 @@ export default function PatientManagement() {
           </div>
         </div>
       )}
+
+      <div className='mt-10 flex flex-col gap-6'>
+        <div className='flex gap-4'>
+          {/* Summary Type Selector */}
+          <div className='w-full sm:w-1/5'>
+            <select
+              id='summaryType'
+              className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+              onChange={handleSummaryTypeChange}
+              value={summaryType}
+            >
+              <option value='monthly'>Monthly Summary</option>
+              <option value='yearly'>Yearly Summary</option>
+            </select>
+          </div>
+
+          {/* Month Selector */}
+          {summaryType === 'monthly' && (
+            <div className='w-full sm:w-1/5'>
+              <select
+                id='month'
+                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                onChange={handleMonthChange}
+                value={selectedMonth}
+              >
+                {monthLabels.map((label, index) => (
+                  <option key={index} value={index + 1}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Year Selector */}
+          {summaryType === 'yearly' && (
+            <div className='w-full sm:w-1/5'>
+              <input
+                id='year'
+                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                type='number'
+                value={selectedYear}
+                onChange={handleYearChange}
+                min='2000'
+                max={new Date().getFullYear()}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Chart Display */}
+        <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
+          <h2 className='mb-4 text-lg font-semibold text-gray-800'>
+            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
+          </h2>
+          <Bar
+            data={getBarChartData()}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: `${
+                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+                  } Summary for ${0}`,
+                },
+              },
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
