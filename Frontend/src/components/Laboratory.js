@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
+import Pagination from './Pagination';
 
 function Laboratory() {
   const [patientId, setId] = useState('');
@@ -17,20 +18,26 @@ function Laboratory() {
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/labratory/');
+        const response = await fetch(
+          `http://127.0.0.1:4000/api/v1/labratory?page=${currentPage}&limit=${limit}`
+        );
         if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
-        setSubmittedData(data.data);
+        setSubmittedData(data.data.results);
+        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     fetchData();
-  }, []);
+  }, [currentPage, limit]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -223,6 +230,14 @@ function Laboratory() {
         fields={fields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
+      />
+      <Pagination
+        totalItems={submittedData.length}
+        totalPagesCount={totalPages}
+        itemsPerPage={limit}
+        currentPage={currentPage}
+        onPageChange={(page) => setCurrentPage(page)}
+        onLimitChange={(limit) => setLimit(limit)}
       />
     </div>
   );

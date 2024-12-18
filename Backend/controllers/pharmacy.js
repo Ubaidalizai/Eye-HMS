@@ -5,6 +5,7 @@ const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const validateMongoDBId = require('../utils/validateMongoDBId');
+const checkExpiry = require('../utils/checkExpiry');
 
 exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
@@ -134,22 +135,4 @@ exports.deleteDrug = asyncHandler(async (req, res, next) => {
 });
 
 // Check for drugs expiring within 30 days
-exports.checkDrugExpiry = asyncHandler(async (req, res) => {
-  const beforeThirtyDays = new Date();
-  beforeThirtyDays.setDate(beforeThirtyDays.getDate() + 30);
-
-  const expireDrugs = await Pharmacy.find({
-    expiryDate: { $lte: beforeThirtyDays },
-    quantity: { $gt: 0 },
-  });
-
-  if (expireDrugs.length === 0) {
-    return res.status(200).json({ message: 'No expired drugs found' });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    length: expireDrugs.length,
-    data: { expireDrugs },
-  });
-});
+exports.checkDrugExpiry = checkExpiry(Pharmacy, 'expiryDate');

@@ -1,5 +1,6 @@
 // controllers/octController.js
 const OCT = require('../models/octModule');
+const getAll = require('./handleFactory');
 
 // Create a new OCT record
 const createOCTRecord = async (req, res) => {
@@ -17,20 +18,7 @@ const createOCTRecord = async (req, res) => {
 };
 
 // Get all OCT records
-const getAllOCTRecords = async (req, res) => {
-  try {
-    const octRecords = await OCT.find();
-    res.status(200).json({
-      message: 'OCT records retrieved successfully',
-      data: octRecords,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Failed to retrieve OCT records',
-      error: error.message,
-    });
-  }
-};
+const getAllOCTRecords = getAll(OCT);
 
 // Get an OCT record by ID
 const getOCTRecordById = async (req, res) => {

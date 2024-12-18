@@ -49,7 +49,9 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
               <tr key={index} className='hover:bg-gray-50 border'>
                 {fields.map((field, idx) => (
                   <td key={idx} className='py-2 px-2'>
-                    {data[field.name] || 'N/A'}
+                    {field.name === 'date'
+                      ? data[field.name].split('T')[0]
+                      : data[field.name] || 'N/A'}
                   </td>
                 ))}
                 <td className='py-2 px-4 flex space-x-2'>
