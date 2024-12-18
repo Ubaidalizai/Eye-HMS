@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 const laboratorySchema = new mongoose.Schema({
-  patientId: { type: String, required: true },
+  patientId: { type: String, required: true, unique: true },
   patientName: { type: String, required: true },
   date: { type: Date, required: true },
   time: { type: String, required: true },
