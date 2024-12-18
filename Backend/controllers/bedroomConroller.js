@@ -1,6 +1,8 @@
 const Bedroom = require('../models/bedroomModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+const getAll = require('./handleFactory');
+
 // Create a new bedroom
 const createBedroom = asyncHandler(async (req, res) => {
   const { id } = req.body;
@@ -32,14 +34,7 @@ const createBedroom = asyncHandler(async (req, res) => {
 });
 
 // Get all bedrooms
-const getAllBedrooms = asyncHandler(async (req, res) => {
-  const bedrooms = await Bedroom.find();
-  res.status(200).json({
-    success: true,
-    message: 'Bedrooms retrieved successfully',
-    data: bedrooms,
-  });
-});
+const getAllBedrooms = getAll(Bedroom);
 
 // Get a bedroom by schema `id`
 const getBedroomById = asyncHandler(async (req, res) => {

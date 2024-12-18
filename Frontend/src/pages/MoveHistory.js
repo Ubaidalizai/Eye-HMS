@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
+import Pagination from '../components/Pagination';
 
 export default function MoveHistory() {
   const [data, setData] = useState([]);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
-  const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Fetch data dynamically
   useEffect(() => {
@@ -19,36 +20,37 @@ export default function MoveHistory() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `/api/move-history?p age=${
-            pageIndex + 1
-          }&pageSize=${pageSize}&search=${globalFilter}`
+          `http://localhost:4000/api/v1/move-product?page=${currentPage}&limit=${limit}&search=${globalFilter}`,
+          {
+            credentials: 'include',
+          }
         );
-        const result = await response.json();
-        setData(result.data);
-        setTotalPages(result.totalPages);
+        const data = await response.json();
+        setData(data.data.results);
+        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [pageIndex, pageSize, globalFilter]);
+  }, [currentPage, limit, globalFilter]);
 
   const columns = React.useMemo(
     () => [
-      { accessorKey: "Name", header: "Name" },
-      { accessorKey: "quantity_moved", header: "Quantity Moved" },
-      { accessorKey: "moved_by", header: "Moved By" },
-      { accessorKey: "category", header: "Category" },
+      { accessorKey: 'Name', header: 'Name' },
+      { accessorKey: 'quantity_moved', header: 'Quantity Moved' },
+      { accessorKey: 'moved_by', header: 'Moved By' },
+      { accessorKey: 'category', header: 'Category' },
       {
-        accessorKey: "date_moved",
-        header: "Date Moved",
+        accessorKey: 'date_moved',
+        header: 'Date Moved',
         cell: (info) =>
-          new Date(info.getValue()).toLocaleString("en-US", {
-            dateStyle: "medium",
-            timeStyle: "short",
+          new Date(info.getValue()).toLocaleString('en-US', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
           }),
       },
     ],
@@ -60,7 +62,7 @@ export default function MoveHistory() {
     columns,
     pageCount: totalPages,
     manualPagination: true,
-    state: { pagination: { pageIndex, pageSize }, globalFilter },
+    state: { pagination: { currentPage, limit }, globalFilter },
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -123,39 +125,15 @@ export default function MoveHistory() {
             </tbody>
           </table>
         )}
-        {/* Pagination Controls */}
-        <div className='flex justify-between items-center p-4'>
-          <button
-            onClick={() => setPageIndex((prev) => Math.max(prev - 1, 0))}
-            disabled={pageIndex === 0 || isLoading}
-            className='bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400'
-          >
-            Previous
-          </button>
-          <div>
-            Page {pageIndex + 1} of {totalPages}
-          </div>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className='p-2 border rounded-md'
-          >
-            {[5, 10, 20].map((size) => (
-              <option key={size} value={size}>
-                Show {size}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={() =>
-              setPageIndex((prev) => (prev < totalPages - 1 ? prev + 1 : prev))
-            }
-            disabled={pageIndex >= totalPages - 1 || isLoading}
-            className='bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400'
-          >
-            Next
-          </button>
-        </div>
+
+        <Pagination
+          totalItems={data.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
       </div>
     </div>
   );

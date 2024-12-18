@@ -1,13 +1,10 @@
 const OPD = require('../models/opdModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+const getAll = require('./handleFactory');
 
 // Get all OPD records
-const getAllRecords = asyncHandler(async (req, res, next) => {
-  const records = await OPD.find();
-  res.status(200).json(records);
-});
-
+const getAllRecords = getAll(OPD);
 // Get a specific OPD record by patientId
 const getRecordByPatientId = asyncHandler(async (req, res, next) => {
   const record = await OPD.findOne({ patientId: req.params.patientId });
