@@ -1,11 +1,10 @@
 // controllers/ultrasoundController.js
 const Ultrasound = require('../models/ultraSoundModule');
 const asyncHandler = require('../middlewares/asyncHandler');
+const getAll = require('./handleFactory');
+
 // Get all ultrasound records
-const getAllRecords = asyncHandler(async (req, res, next) => {
-  const records = await Ultrasound.find();
-  res.status(200).json(records);
-});
+const getAllRecords = getAll(Ultrasound);
 
 // Get a single record by custom schema id
 const getRecordById = asyncHandler(async (req, res, next) => {

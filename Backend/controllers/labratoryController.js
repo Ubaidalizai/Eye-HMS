@@ -1,6 +1,7 @@
 // controllers/laboratoryController.js
 const Laboratory = require('../models/labratoryModule');
 const asyncHandler = require('../middlewares/asyncHandler');
+const getAll = require('./handleFactory');
 
 // Create a new lab record
 const createLabRecord = asyncHandler(async (req, res) => {
@@ -26,20 +27,7 @@ const createLabRecord = asyncHandler(async (req, res) => {
 });
 
 // Get all lab records
-const getAllLabRecords = asyncHandler(async (req, res) => {
-  try {
-    const labRecords = await Laboratory.find();
-    res.status(200).json({
-      message: 'Lab records retrieved successfully',
-      data: labRecords,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Failed to retrieve lab records',
-      error: error.message,
-    });
-  }
-});
+const getAllLabRecords = getAll(Laboratory);
 
 // Get a specific lab record by patientId
 const getLabRecordByPatientId = asyncHandler(async (req, res) => {

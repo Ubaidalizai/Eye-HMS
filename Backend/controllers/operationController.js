@@ -1,6 +1,7 @@
 const Operation = require('../models/operationModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+const getAll = require('./handleFactory');
 
 // Create a new operation
 const createOperation = asyncHandler(async (req, res, next) => {
@@ -12,10 +13,7 @@ const createOperation = asyncHandler(async (req, res, next) => {
 });
 
 // Get all operations
-const getAllOperations = asyncHandler(async (req, res, next) => {
-  const operations = await Operation.find();
-  res.status(200).json(operations);
-});
+const getAllOperations = getAll(Operation);
 
 const updateOperation = asyncHandler(async (req, res, next) => {
   const { id } = req.params;

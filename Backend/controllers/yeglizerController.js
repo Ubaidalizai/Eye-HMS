@@ -1,12 +1,10 @@
 const Yeglizer = require('../models/yeglizerModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+const getAll = require('./handleFactory');
 
 // Get all Yeglizer records
-const getAllYeglizers = asyncHandler(async (req, res) => {
-  const yeglizers = await Yeglizer.find();
-  res.status(200).json({ status: 'success', data: yeglizers });
-});
+const getAllYeglizers = getAll(Yeglizer);
 
 // Get a single Yeglizer record by schema ID (custom `id`)
 const getYeglizerById = asyncHandler(async (req, res, next) => {
