@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState, useCallback } from "react";
+import { useSelector } from "react-redux";
 import {
   FaPills,
   FaGlasses,
   FaBoxOpen,
   FaExclamationTriangle,
   FaTrash,
-} from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { FcSalesPerformance } from 'react-icons/fc';
-import Pagination from '../components/Pagination';
+} from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FcSalesPerformance } from "react-icons/fc";
+import Pagination from "../components/Pagination";
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
@@ -22,7 +22,7 @@ const Pharmacy = () => {
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     fetchData();
@@ -35,16 +35,16 @@ const Pharmacy = () => {
 
     let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
 
-    if (user.role === 'sunglassesSeller') {
-      baseUrl += '&category=sunglasses,frame, glass';
-    } else if (user.role === 'pharmacist') {
-      baseUrl += '&category=drug';
+    if (user.role === "sunglassesSeller") {
+      baseUrl += "&category=sunglasses,frame, glass";
+    } else if (user.role === "pharmacist") {
+      baseUrl += "&category=drug";
     }
 
     try {
       const res = await fetch(baseUrl, {
-        credentials: 'include',
-        method: 'GET',
+        credentials: "include",
+        method: "GET",
       });
 
       if (!res.ok) {
@@ -64,24 +64,24 @@ const Pharmacy = () => {
   const fetchDrugsSummary = async () => {
     try {
       const response = await fetch(
-        'http://localhost:4000/api/v1/pharmacy/drugs-summary',
+        "http://localhost:4000/api/v1/pharmacy/drugs-summary",
         {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-          credentials: 'include', // Include cookies for authentication if required
+          credentials: "include", // Include cookies for authentication if required
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch drugs summary');
+        throw new Error("Failed to fetch drugs summary");
       }
 
       const data = await response.json();
       setTotalSalePrice(data.totalSalePrice);
     } catch (err) {
-      console.error('Error fetching drugs summary:', err);
+      console.error("Error fetching drugs summary:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -89,24 +89,24 @@ const Pharmacy = () => {
   };
 
   const handleDelete = async (drugId) => {
-    if (window.confirm('Are you sure you want to delete this drug?')) {
+    if (window.confirm("Are you sure you want to delete this drug?")) {
       try {
         const response = await fetch(
           `http://localhost:4000/api/v1/pharmacy/${drugId}`,
           {
-            method: 'DELETE',
-            credentials: 'include',
+            method: "DELETE",
+            credentials: "include",
           }
         );
         if (response.ok) {
           setUpdatePage(!updatePage);
-          toast.success('Product deleted successfully');
+          toast.success("Product deleted successfully");
         } else {
-          toast.error('Failed to delete the product');
+          toast.error("Failed to delete the product");
         }
       } catch (err) {
         console.log(err);
-        toast.error('An error occurred while deleting the product');
+        toast.error("An error occurred while deleting the product");
       }
     }
   };
@@ -157,9 +157,9 @@ const Pharmacy = () => {
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
         <h2 className='font-semibold text-xl'>
-          {user.role === 'sunglassesSeller'
-            ? 'Sunglasses Inventory'
-            : 'Pharmacy Inventory'}
+          {user.role === "sunglassesSeller"
+            ? "Sunglasses Inventory"
+            : "Pharmacy Inventory"}
         </h2>
         <div className='mt-10'>
           <div className='bg-white shadow overflow-hidden sm:rounded-md'>
@@ -210,7 +210,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
-                        {user.role === 'sunglassesSeller' ? (
+                        {user.role === "sunglassesSeller" ? (
                           <FaGlasses className='h-6 w-6 text-white' />
                         ) : (
                           <FaPills className='h-6 w-6 text-white' />
@@ -219,9 +219,9 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            {user.role === 'sunglassesSeller'
-                              ? 'Products'
-                              : 'Drugs'}
+                            {user.role === "sunglassesSeller"
+                              ? "Products"
+                              : "Drugs"}
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugs.length}
@@ -252,46 +252,78 @@ const Pharmacy = () => {
                 </div>
               </div>
             </div>
-
-            <ul className='divide-y divide-gray-200'>
-              {drugs.map((drug, index) => (
-                <li
-                  key={index}
-                  className='px-4 py-4 sm:px-6 hover:bg-gray-50 transition duration-150 ease-in-out'
-                >
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center'>
-                      {user.role === 'sunglassesSeller' ? (
-                        <FaGlasses className='flex-shrink-0 mr-3 h-6 w-6 text-gray-400' />
-                      ) : (
-                        <FaPills className='flex-shrink-0 mr-3 h-6 w-6 text-gray-400' />
-                      )}
-                      <p className='text-sm font-medium text-indigo-600 truncate'>
+            <div className='overflow-x-auto rounded-lg shadow-md'>
+              <table className='min-w-full divide-y divide-gray-200 bg-white'>
+                <thead className='bg-gray-50'>
+                  <tr>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                    >
+                      Icon
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                    >
+                      Drug Name
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                    >
+                      Expiry Date
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                    >
+                      Quantity
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='divide-y divide-gray-200'>
+                  {drugs.map((drug, index) => (
+                    <tr
+                      key={index}
+                      className='hover:bg-gray-50 transition duration-150 ease-in-out'
+                    >
+                      <td className='px-6 py-4 whitespace-nowrap text-center'>
+                        {user.role === "sunglassesSeller" ? (
+                          <FaGlasses className='h-6 w-6 text-gray-400' />
+                        ) : (
+                          <FaPills className='h-6 w-6 text-gray-400' />
+                        )}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                         {drug.name}
-                      </p>
-                    </div>
-                    <div className='ml-2 flex-shrink-0 flex'>
-                      <p className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
-                        Expiry Date: {drug.expiryDate?.split('T')[0]}
-                      </p>
-                    </div>
-                    <div className='ml-2 flex-shrink-0 flex'>
-                      <p className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800'>
-                        Quantity: {drug.quantity}
-                      </p>
-                    </div>
-                    <div className='ml-2 flex-shrink-0 flex'>
-                      <button
-                        onClick={() => handleDelete(drug._id)}
-                        className='font-medium text-red-600 hover:text-red-700'
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.expiryDate?.split("T")[0]}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.quantity}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-center'>
+                        <button
+                          onClick={() => handleDelete(drug._id)}
+                          className='px-2 py-1 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition duration-150'
+                        >
+                          <FaTrash className='inline-block h-4 w-4 mr-1' />
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <Pagination

@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AuthContext from '../AuthContext';
-import { Doughnut, Bar } from 'react-chartjs-2';
+import React, { useContext, useEffect, useState, useMemo } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import AuthContext from "../AuthContext";
+import { Doughnut, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -11,11 +11,13 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from 'chart.js';
-import './newManagement.css';
-import MoveHistory from './MoveHistory';
+} from "chart.js";
+import "./newManagement.css";
+import MoveHistory from "./MoveHistory";
+import PersonInfoDropdown from "./PersonInfoDropdown";
+import SummaryCard from "../components/SummaryCard";
+import SelectInput from "../components/SelectInput";
 
-// Register Chart.js components
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -25,41 +27,39 @@ ChartJS.register(
   BarElement
 );
 
-const categories = ['drug', 'sunglasses', 'glass', 'frame'];
-const models = ['sales', 'purchase', 'income'];
+const API_BASE_URL = "http://localhost:4000/api/v1";
+
+const categories = ["drug", "sunglasses", "glass", "frame"];
+const models = ["sales", "purchase", "income"];
 const monthLabels = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function Dashboard() {
-  const [summaryType, setSummaryType] = useState('monthly');
+  const [summaryType, setSummaryType] = useState("monthly");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [dashboardSummary, setDashboardSummary] = useState({});
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedModel, setSelectedModel] = useState('sales');
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedModel, setSelectedModel] = useState("sales");
   const [summary, setSummary] = useState({});
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchDashboardSummary();
-    if (summaryType === 'monthly') {
-      fetchMonthlyStats();
-    } else {
-      fetchYearlyStats();
-    }
+    fetchStats();
   }, [
     selectedCategory,
     selectedMonth,
@@ -68,15 +68,17 @@ function Dashboard() {
     selectedModel,
   ]);
 
-  const fetchMonthlyStats = async () => {
+  const fetchStats = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/${selectedModel}/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const endpoint =
+        summaryType === "monthly"
+          ? `${API_BASE_URL}/${selectedModel}/${selectedYear}/${selectedMonth}?category=${selectedCategory}`
+          : `${API_BASE_URL}/${selectedModel}/${selectedYear}/?category=${selectedCategory}`;
+
+      const response = await fetch(endpoint, {
+        method: "GET",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -84,59 +86,34 @@ function Dashboard() {
       const data = await response.json();
       setSummary(data);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch stats:", err);
+      toast.error("Failed to fetch stats");
     }
   };
 
-  const fetchYearlyStats = async () => {
+  const fetchDashboardSummary = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/${selectedModel}/${selectedYear}/?category=${selectedCategory}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/dashboard/summary`, {
+        method: "GET",
+        credentials: "include",
+      });
       const data = await response.json();
-      setSummary(data);
+      setDashboardSummary(data.data);
     } catch (err) {
-      console.log(err);
+      console.error("Failed to fetch dashboard summary:", err);
+      toast.error("Failed to fetch dashboard summary");
     }
   };
 
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
-  };
+  const handleInputChange = (setter) => (e) => setter(e.target.value);
 
-  const handleSummaryTypeChange = (e) => {
-    setSummaryType(e.target.value);
-  };
-
-  const handleMonthChange = (e) => {
-    const month = Number(e.target.value);
-    setSelectedMonth(month);
-  };
-
-  const handleYearChange = (e) => {
-    const year = Number(e.target.value);
-    setSelectedYear(year);
-  };
-
-  const handleModelChange = (e) => {
-    setSelectedModel(e.target.value);
-  };
-
-  const getBarChartData = () => {
-    let labels, data;
-
-    if (summaryType === 'yearly') {
-      labels = monthLabels;
-      data = summary.data || Array(12).fill(0);
-    } else {
-      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
-      data = summary.data || Array(30).fill(0);
-    }
+  const getBarChartData = useMemo(() => {
+    const labels =
+      summaryType === "yearly"
+        ? monthLabels
+        : Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+    const data =
+      summary.data || Array(summaryType === "yearly" ? 12 : 30).fill(0);
 
     return {
       labels,
@@ -144,200 +121,129 @@ function Dashboard() {
         {
           label: selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1),
           data,
-          backgroundColor: 'rgb(0, 179, 255)',
-          borderColor: 'rgb(0, 179, 255)',
+          backgroundColor: "rgb(0, 179, 255)",
+          borderColor: "rgb(0, 179, 255)",
           borderWidth: 1,
         },
       ],
     };
-  };
+  }, [summary, summaryType, selectedModel]);
 
-  const fetchDashboardSummary = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/dashboard/summary',
+  const getDoughnutChartData = useMemo(() => {
+    const data = categories.map((category) =>
+      (summary?.data || [])
+        .filter((item) => item.category === category)
+        .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0)
+    );
+
+    return {
+      labels: categories,
+      datasets: [
         {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-      const data = await response.json();
-      setDashboardSummary(data.data);
-    } catch (err) {
-      console.log(err);
-      toast.error('Failed to fetch dashboard summary');
-    }
-  };
+          data,
+          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+        },
+      ],
+    };
+  }, [summary, categories]);
 
   return (
     <>
-      <div className='grid grid-cols-1 col-span-12 lg:col-span-10 gap-6 md:grid-cols-3 lg:grid-cols-4 p-4'>
-        <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
-          <div className='inline-flex gap-2 self-end rounded bg-green-100 p-1 text-green-600'>
-            <span className='text-xs font-medium'>67.81%</span>
-          </div>
-          <div>
-            <strong className='block text-sm font-medium text-gray-500'>
-              Total Sales
-            </strong>
-            <p>
-              <span className='text-2xl font-medium text-gray-900'>
-                ${dashboardSummary.totalSales}
-              </span>
-            </p>
-          </div>
-        </article>
-
-        <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
-          <div className='inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600'>
-            <span className='text-xs font-medium'>67.81%</span>
-          </div>
-          <div>
-            <strong className='block text-sm font-medium text-gray-500'>
-              Purchase
-            </strong>
-            <p>
-              <span className='text-2xl font-medium text-gray-900'>
-                ${dashboardSummary.totalPurchases}
-              </span>
-            </p>
-          </div>
-        </article>
-
-        <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
-          <div className='inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600'>
-            <span className='text-xs font-medium'>67.81%</span>
-          </div>
-          <div>
-            <strong className='block text-sm font-medium text-gray-500'>
-              Total Products
-            </strong>
-            <p>
-              <span className='text-2xl font-medium text-gray-900'>
-                {dashboardSummary.totalProductsCount}
-              </span>
-            </p>
-          </div>
-        </article>
-
-        <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
-          <div className='inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600'>
-            <span className='text-xs font-medium'>67.81%</span>
-          </div>
-          <div>
-            <strong className='block text-sm font-medium text-gray-500'>
-              Total Expense
-            </strong>
-            <p>
-              <span className='text-2xl font-medium text-gray-900'>
-                ${dashboardSummary.totalExpenses}
-              </span>
-            </p>
-          </div>
-        </article>
-
-        <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
-          <div className='inline-flex gap-2 self-end rounded bg-red-100 p-1 text-red-600'>
-            <span className='text-xs font-medium'>67.81%</span>
-          </div>
-          <div>
-            <strong className='block text-sm font-medium text-gray-500'>
-              Total Net Income
-            </strong>
-            <p>
-              <span className='text-2xl font-medium text-gray-900'>
-                ${dashboardSummary.totalIncome}
-              </span>
-            </p>
-          </div>
-        </article>
+      <div className='grid grid-cols-1 col-span-12 lg:col-span-10 gap-6 md:grid-cols-3 lg:grid-cols-5 p-4'>
+        <SummaryCard
+          title='Total Sales'
+          value={dashboardSummary.totalSales}
+          trend={67.81}
+          trendDirection='up'
+        />
+        <SummaryCard
+          title='Purchase'
+          value={dashboardSummary.totalPurchases}
+          trend={67.81}
+          trendDirection='down'
+        />
+        <SummaryCard
+          title='Total Products'
+          value={dashboardSummary.totalProductsCount}
+          trend={67.81}
+          trendDirection='down'
+        />
+        <SummaryCard
+          title='Total Expense'
+          value={dashboardSummary.totalExpenses}
+          trend={67.81}
+          trendDirection='down'
+        />
+        <SummaryCard
+          title='Total Net Income'
+          value={dashboardSummary.totalIncome}
+          trend={67.81}
+          trendDirection='down'
+        />
       </div>
+
       <div className='p-4 flex flex-col gap-6'>
-        <div className='flex justify-between'>
-          <div className='w-52'>
-            <select
-              className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              onChange={handleCategoryChange}
-              value={selectedCategory}
-            >
-              <option value=''>All Categories</option>
-              {categories.map((category, index) => (
-                <option key={index} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className='w-52'>
-            <select
-              className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              onChange={handleModelChange}
-              value={selectedModel}
-            >
-              {models.map((model, index) => (
-                <option key={index} value={model}>
-                  {model.charAt(0).toUpperCase() + model.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className='w-52'>
-            <select
-              className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              onChange={handleSummaryTypeChange}
-              value={summaryType}
-            >
-              <option value='monthly'>Monthly Summary</option>
-              <option value='yearly'>Yearly Summary</option>
-            </select>
-          </div>
-
-          {summaryType === 'monthly' && (
-            <div className='w-52'>
-              <select
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-                onChange={handleMonthChange}
-                value={selectedMonth}
-              >
-                {monthLabels.map((label, index) => (
-                  <option key={index} value={index + 1}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className='flex justify-between flex-wrap gap-4'>
+          <SelectInput
+            options={[
+              { value: "", label: "All Categories" },
+              ...categories.map((c) => ({ value: c, label: c })),
+            ]}
+            value={selectedCategory}
+            onChange={handleInputChange(setSelectedCategory)}
+          />
+          <SelectInput
+            options={models.map((m) => ({
+              value: m,
+              label: m.charAt(0).toUpperCase() + m.slice(1),
+            }))}
+            value={selectedModel}
+            onChange={handleInputChange(setSelectedModel)}
+          />
+          <SelectInput
+            options={[
+              { value: "monthly", label: "Monthly Summary" },
+              { value: "yearly", label: "Yearly Summary" },
+            ]}
+            value={summaryType}
+            onChange={handleInputChange(setSummaryType)}
+          />
+          {summaryType === "monthly" && (
+            <SelectInput
+              options={monthLabels.map((label, index) => ({
+                value: index + 1,
+                label,
+              }))}
+              value={selectedMonth}
+              onChange={handleInputChange(setSelectedMonth)}
+            />
           )}
-
-          {summaryType === 'yearly' && (
-            <div className='w-52'>
-              {/* <h2 className='text-lg font-semibold mb-2'>Select Year</h2> */}
-              <input
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-                type='number'
-                value={selectedYear}
-                onChange={handleYearChange}
-                min='2000'
-                max={new Date().getFullYear()}
-              />
-            </div>
+          {summaryType === "yearly" && (
+            <input
+              className='w-52 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              type='number'
+              value={selectedYear}
+              onChange={handleInputChange(setSelectedYear)}
+              min='2000'
+              max={new Date().getFullYear()}
+            />
           )}
         </div>
 
         <div className='p-4 border rounded-md shadow-lg bg-white'>
           <h2 className='text-xl font-bold mb-4'>
-            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
-            for {selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1)}
+            {`${
+              summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+            } Summary for ${
+              selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1)
+            }`}
           </h2>
           <Bar
-            data={getBarChartData()}
+            data={getBarChartData}
             options={{
               responsive: true,
               plugins: {
-                legend: {
-                  position: 'top',
-                },
+                legend: { position: "top" },
                 title: {
                   display: true,
                   text: `${
@@ -354,30 +260,12 @@ function Dashboard() {
 
         <div className='p-4 border rounded-md shadow-lg bg-white'>
           <h2 className='text-xl font-bold mb-4'>
-            {selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1)} by
-            Category
+            {`${
+              selectedModel.charAt(0).toUpperCase() + selectedModel.slice(1)
+            } by Category`}
           </h2>
           <div className='w-full max-w-md mx-auto'>
-            <Doughnut
-              data={{
-                labels: categories,
-                datasets: [
-                  {
-                    data: categories.map((category) =>
-                      (summary.data || [])
-                        .filter((item) => item.category === category)
-                        .reduce((sum, item) => sum + parseFloat(item.amount), 0)
-                    ),
-                    backgroundColor: [
-                      '#FF6384',
-                      '#36A2EB',
-                      '#FFCE56',
-                      '#4BC0C0',
-                    ],
-                  },
-                ],
-              }}
-            />
+            <Doughnut data={getDoughnutChartData} />
           </div>
         </div>
       </div>

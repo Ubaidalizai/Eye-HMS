@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
-
+import React, { useState, useEffect } from "react";
+import { Pencil, Trash2, Plus } from "lucide-react";
+import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
+import PersonInfoDropdown from "./PersonInfoDropdown";
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    role: '',
-    password: '',
-    phoneNumber: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "",
+    password: "",
+    phoneNumber: "",
     image: null,
   });
   const [editingUser, setEditingUser] = useState(null);
@@ -22,15 +22,15 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/v1/user', {
-        credentials: 'include',
+      const res = await fetch("http://localhost:4000/api/v1/user", {
+        credentials: "include",
       });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const data = await res.json();
       setUsers(data.users);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -42,24 +42,24 @@ export default function AdminPanel() {
     });
     try {
       const response = await fetch(
-        'http://localhost:4000/api/v1/user/register',
-        { credentials: 'include', method: 'POST', body: formData }
+        "http://localhost:4000/api/v1/user/register",
+        { credentials: "include", method: "POST", body: formData }
       );
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
       setUsers([...users, data.user]);
       setNewUser({
-        firstName: '',
-        lastName: '',
-        email: '',
-        role: '',
-        password: '',
-        phoneNumber: '',
+        firstName: "",
+        lastName: "",
+        email: "",
+        role: "",
+        password: "",
+        phoneNumber: "",
         image: null,
       });
       setIsAddModalOpen(false);
     } catch (error) {
-      console.error('Error adding user:', error);
+      console.error("Error adding user:", error);
     }
   };
 
@@ -70,9 +70,9 @@ export default function AdminPanel() {
       const response = await fetch(
         `http://localhost:4000/api/v1/user/${editingUser._id}`,
         {
-          credentials: 'include',
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          credentials: "include",
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(editingUser), // Send JSON instead
         }
       );
@@ -81,19 +81,19 @@ export default function AdminPanel() {
       fetchUsers();
       setEditingUser(null);
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
     }
   };
 
   const deleteUser = async (id) => {
     try {
       await fetch(`http://localhost:4000/api/v1/user/${id}`, {
-        credentials: 'include',
-        method: 'DELETE',
+        credentials: "include",
+        method: "DELETE",
       });
       fetchUsers();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error("Error deleting user:", error);
     }
   };
 
@@ -159,7 +159,7 @@ export default function AdminPanel() {
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.role === 'admin' ? (
+                    {user.role === "admin" ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
                         {user.role}
                       </span>
@@ -168,7 +168,7 @@ export default function AdminPanel() {
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.password ? '********' : 'N/A'}
+                    {user.password ? "********" : "N/A"}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user.phoneNumber}
@@ -335,7 +335,7 @@ export default function AdminPanel() {
               <input
                 type='password'
                 placeholder='New Password (leave blank to keep current)'
-                value={editingUser.password || ''}
+                value={editingUser.password || ""}
                 onChange={(e) =>
                   setEditingUser({ ...editingUser, password: e.target.value })
                 }
@@ -387,6 +387,8 @@ export default function AdminPanel() {
           </div>
         </div>
       )}
+
+      <PersonInfoDropdown />
     </div>
   );
 }
