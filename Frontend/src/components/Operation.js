@@ -7,12 +7,12 @@ import Pagination from './Pagination';
 
 function Operation() {
   const [id, setId] = useState('');
-  const [name, setName] = useState('');
+  const [patientId, setPatientId] = useState('');
   const [price, setPrice] = useState('');
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
-  const [percentage, setPercentage] = useState('');
+  const [discount, setDiscount] = useState('');
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -29,6 +29,7 @@ function Operation() {
         );
         if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
+        console.log(data.data.results);
         setSubmittedData(data.data.results);
         setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } catch (error) {
@@ -40,7 +41,7 @@ function Operation() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const entry = { id, name, price, time, date, doctor, percentage };
+    const entry = { patientId, price, time, date, doctor, discount };
 
     if (editMode) {
       try {
@@ -89,28 +90,26 @@ function Operation() {
   };
 
   const clearForm = () => {
-    setId('');
-    setName('');
+    setPatientId('');
     setPrice('');
     setTime('');
     setDate('');
     setDoctor('');
-    setPercentage('');
+    setDiscount('');
     setEditMode(false);
     setEditIndex(null);
   };
 
   const handleEdit = (index) => {
     const recordToEdit = submittedData[index];
-    console.log('Editing record:', recordToEdit); // Log record to edit
+    setId(recordToEdit._id || '');
     setFieldValues({
-      id: recordToEdit.id || '',
-      name: recordToEdit.name || '',
-      price: recordToEdit.price || '',
+      patientId: recordToEdit.patientId || '',
+      price: recordToEdit.price || 0,
       time: recordToEdit.time || '',
       date: recordToEdit.date || '',
       doctor: recordToEdit.doctor || '',
-      percentage: recordToEdit.percentage || '',
+      discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -119,9 +118,9 @@ function Operation() {
 
   const handleRemove = async (index) => {
     try {
-      const { id } = submittedData[index];
+      const { _id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/operation/${id}`,
+        `http://127.0.0.1:4000/api/v1/operation/${_id}`,
         {
           method: 'DELETE',
         }
@@ -136,32 +135,41 @@ function Operation() {
   };
 
   const fields = [
-    { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Name', type: 'text', name: 'name' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
     { label: 'Price', type: 'text', name: 'price' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Doctor', type: 'text', name: 'doctor' },
-    { label: 'Percentage', type: 'number', name: 'percentage' },
+    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Discount', type: 'number', name: 'discount' },
+    { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
 
-  const fieldValues = { id, name, price, time, date, doctor, percentage };
-  const setFieldValues = ({
-    id,
-    name,
+  const fieldValues = {
+    patientId,
     price,
     time,
     date,
     doctor,
-    percentage,
+    discount,
+  };
+
+  const setFieldValues = ({
+    patientId,
+    price,
+    time,
+    date,
+    doctor,
+    discount,
   }) => {
-    setId(id);
-    setName(name);
+    // Check if patientId is an object and has a name property
+    // const patientName = patientId?.name;
+    setPatientId(patientId);
     setPrice(price);
     setTime(time);
     setDate(date);
     setDoctor(doctor);
-    setPercentage(percentage);
+    setDiscount(discount);
   };
 
   return (

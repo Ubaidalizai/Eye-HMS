@@ -28,7 +28,7 @@ const FormModal = ({
         (!value || (typeof value === 'string' && !value.trim()))
       ) {
         newErrors[field.name] = `${field.label} is required`;
-      } else if (field.type === 'number' && (value == null || value === '')) {
+      } else if (field.type === 'number' && (value == null || value === '' || isNaN(value) || value < 0)) {
         newErrors[field.name] = `${field.label} is required`;
       } else if ((field.type === 'date' || field.type === 'time') && !value) {
         newErrors[field.name] = `${field.label} is required`;

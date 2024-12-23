@@ -2,12 +2,13 @@ const Yeglizer = require('../models/yeglizerModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
+const validateMongoDBId = require('../utils/validateMongoDBId');
 
 // Get all Yeglizer records
 const getAllYeglizers = getAll(Yeglizer);
 
 // Get a single Yeglizer record by schema ID (custom `id`)
-const getYeglizerById = asyncHandler(async (req, res, next) => {
+const getYeglizerById = asyncHandler(async (req, res) => {
   const yeglizer = await Yeglizer.findOne({ id: req.params.id });
   if (!yeglizer) {
     throw new AppError('Record not found', 404);
@@ -22,7 +23,9 @@ const createYeglizer = asyncHandler(async (req, res) => {
 });
 
 // Update a Yeglizer record by schema ID (custom `id`)
-const updateYeglizerById = asyncHandler(async (req, res, next) => {
+const updateYeglizerById = asyncHandler(async (req, res) => {
+  validateMongoDBId(req.params.id);
+
   const updatedYeglizer = await Yeglizer.findOneAndUpdate(
     { id: req.params.id },
     req.body,
@@ -40,7 +43,9 @@ const updateYeglizerById = asyncHandler(async (req, res, next) => {
 });
 
 // Delete a Yeglizer record by schema ID (custom `id`)
-const deleteYeglizerById = asyncHandler(async (req, res, next) => {
+const deleteYeglizerById = asyncHandler(async (req, res) => {
+  validateMongoDBId(req.params.id);
+
   const deletedYeglizer = await Yeglizer.findOneAndDelete({
     id: req.params.id,
   });

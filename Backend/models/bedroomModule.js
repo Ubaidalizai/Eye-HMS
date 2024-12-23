@@ -1,12 +1,16 @@
 const mongoose = require('mongoose');
 
 const bedroomSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
+  patientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Patient',
+    required: true,
+  },
   time: { type: String, required: true },
   date: { type: Date, required: true },
-  rent: { type: Number, required: true },
-  percentage: { type: Number, required: true }, // New percentage field
+  rent: { type: Number, required: true, min: 0 },
+  discount: { type: Number, required: true, default: 0, min: 0, max: 100 },
+  totalAmount: { type: Number, required: true },
 });
 
 const Bedroom = mongoose.model('Bedroom', bedroomSchema);

@@ -1,13 +1,17 @@
 const mongoose = require('mongoose');
 
 const operationSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  price: { type: Number, required: true },
+  patientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Patient',
+    required: true,
+  },
+  price: { type: Number, required: true, min: 0 },
   time: { type: String, required: true },
   date: { type: Date, required: true },
-  doctor: { type: String, required: true },
-  percentage: { type: Number, required: true },
+  doctor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  discount: { type: Number, default: 0, min: 0, max: 100 },
+  totalAmount: { type: Number, required: true, min: 0 },
 });
 
 const Operation = mongoose.model('Operation', operationSchema);

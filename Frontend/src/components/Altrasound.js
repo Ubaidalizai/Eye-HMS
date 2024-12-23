@@ -7,10 +7,10 @@ import Pagination from './Pagination';
 function Ultrasound() {
   const [fieldValues, setFieldValues] = useState({
     id: '',
-    name: '',
+    doctor: '',
     time: '',
     date: '',
-    percentage: '',
+    discount: '',
     image: null,
   });
 
@@ -28,7 +28,7 @@ function Ultrasound() {
         `http://127.0.0.1:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`
       );
       const data = await response.json();
-      console.log(data);
+
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     };
@@ -38,11 +38,10 @@ function Ultrasound() {
   const handleCancel = () => {
     setFieldValues({
       id: '',
-      name: '',
+      doctor: '',
       time: '',
       date: '',
-      percentage: '',
-      image: null,
+      discount: 0,
     });
     setIsOpen(false);
     setEditMode(false);
@@ -51,14 +50,12 @@ function Ultrasound() {
 
   const handleEdit = (index) => {
     const record = submittedData[index];
-    // Exclude `image` from being prefilled
     setFieldValues({
       id: record.id,
-      name: record.name,
+      doctor: record.doctor,
       time: record.time,
       date: record.date,
-      percentage: record.percentage,
-      image: null, // File input cannot have a value
+      discount: record.discount,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -113,11 +110,10 @@ function Ultrasound() {
 
   const fields = [
     { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Name', type: 'text', name: 'name' },
+    { label: 'Doctor', type: 'text', name: 'doctor' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
-    { label: 'Percentage', type: 'number', name: 'percentage' },
-    { label: 'Image', type: 'file', name: 'image' }, // Handled separately
+    { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   return (
@@ -128,11 +124,10 @@ function Ultrasound() {
           onClick={() => {
             setFieldValues({
               id: '',
-              name: '',
+              doctor: '',
               time: '',
               date: '',
-              percentage: '',
-              image: null,
+              discount: '',
             });
             setIsOpen(true);
             setEditMode(false);
@@ -148,7 +143,7 @@ function Ultrasound() {
         title={editMode ? 'Edit Ultrasound Record' : 'Ultrasound Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
-        fields={fields.filter((field) => field.name !== 'image' || !editMode)} // Exclude image in edit mode
+        fields={fields} // Exclude image in edit mode
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
         url={
@@ -162,7 +157,7 @@ function Ultrasound() {
 
       <DataTable
         submittedData={submittedData}
-        fields={fields.filter((field) => field.name !== 'image')}
+        fields={fields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
       />

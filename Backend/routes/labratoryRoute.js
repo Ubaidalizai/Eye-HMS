@@ -5,8 +5,8 @@ const {
   createLabRecord,
   getAllLabRecords,
   getLabRecordByPatientId,
-  updateLabRecordByPatientId,
-  deleteLabRecordByPatientId,
+  updateLabRecordById,
+  deleteLabRecordById,
 } = require('../controllers/labratoryController');
 
 // Define routes
@@ -15,7 +15,7 @@ router.route('/').post(createLabRecord).get(getAllLabRecords); // Create a new l
 router
   .route('/:patientId')
   .get(getLabRecordByPatientId)
-  .patch(updateLabRecordByPatientId)
-  .delete(deleteLabRecordByPatientId); // Get a specific lab record by patientId
+  .patch(updateLabRecordById)
+  .delete(deleteLabRecordById); // Get a specific lab record by patientId
 
 module.exports = router;

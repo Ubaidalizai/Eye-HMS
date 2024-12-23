@@ -4,6 +4,7 @@ const validMongoDBId = require('../utils/validateMongoDBId.js');
 const generateToken = require('../utils/generateToken.js');
 const validateMongoDBId = require('../utils/validateMongoDBId.js');
 const Email = require('../utils/email.js');
+const getAll = require('./handleFactory.js');
 
 const multer = require('multer');
 const sharp = require('sharp');
@@ -85,7 +86,15 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
 
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password, phoneNumber, role } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    phoneNumber,
+    role,
+    percentage,
+  } = req.body;
   console.log(req.body);
   if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new AppError('Please fill all the inputs.', 400);
@@ -103,6 +112,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     phoneNumber,
     role,
+    percentage,
     image: req.file ? req.file.filename : null,
   });
 
@@ -116,6 +126,7 @@ const registerUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       phoneNumber: newUser.phoneNumber,
       role: newUser.role,
+      percentage: newUser.percentage,
       image: newUser.image,
     });
   } catch (error) {
@@ -162,13 +173,7 @@ const logoutCurrentUser = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
-const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({});
-
-  res.status(200).json({
-    users,
-  });
-});
+const getAllUsers = getAll(User);
 
 // Find User By Id (only admin can)
 const findUserByID = asyncHandler(async (req, res, next) => {
@@ -188,8 +193,9 @@ const findUserByID = asyncHandler(async (req, res, next) => {
 const updateUserById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDBId(id);
-  const { firstName, lastName, email, phoneNumber, role } = req.body;
-  console.log(req.body);
+  const { firstName, lastName, email, phoneNumber, role, percentage } =
+    req.body;
+
   const user = await User.findById(id);
 
   if (user) {
@@ -198,6 +204,7 @@ const updateUserById = asyncHandler(async (req, res, next) => {
     user.email = email || user.email;
     user.phoneNumber = phoneNumber || user.phoneNumber;
     user.role = role || user.role;
+    user.percentage = percentage || user.percentage;
 
     const updatedUser = await user.save();
     res.status(200).json({
@@ -207,6 +214,7 @@ const updateUserById = asyncHandler(async (req, res, next) => {
       email: updatedUser.email,
       phoneNumber: updatedUser.phoneNumber,
       role: updatedUser.role,
+      percentage: updatedUser.percentage,
     });
   } else {
     throw new AppError('User not found!', 404);
@@ -246,6 +254,8 @@ const getCurrentUserProfile = asyncHandler(async (req, res, next) => {
         email: user.email,
         phoneNumber: user.phoneNumber,
         image: user.image,
+        role: user.role,
+        percentage: user.percentage,
       },
     });
   } else {

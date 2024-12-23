@@ -28,7 +28,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const data = await res.json();
-      setUsers(data.users);
+      setUsers(data.data.results);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -131,6 +131,9 @@ export default function AdminPanel() {
                   Role
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
+                  Percentage
+                </th>
+                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Password
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
@@ -168,7 +171,16 @@ export default function AdminPanel() {
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.password ? "********" : "N/A"}
+                    {user?.percentage > 0 ? (
+                      <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
+                        {user.percentage + '%'}
+                      </span>
+                    ) : (
+                      user.percentage + '%'
+                    )}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    {user.password ? '********' : 'N/A'}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user.phoneNumber}

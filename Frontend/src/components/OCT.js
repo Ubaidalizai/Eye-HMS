@@ -6,13 +6,11 @@ import Pagination from './Pagination';
 
 function OCT() {
   const [patientId, setPatientId] = useState('');
-  const [patientName, setPatientName] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [eyeExamined, setEyeExamined] = useState('');
-  const [scanType, setScanType] = useState('');
-  const [results, setResults] = useState('');
-  const [percentage, setPercentage] = useState('');
+  const [doctor, setDoctor] = useState('');
+  const [price, setPrice] = useState(0);
+  const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -30,7 +28,7 @@ function OCT() {
         if (!response.ok) throw new Error('Failed to fetch data');
         const data = await response.json();
         setSubmittedData(data.data.results);
-        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+        setTotalPages(data.totalPages || Math.ceil(data.price / limit));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -42,13 +40,11 @@ function OCT() {
     event.preventDefault();
     const entry = {
       patientId,
-      patientName,
       date,
       time,
-      eyeExamined,
-      scanType,
-      results,
-      percentage,
+      doctor,
+      price,
+      discount,
     };
 
     if (editMode) {
@@ -96,13 +92,11 @@ function OCT() {
 
   const clearForm = () => {
     setPatientId('');
-    setPatientName('');
     setDate('');
     setTime('');
-    setEyeExamined('');
-    setScanType('');
-    setResults('');
-    setPercentage('');
+    setDoctor('');
+    setPrice(0);
+    setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
   };
@@ -111,13 +105,11 @@ function OCT() {
     const recordToEdit = submittedData[index];
     setFieldValues({
       patientId: recordToEdit.patientId || '',
-      patientName: recordToEdit.patientName || '',
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
-      eyeExamined: recordToEdit.eyeExamined || '',
-      scanType: recordToEdit.scanType || '',
-      results: recordToEdit.results || '',
-      percentage: recordToEdit.percentage || '',
+      doctor: recordToEdit.doctor || '',
+      price: recordToEdit.price || 0,
+      discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -144,49 +136,40 @@ function OCT() {
 
   const fields = [
     { label: 'Id', type: 'text', name: 'patientId' },
-    { label: 'Name', type: 'text', name: 'patientName' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Time', type: 'time', name: 'time' },
     {
-      label: 'Eye Examined',
-      type: 'select',
-      name: 'eyeExamined',
-      options: ['Left', 'Right', 'Both'],
+      label: 'Doctor',
+      type: 'text',
+      name: 'doctor',
     },
-    { label: 'Scan Type', type: 'text', name: 'scanType' },
-    { label: 'Results', type: 'textarea', name: 'results' },
-    { label: 'Percentage', type: 'number', name: 'percentage' },
+    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const fieldValues = {
     patientId,
-    patientName,
     date,
     time,
-    eyeExamined,
-    scanType,
-    results,
-    percentage,
+    doctor,
+    price,
+    discount,
   };
 
   const setFieldValues = ({
     patientId,
-    patientName,
     date,
     time,
-    eyeExamined,
-    scanType,
-    results,
-    percentage,
+    doctor,
+    price,
+    discount,
   }) => {
     setPatientId(patientId);
-    setPatientName(patientName);
     setDate(date);
     setTime(time);
-    setEyeExamined(eyeExamined);
-    setScanType(scanType);
-    setResults(results);
-    setPercentage(percentage);
+    setDoctor(doctor);
+    setPrice(price);
+    setDiscount(discount);
   };
 
   return (

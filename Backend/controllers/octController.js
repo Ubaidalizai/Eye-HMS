@@ -1,79 +1,69 @@
 // controllers/octController.js
 const OCT = require('../models/octModule');
 const getAll = require('./handleFactory');
+const asyncHandler = require('../middlewares/asyncHandler');
+const AppError = require('../utils/appError');
 
 // Create a new OCT record
-const createOCTRecord = async (req, res) => {
-  try {
-    const octRecord = new OCT(req.body);
-    await octRecord.save();
-    res
-      .status(201)
-      .json({ message: 'OCT record created successfully', data: octRecord });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Failed to create OCT record', error: error.message });
+const createOCTRecord = asyncHandler(async (req, res) => {
+  const { patientId, doctorId, date, time, price, discount } = req.body;
+  if (!patientId || !doctorId || !date || !time || !price) {
+    throw new AppError('Missing required fields', 400);
   }
-};
+
+  const octRecord = new OCT({
+    patientId,
+    doctorId,
+    date,
+    time,
+    price,
+    discount,
+  });
+  await octRecord.save();
+  res
+    .status(201)
+    .json({ message: 'OCT record created successfully', data: octRecord });
+});
 
 // Get all OCT records
 const getAllOCTRecords = getAll(OCT);
 
 // Get an OCT record by ID
-const getOCTRecordById = async (req, res) => {
-  try {
-    const { patientId } = req.params;
-    const octRecord = await OCT.findOne(patientId);
-    if (!octRecord) {
-      return res.status(404).json({ message: 'OCT record not found' });
-    }
-    res
-      .status(200)
-      .json({ message: 'OCT record retrieved successfully', data: octRecord });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Failed to retrieve OCT record', error: error.message });
+const getOCTRecordById = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const octRecord = await OCT.findOne({ patientId });
+  if (!octRecord) {
+    throw new AppError('OCT record not found', 404);
   }
-};
+  res
+    .status(200)
+    .json({ message: 'OCT record retrieved successfully', data: octRecord });
+});
 
 // Update an OCT record by ID
-const updateOCTRecordById = async (req, res) => {
-  try {
-    const { patientId } = req.params;
-    const updatedOCTRecord = await OCT.findOneAndUpdate(patientId, req.body, {
-      new: true,
-    });
-    if (!updatedOCTRecord) {
-      return res.status(404).json({ message: 'OCT record not found' });
-    }
-    res.status(200).json({
-      message: 'OCT record updated successfully',
-      data: updatedOCTRecord,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Failed to update OCT record', error: error.message });
+const updateOCTRecordById = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const updatedOCTRecord = await OCT.findOneAndUpdate({ patientId }, req.body, {
+    new: true,
+  });
+  if (!updatedOCTRecord) {
+    throw new AppError('OCT record not found', 404);
   }
-};
+  res.status(200).json({
+    message: 'OCT record updated successfully',
+    data: updatedOCTRecord,
+  });
+});
 
 // Delete an OCT record by ID
-const deleteOCTRecordById = async (req, res) => {
-  try {
-    const { patientId } = req.params;
-    const deletedOCTRecord = await OCT.findOneAndDelete(patientId);
-    if (!deletedOCTRecord) {
-      return res.status(404).json({ message: 'OCT record not found' });
-    }
-    res.status(200).json({ message: 'OCT record deleted successfully' });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: 'Failed to delete OCT record', error: error.message });
+const deleteOCTRecordById = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+  const deletedOCTRecord = await OCT.findOneAndDelete({ patientId });
+  if (!deletedOCTRecord) {
+    throw new AppError('OCT record not found', 404);
   }
-};
+  res.status(200).json({ message: 'OCT record deleted successfully' });
+});
 
 module.exports = {
   createOCTRecord,

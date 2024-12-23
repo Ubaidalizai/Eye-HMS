@@ -50,10 +50,23 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
                 {fields.map((field, idx) => (
                   <td key={idx} className='py-2 px-2'>
                     {field.name === 'date'
-                      ? data[field.name].split('T')[0]
-                      : data[field.name] || 'N/A'}
+                      ? data[field.name]?.split('T')[0] // Format 'date'
+                      : field.name === 'patientId'
+                      ? (typeof data[field.name] === 'object'
+                          ? data[field.name]?.name
+                          : data[field.name]) || 'N/A' // Handle 'patientId'
+                      : field.name === 'doctor'
+                      ? typeof data[field.name] === 'object'
+                        ? `${data[field.name]?.firstName} ${
+                            data[field.name]?.lastName
+                          }` // Display only doctor's name
+                        : data[field.name]
+                      : field.name === 'percentage'
+                      ? `${data['doctor']?.percentage || 0}%` // Display percentage from doctor object
+                      : data[field.name]}{' '}
                   </td>
                 ))}
+
                 <td className='py-2 px-4 flex space-x-2'>
                   <div className='flex gap-2'>
                     {' '}

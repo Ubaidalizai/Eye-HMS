@@ -6,14 +6,12 @@ import Pagination from './Pagination';
 
 function Laboratory() {
   const [patientId, setId] = useState('');
-  const [patientName, setPatientName] = useState('');
+  const [,] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [percentage, setPercentage] = useState('');
-  const [testType, setTestType] = useState('');
-  const [sampleCollected, setSampleCollected] = useState('');
-  const [results, setResults] = useState('');
-  const [remarks, setRemarks] = useState('');
+  const [discount, setDiscount] = useState('');
+  const [doctor, setDoctor] = useState('');
+  const [price, setPrice] = useState('');
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -43,14 +41,11 @@ function Laboratory() {
     event.preventDefault();
     const entry = {
       patientId,
-      patientName,
       date,
       time,
-      testType,
-      sampleCollected,
-      results,
-      remarks,
-      percentage,
+      doctor,
+      price,
+      discount,
     };
 
     if (editMode) {
@@ -101,14 +96,11 @@ function Laboratory() {
 
   const clearForm = () => {
     setId('');
-    setPatientName('');
     setDate('');
     setTime('');
-    setTestType('');
-    setSampleCollected('');
-    setResults('');
-    setRemarks('');
-    setPercentage('');
+    setDoctor('');
+    setPrice(0);
+    setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
   };
@@ -117,14 +109,11 @@ function Laboratory() {
     const recordToEdit = submittedData[index];
     setFieldValues({
       patientId: recordToEdit.patientId || '',
-      patientName: recordToEdit.patientName || '',
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
-      testType: recordToEdit.testType || '',
-      sampleCollected: recordToEdit.sampleCollected || '',
-      results: recordToEdit.results || '',
-      remarks: recordToEdit.remarks || '',
-      percentage: recordToEdit.percentage || '',
+      doctor: recordToEdit.doctor || '',
+      price: recordToEdit.price || 0,
+      discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -151,48 +140,36 @@ function Laboratory() {
 
   const fields = [
     { label: 'id', type: 'text', name: 'patientId' },
-    { label: 'Name', type: 'text', name: 'patientName' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Time', type: 'time', name: 'time' },
-    { label: 'Test', type: 'text', name: 'testType' },
-    { label: 'Sample Collected', type: 'text', name: 'sampleCollected' },
-    { label: 'Results', type: 'textarea', name: 'results' },
-    { label: 'Remarks', type: 'textarea', name: 'remarks' },
-    { label: 'Percentage', type: 'number', name: 'percentage' },
+    { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const fieldValues = {
     patientId,
-    patientName,
     date,
     time,
-    testType,
-    sampleCollected,
-    results,
-    remarks,
-    percentage,
+    doctor,
+    price,
+    discount,
   };
 
   const setFieldValues = ({
     patientId,
-    patientName,
     date,
     time,
-    testType,
-    sampleCollected,
-    results,
-    remarks,
-    percentage,
+    doctor,
+    price,
+    discount,
   }) => {
     setId(patientId);
-    setPatientName(patientName);
     setDate(date);
     setTime(time);
-    setTestType(testType);
-    setSampleCollected(sampleCollected);
-    setResults(results);
-    setRemarks(remarks);
-    setPercentage(percentage);
+    setDoctor(doctor);
+    setPrice(price);
+    setDiscount(discount);
   };
 
   return (

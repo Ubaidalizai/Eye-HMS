@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
       enum: ['pharmacist', 'admin', 'sunglassesSeller'],
       default: 'sunglassesSeller',
     },
+    percentage: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
     image: String,
     passwordChangedAt: Date,
     passwordResetToken: String,

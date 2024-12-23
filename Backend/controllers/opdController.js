@@ -6,6 +6,7 @@ const getAll = require('./handleFactory');
 // Get all OPD records
 const getAllRecords = getAll(OPD);
 // Get a specific OPD record by patientId
+
 const getRecordByPatientId = asyncHandler(async (req, res, next) => {
   const record = await OPD.findOne({ patientId: req.params.patientId });
   if (!record) {
@@ -16,12 +17,19 @@ const getRecordByPatientId = asyncHandler(async (req, res, next) => {
 
 // Add a new OPD record
 const addRecord = asyncHandler(async (req, res, next) => {
-  const { patientId } = req.body;
-  const existingRecord = await OPD.findOne({ patientId });
-  if (existingRecord) {
-    throw new AppError('Record with this patientId already exists', 400);
+  const { patientId, doctorId, date, time, price, discount } = req.body;
+  if (!patientId || !doctorId || !date || !time || !price) {
+    throw new AppError('All fields are required', 400);
   }
-  const newRecord = await OPD.create(req.body);
+
+  const newRecord = await OPD.create({
+    patientId,
+    doctorId,
+    date,
+    time,
+    price,
+    discount,
+  });
   res.status(201).json(newRecord);
 });
 

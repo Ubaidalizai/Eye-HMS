@@ -6,12 +6,11 @@ import Pagination from './Pagination';
 
 function Yeglizer() {
   const [id, setId] = useState('');
-  const [patientName, setPatientName] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
   const [appointmentDate, setAppointmentDate] = useState('');
-  const [eyePower, setEyePower] = useState('');
-  const [prescription, setPrescription] = useState('');
-  const [percentage, setPercentage] = useState('');
+  const [doctor, setDoctor] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [price, setPrice] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -41,12 +40,11 @@ function Yeglizer() {
     event.preventDefault();
     const entry = {
       id,
-      patientName,
       appointmentTime,
       appointmentDate,
-      eyePower,
-      prescription,
-      percentage,
+      doctor,
+      price,
+      discount,
     };
 
     if (editMode) {
@@ -94,12 +92,11 @@ function Yeglizer() {
 
   const clearForm = () => {
     setId('');
-    setPatientName('');
     setAppointmentTime('');
     setAppointmentDate('');
-    setEyePower('');
-    setPrescription('');
-    setPercentage('');
+    setPrice(0);
+    setDoctor('');
+    setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
   };
@@ -109,12 +106,11 @@ function Yeglizer() {
     console.log('Editing record:', recordToEdit); // Log record to edit
     setFieldValues({
       id: recordToEdit.id || '',
-      patientName: recordToEdit.patientName || '',
       appointmentTime: recordToEdit.appointmentTime || '',
       appointmentDate: recordToEdit.appointmentDate || '',
-      eyePower: recordToEdit.eyePower || '',
-      prescription: recordToEdit.prescription || '',
-      percentage: recordToEdit.percentage || '',
+      doctor: recordToEdit.doctor || '',
+      price: recordToEdit.price || 0,
+      discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -141,40 +137,36 @@ function Yeglizer() {
 
   const fields = [
     { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Name', type: 'text', name: 'patientName' },
     { label: 'Time', type: 'time', name: 'appointmentTime' },
     { label: 'Date', type: 'date', name: 'appointmentDate' },
-    { label: 'Eye Power', type: 'text', name: 'eyePower' },
-    { label: 'Prescription', type: 'text', name: 'prescription' },
-    { label: 'Percentage', type: 'number', name: 'percentage' },
+    { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const fieldValues = {
     id,
-    patientName,
     appointmentTime,
     appointmentDate,
-    eyePower,
-    prescription,
-    percentage,
+    doctor,
+    price,
+    discount,
   };
 
   const setFieldValues = ({
     id,
-    patientName,
     appointmentTime,
     appointmentDate,
-    eyePower,
-    prescription,
-    percentage,
+    doctor,
+    price,
+    discount,
   }) => {
     setId(id);
-    setPatientName(patientName);
     setAppointmentTime(appointmentTime);
     setAppointmentDate(appointmentDate);
-    setEyePower(eyePower);
-    setPrescription(prescription);
-    setPercentage(percentage);
+    setDoctor(doctor);
+    setPrice(price);
+    setDiscount(discount);
   };
 
   return (
