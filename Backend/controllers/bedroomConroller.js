@@ -2,17 +2,10 @@ const Bedroom = require('../models/bedroomModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
+const validateMongoDBId = require('../utils/validateMongoDBId');
 
 // Create a new bedroom
 const createBedroom = asyncHandler(async (req, res) => {
-  const { id } = req.body;
-
-  // Check if a record with the same 'id' already exists
-  const existingBedroom = await Bedroom.findOne({ id });
-  if (existingBedroom) {
-    throw new AppError('Bedroom with the same ID already exists', 409);
-  }
-
   try {
     const bedroom = new Bedroom(req.body);
     await bedroom.save();
@@ -39,6 +32,8 @@ const getAllBedrooms = getAll(Bedroom);
 // Get a bedroom by schema `id`
 const getBedroomById = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  validateMongoDBId(id);
+
   const bedroom = await Bedroom.findOne({ id }); // Find by schema-defined `id`
 
   if (!bedroom) {
@@ -55,6 +50,8 @@ const getBedroomById = asyncHandler(async (req, res) => {
 // Update a bedroom by schema `id`
 const updateBedroom = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
+  validateMongoDBId(id);
+
   const bedroom = await Bedroom.findOneAndUpdate({ id }, req.body, {
     new: true,
     runValidators: true,
@@ -74,6 +71,8 @@ const updateBedroom = asyncHandler(async (req, res, next) => {
 // Delete a bedroom by schema `id`
 const deleteBedroom = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
+  validateMongoDBId(id);
+
   const bedroom = await Bedroom.findOneAndDelete({ id });
 
   if (!bedroom) {

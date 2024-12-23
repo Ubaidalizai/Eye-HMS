@@ -14,7 +14,7 @@ const ExpiredProduct = () => {
     } else if (user.role === 'pharmacist') {
       fetchExpiredDrugs(); // Pharmacist can only see the drugs table
     }
-  }, []);
+  }, [user.role]);
 
   // Fetch expired products
   const expiredProduct = async () => {

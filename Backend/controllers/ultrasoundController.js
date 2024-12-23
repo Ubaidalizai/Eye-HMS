@@ -2,12 +2,14 @@
 const Ultrasound = require('../models/ultraSoundModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const getAll = require('./handleFactory');
+const AppError = require('../utils/appError');
+const validateMongoDBId = require('../utils/validateMongoDBId');
 
 // Get all ultrasound records
 const getAllRecords = getAll(Ultrasound);
 
 // Get a single record by custom schema id
-const getRecordById = asyncHandler(async (req, res, next) => {
+const getRecordById = asyncHandler(async (req, res) => {
   const record = await Ultrasound.findOne({ id: req.params.id }); // Using schema-defined 'id'
   if (!record) {
     throw new AppError('Record not found', 404);
@@ -16,22 +18,19 @@ const getRecordById = asyncHandler(async (req, res, next) => {
 });
 
 // Add a new record
-const addRecord = asyncHandler(async (req, res, next) => {
-  const { id, name, time, date, image, percentage } = req.body;
-
-  // Check if a record with the same 'id' already exists
-  const existingRecord = await Ultrasound.findOne({ id });
-  if (existingRecord) {
-    throw new AppError('Record with this ID already exists', 400);
+const addRecord = asyncHandler(async (req, res) => {
+  const { patientId, doctor, time, date, discount, price } = req.body;
+  if (!patientId || !doctor || !time || !date || !price) {
+    throw new AppError('All fields are required', 400);
   }
 
   const newRecord = new Ultrasound({
-    id,
-    name,
+    patientId,
+    doctor,
     time,
     date,
-    image,
-    percentage,
+    discount,
+    price,
   });
   await newRecord.save();
   res.status(201).json(newRecord);
@@ -39,7 +38,9 @@ const addRecord = asyncHandler(async (req, res, next) => {
 
 // Update an existing record by custom schema id
 // Update an existing record by custom schema id
-const updateRecord = asyncHandler(async (req, res, next) => {
+const updateRecord = asyncHandler(async (req, res) => {
+  validateMongoDBId(req.params.id);
+
   const updatedRecord = await Ultrasound.findOneAndUpdate(
     { id: req.params.id }, // Use schema 'id' for lookup
     req.body,
@@ -54,7 +55,9 @@ const updateRecord = asyncHandler(async (req, res, next) => {
 });
 
 // Delete a record by custom schema id
-const deleteRecord = asyncHandler(async (req, res, next) => {
+const deleteRecord = asyncHandler(async (req, res) => {
+  validateMongoDBId(req.params.id);
+
   const deletedRecord = await Ultrasound.findOneAndDelete({
     id: req.params.id,
   });

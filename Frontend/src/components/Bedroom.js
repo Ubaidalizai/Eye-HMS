@@ -6,11 +6,10 @@ import Pagination from './Pagination';
 
 function Bedroom() {
   const [id, setId] = useState('');
-  const [name, setName] = useState('');
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [rent, setRent] = useState('');
-  const [percentage, setPercentage] = useState('');
+  const [discount, setDiscount] = useState('');
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -38,7 +37,7 @@ function Bedroom() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const entry = { id, name, time, date, rent, percentage };
+    const entry = { id, time, date, rent, discount };
 
     if (editMode) {
       try {
@@ -85,11 +84,10 @@ function Bedroom() {
 
   const clearForm = () => {
     setId('');
-    setName('');
     setTime('');
     setDate('');
     setRent('');
-    setPercentage('');
+    setDiscount('');
     setEditMode(false);
     setEditIndex(null);
   };
@@ -98,11 +96,10 @@ function Bedroom() {
     const recordToEdit = submittedData[index];
     setFieldValues({
       id: recordToEdit.id || '',
-      name: recordToEdit.name || '',
       time: recordToEdit.time || '',
       date: recordToEdit.date || '',
-      rent: recordToEdit.rent || '',
-      percentage: recordToEdit.percentage || '',
+      rent: recordToEdit.rent || 0,
+      discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -129,21 +126,19 @@ function Bedroom() {
 
   const fields = [
     { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Name', type: 'text', name: 'name' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Rent', type: 'text', name: 'rent' },
-    { label: 'Percentage', type: 'number', name: 'percentage' },
+    { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
-  const fieldValues = { id, name, time, date, rent, percentage };
-  const setFieldValues = ({ id, name, time, date, rent, percentage }) => {
+  const fieldValues = { id, time, date, rent, discount };
+  const setFieldValues = ({ id, time, date, rent, discount }) => {
     setId(id);
-    setName(name);
     setTime(time);
     setDate(date);
     setRent(rent);
-    setPercentage(percentage);
+    setDiscount(discount);
   };
 
   return (

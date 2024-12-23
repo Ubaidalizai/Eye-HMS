@@ -6,14 +6,11 @@ import Pagination from './Pagination';
 
 function OPD() {
   const [patientId, setPatientId] = useState('');
-  const [patientName, setPatientName] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [department, setDepartment] = useState('');
   const [doctor, setDoctor] = useState('');
-  const [diagnosis, setDiagnosis] = useState('');
-  const [prescription, setPrescription] = useState('');
-  const [percentage, setPercentage] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [price, setPrice] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -44,14 +41,11 @@ function OPD() {
     event.preventDefault();
     const entry = {
       patientId,
-      patientName,
       date,
       time,
-      department,
       doctor,
-      diagnosis,
-      prescription,
-      percentage,
+      price,
+      discount,
     };
 
     if (editMode) {
@@ -99,14 +93,11 @@ function OPD() {
 
   const clearForm = () => {
     setPatientId('');
-    setPatientName('');
     setDate('');
     setTime('');
-    setDepartment('');
     setDoctor('');
-    setDiagnosis('');
-    setPrescription('');
-    setPercentage('');
+    setPrice(0);
+    setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
   };
@@ -115,14 +106,11 @@ function OPD() {
     const recordToEdit = submittedData[index];
     setFieldValues({
       patientId: recordToEdit.patientId || '',
-      patientName: recordToEdit.patientName || '',
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
-      department: recordToEdit.department || '',
       doctor: recordToEdit.doctor || '',
-      diagnosis: recordToEdit.diagnosis || '',
-      prescription: recordToEdit.prescription || '',
-      percentage: recordToEdit.percentage || '',
+      price: recordToEdit.price || 0,
+      discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -149,48 +137,36 @@ function OPD() {
 
   const fields = [
     { label: 'Id', type: 'text', name: 'patientId' },
-    { label: 'Name', type: 'text', name: 'patientName' },
     { label: 'Date', type: 'date', name: 'date' },
     { label: 'Time', type: 'time', name: 'time' },
-    { label: 'Department', type: 'text', name: 'department' },
     { label: 'Doctor', type: 'text', name: 'doctor' },
-    { label: 'Diagnosis', type: 'textarea', name: 'diagnosis' },
-    { label: 'Prescription', type: 'textarea', name: 'prescription' },
-    { label: 'Percentage', type: 'number', name: 'percentage' }, // New Field
+    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Discount', type: 'number', name: 'discount' }, // New Field
   ];
 
   const fieldValues = {
     patientId,
-    patientName,
     date,
     time,
-    department,
     doctor,
-    diagnosis,
-    prescription,
-    percentage,
+    price,
+    discount,
   };
 
   const setFieldValues = ({
     patientId,
-    patientName,
     date,
     time,
-    department,
     doctor,
-    diagnosis,
-    prescription,
-    percentage,
+    price,
+    discount,
   }) => {
     setPatientId(patientId);
-    setPatientName(patientName);
     setDate(date);
     setTime(time);
-    setDepartment(department);
     setDoctor(doctor);
-    setDiagnosis(diagnosis);
-    setPrescription(prescription);
-    setPercentage(percentage);
+    setPrice(price);
+    setDiscount(discount);
   };
 
   return (
