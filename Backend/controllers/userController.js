@@ -283,10 +283,12 @@ const updateCurrentUserProfile = asyncHandler(async (req, res, next) => {
 const forgotPassword = asyncHandler(async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
-  if (!user) {
-    throw new AppError('There is no user with email address.', 404);
+  if (!user || user.role !== 'admin') {
+    throw new AppError(
+      'There is no user with email address or not as admin.',
+      404
+    );
   }
-
   // 2) Generate the random reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
