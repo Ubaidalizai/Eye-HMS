@@ -139,7 +139,16 @@ function Operation() {
     { label: "Price", type: "text", name: "price" },
     { label: "Time", type: "time", name: "time" },
     { label: "Date", type: "date", name: "date" },
-    { label: "Doctor", type: "text", name: "doctor" },
+    {
+      label: "Doctor",
+      type: "select",
+      options: [
+        { label: "Dr. Smith", value: "smith" },
+        { label: "Dr. Johnson", value: "johnson" },
+        { label: "Dr. Brown", value: "brown" },
+      ],
+      name: "doctor",
+    },
     { label: "Discount", type: "number", name: "discount" },
   ];
   const dataTableFields = [
