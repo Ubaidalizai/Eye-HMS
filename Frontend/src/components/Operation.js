@@ -156,7 +156,6 @@ function Operation() {
     { label: "Total Amount", type: "number", name: "totalAmount" },
   ];
   const AllFields = [...fields, ...dataTableFields];
-  console.log(AllFields, dataTableFields, fields);
 
   const fieldValues = {
     patientId,
@@ -175,8 +174,6 @@ function Operation() {
     doctor,
     discount,
   }) => {
-    // Check if patientId is an object and has a name property
-    // const patientName = patientId?.name;
     setPatientId(patientId);
     setPrice(price);
     setTime(time);

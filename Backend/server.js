@@ -27,6 +27,7 @@ const OctRoute = require('./routes/octRoute');
 const backupRoute = require('./routes/backupRoutes');
 const OpdRoute = require('./routes/opdRoute');
 const yeglizerRoute = require('./routes/yeglizerRoutes');
+const doctorKhataRoute = require('./routes/doctorKhataRoutes');
 
 const moveProductRoute = require('./routes/moveProduct');
 
@@ -69,6 +70,7 @@ app.use('/api/v1/opd', OpdRoute);
 app.use('/api/v1/yeglizer', yeglizerRoute);
 app.use('/api/v1/move-product', moveProductRoute);
 app.use('/api/v1/backup', backupRoute);
+app.use('/api/v1/khata', doctorKhataRoute);
 
 // scheduleNightlyBackup();
 // ------------- Signin --------------

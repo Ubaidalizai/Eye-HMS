@@ -59,14 +59,16 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
                       ? typeof data[field.name] === 'object'
                         ? `${data[field.name]?.firstName} ${
                             data[field.name]?.lastName
-                          }` // Display only doctor's name
+                          }` // Doctor's name
                         : data[field.name]
                       : field.name === 'percentage'
-                      ? `${data['doctor']?.percentage || 0}%` // Display percentage from doctor object
+                      ? `${data[field.name] || 0}%` // Percentage
+                      : field.name === 'discount'
+                      ? `${data[field.name] || 0}%` // Discount
                       : data[field.name]}{' '}
+                    {/* Default case for other fields */}
                   </td>
                 ))}
-
                 <td className='py-2 px-4 flex space-x-2'>
                   <div className='flex gap-2'>
                     {' '}
