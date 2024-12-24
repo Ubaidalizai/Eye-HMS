@@ -58,9 +58,7 @@ const updateRecord = asyncHandler(async (req, res) => {
 const deleteRecord = asyncHandler(async (req, res) => {
   validateMongoDBId(req.params.id);
 
-  const deletedRecord = await Ultrasound.findOneAndDelete({
-    id: req.params.id,
-  });
+  const deletedRecord = await Ultrasound.findByIdAndDelete(id);
 
   if (!deletedRecord) {
     throw new AppError('Record not found', 404);

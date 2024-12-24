@@ -25,16 +25,20 @@ const createOperation = asyncHandler(async (req, res) => {
   req.body.totalAmount = req.body.price;
 
   if (doctorExist.percentage) {
+    // Calculate percentage and update total amount
     const result = await calculatePercentage(
       req.body.price,
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
 
+    // Create a new record if it doesn't exist
     await DoctorKhata.create({
       doctorId: doctorExist._id,
-      income: result.percentageAmount,
+      amount: result.percentageAmount,
       date: req.body.date,
+      amountType: 'income',
+      description: 'operations income',
     });
   }
 
@@ -49,6 +53,7 @@ const createOperation = asyncHandler(async (req, res) => {
   const operation = new Operation({
     patientId: patient._id,
     doctor: doctor,
+    percentage: doctorExist.percentage,
     price: req.body.price,
     time: req.body.time,
     date: req.body.date,
