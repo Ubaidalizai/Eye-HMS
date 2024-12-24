@@ -7,15 +7,21 @@ const doctorKhataSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    income: {
+    amountType: {
+      type: String,
+      enum: ['income', 'outcome'],
+      required: [true, 'A doctor must have a money type (income or outcome)'],
+    },
+    amount: {
       type: Number,
-      required: [true, 'A doctor must have an income'],
+      required: [true, 'A doctor must have an amount'],
       min: 0,
     },
     date: {
       type: Date,
       default: Date.now,
     },
+    description: String,
   },
   {
     timestamps: true,
