@@ -108,7 +108,10 @@ export default function AdminPanel() {
 
       <div className='border pt-5 rounded-lg mt-10'>
         <div className='flex justify-end items-center mb-4'>
-          <button className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+          >
             <FaPlus className='mr-2' /> Add User
           </button>
         </div>
@@ -133,9 +136,7 @@ export default function AdminPanel() {
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Percentage
                 </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Password
-                </th>
+
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   P.No
                 </th>
@@ -173,15 +174,13 @@ export default function AdminPanel() {
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user?.percentage > 0 ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
-                        {user.percentage + '%'}
+                        {user.percentage + "%"}
                       </span>
                     ) : (
-                      user.percentage + '%'
+                      user.percentage + "%"
                     )}
                   </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.password ? '********' : 'N/A'}
-                  </td>
+
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user.phoneNumber}
                   </td>
@@ -237,11 +236,11 @@ export default function AdminPanel() {
                 required
               />
               <input
-                type='password'
-                placeholder='Password'
-                value={newUser.password}
+                type='number'
+                placeholder='percentage'
+                value={newUser.percentage}
                 onChange={(e) =>
-                  setNewUser({ ...newUser, password: e.target.value })
+                  setNewUser({ ...newUser, percentage: e.target.value })
                 }
                 className='border p-2 rounded w-full mb-2'
                 required
