@@ -21,7 +21,6 @@ const doctorKhataSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    description: String,
   },
   {
     timestamps: true,

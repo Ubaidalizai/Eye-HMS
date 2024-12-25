@@ -38,7 +38,6 @@ const createOperation = asyncHandler(async (req, res) => {
       amount: result.percentageAmount,
       date: req.body.date,
       amountType: 'income',
-      description: 'operations income',
     });
   }
 
