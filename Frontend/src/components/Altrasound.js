@@ -10,8 +10,8 @@ function Ultrasound() {
     doctor: '',
     time: '',
     date: '',
-    discount: '',
-    image: null,
+    discount: 0,
+    price: 0,
   });
 
   const [submittedData, setSubmittedData] = useState([]);
@@ -42,6 +42,7 @@ function Ultrasound() {
       time: '',
       date: '',
       discount: 0,
+      price: 0,
     });
     setIsOpen(false);
     setEditMode(false);
@@ -56,6 +57,7 @@ function Ultrasound() {
       time: record.time,
       date: record.date,
       discount: record.discount,
+      price: record.price,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -109,12 +111,27 @@ function Ultrasound() {
   };
 
   const fields = [
-    { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
+    { label: 'Price', type: 'text', name: 'price' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
+    // {
+    //   label: 'Doctor',
+    //   type: 'select',
+    //   options: doctors.map((doctor) => ({
+    //     label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
+    //     value: doctor._id, // Use unique doctor ID as value
+    //   })),
+    //   name: 'doctor',
+    // },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
+
+  const dataTableFields = [
+    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Total Amount', type: 'number', name: 'totalAmount' },
+  ];
+  const AllFields = [...fields, ...dataTableFields];
 
   return (
     <div className='p-6  min-h-screen'>
@@ -127,7 +144,8 @@ function Ultrasound() {
               doctor: '',
               time: '',
               date: '',
-              discount: '',
+              discount: 0,
+              price: 0,
             });
             setIsOpen(true);
             setEditMode(false);
