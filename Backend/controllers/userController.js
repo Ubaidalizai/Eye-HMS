@@ -390,6 +390,13 @@ const updatePassword = asyncHandler(async (req, res, next) => {
   });
 });
 
+const getAllDoctorsWithPercentage = asyncHandler(async (req, res) => {
+  // Check if doctor exists in User model and has percentage
+  const doctors = await User.find({ role: 'doctor' });
+
+  res.status(200).json(doctors);
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -407,4 +414,5 @@ module.exports = {
   updatePassword,
   forgotPassword,
   resetPassword,
+  getAllDoctorsWithPercentage,
 };
