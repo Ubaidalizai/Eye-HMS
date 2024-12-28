@@ -10,7 +10,7 @@ import {
   FaEbay,
 } from "react-icons/fa";
 
-export default function BranchesMenu({ setActiveComponent }) {
+export default function BranchesMenu() {
   const branches = [
     {
       name: "Operation",
@@ -64,7 +64,6 @@ export default function BranchesMenu({ setActiveComponent }) {
             key={index}
             to={path}
             className='flex items-center gap-3 rounded-lg transition-all duration-300 hover:bg-blue-50 px-4 py-3 text-gray-700 group'
-            onClick={() => setActiveComponent(name)}
           >
             <span className='text-lg text-blue-500 group-hover:text-blue-600'>
               {icon}

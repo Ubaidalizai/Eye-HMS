@@ -329,7 +329,7 @@ export default function PatientManagement() {
   };
 
   return (
-    <div className='max-w-6xl z-1 mx-auto p-6 bg-gradient-to-r to-indigo-50 rounded-lg'>
+    <div className='max-w-6xl z-1 mx-auto bg-gradient-to-r to-indigo-50 rounded-lg'>
       <ToastContainer />
 
       <h2 className='font-semibold text-xl '> Patient List</h2>
