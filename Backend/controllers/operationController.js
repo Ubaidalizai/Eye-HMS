@@ -2,6 +2,7 @@ const Operation = require('../models/operationModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
+const Income = require('../models/incomeModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
@@ -11,6 +12,7 @@ const calculatePercentage = require('../utils/calculatePercentage');
 // Create a new operation
 const createOperation = asyncHandler(async (req, res) => {
   const { patientId, doctor } = req.body;
+  console.log(patientId, doctor);
 
   const patient = await Patient.findOne({ patientID: patientId });
   if (!patient) {
@@ -61,6 +63,16 @@ const createOperation = asyncHandler(async (req, res) => {
   });
   await operation.save();
 
+  if (operation.totalAmount > 0) {
+    await Income.create({
+      saleId: operation._id,
+      saleModel: 'operationModule',
+      date: operation.date,
+      totalNetIncome: operation.totalAmount,
+      category: 'operation',
+      description: 'operation income',
+    });
+  }
   res
     .status(201)
     .json({ message: 'Operation created successfully', operation });

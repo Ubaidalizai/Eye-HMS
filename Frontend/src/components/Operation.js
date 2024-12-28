@@ -157,7 +157,7 @@ function Operation() {
 
   const fields = [
     { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Price', type: 'text', name: 'price' },
+    { label: 'Price', type: 'number', name: 'price' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
