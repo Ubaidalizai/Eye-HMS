@@ -127,7 +127,10 @@ export default function Header() {
   return (
     <>
       <div className='min-h-full'>
-        <Disclosure as='nav' className='bg-gray-800'>
+        <Disclosure
+          as='nav'
+          className='fixed top-0 z-10 w-screen border bg-white'
+        >
           {({ open }) => (
             <>
               <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -140,7 +143,7 @@ export default function Header() {
                           src={require('../assets/logo.jpg')}
                           alt='Al Sayed Eye HMS'
                         />
-                        <span className='font-bold text-white italic'>
+                        <span className='font-bold  italic'>
                           Al Sayed Eye HMS
                         </span>
                       </div>
@@ -151,14 +154,14 @@ export default function Header() {
                       onClick={handleBackup}
                       className='text-gray-300 active:scale-95 transition transform duration-150'
                     >
-                      <MdOutlineCloudDownload className='inline-block mr-2n text-3xl' />
+                      <MdOutlineCloudDownload className=' inline-block text-slate-800 mr-2n text-2xl' />
                     </button>
                     <div className='hidden md:block'>
                       <div className='ml-4 flex items-center md:ml-6 gap-5'>
                         <Link to='/ExpiredProduct'>
                           <button
                             type='button'
-                            className='relative rounded-full bg-gray-800 p-1 text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'
+                            className='relative rounded-full text-slate-800 p-2  font-bold hover:bg-gray-200 focus:outline-none'
                             aria-label='View notifications'
                           >
                             <Bell className='h-6 w-6' aria-hidden='true' />
@@ -189,7 +192,7 @@ export default function Header() {
                         {/* Profile dropdown */}
                         <Menu as='div' className='relative ml-3'>
                           <div>
-                            <Menu.Button className='flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800'>
+                            <Menu.Button className='flex max-w-xs items-center rounded-full b text-sm focus:outline-none focus:ring-2'>
                               <span className='sr-only'>Open user menu</span>
                               <img
                                 className='h-8 w-8 rounded-full'
