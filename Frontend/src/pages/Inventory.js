@@ -214,7 +214,7 @@ function Inventory() {
 
   return (
     <div className=' flex justify-center'>
-      <div className='flex flex-col gap-5  w-full px-6'>
+      <div className='flex flex-col gap-5  w-full'>
         <ToastContainer />
         <div className='bg-white rounded'>
           <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>

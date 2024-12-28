@@ -111,7 +111,7 @@ function PurchaseDetails() {
   };
 
   return (
-    <div className='min-h-screen py-6 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-screen'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
         <h2 className='font-semibold text-xl'>Purchase Records</h2>
