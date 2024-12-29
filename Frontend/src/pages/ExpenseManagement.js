@@ -439,7 +439,7 @@ const ExpenseManagement = () => {
 
   return (
     <div className=''>
-      <h2 className='font-semibold text-xl mb-12 mt-6'>Expense List</h2>
+      <h2 className='font-semibold text-xl mb-12'>Expense List</h2>
 
       <div className='expense-list-detail border rounded-md'>
         <div className='summary-display'>
@@ -531,7 +531,7 @@ const ExpenseManagement = () => {
                             onClick={() => deleteExpense(expense._id)}
                             className='font-medium text-red-600 hover:text-red-700'
                           >
-                            <FaTrash className='w-5 h-5' />
+                            <FaTrash className='w-4 h-4' />
                           </button>
                         </div>
                       </td>

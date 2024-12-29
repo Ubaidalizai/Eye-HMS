@@ -213,12 +213,12 @@ function Inventory() {
   };
 
   return (
-    <div className=' flex justify-center'>
+    <div className=' flex flex-col justify-center'>
+      <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
       <div className='flex flex-col gap-5  w-full'>
         <ToastContainer />
         <div className='bg-white rounded'>
-          <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
-          <div className='flex flex-wrap justify-between items-center mb-10 mt-12'>
+          <div className='flex flex-wrap justify-between items-center  mt-5'>
             <div className='flex items-center'>
               <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
               <div>
@@ -386,7 +386,7 @@ function Inventory() {
 
           <div className='px-4 sm:px-6 lg:px-0'>
             <div className='overflow-x-auto'>
-              <table className='w-full text-sm text-gray-500'>
+              <table className='w-full text-sm text-left text-gray-500'>
                 <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>
                     <th
@@ -495,7 +495,7 @@ function Inventory() {
                             onClick={() => handleDelete(item._id)}
                             className='font-medium text-red-600 hover:text-red-700'
                           >
-                            <FaTrash className='w-5 h-5' />
+                            <FaTrash className='w-4 h-4' />
                           </button>
                         </div>
                       </td>

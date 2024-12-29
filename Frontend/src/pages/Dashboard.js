@@ -182,8 +182,8 @@ function Dashboard() {
         />
       </div>
 
-      <div className=' flex flex-col gap-6'>
-        <div className='flex justify-between flex-wrap gap-4'>
+      <div className=' flex flex-col gap-4'>
+        <div className='flex mt-10 justify-between flex-wrap gap-4'>
           <SelectInput
             options={[
               { value: '', label: 'All Categories' },
