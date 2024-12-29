@@ -139,13 +139,10 @@ function OPD() {
 
   const handleRemove = async (index) => {
     try {
-      const { patientId } = submittedData[index];
-      const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/opd/${patientId}`,
-        {
-          method: 'DELETE',
-        }
-      );
+      const { _id } = submittedData[index];
+      const response = await fetch(`http://127.0.0.1:4000/api/v1/opd/${_id}`, {
+        method: 'DELETE',
+      });
       if (!response.ok) throw new Error('Failed to delete data');
 
       const updatedData = submittedData.filter((_, i) => i !== index);

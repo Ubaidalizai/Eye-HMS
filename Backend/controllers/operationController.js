@@ -25,6 +25,7 @@ const createOperation = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.price;
+  let doctorPercentage = 0;
 
   if (doctorExist.percentage) {
     // Calculate percentage and update total amount
@@ -33,14 +34,7 @@ const createOperation = asyncHandler(async (req, res) => {
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -62,6 +56,16 @@ const createOperation = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await operation.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: operation._id,
+    branchModel: 'operationModule',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
 
   if (operation.totalAmount > 0) {
     await Income.create({

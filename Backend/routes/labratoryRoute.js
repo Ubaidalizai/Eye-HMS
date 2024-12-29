@@ -13,7 +13,7 @@ const {
 router.route('/').post(createLabRecord).get(getAllLabRecords); // Create a new lab record
 
 router
-  .route('/:patientId')
+  .route('/:id')
   .get(getLabRecordByPatientId)
   .patch(updateLabRecordById)
   .delete(deleteLabRecordById); // Get a specific lab record by patientId

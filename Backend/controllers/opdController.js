@@ -2,6 +2,7 @@ const OPD = require('../models/opdModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
+const Income = require('../models/incomeModule');
 const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
@@ -40,6 +41,7 @@ const addRecord = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.price;
+  let doctorPercentage = 0;
 
   if (doctorExist.percentage) {
     // Calculate percentage and update total amount
@@ -48,14 +50,7 @@ const addRecord = asyncHandler(async (req, res) => {
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -77,6 +72,28 @@ const addRecord = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await opdRecord.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: opdRecord._id,
+    branchModel: 'opdModule',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
+
+  if (opdRecord.totalAmount > 0) {
+    await Income.create({
+      saleId: opdRecord._id,
+      saleModel: 'opdModule',
+      date: opdRecord.date,
+      totalNetIncome: opdRecord.totalAmount,
+      category: 'opd',
+      description: 'OPD income',
+    });
+  }
+
   res.status(201).json(opdRecord);
 });
 
@@ -95,14 +112,15 @@ const updateRecordByPatientId = asyncHandler(async (req, res, next) => {
 
 // Delete an OPD record by patientId
 const deleteRecordByPatientId = asyncHandler(async (req, res, next) => {
-  const deletedRecord = await OPD.findOneAndDelete({
-    patientId: req.params.patientId,
-  });
+  const { id } = req.params;
+
+  const deletedRecord = await OPD.findByIdAndDelete(id);
   if (!deletedRecord) {
     return next(new AppError('Record not found', 404));
   }
   res.status(204).json();
 });
+
 module.exports = {
   getAllRecords,
   getRecordByPatientId,
