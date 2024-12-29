@@ -1,18 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Doughnut, Bar } from 'react-chartjs-2';
-import {
-  HiPlus,
-  HiSearch,
-  HiPencil,
-  HiTrash,
-  HiDocumentAdd,
-  HiChevronLeft,
-  HiChevronRight,
-} from 'react-icons/hi';
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -21,12 +11,11 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from 'chart.js';
+} from "chart.js";
+import { HiSearch, HiPencil, HiTrash, HiDocumentAdd } from "react-icons/hi";
+import { FaPlus } from "react-icons/fa";
+import Pagination from "../components/Pagination";
 
-import { FaPlus } from 'react-icons/fa';
-import Pagination from '../components/Pagination';
-
-// Register Chart.js components
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -37,41 +26,42 @@ ChartJS.register(
 );
 
 const monthLabels = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
+const API_BASE_URL = "http://localhost:4000/api/v1/patient";
 
 export default function PatientManagement() {
   const [patients, setPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPatient, setCurrentPatient] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    contact: '',
-    patientID: '',
-    date: '',
-    patientGender: '',
-    insuranceContact: '',
+    name: "",
+    age: "",
+    contact: "",
+    patientID: "",
+    date: "",
+    patientGender: "",
+    insuranceContact: "",
   });
+  const [formErrors, setFormErrors] = useState({});
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
-  const [summaryType, setSummaryType] = useState('monthly');
+  const [summaryType, setSummaryType] = useState("monthly");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
@@ -79,12 +69,12 @@ export default function PatientManagement() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (summaryType === 'monthly') {
+    if (summaryType === "monthly") {
       fetchMonthlyPatients();
     } else {
       fetchYearlyPatients();
     }
-    fetchPatients(); // Fetch paginated Patients for the list
+    fetchPatients();
   }, [
     currentPage,
     selectedMonth,
@@ -99,23 +89,14 @@ export default function PatientManagement() {
     try {
       const response = await fetch(
         `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}&page=${currentPage}&limit=${limit}`,
-        {
-          credentials: 'include',
-        }
+        { credentials: "include" }
       );
-      if (!response.ok) throw new Error('Failed to fetch patients');
+      if (!response.ok) throw new Error("Failed to fetch patients");
       const data = await response.json();
       setPatients(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.data.total / limit));
     } catch (error) {
-      toast.error('Failed to fetch patients', {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to fetch patients");
     } finally {
       setIsLoading(false);
     }
@@ -124,89 +105,84 @@ export default function PatientManagement() {
   const fetchMonthlyPatients = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/patient/${selectedYear}/${selectedMonth}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
+        `${API_BASE_URL}/${selectedYear}/${selectedMonth}`,
+        { method: "GET", credentials: "include" }
       );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
-      setSummary(data.data); // Assuming the backend returns a "summary" field
+      setSummary(data.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      toast.error("Failed to fetch monthly summary");
     }
   };
 
   const fetchYearlyPatients = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/patient/${selectedYear}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
+      const response = await fetch(`${API_BASE_URL}/${selectedYear}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
-      setSummary(data.data); // Assuming the backend returns a "summary" field
+      setSummary(data.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      toast.error("Failed to fetch yearly summary");
     }
+  };
+
+  const validateForm = () => {
+    let errors = {};
+    if (!formData.name.trim()) errors.name = "Name is required";
+    if (!formData.age) {
+      errors.age = "Age is required";
+    } else if (isNaN(formData.age) || formData.age <= 0) {
+      errors.age = "Age must be a positive number";
+    }
+    if (!formData.contact.trim()) {
+      errors.contact = "Contact is required";
+    } else if (!/^\d{10}$/.test(formData.contact)) {
+      errors.contact = "Contact must be a 10-digit number";
+    }
+    if (!formData.patientID.trim()) errors.patientID = "Patient ID is required";
+    if (!formData.date) errors.date = "Date is required";
+    if (!formData.patientGender) errors.patientGender = "Gender is required";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (formErrors[name]) {
+      setFormErrors({ ...formErrors, [name]: "" });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const method = currentPatient ? 'PATCH' : 'POST';
-      const url = currentPatient
-        ? `${API_BASE_URL}/${currentPatient._id}`
-        : API_BASE_URL;
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-        credentials: 'include',
-      });
-
-      if (!response.ok) throw new Error('Failed to save patient');
-
-      toast.success(
-        `Patient ${currentPatient ? 'updated' : 'added'} successfully!`,
-        {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
-      setIsModalOpen(false);
-      fetchPatients();
-    } catch (error) {
-      toast.error('Failed to save patient', {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+    if (validateForm()) {
+      try {
+        const method = currentPatient ? "PATCH" : "POST";
+        const url = currentPatient
+          ? `${API_BASE_URL}/${currentPatient._id}`
+          : API_BASE_URL;
+        const response = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error("Failed to save patient");
+        toast.success(
+          `Patient ${currentPatient ? "updated" : "added"} successfully!`
+        );
+        setIsModalOpen(false);
+        fetchPatients();
+      } catch (error) {
+        toast.error("Failed to save patient");
+      }
     }
   };
 
@@ -217,111 +193,35 @@ export default function PatientManagement() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this patient?')) {
+    if (window.confirm("Are you sure you want to delete this patient?")) {
       try {
         const response = await fetch(`${API_BASE_URL}/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
+          method: "DELETE",
+          credentials: "include",
         });
-        if (!response.ok) throw new Error('Failed to delete patient');
-        toast.success('Patient deleted successfully!', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        if (!response.ok) throw new Error("Failed to delete patient");
+        toast.success("Patient deleted successfully!");
         fetchPatients();
       } catch (error) {
-        toast.error('Failed to delete patient', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error("Failed to delete patient");
       }
     }
-  };
-
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  const aggregatePatients = () => {
-    const monthlyData = Array(12).fill(0);
-    const yearlyData = {};
-
-    patients.forEach((patient) => {
-      const date = new Date(patient.date);
-      const amount = parseFloat(patient.amount);
-      const month = date.getMonth(); // Zero-based index
-      const year = date.getFullYear();
-
-      // Aggregate for yearly summary
-      if (summaryType === 'yearly') {
-        if (!yearlyData[year]) {
-          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
-        }
-        yearlyData[year][month] += amount; // Sum amount for the respective month
-      }
-
-      // Aggregate for monthly summary
-      if (
-        summaryType === 'monthly' &&
-        month + 1 === selectedMonth &&
-        year === selectedYear
-      ) {
-        monthlyData[month] += amount; // Sum amount for the respective day
-      }
-    });
-
-    return summaryType === 'yearly' ? yearlyData : monthlyData;
-  };
-
-  const updateSummary = () => {
-    const newSummary = aggregatePatients();
-    setSummary(newSummary);
-  };
-
-  const handleSummaryTypeChange = (e) => {
-    setSummaryType(e.target.value);
-    updateSummary();
-  };
-
-  const handleMonthChange = (e) => {
-    const month = Number(e.target.value);
-    setSelectedMonth(month);
-    updateSummary();
-  };
-
-  const handleYearChange = (e) => {
-    const year = Number(e.target.value);
-    setSelectedYear(year);
-    updateSummary();
   };
 
   const getBarChartData = () => {
-    let labels, data;
-
-    if (summaryType === 'yearly') {
-      labels = monthLabels; // Month names for the x-axis
-      data = summary || Array(12).fill(0); // Use data from the API or zeros
-    } else {
-      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary || Array(30).fill(0); // Use data from the API or zeros
-    }
-
+    const labels =
+      summaryType === "yearly"
+        ? monthLabels
+        : Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+    const data = summary || Array(summaryType === "yearly" ? 12 : 30).fill(0);
     return {
       labels,
       datasets: [
         {
-          label: 'Patients',
+          label: "Patients",
           data,
-          backgroundColor: 'rgb(0, 179, 255)',
-          borderColor: 'rgb(0, 179, 255)',
+          backgroundColor: "rgb(0, 179, 255)",
+          borderColor: "rgb(0, 179, 255)",
           borderWidth: 1,
         },
       ],
@@ -329,15 +229,13 @@ export default function PatientManagement() {
   };
 
   return (
-    <div className='max-w-6xl z-1 mx-auto bg-gradient-to-r to-indigo-50 rounded-lg'>
+    <div className='max-w-6xl mx-auto bg-gradient-to-r to-indigo-50 rounded-lg'>
       <ToastContainer />
-
-      <h2 className='font-semibold text-xl '> Patient List</h2>
-
+      <h2 className='font-semibold text-xl'>Patient List</h2>
       <div className='border sm:rounded-lg mt-10'>
         <div className='mb-6 pt-6 flex justify-between items-center'>
           <div className='flex items-center justify-center z-0'>
-            <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+            <HiSearch className='translate-x-7 text-gray-400' size={20} />
             <input
               type='text'
               placeholder='Search patients...'
@@ -350,21 +248,22 @@ export default function PatientManagement() {
             onClick={() => {
               setCurrentPatient(null);
               setFormData({
-                name: '',
-                age: '',
-                contact: '',
-                patientID: '',
-                patientGender: '',
-                insuranceContact: '',
+                name: "",
+                age: "",
+                contact: "",
+                patientID: "",
+                patientGender: "",
+                insuranceContact: "",
+                date: "",
               });
+              setFormErrors({});
               setIsModalOpen(true);
             }}
-            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2  focus:ring-indigo-500'
+            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
           >
             <FaPlus className='mr-2' /> Add Patient
           </button>
         </div>
-
         <div className='overflow-x-auto bg-white'>
           <table className='w-full text-sm text-left text-gray-500'>
             <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
@@ -414,7 +313,7 @@ export default function PatientManagement() {
                     {patient.patientGender}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.date?.split('T')[0]}
+                    {patient.date?.split("T")[0]}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                     {patient.insuranceContact}
@@ -457,120 +356,161 @@ export default function PatientManagement() {
         onPageChange={(page) => setCurrentPage(page)}
         onLimitChange={(limit) => setLimit(limit)}
       />
-
       {isModalOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
-          <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50'>
+          <div className='bg-white p-6 rounded-lg w-96 max-w-md'>
             <h2 className='text-2xl font-bold text-center mb-4 text-indigo-800'>
-              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
+              {currentPatient ? "Edit Patient" : "Add New Patient"}
             </h2>
             <form onSubmit={handleSubmit} className='space-y-4'>
-              <input
-                type='text'
-                name='name'
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder='Name'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <input
-                type='number'
-                name='age'
-                value={formData.age}
-                onChange={handleInputChange}
-                placeholder='Age'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <input
-                type='tel'
-                name='contact'
-                value={formData.contact}
-                onChange={handleInputChange}
-                placeholder='Contact'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <input
-                type='text'
-                name='patientID'
-                value={formData.patientID}
-                onChange={handleInputChange}
-                placeholder='Patient ID'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <select
-                name='patientGender'
-                value={formData.patientGender}
-                onChange={handleInputChange}
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              >
-                <option value=''>Select Gender</option>
-                <option value='Male'>Male</option>
-                <option value='Female'>Female</option>
-                <option value='Other'>Other</option>
-              </select>
-              <input
-                type='date'
-                name='date'
-                value={formData.date}
-                onChange={handleInputChange}
-                placeholder='Insurance Contact'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
-              <input
-                type='text'
-                name='insuranceContact'
-                value={formData.insuranceContact}
-                onChange={handleInputChange}
-                placeholder='Insurance Contact'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
+              <div>
+                <input
+                  type='text'
+                  name='name'
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder='Name'
+                  className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    formErrors.name ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {formErrors.name && (
+                  <p className='text-red-500 text-xs mt-1'>{formErrors.name}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type='number'
+                  name='age'
+                  value={formData.age}
+                  onChange={handleInputChange}
+                  placeholder='Age'
+                  className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    formErrors.age ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {formErrors.age && (
+                  <p className='text-red-500 text-xs mt-1'>{formErrors.age}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type='tel'
+                  name='contact'
+                  value={formData.contact}
+                  onChange={handleInputChange}
+                  placeholder='Contact'
+                  className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    formErrors.contact ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {formErrors.contact && (
+                  <p className='text-red-500 text-xs mt-1'>
+                    {formErrors.contact}
+                  </p>
+                )}
+              </div>
+              <div>
+                <input
+                  type='text'
+                  name='patientID'
+                  value={formData.patientID}
+                  onChange={handleInputChange}
+                  placeholder='Patient ID'
+                  className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    formErrors.patientID ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {formErrors.patientID && (
+                  <p className='text-red-500 text-xs mt-1'>
+                    {formErrors.patientID}
+                  </p>
+                )}
+              </div>
+              <div>
+                <select
+                  name='patientGender'
+                  value={formData.patientGender}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    formErrors.patientGender
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                >
+                  <option value=''>Select Gender</option>
+                  <option value='Male'>Male</option>
+                  <option value='Female'>Female</option>
+                  <option value='Other'>Other</option>
+                </select>
+                {formErrors.patientGender && (
+                  <p className='text-red-500 text-xs mt-1'>
+                    {formErrors.patientGender}
+                  </p>
+                )}
+              </div>
+              <div>
+                <input
+                  type='date'
+                  name='date'
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  className={`w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    formErrors.date ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {formErrors.date && (
+                  <p className='text-red-500 text-xs mt-1'>{formErrors.date}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type='text'
+                  name='insuranceContact'
+                  value={formData.insuranceContact}
+                  onChange={handleInputChange}
+                  placeholder='Insurance Contact'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                />
+              </div>
               <div className='flex justify-end space-x-2'>
                 <button
                   type='button'
                   onClick={() => setIsModalOpen(false)}
-                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                  className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  className='px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 >
-                  {currentPatient ? 'Update' : 'Add'} Patient
+                  {currentPatient ? "Update" : "Add"} Patient
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
       <div className='mt-10 flex flex-col gap-6'>
         <div className='flex gap-4'>
-          {/* Summary Type Selector */}
           <div className='w-full sm:w-1/5'>
             <select
               id='summaryType'
               className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-              onChange={handleSummaryTypeChange}
+              onChange={(e) => setSummaryType(e.target.value)}
               value={summaryType}
             >
               <option value='monthly'>Monthly Summary</option>
               <option value='yearly'>Yearly Summary</option>
             </select>
           </div>
-
-          {/* Month Selector */}
-          {summaryType === 'monthly' && (
+          {summaryType === "monthly" && (
             <div className='w-full sm:w-1/5'>
               <select
                 id='month'
                 className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                onChange={handleMonthChange}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
                 value={selectedMonth}
               >
                 {monthLabels.map((label, index) => (
@@ -581,24 +521,20 @@ export default function PatientManagement() {
               </select>
             </div>
           )}
-
-          {/* Year Selector */}
-          {summaryType === 'yearly' && (
+          {summaryType === "yearly" && (
             <div className='w-full sm:w-1/5'>
               <input
                 id='year'
                 className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
                 type='number'
                 value={selectedYear}
-                onChange={handleYearChange}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
                 min='2000'
                 max={new Date().getFullYear()}
               />
             </div>
           )}
         </div>
-
-        {/* Chart Display */}
         <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
           <h2 className='mb-4 text-lg font-semibold text-gray-800'>
             {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
@@ -609,13 +545,17 @@ export default function PatientManagement() {
               responsive: true,
               plugins: {
                 legend: {
-                  position: 'top',
+                  position: "top",
                 },
                 title: {
                   display: true,
                   text: `${
                     summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
-                  } Summary for ${0}`,
+                  } Summary for ${
+                    summaryType === "yearly"
+                      ? selectedYear
+                      : `${monthLabels[selectedMonth - 1]} ${selectedYear}`
+                  }`,
                 },
               },
             }}

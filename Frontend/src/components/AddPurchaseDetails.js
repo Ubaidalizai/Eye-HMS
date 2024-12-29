@@ -1,33 +1,34 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { Fragment, useEffect, useRef, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { PlusIcon } from "@heroicons/react/24/outline";
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
   handlePageUpdate,
 }) {
   const [products, setAllProducts] = useState([]);
-  const [productCatagory, setProductCatagory] = useState('');
+  const [productCatagory, setProductCatagory] = useState("");
   const [purchase, setPurchase] = useState({
-    productID: '',
-    QuantityPurchased: 0,
-    date: '',
-    unitPurchaseAmount: 0,
-    salePrice: 0,
-    category: '', // New category field
-    expiryDate: null,
+    productID: "",
+    QuantityPurchased: "",
+    date: "",
+    unitPurchaseAmount: "",
+    salePrice: "",
+    category: "",
+    expiryDate: "",
   });
+  const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   const fetchProductsData = (productCatagory) => {
-    let url = 'http://localhost:4000/api/v1/inventory/product';
+    let url = "http://localhost:4000/api/v1/inventory/product";
     if (productCatagory) {
       url += `?category=${productCatagory}`;
     }
 
     fetch(url, {
-      credentials: 'include',
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -37,29 +38,56 @@ export default function AddPurchaseDetails({
   };
 
   useEffect(() => {
-    fetchProductsData('');
+    fetchProductsData("");
   }, []);
-  // Handling Input Change for input fields
+
   const handleInputChange = (key, value) => {
     setPurchase({ ...purchase, [key]: value });
+    // Clear error when user starts typing
+    if (errors[key]) {
+      setErrors({ ...errors, [key]: "" });
+    }
   };
 
-  // POST Data
+  const validateForm = () => {
+    let formErrors = {};
+    if (!purchase.productID) formErrors.productID = "Product is required";
+    if (!purchase.QuantityPurchased)
+      formErrors.QuantityPurchased = "Quantity is required";
+    if (purchase.QuantityPurchased && parseInt(purchase.QuantityPurchased) <= 0)
+      formErrors.QuantityPurchased = "Quantity must be positive";
+    if (!purchase.unitPurchaseAmount)
+      formErrors.unitPurchaseAmount = "Unit purchase amount is required";
+    if (
+      purchase.unitPurchaseAmount &&
+      parseFloat(purchase.unitPurchaseAmount) <= 0
+    )
+      formErrors.unitPurchaseAmount = "Unit purchase amount must be positive";
+    if (!purchase.salePrice) formErrors.salePrice = "Sale price is required";
+    if (purchase.salePrice && parseFloat(purchase.salePrice) <= 0)
+      formErrors.salePrice = "Sale price must be positive";
+    if (!purchase.date) formErrors.date = "Purchase date is required";
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+  };
+
   const addSale = () => {
-    fetch('http://localhost:4000/api/v1/purchase', {
-      credentials: 'include',
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: JSON.stringify(purchase),
-    })
-      .then((result) => {
-        alert('Purchase ADDED');
-        handlePageUpdate();
-        addSaleModalSetting();
+    if (validateForm()) {
+      fetch("http://localhost:4000/api/v1/purchase", {
+        credentials: "include",
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(purchase),
       })
-      .catch((err) => console.log(err));
+        .then((result) => {
+          alert("Purchase ADDED");
+          handlePageUpdate();
+          addSaleModalSetting();
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   return (
@@ -123,7 +151,7 @@ export default function AddPurchaseDetails({
                               name='category'
                               value={purchase.category}
                               onChange={(e) => {
-                                handleInputChange('category', e.target.value);
+                                handleInputChange("category", e.target.value);
                                 setProductCatagory(e.target.value);
                                 fetchProductsData(e.target.value);
                               }}
@@ -148,17 +176,23 @@ export default function AddPurchaseDetails({
                               id='productID'
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               name='productID'
+                              value={purchase.productID}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
                             >
-                              <option selected=''>Select Products</option>
+                              <option value=''>Select Products</option>
                               {products.map((element) => (
                                 <option key={element._id} value={element._id}>
                                   {element.name}
                                 </option>
                               ))}
                             </select>
+                            {errors.productID && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.productID}
+                              </p>
+                            )}
                           </div>
 
                           <div>
@@ -177,13 +211,19 @@ export default function AddPurchaseDetails({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              placeholder='0 - 999'
+                              placeholder='1 - 999'
+                              min='1'
                             />
+                            {errors.QuantityPurchased && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.QuantityPurchased}
+                              </p>
+                            )}
                           </div>
 
                           <div>
                             <label
-                              htmlFor='totalPurchaseAmount'
+                              htmlFor='unitPurchaseAmount'
                               className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                             >
                               Unit Purchase Amount
@@ -198,12 +238,19 @@ export default function AddPurchaseDetails({
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               placeholder='$20'
+                              min='0.01'
+                              step='0.01'
                             />
+                            {errors.unitPurchaseAmount && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.unitPurchaseAmount}
+                              </p>
+                            )}
                           </div>
 
                           <div>
                             <label
-                              htmlFor='totalPurchaseAmount'
+                              htmlFor='salePrice'
                               className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
                             >
                               Unit Sale Price
@@ -218,7 +265,14 @@ export default function AddPurchaseDetails({
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               placeholder='$20'
+                              min='0.01'
+                              step='0.01'
                             />
+                            {errors.salePrice && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.salePrice}
+                              </p>
+                            )}
                           </div>
 
                           <div className='h-fit w-fit'>
@@ -238,11 +292,16 @@ export default function AddPurchaseDetails({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                             />
+                            {errors.date && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.date}
+                              </p>
+                            )}
                           </div>
                           <div className='h-fit w-fit'>
                             <label
                               className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-                              htmlFor='date'
+                              htmlFor='expiryDate'
                             >
                               Product Expiry Date
                             </label>
@@ -274,7 +333,7 @@ export default function AddPurchaseDetails({
                   </button>
                   <button
                     type='button'
-                    className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                     onClick={addSale}
                   >
                     Add purchase
