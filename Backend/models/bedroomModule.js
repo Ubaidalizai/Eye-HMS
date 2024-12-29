@@ -19,6 +19,25 @@ const bedroomSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
 });
 
+// Pre-hook for cascade delete
+bedroomSchema.pre('findOneAndDelete', async function (next) {
+  const bedroomId = this.getQuery()._id; // Get the ID being deleted
+
+  // Delete related records in DoctorKhata
+  await mongoose.model('DoctorKhata').deleteOne({
+    branchNameId: bedroomId,
+    branchModel: 'bedroomModule',
+  });
+
+  // Delete related records in Income
+  await mongoose.model('Income').deleteOne({
+    saleId: bedroomId,
+    saleModel: 'bedroomModule',
+  });
+
+  next();
+});
+
 const Bedroom = mongoose.model('Bedroom', bedroomSchema);
 
 module.exports = Bedroom;

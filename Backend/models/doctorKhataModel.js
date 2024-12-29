@@ -2,6 +2,24 @@ const mongoose = require('mongoose');
 
 const doctorKhataSchema = new mongoose.Schema(
   {
+    branchNameId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true, // Ensure saleId is always provided
+      refPath: 'saleModel', // Dynamic reference based on 'saleModel'
+    },
+    branchModel: {
+      type: String,
+      required: true,
+      enum: [
+        'octModule',
+        'opdModule',
+        'labratoryModule',
+        'bedroomModule',
+        'ultraSoundModule',
+        'operationModule',
+        'yeglizerModel',
+      ], // Allowed models
+    },
     doctorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

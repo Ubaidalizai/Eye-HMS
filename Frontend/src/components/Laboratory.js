@@ -140,9 +140,9 @@ function Laboratory() {
 
   const handleRemove = async (index) => {
     try {
-      const { patientId } = submittedData[index];
+      const { _id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/labratory/${patientId}`,
+        `http://127.0.0.1:4000/api/v1/labratory/${_id}`,
         {
           method: 'DELETE',
         }
