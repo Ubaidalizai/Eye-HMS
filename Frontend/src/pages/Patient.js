@@ -23,7 +23,7 @@ import {
   BarElement,
 } from 'chart.js';
 
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
 
 // Register Chart.js components
@@ -425,13 +425,13 @@ export default function PatientManagement() {
                         onClick={() => handleEdit(patient)}
                         className='text-indigo-600 hover:text-indigo-900'
                       >
-                        <HiPencil size={20} />
+                        <FaRegEdit className='w-5 h-5' />
                       </button>
                       <button
                         onClick={() => handleDelete(patient._id)}
                         className='text-red-500 hover:text-red-700'
                       >
-                        <HiTrash size={20} />
+                        <FaTrash className='w-4 h-4' />
                       </button>
                       <button
                         onClick={() =>

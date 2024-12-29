@@ -196,7 +196,7 @@ export default function AdminPanel() {
                         onClick={() => deleteUser(user._id)}
                         className='font-medium text-red-600 hover:text-red-700'
                       >
-                        <FaTrash className='w-5 h-5' />
+                        <FaTrash className='w-4 h-4' />
                       </button>
                     </div>
                   </td>
