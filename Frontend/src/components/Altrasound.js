@@ -84,8 +84,8 @@ function Ultrasound() {
   };
 
   const handleRemove = async (index) => {
-    const recordId = submittedData[index].id;
-    await fetch(`http://127.0.0.1:4000/api/v1/ultrasound/${recordId}`, {
+    const { _id } = submittedData[index];
+    await fetch(`http://127.0.0.1:4000/api/v1/ultrasound/${_id}`, {
       method: 'DELETE',
     });
     setSubmittedData(submittedData.filter((_, i) => i !== index));

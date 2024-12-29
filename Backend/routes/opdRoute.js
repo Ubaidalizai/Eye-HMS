@@ -12,7 +12,7 @@ const router = express.Router();
 router.route('/').get(getAllRecords).post(addRecord);
 
 router
-  .route('/:patientId')
+  .route('/:id')
   .get(getRecordByPatientId)
   .patch(updateRecordByPatientId)
   .delete(deleteRecordByPatientId);

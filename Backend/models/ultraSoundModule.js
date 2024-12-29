@@ -16,6 +16,24 @@ const ultrasoundSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true, min: 0 },
 });
 
+ultrasoundSchema.pre('findOneAndDelete', async function (next) {
+  const ultrasoundId = this.getQuery()._id; // Get the ID being deleted
+
+  // Delete related records in DoctorKhata
+  await mongoose.model('DoctorKhata').deleteOne({
+    branchNameId: ultrasoundId,
+    branchModel: 'ultraSoundModule',
+  });
+
+  // Delete related records in Income
+  await mongoose.model('Income').deleteOne({
+    saleId: ultrasoundId,
+    saleModel: 'ultraSoundModule',
+  });
+
+  next();
+});
+
 const Ultrasound = mongoose.model('Ultrasound', ultrasoundSchema);
 
 module.exports = Ultrasound;

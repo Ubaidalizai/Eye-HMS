@@ -3,6 +3,7 @@ const Laboratory = require('../models/labratoryModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
+const Income = require('../models/incomeModule');
 const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
@@ -23,6 +24,7 @@ const createLabRecord = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.price;
+  let doctorPercentage = 0;
 
   if (doctorExist.percentage) {
     // Calculate percentage and update total amount
@@ -31,14 +33,7 @@ const createLabRecord = asyncHandler(async (req, res) => {
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -60,6 +55,28 @@ const createLabRecord = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await laboratory.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: laboratory._id,
+    branchModel: 'labratoryModule',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
+
+  if (laboratory.totalAmount > 0) {
+    await Income.create({
+      saleId: laboratory._id,
+      saleModel: 'labratoryModule',
+      date: laboratory.date,
+      totalNetIncome: laboratory.totalAmount,
+      category: 'laboratory',
+      description: 'Laboratory income',
+    });
+  }
+
   res
     .status(201)
     .json({ message: 'Lab record created successfully', data: laboratory });
@@ -104,6 +121,7 @@ const updateLabRecordById = asyncHandler(async (req, res) => {
 // Delete a lab record by patientId
 const deleteLabRecordById = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  console.log(id);
   const deletedLabRecord = await Laboratory.findByIdAndDelete(id);
   if (!deletedLabRecord) {
     throw new AppError('Lab record not found', 404);

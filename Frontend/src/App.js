@@ -1,41 +1,41 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Provider } from "react-redux";
-import store from "./redux/store";
-import { AuthProvider } from "./AuthContext"; // AuthProvider imported from your AuthContext file
-import ProtectedWrapper from "./ProtectedWrapper";
-import Layout from "./components/Layout";
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './redux/store';
+import { AuthProvider } from './AuthContext'; // AuthProvider imported from your AuthContext file
+import ProtectedWrapper from './ProtectedWrapper';
+import Layout from './components/Layout';
 
 // Pages
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import NoPageFound from "./pages/NoPageFound";
-import Inventory from "./pages/Inventory";
-import Sales from "./pages/Sales";
-import Patient from "./pages/Patient";
-import PurchaseDetails from "./pages/PurchaseDetails";
-import Move from "./pages/Move";
-import PrescriptionPage from "./pages/PrescriptionPage";
-import Bedroom from "./components/Bedroom";
-import Ultrasound from "./components/Altrasound";
-import Operation from "./components/Operation";
-import IncomeReport from "./pages/IncomeReport";
-import ExpenseManagement from "./pages/ExpenseManagement";
-import Pharmacy from "./pages/Pharmacy";
-import ExpiredProduct from "./pages/ExpiredProduct";
-import AdminPanel from "./pages/Admin-panel";
-import Laboratory from "./components/Laboratory";
-import OCT from "./components/OCT";
-import OPD from "./components/OPD";
-import Yeglizer from "./components/Yeglizer";
-import MoveHistory from "./pages/MoveHistory";
-import ForgotPassword from "./pages/ForgotPassword ";
-import ResetPassword from "./pages/ResetPassword ";
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import NoPageFound from './pages/NoPageFound';
+import Inventory from './pages/Inventory';
+import Sales from './pages/Sales';
+import Patient from './pages/Patient';
+import PurchaseDetails from './pages/PurchaseDetails';
+import Move from './pages/Move';
+import PrescriptionPage from './pages/PrescriptionPage';
+import Bedroom from './components/Bedroom';
+import Ultrasound from './components/Altrasound';
+import Operation from './components/Operation';
+import IncomeReport from './pages/IncomeReport';
+import ExpenseManagement from './pages/ExpenseManagement';
+import Pharmacy from './pages/Pharmacy';
+import ExpiredProduct from './pages/ExpiredProduct';
+import AdminPanel from './pages/Admin-panel';
+import Laboratory from './components/Laboratory';
+import OCT from './components/OCT';
+import OPD from './components/OPD';
+import Yeglizer from './components/Yeglizer';
+import MoveHistory from './pages/MoveHistory';
+import ForgotPassword from './pages/ForgotPassword ';
+import ResetPassword from './pages/ResetPassword ';
 
-import { PrescriptionForm } from "./components/PrescriptionForm";
-import { PrescriptionList } from "./components/PrescriptionList";
-import { PrescriptionDetail } from "./components/PrescriptionDetail";
+import { PrescriptionForm } from './components/PrescriptionForm';
+import { PrescriptionList } from './components/PrescriptionList';
+import { PrescriptionDetail } from './components/PrescriptionDetail';
 
 const App = () => {
   return (
@@ -45,7 +45,8 @@ const App = () => {
           <Routes>
             {/* Public Routes */}
             <Route path='/forgot-password' element={<ForgotPassword />} />
-            <Route path='/reset-password' element={<ResetPassword />} />
+            {/* <Route path='/reset-password' element={<ResetPassword />} /> */}
+            <Route path='/reset-password/:token' element={<ResetPassword />} />
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
 
