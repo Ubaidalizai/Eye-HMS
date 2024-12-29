@@ -36,8 +36,15 @@ router
   .get(userController.getCurrentUserProfile)
   .patch(userController.updateCurrentUserProfile);
 
+router
+  .route('/doctorsHave-percentage')
+  .get(userController.getAllDoctorsWithPercentage);
+
 // Admin routes
 router.use(authorizeAdmin);
+router
+  .route('/doctorsHave-percentage')
+  .get(userController.getAllDoctorsWithPercentage);
 
 router
   .route('/:id')

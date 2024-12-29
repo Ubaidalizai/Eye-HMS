@@ -15,38 +15,22 @@ function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const loginUser = (e) => {
+  const loginUser = async (e) => {
     e.preventDefault(); // prevent default form submission
 
-    // Cannot send empty data
-    if (form.email === "" || form.password === "") {
-      alert("To login user, enter details to proceed...");
-    } else {
-      fetch("http://localhost:4000/api/v1/user/login", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(form),
-      })
-        .then((result) => result.json())
-        .then((data) => {
-          if (data.error) {
-            alert("Login failed: " + data.error);
-          } else {
-            // Store the full user object in localStorage
-            localStorage.setItem("user", JSON.stringify(data));
+    // Ensure form is not empty
+    if (!form.email || !form.password) {
+      alert("Please enter your email and password to proceed.");
+      return;
+    }
 
-            // Pass full user object (including roles) to the sign-in method
-            authContext.signin(data._id, () => {
-              navigate("/"); // Navigate after successful login
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error during login: ", error);
-        });
+    try {
+      // Call the signin method from context
+      await authContext.signin(form, () => {
+        navigate("/"); // Redirect to home on successful login
+      });
+    } catch (err) {
+      alert(`Login failed: ${err.message}`);
     }
   };
 
@@ -66,9 +50,8 @@ function Login() {
             Sign in to your account
           </h2>
           <p className='mt-2 text-center text-sm text-gray-600'>
-            Or
+            Or{" "}
             <span className='font-medium text-indigo-600 hover:text-indigo-500'>
-              {" "}
               start your 14-day free trial
             </span>
           </p>
@@ -125,14 +108,12 @@ function Login() {
               </label>
             </div>
             <div className='text-sm'>
-              <div className='text-sm'>
-                <Link
-                  to='/forgot-password'
-                  className='font-medium text-indigo-600 hover:text-indigo-500'
-                >
-                  Forgot your password?
-                </Link>
-              </div>
+              <Link
+                to='/forgot-password'
+                className='font-medium text-indigo-600 hover:text-indigo-500'
+              >
+                Forgot your password?
+              </Link>
             </div>
           </div>
 
@@ -143,12 +124,6 @@ function Login() {
             >
               Sign in
             </button>
-            {/* <p className="mt-2 text-center text-sm text-gray-600">
-              Or{' '}
-              <span className="font-medium text-indigo-600 hover:text-indigo-500">
-                Don't have an account? <Link to="/register"> Register now</Link>
-              </span>
-            </p> */}
           </div>
         </form>
       </div>

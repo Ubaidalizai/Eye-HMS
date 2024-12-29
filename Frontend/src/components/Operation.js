@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import FormModal from "../components/FormModal";
 import DataTable from "../components/DataTable";
 import { FaPlus } from "react-icons/fa";
+import AuthContext, { useAuth } from "../AuthContext";
 import Pagination from "./Pagination";
 
 function Operation() {
@@ -20,24 +21,44 @@ function Operation() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [perDoctors, setPerDoctors] = useState([]);
 
+  const authContext = useContext(AuthContext);
+  console.log(" doctors", authContext.doctors);
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/operation?page=${currentPage}&limit=${limit}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const data = await response.json();
-        console.log(data.data.results);
-        setSubmittedData(data.data.results);
-        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
     fetchData();
+    doctorsWithPercentage();
   }, [currentPage, limit]);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:4000/api/v1/operation?page=${currentPage}&limit=${limit}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch data");
+      const data = await response.json();
+      setSubmittedData(data.data.results);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const doctorsWithPercentage = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:4000/api/v1/user/doctorsHave-percentage",
+        {
+          credentials: "include",
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch data");
+      const data = await response.json();
+      setPerDoctors(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -142,15 +163,15 @@ function Operation() {
     {
       label: "Doctor",
       type: "select",
-      options: [
-        { label: "Dr. Smith", value: "smith" },
-        { label: "Dr. Johnson", value: "johnson" },
-        { label: "Dr. Brown", value: "brown" },
-      ],
+      options: perDoctors.map((doctor) => ({
+        label: doctor.firstName + " " + doctor.lastName, // Combine first and last name
+        value: doctor._id, // Use unique doctor ID as value
+      })),
       name: "doctor",
     },
     { label: "Discount", type: "number", name: "discount" },
   ];
+
   const dataTableFields = [
     { label: "Percentage", type: "text", name: "percentage" },
     { label: "Total Amount", type: "number", name: "totalAmount" },

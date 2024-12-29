@@ -10,8 +10,8 @@ function Ultrasound() {
     doctor: '',
     time: '',
     date: '',
-    discount: '',
-    image: null,
+    discount: 0,
+    price: 0,
   });
 
   const [submittedData, setSubmittedData] = useState([]);
@@ -21,19 +21,38 @@ function Ultrasound() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [doctor, setDoctor] = useState('');
+  const [perDoctors, setPerDoctors] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`
-      );
-      const data = await response.json();
-
-      setSubmittedData(data.data.results);
-      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-    };
     fetchData();
+    doctorsWithPercentage();
   }, [currentPage, limit]);
+  const fetchData = async () => {
+    const response = await fetch(
+      `http://127.0.0.1:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`
+    );
+    const data = await response.json();
+
+    setSubmittedData(data.data.results);
+    setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+  };
+
+  const doctorsWithPercentage = async () => {
+    try {
+      const response = await fetch(
+        'http://localhost:4000/api/v1/user/doctorsHave-percentage',
+        {
+          credentials: 'include',
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setPerDoctors(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleCancel = () => {
     setFieldValues({
@@ -42,6 +61,7 @@ function Ultrasound() {
       time: '',
       date: '',
       discount: 0,
+      price: 0,
     });
     setIsOpen(false);
     setEditMode(false);
@@ -56,6 +76,7 @@ function Ultrasound() {
       time: record.time,
       date: record.date,
       discount: record.discount,
+      price: record.price,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -109,12 +130,27 @@ function Ultrasound() {
   };
 
   const fields = [
-    { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
+    { label: 'Price', type: 'number', name: 'price' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
+    {
+      label: 'Doctor',
+      type: 'select',
+      options: perDoctors.map((doctor) => ({
+        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
+        value: doctor._id, // Use unique doctor ID as value
+      })),
+      name: 'doctor',
+    },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
+
+  const dataTableFields = [
+    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Total Amount', type: 'number', name: 'totalAmount' },
+  ];
+  const AllFields = [...fields, ...dataTableFields];
 
   return (
     <div className='p-6  min-h-screen'>
@@ -127,7 +163,8 @@ function Ultrasound() {
               doctor: '',
               time: '',
               date: '',
-              discount: '',
+              discount: 0,
+              price: 0,
             });
             setIsOpen(true);
             setEditMode(false);
@@ -157,7 +194,7 @@ function Ultrasound() {
 
       <DataTable
         submittedData={submittedData}
-        fields={fields}
+        fields={AllFields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
       />

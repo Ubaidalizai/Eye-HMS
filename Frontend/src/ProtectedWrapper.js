@@ -4,12 +4,10 @@ import { Navigate } from "react-router-dom";
 
 function ProtectedWrapper(props) {
   const auth = useContext(AuthContext);
-  // console.log("====================================");
-  // console.log(auth);
-  // console.log("====================================");
+  console.log("", auth.user);
 
   if (!auth.user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to='/login' replace />;
   }
 
   return props.children;

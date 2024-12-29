@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   FaUserMd,
   FaStethoscope,
@@ -13,8 +13,8 @@ import {
   FaFileMedical,
   FaWarehouse,
   FaUsers,
-} from 'react-icons/fa';
-import BranchesMenu from './BranchesMenu';
+} from "react-icons/fa";
+import BranchesMenu from "./BranchesMenu";
 
 function SideMenu({ setActiveComponent }) {
   const [userInfo, setUserInfo] = useState({});
@@ -23,17 +23,17 @@ function SideMenu({ setActiveComponent }) {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          'http://localhost:4000/api/v1/user/profile',
+          "http://localhost:4000/api/v1/user/profile",
           { withCredentials: true }
         );
 
         if (res.status === 200) {
           setUserInfo(res?.data?.data);
         } else {
-          console.error('Failed to fetch user profile', res);
+          console.error("Failed to fetch user profile", res);
         }
       } catch (error) {
-        console.error('Error fetching user profile', error);
+        console.error("Error fetching user profile", error);
       }
     };
 
@@ -132,12 +132,12 @@ function SideMenu({ setActiveComponent }) {
             <span className='text-sm font-medium'>Manage Store</span>
           </Link> */}
 
-          <BranchesMenu setActiveComponent={setActiveComponent} />
+          <BranchesMenu />
         </nav>
       </div>
 
-      <div className='sticky inset-x-0 bottom-0 border-t border-gray-100'>
-        <div className='flex items-center gap-2 bg-white p-4 hover:bg-gray-50'>
+      <div className='sticky inset-x-0 bottom-0  border-t border-gray-100'>
+        <div className='flex justify-start items-end  gap-2 bg-white py-3 text-center hover:bg-gray-50'>
           <FaUserMd className='h-10 w-10 text-gray-500' />
           <div>
             <p className='text-xs'>

@@ -1,23 +1,63 @@
 // controllers/octController.js
 const OCT = require('../models/octModule');
+const User = require('../models/userModel');
+const Patient = require('../models/patientModel');
+const DoctorKhata = require('../models/doctorKhataModel');
+const calculatePercentage = require('../utils/calculatePercentage');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 
 // Create a new OCT record
 const createOCTRecord = asyncHandler(async (req, res) => {
-  const { patientId, doctorId, date, time, price, discount } = req.body;
-  if (!patientId || !doctorId || !date || !time || !price) {
-    throw new AppError('Missing required fields', 400);
+  const { patientId, doctor } = req.body;
+
+  const patient = await Patient.findOne({ patientID: patientId });
+  if (!patient) {
+    throw new AppError('Patient not found', 404);
+  }
+
+  const doctorExist = await User.findById(doctor);
+  if (!doctorExist || doctorExist.role !== 'doctor') {
+    throw new AppError('Doctor not found', 404);
+  }
+
+  req.body.totalAmount = req.body.price;
+
+  if (doctorExist.percentage) {
+    // Calculate percentage and update total amount
+    const result = await calculatePercentage(
+      req.body.price,
+      doctorExist.percentage
+    );
+    req.body.totalAmount = result.finalPrice;
+
+    // Create a new record if it doesn't exist
+    await DoctorKhata.create({
+      doctorId: doctorExist._id,
+      amount: result.percentageAmount,
+      date: req.body.date,
+      amountType: 'income',
+    });
+  }
+
+  if (req.body.discount > 0) {
+    const result = await calculatePercentage(
+      req.body.totalAmount,
+      req.body.discount
+    );
+    req.body.totalAmount = result.finalPrice;
   }
 
   const octRecord = new OCT({
-    patientId,
-    doctorId,
-    date,
-    time,
-    price,
-    discount,
+    patientId: patient._id,
+    doctor: doctor,
+    percentage: doctorExist.percentage,
+    price: req.body.price,
+    time: req.body.time,
+    date: req.body.date,
+    discount: req.body.discount,
+    totalAmount: req.body.totalAmount,
   });
   await octRecord.save();
   res
@@ -26,7 +66,13 @@ const createOCTRecord = asyncHandler(async (req, res) => {
 });
 
 // Get all OCT records
-const getAllOCTRecords = getAll(OCT);
+const getAllOCTRecords = getAll(OCT, false, [
+  { path: 'patientId', select: 'name' },
+  {
+    path: 'doctor',
+    select: 'firstName lastName percentage',
+  },
+]);
 
 // Get an OCT record by ID
 const getOCTRecordById = asyncHandler(async (req, res) => {

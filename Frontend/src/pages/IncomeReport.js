@@ -15,7 +15,7 @@ const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
         className='overlay absolute inset-0 bg-black opacity-50'
         onClick={onClose}
       ></div>
-      <div className='relative bg-white rounded-lg shadow-xl p-6 w-full max-w-lg z-60'>
+      <div className='relative bg-white rounded-lg shadow-xl  w-full max-w-lg z-60'>
         <h3 className='text-lg font-semibold mb-4'>Add Income</h3>
         <form onSubmit={onSubmit}>
           <div className='grid gap-4 mb-4 sm:grid-cols-2'>
@@ -228,7 +228,7 @@ export default function IncomeReport() {
   };
 
   return (
-    <div className='container mx-auto px-4 py-5'>
+    <div className='container mx-auto'>
       <h2 className='font-semibold text-xl '> Income List</h2>
       <div className='border sm:rounded-lg my-10 '>
         <div className='flex flex-row items-center justify-between my-5'>
