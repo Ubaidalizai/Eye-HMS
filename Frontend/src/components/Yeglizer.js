@@ -6,8 +6,9 @@ import Pagination from './Pagination';
 
 function Yeglizer() {
   const [id, setId] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('');
-  const [appointmentDate, setAppointmentDate] = useState('');
+  const [patientId, setPatientId] = useState('');
+  const [time, setTime] = useState('');
+  const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
   const [discount, setDiscount] = useState(0);
   const [price, setPrice] = useState(0);
@@ -18,30 +19,50 @@ function Yeglizer() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [perDoctors, setPerDoctors] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/yeglizer?page=${currentPage}&limit=${limit}`
-        );
-        if (!response.ok) throw new Error('Failed to fetch data');
-        const data = await response.json();
-        setSubmittedData(data.data.results);
-        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
     fetchData();
+    doctorsWithPercentage();
   }, [currentPage, limit]);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:4000/api/v1/yeglizer?page=${currentPage}&limit=${limit}`
+      );
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+
+      setSubmittedData(data.data.results);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const doctorsWithPercentage = async () => {
+    try {
+      const response = await fetch(
+        'http://localhost:4000/api/v1/user/doctorsHave-percentage',
+        {
+          credentials: 'include',
+        }
+      );
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setPerDoctors(data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const entry = {
-      id,
-      appointmentTime,
-      appointmentDate,
+      patientId,
+      time,
+      date,
       doctor,
       price,
       discount,
@@ -91,9 +112,9 @@ function Yeglizer() {
   };
 
   const clearForm = () => {
-    setId('');
-    setAppointmentTime('');
-    setAppointmentDate('');
+    setPatientId('');
+    setTime('');
+    setDate('');
     setPrice(0);
     setDoctor('');
     setDiscount(0);
@@ -106,8 +127,8 @@ function Yeglizer() {
     console.log('Editing record:', recordToEdit); // Log record to edit
     setFieldValues({
       id: recordToEdit.id || '',
-      appointmentTime: recordToEdit.appointmentTime || '',
-      appointmentDate: recordToEdit.appointmentDate || '',
+      time: recordToEdit.time || '',
+      date: recordToEdit.date || '',
       doctor: recordToEdit.doctor || '',
       price: recordToEdit.price || 0,
       discount: recordToEdit.discount || 0,
@@ -136,34 +157,48 @@ function Yeglizer() {
   };
 
   const fields = [
-    { label: 'ID', type: 'text', name: 'id' },
-    { label: 'Time', type: 'time', name: 'appointmentTime' },
-    { label: 'Date', type: 'date', name: 'appointmentDate' },
-    { label: 'Doctor', type: 'text', name: 'doctor' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
     { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Time', type: 'time', name: 'time' },
+    { label: 'Date', type: 'date', name: 'date' },
+    {
+      label: 'Doctor',
+      type: 'select',
+      options: perDoctors.map((doctor) => ({
+        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
+        value: doctor._id, // Use unique doctor ID as value
+      })),
+      name: 'doctor',
+    },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
+  const dataTableFields = [
+    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Total Amount', type: 'number', name: 'totalAmount' },
+  ];
+  const AllFields = [...fields, ...dataTableFields];
+
   const fieldValues = {
-    id,
-    appointmentTime,
-    appointmentDate,
+    patientId,
+    time,
+    date,
     doctor,
     price,
     discount,
   };
 
   const setFieldValues = ({
-    id,
-    appointmentTime,
-    appointmentDate,
+    patientId,
+    time,
+    date,
     doctor,
     price,
     discount,
   }) => {
-    setId(id);
-    setAppointmentTime(appointmentTime);
-    setAppointmentDate(appointmentDate);
+    setPatientId(patientId);
+    setTime(time);
+    setDate(date);
     setDoctor(doctor);
     setPrice(price);
     setDiscount(discount);
@@ -203,7 +238,7 @@ function Yeglizer() {
 
       <DataTable
         submittedData={submittedData}
-        fields={fields}
+        fields={AllFields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
       />

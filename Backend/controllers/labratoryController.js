@@ -1,20 +1,78 @@
 // controllers/laboratoryController.js
 const Laboratory = require('../models/labratoryModule');
+const User = require('../models/userModel');
+const Patient = require('../models/patientModel');
+const DoctorKhata = require('../models/doctorKhataModel');
+const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 
 // Create a new lab record
 const createLabRecord = asyncHandler(async (req, res) => {
-  const labRecord = new Laboratory(req.body);
-  await labRecord.save();
+  const { patientId, doctor } = req.body;
+
+  const patient = await Patient.findOne({ patientID: patientId });
+  if (!patient) {
+    throw new AppError('Patient not found', 404);
+  }
+
+  const doctorExist = await User.findById(doctor);
+  if (!doctorExist || doctorExist.role !== 'doctor') {
+    throw new AppError('Doctor not found', 404);
+  }
+
+  req.body.totalAmount = req.body.price;
+
+  if (doctorExist.percentage) {
+    // Calculate percentage and update total amount
+    const result = await calculatePercentage(
+      req.body.price,
+      doctorExist.percentage
+    );
+    req.body.totalAmount = result.finalPrice;
+
+    // Create a new record if it doesn't exist
+    await DoctorKhata.create({
+      doctorId: doctorExist._id,
+      amount: result.percentageAmount,
+      date: req.body.date,
+      amountType: 'income',
+    });
+  }
+
+  if (req.body.discount > 0) {
+    const result = await calculatePercentage(
+      req.body.totalAmount,
+      req.body.discount
+    );
+    req.body.totalAmount = result.finalPrice;
+  }
+
+  const laboratory = new Laboratory({
+    patientId: patient._id,
+    doctor: doctor,
+    percentage: doctorExist.percentage,
+    price: req.body.price,
+    time: req.body.time,
+    date: req.body.date,
+    discount: req.body.discount,
+    totalAmount: req.body.totalAmount,
+  });
+  await laboratory.save();
   res
     .status(201)
-    .json({ message: 'Lab record created successfully', data: labRecord });
+    .json({ message: 'Lab record created successfully', data: laboratory });
 });
 
 // Get all lab records
-const getAllLabRecords = getAll(Laboratory);
+const getAllLabRecords = getAll(Laboratory, false, [
+  { path: 'patientId', select: 'name' },
+  {
+    path: 'doctor',
+    select: 'firstName lastName percentage',
+  },
+]);
 
 // Get a specific lab record by patientId
 const getLabRecordByPatientId = asyncHandler(async (req, res) => {
