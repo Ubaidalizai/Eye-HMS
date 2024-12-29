@@ -67,10 +67,8 @@ export default function MoveHistory() {
   });
 
   return (
-    <div className='p-6 bg-gray-100 min-h-screen'>
-      <h1 className='text-4xl font-bold text-center text-blue-800 mb-8'>
-        Move History
-      </h1>
+    <div className='p-4 rounded-lg border min-h-screen'>
+      <h2 className='font-semibold text-xl mb-10'>Move History</h2>
       {/* Filter Input */}
       <div className='mb-4'>
         <input
@@ -78,7 +76,7 @@ export default function MoveHistory() {
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder='Search...'
-          className='w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300'
+          className='p-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
         />
       </div>
       <div className='overflow-x-auto shadow rounded-lg bg-white'>
@@ -86,13 +84,14 @@ export default function MoveHistory() {
           <div className='text-center py-4'>Loading...</div>
         ) : (
           <table className='min-w-full border-collapse border border-gray-200'>
-            <thead className='bg-blue-600 text-white'>
+            <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className='px-4 py-2 border border-gray-300 text-left font-semibold'
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -103,16 +102,13 @@ export default function MoveHistory() {
                 </tr>
               ))}
             </thead>
-            <tbody className='bg-white'>
+            <tbody className='bg-white divide-y divide-gray-200'>
               {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className='hover:bg-gray-100 transition duration-150'
-                >
+                <tr key={row.id} className='hover:bg-gray-50'>
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className='px-4 py-2 border border-gray-300'
+                      className='px-6 py-4 whitespace-nowrap text-gray-900'
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

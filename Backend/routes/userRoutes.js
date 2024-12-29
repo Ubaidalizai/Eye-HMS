@@ -16,6 +16,8 @@ router
   );
 router.route('/login').post(userController.loginUser);
 
+router.route('/forgotPassword').post(userController.forgotPassword);
+router.route('/resetePassword/:token').post(userController.resetPassword);
 router.use(authenticate);
 
 router.route('/').get(authorizeAdmin, userController.getAllUsers);
