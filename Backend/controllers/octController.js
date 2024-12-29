@@ -3,6 +3,7 @@ const OCT = require('../models/octModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
+const Income = require('../models/incomeModule');
 const calculatePercentage = require('../utils/calculatePercentage');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
@@ -23,6 +24,7 @@ const createOCTRecord = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.price;
+  let doctorPercentage = 0;
 
   if (doctorExist.percentage) {
     // Calculate percentage and update total amount
@@ -31,14 +33,7 @@ const createOCTRecord = asyncHandler(async (req, res) => {
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -60,6 +55,28 @@ const createOCTRecord = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await octRecord.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: octRecord._id,
+    branchModel: 'octModule',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
+
+  if (octRecord.totalAmount > 0) {
+    await Income.create({
+      saleId: octRecord._id,
+      saleModel: 'octModule',
+      date: octRecord.date,
+      totalNetIncome: octRecord.totalAmount,
+      category: 'oct',
+      description: 'OCT income',
+    });
+  }
+
   res
     .status(201)
     .json({ message: 'OCT record created successfully', data: octRecord });
@@ -103,8 +120,8 @@ const updateOCTRecordById = asyncHandler(async (req, res) => {
 
 // Delete an OCT record by ID
 const deleteOCTRecordById = asyncHandler(async (req, res) => {
-  const { patientId } = req.params;
-  const deletedOCTRecord = await OCT.findOneAndDelete({ patientId });
+  const { id } = req.params;
+  const deletedOCTRecord = await OCT.findByIdAndDelete(id);
   if (!deletedOCTRecord) {
     throw new AppError('OCT record not found', 404);
   }

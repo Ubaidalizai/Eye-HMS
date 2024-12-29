@@ -130,9 +130,9 @@ function Bedroom() {
 
   const handleRemove = async (index) => {
     try {
-      const { patientId } = submittedData[index];
+      const { _id } = submittedData[index];
       const response = await fetch(
-        `http://localhost:4000/api/v1/bedroom/${patientId}`,
+        `http://localhost:4000/api/v1/bedroom/${_id}`,
         {
           method: 'DELETE',
         }

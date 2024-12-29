@@ -140,9 +140,9 @@ function Yeglizer() {
 
   const handleRemove = async (index) => {
     try {
-      const { id } = submittedData[index];
+      const { _id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/yeglizer/${id}`,
+        `http://127.0.0.1:4000/api/v1/yeglizer/${_id}`,
         {
           method: 'DELETE',
         }

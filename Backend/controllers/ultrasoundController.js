@@ -42,6 +42,7 @@ const addRecord = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.price;
+  let doctorPercentage = 0;
 
   if (doctorExist.percentage) {
     // Calculate percentage and update total amount
@@ -50,14 +51,7 @@ const addRecord = asyncHandler(async (req, res) => {
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -79,6 +73,16 @@ const addRecord = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await ultrasound.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: ultrasound._id,
+    branchModel: 'ultraSoundModule',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
 
   if (ultrasound.totalAmount > 0) {
     await Income.create({
@@ -115,8 +119,8 @@ const updateRecord = asyncHandler(async (req, res) => {
 
 // Delete a record by custom schema id
 const deleteRecord = asyncHandler(async (req, res) => {
-  validateMongoDBId(req.params.id);
-
+  const { id } = req.params;
+  validateMongoDBId(id);
   const deletedRecord = await Ultrasound.findByIdAndDelete(id);
 
   if (!deletedRecord) {
