@@ -1,6 +1,7 @@
-// routes/ultrasoundRoutes.js
 const express = require('express');
 const {
+  getUltrasoundDataByYear,
+  getUltrasoundDataByMonth,
   addRecord,
   getAllRecords,
   getRecordById,
@@ -9,6 +10,9 @@ const {
 } = require('../controllers/ultrasoundController');
 
 const router = express.Router();
+
+router.get('/:year', getUltrasoundDataByYear);
+router.get('/:year/:month', getUltrasoundDataByMonth);
 
 router.route('/').post(addRecord).get(getAllRecords); // Get all records
 

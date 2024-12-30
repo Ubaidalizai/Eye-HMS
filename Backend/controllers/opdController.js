@@ -7,6 +7,29 @@ const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getOpdDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, OPD);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getOpdDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, OPD);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Get all OPD records
 const getAllRecords = getAll(OPD, false, [
@@ -122,6 +145,8 @@ const deleteRecordByPatientId = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
+  getOpdDataByYear,
+  getOpdDataByMonth,
   getAllRecords,
   getRecordByPatientId,
   addRecord,

@@ -8,6 +8,29 @@ const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getLaboratoryDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Laboratory);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getLaboratoryDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Laboratory);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Create a new lab record
 const createLabRecord = asyncHandler(async (req, res) => {
@@ -130,6 +153,8 @@ const deleteLabRecordById = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getLaboratoryDataByYear,
+  getLaboratoryDataByMonth,
   createLabRecord,
   getAllLabRecords,
   getLabRecordByPatientId,

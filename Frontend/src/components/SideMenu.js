@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 import {
   FaUserMd,
   FaStethoscope,
@@ -13,8 +13,8 @@ import {
   FaFileMedical,
   FaWarehouse,
   FaUsers,
-} from "react-icons/fa";
-import BranchesMenu from "./BranchesMenu";
+} from 'react-icons/fa';
+import BranchesMenu from './BranchesMenu';
 
 function SideMenu({ setActiveComponent }) {
   const [userInfo, setUserInfo] = useState({});
@@ -23,17 +23,17 @@ function SideMenu({ setActiveComponent }) {
     const fetchData = async () => {
       try {
         const res = await axios.get(
-          "http://localhost:4000/api/v1/user/profile",
+          'http://localhost:4000/api/v1/user/profile',
           { withCredentials: true }
         );
 
         if (res.status === 200) {
           setUserInfo(res?.data?.data);
         } else {
-          console.error("Failed to fetch user profile", res);
+          console.error('Failed to fetch user profile', res);
         }
       } catch (error) {
-        console.error("Error fetching user profile", error);
+        console.error('Error fetching user profile', error);
       }
     };
 
@@ -43,6 +43,15 @@ function SideMenu({ setActiveComponent }) {
   return (
     <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
       <div className='px-4 py-6'>
+        <div className='flex items-center'>
+          <div className='flex-shrink-0'>
+            <div className='flex justify-center items-center gap-2'>
+              <span className='font-bold text-xl italic underline'>
+                Al Sayed Eye HMS
+              </span>
+            </div>
+          </div>
+        </div>
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
           <Link
             to='/'
