@@ -8,6 +8,29 @@ const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getBedroomDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Bedroom);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getBedroomDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Bedroom);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Create a new bedroom
 const createBedroom = asyncHandler(async (req, res) => {
@@ -151,6 +174,8 @@ const deleteBedroom = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
+  getBedroomDataByYear,
+  getBedroomDataByMonth,
   createBedroom,
   getAllBedrooms,
   getBedroomById,

@@ -8,6 +8,29 @@ const calculatePercentage = require('../utils/calculatePercentage');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getOctDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, OCT);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getOctDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, OCT);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Create a new OCT record
 const createOCTRecord = asyncHandler(async (req, res) => {
@@ -129,6 +152,8 @@ const deleteOCTRecordById = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getOctDataByYear,
+  getOctDataByMonth,
   createOCTRecord,
   getAllOCTRecords,
   getOCTRecordById,
