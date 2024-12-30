@@ -215,76 +215,78 @@ export default function AdminPanel() {
               Add New User
             </h3>
             <form onSubmit={addUser}>
-              <input
-                type='text'
-                placeholder='First Name'
-                value={newUser.firstName}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, firstName: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-                required
-              />
-              <input
-                type='text'
-                placeholder='Last Name'
-                value={newUser.lastName}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, lastName: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-                required
-              />
-              <input
-                type='number'
-                placeholder='percentage'
-                value={newUser.percentage}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, percentage: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-                required
-              />
-              <input
-                type='tel'
-                placeholder='Phone Number'
-                value={newUser.phoneNumber}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, phoneNumber: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-                required
-              />
-              <input
-                type='email'
-                placeholder='Email'
-                value={newUser.email}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-                required
-              />
-              <select
-                value={newUser.role}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-                required
-              >
-                <option value=''>Select Role</option>
-                <option value='pharmacist'>Pharmacist</option>
-                <option value='admin'>Admin</option>
-                <option value='nurse'>Nurse</option>
-                <option value='doctor'>Doctor</option>
-              </select>
-              <input
-                type='file'
-                accept='image/*'
-                onChange={handleImageUpload}
-                className='border p-2 rounded w-full mb-4'
-              />
+              <div className='grid grid-cols-2 gap-2'>
+                <input
+                  type='text'
+                  placeholder='First Name'
+                  value={newUser.firstName}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, firstName: e.target.value })
+                  }
+                  className='border p-2 rounded w-full mb-2'
+                  required
+                />
+                <input
+                  type='text'
+                  placeholder='Last Name'
+                  value={newUser.lastName}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, lastName: e.target.value })
+                  }
+                  className='border p-2 rounded w-full mb-2'
+                  required
+                />
+                <input
+                  type='number'
+                  placeholder='percentage'
+                  value={newUser.percentage}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, percentage: e.target.value })
+                  }
+                  className='border p-2 rounded w-full mb-2'
+                  required
+                />
+                <input
+                  type='tel'
+                  placeholder='Phone Number'
+                  value={newUser.phoneNumber}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, phoneNumber: e.target.value })
+                  }
+                  className='border p-2 rounded w-full mb-2'
+                  required
+                />
+                <input
+                  type='email'
+                  placeholder='Email'
+                  value={newUser.email}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
+                  className='border p-2 rounded w-full mb-2'
+                  required
+                />
+                <select
+                  value={newUser.role}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, role: e.target.value })
+                  }
+                  className='border p-2 rounded w-full mb-2'
+                  required
+                >
+                  <option value=''>Select Role</option>
+                  <option value='pharmacist'>Pharmacist</option>
+                  <option value='admin'>Admin</option>
+                  <option value='nurse'>Nurse</option>
+                  <option value='doctor'>Doctor</option>
+                </select>
+                <input
+                  type='file'
+                  accept='image/*'
+                  onChange={handleImageUpload}
+                  className='border p-2 rounded w-full mb-4'
+                />
+              </div>
               <div className='flex items-center justify-end gap-2'>
                 <button
                   type='button'

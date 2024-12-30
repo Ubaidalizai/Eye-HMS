@@ -1,8 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { Dialog, Transition } from '@headlessui/react';
 import {
-  FaEdit,
+  // FaEdit,
   FaTrash,
   FaBoxOpen,
   FaWarehouse,
@@ -251,61 +253,66 @@ function Inventory() {
             id='my-modal'
           >
             <div className='relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white'>
-              <div className='mt-3 text-center'>
+              <div>
                 <h3 className='text-lg leading-6 font-medium text-gray-900'>
                   Add New Product
                 </h3>
                 <form onSubmit={handleAddProduct} className='mt-2 text-left'>
-                  <input
-                    type='text'
-                    placeholder='Product Name'
-                    value={newProduct.name}
-                    onChange={(e) =>
-                      setNewProduct({ ...newProduct, name: e.target.value })
-                    }
-                    className='mt-2 p-2 w-full border rounded'
-                    required
-                  />
-                  <input
-                    type='text'
-                    placeholder='Manufacturer'
-                    value={newProduct.manufacturer}
-                    onChange={(e) =>
-                      setNewProduct({
-                        ...newProduct,
-                        manufacturer: e.target.value,
-                      })
-                    }
-                    className='mt-2 p-2 w-full border rounded'
-                    required
-                  />
-                  <input
-                    type='text'
-                    placeholder='Description'
-                    value={newProduct.description}
-                    onChange={(e) =>
-                      setNewProduct({
-                        ...newProduct,
-                        description: e.target.value,
-                      })
-                    }
-                    className='mt-2 p-2 w-full border rounded'
-                    required
-                  />
-                  <select
-                    value={newProduct.category}
-                    onChange={(e) =>
-                      setNewProduct({ ...newProduct, category: e.target.value })
-                    }
-                    className='mt-2 p-2 w-full border rounded'
-                    required
-                  >
-                    <option value=''>Select a category</option>
-                    <option value='drug'>Drug</option>
-                    <option value='sunglasses'>sunglasses</option>
-                    <option value='glass'>glass</option>
-                    <option value='frame'>Frame</option>
-                  </select>
+                  <div className='grid grid-cols-2 gap-2'>
+                    <input
+                      type='text'
+                      placeholder='Product Name'
+                      value={newProduct.name}
+                      onChange={(e) =>
+                        setNewProduct({ ...newProduct, name: e.target.value })
+                      }
+                      className='mt-2 p-2 w-full border rounded'
+                      required
+                    />
+                    <input
+                      type='text'
+                      placeholder='Manufacturer'
+                      value={newProduct.manufacturer}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          manufacturer: e.target.value,
+                        })
+                      }
+                      className='mt-2 p-2 w-full border rounded'
+                      required
+                    />
+                    <input
+                      type='text'
+                      placeholder='Description'
+                      value={newProduct.description}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          description: e.target.value,
+                        })
+                      }
+                      className='mt-2 p-2 w-full border rounded'
+                      required
+                    />
+                    <select
+                      value={newProduct.category}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          category: e.target.value,
+                        })
+                      }
+                      className='mt-2 p-2 w-full border rounded'
+                      required
+                    >
+                      <option value=''>Select a category</option>
+                      <option value='drug'>Drug</option>
+                      <option value='sunglasses'>sunglasses</option>
+                      <option value='glass'>glass</option>
+                      <option value='frame'>Frame</option>
+                    </select>
+                  </div>
                   <div className='flex items-center justify-end gap-2 mt-10'>
                     <button
                       type='button'
@@ -356,7 +363,7 @@ function Inventory() {
                 Category
               </label>
 
-              <div className='relative'>
+              <div>
                 <select
                   id='category'
                   name='category'
@@ -370,9 +377,9 @@ function Inventory() {
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>
-                <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+                {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
                   <FaFilter className='h-4 w-4' aria-hidden='true' />
-                </div>
+                </div> */}
               </div>
 
               <button
