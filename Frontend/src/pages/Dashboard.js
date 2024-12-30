@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
-import useFetchData from "./useFetchData";
-import BarChart from "./BarChart";
-import DoughnutChart from "./DoughnutChart";
-import Filters from "./Filters";
+import useFetchData from "../components/useFetchData";
+import BarChart from "../components/BarChart";
+import DoughnutChart from "../components/DoughnutChart";
+import Filters from "../components/Filters";
 import SummaryCard from "../components/SummaryCard";
 import MoveHistory from "./MoveHistory";
 
