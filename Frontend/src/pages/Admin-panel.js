@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
-import PersonInfoDropdown from './PersonInfoDropdown';
+import React, { useState, useEffect } from "react";
+import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import PersonInfoDropdown from "./PersonInfoDropdown";
+import { useNavigate } from "react-router-dom";
+
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
   const [newUser, setNewUser] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    role: '',
-    password: '',
-    phoneNumber: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "",
+    password: "",
+    phoneNumber: "",
     image: null,
+    percentage: "",
   });
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -22,78 +27,124 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/v1/user', {
-        credentials: 'include',
+      const res = await fetch("http://localhost:4000/api/v1/user", {
+        credentials: "include",
       });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
       const data = await res.json();
       setUsers(data.data.results);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
+      toast.error("Failed to fetch users");
     }
+  };
+
+  const validateForm = (user, isNewUser = false) => {
+    if (!user.firstName || !user.lastName) {
+      toast.error("First name and last name are required");
+      return false;
+    }
+    if (!user.email || !/\S+@\S+\.\S+/.test(user.email)) {
+      toast.error("Valid email is required");
+      return false;
+    }
+    if (!user.role) {
+      toast.error("Role is required");
+      return false;
+    }
+    if (isNewUser && !user.password) {
+      toast.error("Password is required for new users");
+      return false;
+    }
+    if (!user.phoneNumber || !/^\d{10}$/.test(user.phoneNumber)) {
+      toast.error("Valid 10-digit phone number is required");
+      return false;
+    }
+    if (
+      !user.percentage ||
+      isNaN(user.percentage) ||
+      user.percentage < 0 ||
+      user.percentage > 100
+    ) {
+      toast.error("Percentage must be a number between 0 and 100");
+      return false;
+    }
+    return true;
   };
 
   const addUser = async (e) => {
     e.preventDefault();
+    if (!validateForm(newUser, true)) return;
+
     const formData = new FormData();
     Object.keys(newUser).forEach((key) => {
       formData.append(key, newUser[key]);
     });
     try {
       const response = await fetch(
-        'http://localhost:4000/api/v1/user/register',
-        { credentials: 'include', method: 'POST', body: formData }
+        "http://localhost:4000/api/v1/user/register",
+        { credentials: "include", method: "POST", body: formData }
       );
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
       setUsers([...users, data.user]);
       setNewUser({
-        firstName: '',
-        lastName: '',
-        email: '',
-        role: '',
-        password: '',
-        phoneNumber: '',
+        firstName: "",
+        lastName: "",
+        email: "",
+        role: "",
+        password: "",
+        phoneNumber: "",
         image: null,
+        percentage: "",
       });
       setIsAddModalOpen(false);
+      toast.success("User added successfully");
+      navigate("/Admin-panel");
     } catch (error) {
-      console.error('Error adding user:', error);
+      console.error("Error adding user:", error);
+      toast.error("Failed to add user");
     }
   };
 
   const updateUser = async (e) => {
     e.preventDefault();
+    if (!validateForm(editingUser)) return;
 
     try {
       const response = await fetch(
         `http://localhost:4000/api/v1/user/${editingUser._id}`,
         {
-          credentials: 'include',
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editingUser), // Send JSON instead
+          credentials: "include",
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingUser),
         }
       );
       if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
+      await response.json();
       fetchUsers();
       setEditingUser(null);
+      toast.success("User updated successfully");
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
+      toast.error("Failed to update user");
     }
   };
 
   const deleteUser = async (id) => {
     try {
-      await fetch(`http://localhost:4000/api/v1/user/${id}`, {
-        credentials: 'include',
-        method: 'DELETE',
+      const response = await fetch(`http://localhost:4000/api/v1/user/${id}`, {
+        credentials: "include",
+        method: "DELETE",
       });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
       fetchUsers();
+      toast.success("User deleted successfully");
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error("Error deleting user:", error);
+      toast.error("Failed to delete user");
     }
   };
 
@@ -104,6 +155,11 @@ export default function AdminPanel() {
 
   return (
     <div className='container mx-auto'>
+      <ToastContainer
+        position='top-right'
+        autoClose={3000}
+        hideProgressBar={false}
+      />
       <h2 className='font-semibold text-xl'>Admin Panel</h2>
 
       <div className='border pt-5 rounded-lg mt-10'>
@@ -136,7 +192,6 @@ export default function AdminPanel() {
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Percentage
                 </th>
-
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   P.No
                 </th>
@@ -163,7 +218,7 @@ export default function AdminPanel() {
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.role === 'admin' ? (
+                    {user.role === "admin" ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
                         {user.role}
                       </span>
@@ -174,13 +229,12 @@ export default function AdminPanel() {
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user?.percentage > 0 ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
-                        {user.percentage + '%'}
+                        {user.percentage + "%"}
                       </span>
                     ) : (
-                      user.percentage + '%'
+                      user.percentage + "%"
                     )}
                   </td>
-
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user.phoneNumber}
                   </td>
@@ -237,7 +291,7 @@ export default function AdminPanel() {
               />
               <input
                 type='number'
-                placeholder='percentage'
+                placeholder='Percentage'
                 value={newUser.percentage}
                 onChange={(e) =>
                   setNewUser({ ...newUser, percentage: e.target.value })
@@ -261,6 +315,16 @@ export default function AdminPanel() {
                 value={newUser.email}
                 onChange={(e) =>
                   setNewUser({ ...newUser, email: e.target.value })
+                }
+                className='border p-2 rounded w-full mb-2'
+                required
+              />
+              <input
+                type='password'
+                placeholder='Password'
+                value={newUser.password}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, password: e.target.value })
                 }
                 className='border p-2 rounded w-full mb-2'
                 required
@@ -344,15 +408,6 @@ export default function AdminPanel() {
                 required
               />
               <input
-                type='password'
-                placeholder='New Password (leave blank to keep current)'
-                value={editingUser.password || ''}
-                onChange={(e) =>
-                  setEditingUser({ ...editingUser, password: e.target.value })
-                }
-                className='border p-2 rounded w-full mb-2'
-              />
-              <input
                 type='tel'
                 placeholder='Phone Number'
                 value={editingUser.phoneNumber}
@@ -360,6 +415,19 @@ export default function AdminPanel() {
                   setEditingUser({
                     ...editingUser,
                     phoneNumber: e.target.value,
+                  })
+                }
+                className='border p-2 rounded w-full mb-2'
+                required
+              />
+              <input
+                type='number'
+                placeholder='Percentage'
+                value={editingUser.percentage}
+                onChange={(e) =>
+                  setEditingUser({
+                    ...editingUser,
+                    percentage: e.target.value,
                   })
                 }
                 className='border p-2 rounded w-full mb-2'
