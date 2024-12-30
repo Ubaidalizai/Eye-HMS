@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
-import useFetchData from "../components/useFetchData";
-import BarChart from "../components/BarChart";
-import DoughnutChart from "../components/DoughnutChart";
-import Filters from "../components/Filters";
+import useFetchData from "./useFetchData";
+import BarChart from "./BarChart";
+import DoughnutChart from "./DoughnutChart";
+import Filters from "./Filters";
 import SummaryCard from "../components/SummaryCard";
 import MoveHistory from "./MoveHistory";
 
@@ -122,7 +122,6 @@ function Dashboard() {
         )}
       </div>
 
-<<<<<<< HEAD
       <Filters
         categories={categories}
         models={models}
@@ -138,55 +137,6 @@ function Dashboard() {
         setSelectedMonth={setSelectedMonth}
         setSelectedYear={setSelectedYear}
       />
-=======
-      <div className=' flex flex-col gap-4'>
-        <div className='flex mt-10 justify-between flex-wrap gap-4'>
-          <SelectInput
-            options={[
-              { value: '', label: 'All Categories' },
-              ...categories.map((c) => ({ value: c, label: c })),
-            ]}
-            value={selectedCategory}
-            onChange={handleInputChange(setSelectedCategory)}
-          />
-          <SelectInput
-            options={models.map((m) => ({
-              value: m,
-              label: m.charAt(0).toUpperCase() + m.slice(1),
-            }))}
-            value={selectedModel}
-            onChange={handleInputChange(setSelectedModel)}
-          />
-          <SelectInput
-            options={[
-              { value: 'monthly', label: 'Monthly Summary' },
-              { value: 'yearly', label: 'Yearly Summary' },
-            ]}
-            value={summaryType}
-            onChange={handleInputChange(setSummaryType)}
-          />
-          {summaryType === 'monthly' && (
-            <SelectInput
-              options={monthLabels.map((label, index) => ({
-                value: index + 1,
-                label,
-              }))}
-              value={selectedMonth}
-              onChange={handleInputChange(setSelectedMonth)}
-            />
-          )}
-          {summaryType === 'yearly' && (
-            <input
-              className='w-52 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              type='number'
-              value={selectedYear}
-              onChange={handleInputChange(setSelectedYear)}
-              min='2000'
-              max={new Date().getFullYear()}
-            />
-          )}
-        </div>
->>>>>>> 2acda12d8d5bf971c334fdf8e8430b7443e1192f
 
       <BarChart
         data={getBarChartData}
