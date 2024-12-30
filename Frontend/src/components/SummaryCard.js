@@ -1,17 +1,17 @@
-import React from "react";
-import { HiArrowUp, HiArrowDown } from "react-icons/hi2";
+import React from 'react';
+import { HiArrowUp, HiArrowDown } from 'react-icons/hi2';
 
 function SummaryCard({ title, value, trend, trendDirection }) {
   return (
-    <article className='flex flex-col gap-4 rounded-lg border border-gray-100 bg-white p-6'>
+    <article className='flex flex-col gap-4 rounded-lg border mt-2 bg-white p-6'>
       <div
         className={`inline-flex gap-2 self-end rounded ${
-          trendDirection === "up"
-            ? "bg-green-100 text-green-600"
-            : "bg-red-100 text-red-600"
+          trendDirection === 'up'
+            ? 'bg-green-100 text-green-600'
+            : 'bg-red-100 text-red-600'
         } p-1`}
       >
-        {trendDirection === "up" ? (
+        {trendDirection === 'up' ? (
           <HiArrowUp className='h-4 w-4' />
         ) : (
           <HiArrowDown className='h-4 w-4' />

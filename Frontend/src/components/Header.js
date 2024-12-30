@@ -127,7 +127,7 @@ export default function Header() {
   return (
     <>
       <div className='min-h-full'>
-        <Disclosure as='nav' className='fixed top-0  w-[65rem]  bg-white'>
+        <Disclosure as='nav' className='fixed top-0 w-4/5   bg-white'>
           {({ open }) => (
             <>
               <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -137,14 +137,14 @@ export default function Header() {
                       onClick={handleBackup}
                       className='text-gray-300 active:scale-95 transition transform duration-150'
                     >
-                      <MdOutlineCloudDownload className=' inline-block text-slate-800 mr-2n text-2xl' />
+                      <MdOutlineCloudDownload className=' inline-block text-gray-500 mr-2n text-2xl' />
                     </button>
                     <div className='hidden md:block'>
                       <div className='ml-4 flex items-center md:ml-6 gap-5'>
                         <Link to='/ExpiredProduct'>
                           <button
                             type='button'
-                            className='relative rounded-full text-slate-800 p-2  font-bold hover:bg-gray-200 focus:outline-none'
+                            className='relative rounded-full text-gray-500 p-2  font-bold hover:bg-gray-200 focus:outline-none'
                             aria-label='View notifications'
                           >
                             <Bell className='h-6 w-6' aria-hidden='true' />
