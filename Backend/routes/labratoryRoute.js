@@ -2,12 +2,17 @@
 const express = require('express');
 const router = express.Router();
 const {
+  getLaboratoryDataByMonth,
+  getLaboratoryDataByYear,
   createLabRecord,
   getAllLabRecords,
   getLabRecordByPatientId,
   updateLabRecordById,
   deleteLabRecordById,
 } = require('../controllers/labratoryController');
+
+router.get('/:year', getLaboratoryDataByYear);
+router.get('/:year/:month', getLaboratoryDataByMonth);
 
 // Define routes
 router.route('/').post(createLabRecord).get(getAllLabRecords); // Create a new lab record

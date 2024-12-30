@@ -1,5 +1,7 @@
 const express = require('express');
 const {
+  getOpdDataByYear,
+  getOpdDataByMonth,
   getAllRecords,
   addRecord,
   getRecordByPatientId,
@@ -8,6 +10,9 @@ const {
 } = require('../controllers/opdController');
 
 const router = express.Router();
+
+router.get('/:year', getOpdDataByYear);
+router.get('/:year/:month', getOpdDataByMonth);
 
 router.route('/').get(getAllRecords).post(addRecord);
 

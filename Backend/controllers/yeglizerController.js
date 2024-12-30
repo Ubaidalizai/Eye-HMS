@@ -8,6 +8,29 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getYeglizerDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Yeglizer);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getYeglizerDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Yeglizer);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Get all Yeglizer records
 const getAllYeglizers = getAll(Yeglizer, false, [
@@ -131,6 +154,8 @@ const deleteYeglizerById = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getYeglizerDataByMonth,
+  getYeglizerDataByYear,
   createYeglizer,
   getAllYeglizers,
   getYeglizerById,
