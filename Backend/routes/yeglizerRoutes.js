@@ -1,5 +1,7 @@
 const express = require('express');
 const {
+  getYeglizerDataByYear,
+  getYeglizerDataByMonth,
   createYeglizer,
   getAllYeglizers,
   getYeglizerById,
@@ -8,6 +10,9 @@ const {
 } = require('../controllers/yeglizerController');
 
 const router = express.Router();
+
+router.get('/:year', getYeglizerDataByYear);
+router.get('/:year/:month', getYeglizerDataByMonth);
 
 router.route('/').get(getAllYeglizers).post(createYeglizer);
 

@@ -8,6 +8,29 @@ const getAll = require('./handleFactory');
 const AppError = require('../utils/appError');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getUltrasoundDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Ultrasound);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getUltrasoundDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Ultrasound);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Get all ultrasound records
 const getAllRecords = getAll(Ultrasound, false, [
@@ -131,6 +154,8 @@ const deleteRecord = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getUltrasoundDataByYear,
+  getUltrasoundDataByMonth,
   addRecord,
   getAllRecords,
   getRecordById,
