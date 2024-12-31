@@ -5,8 +5,8 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 const getAll = (Model, userID = false, popOptions = null) =>
   asyncHandler(async (req, res) => {
     const {
-      page = 1,
-      limit = 10,
+      page,
+      limit,
       checkQuantity = false,
       category,
       searchTerm,

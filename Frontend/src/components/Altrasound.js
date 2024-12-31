@@ -3,6 +3,7 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
+import { useAuth } from '../AuthContext';
 
 function Ultrasound() {
   const [fieldValues, setFieldValues] = useState({
@@ -22,12 +23,13 @@ function Ultrasound() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [doctor, setDoctor] = useState('');
-  const [perDoctors, setPerDoctors] = useState([]);
+
+  const { perDoctors } = useAuth();
 
   useEffect(() => {
     fetchData();
-    doctorsWithPercentage();
   }, [currentPage, limit]);
+
   const fetchData = async () => {
     const response = await fetch(
       `http://127.0.0.1:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`
@@ -36,22 +38,6 @@ function Ultrasound() {
 
     setSubmittedData(data.data.results);
     setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-  };
-
-  const doctorsWithPercentage = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/user/doctorsHave-percentage',
-        {
-          credentials: 'include',
-        }
-      );
-      if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
-      setPerDoctors(data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
   };
 
   const handleCancel = () => {

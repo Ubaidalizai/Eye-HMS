@@ -47,7 +47,6 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
 const getDataByMonth = asyncHandler(async (req, res, Model) => {
   const { year, month } = req.params;
   const { category } = req.query;
-
   if (!year || !month) {
     throw new AppError('Year and month are required', 400);
   }
@@ -69,6 +68,7 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   };
 
   const daysInMonth = new Date(year, month, 0).getDate();
+  console.log(daysInMonth);
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
 
   const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');

@@ -110,6 +110,7 @@ const sellItems = asyncHandler(async (req, res, next) => {
       // Create an income record
       const incomeRecord = await Income.create({
         saleId: sale._id,
+        saleModel: 'pharmacyModel',
         date,
         totalNetIncome: productNetIncome,
         category,
@@ -149,8 +150,8 @@ const sellItems = asyncHandler(async (req, res, next) => {
     console.error('Error encountered, rolling back changes:', error);
 
     // Rollback stock updates
-    for (const { product, previousStock } of stockUpdates) {
-      await Pharmacy.updateOne({ _id: product._id }, { stock: previousStock });
+    for (const { drug, previousStock } of stockUpdates) {
+      await Pharmacy.updateOne({ _id: drug._id }, { stock: previousStock });
     }
 
     // Delete created sales and incomes
