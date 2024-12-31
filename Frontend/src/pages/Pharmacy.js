@@ -253,36 +253,55 @@ const Pharmacy = () => {
               </div>
             </div>
             <div className='overflow-x-auto rounded-lg shadow-md'>
-              <table className='min-w-full divide-y divide-gray-200 bg-white'>
-                <thead className='bg-gray-50'>
+              <table className='w-full text-sm text-left text-gray-500'>
+                <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                      className='px-5 py-3 font-bold tracking-wider'
                     >
                       Icon
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                      className='px-5 py-3 font-bold tracking-wider'
                     >
                       Drug Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Manufacturer
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
                     >
                       Expiry Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                      className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Quantity
+                      Sale price
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Quantity
+                    </th>
+
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Status
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
                     >
                       Actions
                     </th>
@@ -304,19 +323,48 @@ const Pharmacy = () => {
                       <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                         {drug.name}
                       </td>
+
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.manufacturer}
+                      </td>
+
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.expiryDate?.split('T')[0]}
                       </td>
+
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.salePrice}
+                      </td>
+
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.quantity}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-center'>
+
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {
+                          <span
+                            className={`text-xs font-medium ${
+                              drug.quantity === 0
+                                ? 'text-red-500'
+                                : drug.quantity <= 10
+                                ? 'text-yellow-500'
+                                : 'text-green-500'
+                            }`}
+                          >
+                            {drug.quantity === 0
+                              ? 'Out of quantity'
+                              : drug.quantity <= 10
+                              ? 'Low'
+                              : 'Available'}
+                          </span>
+                        }
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
                         <button
                           onClick={() => handleDelete(drug._id)}
-                          className='px-2 py-1 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition duration-150'
+                          className='font-medium text-red-600 hover:text-red-700'
                         >
-                          <FaTrash className='inline-block h-4 w-4 mr-1' />
-                          Delete
+                          <FaTrash className='w-4 h-4' />
                         </button>
                       </td>
                     </tr>

@@ -67,7 +67,7 @@ export default function MoveHistory() {
   });
 
   return (
-    <div className='p-4 rounded-lg border min-h-screen'>
+    <div className='p-4 mt-4 rounded-lg border min-h-screen'>
       <h2 className='font-semibold text-xl mb-10'>Move History</h2>
       {/* Filter Input */}
       <div className='mb-4'>

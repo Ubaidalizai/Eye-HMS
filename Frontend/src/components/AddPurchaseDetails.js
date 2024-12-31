@@ -24,7 +24,7 @@ export default function AddPurchaseDetails({
   const fetchProductsData = (productCatagory) => {
     let url = 'http://localhost:4000/api/v1/inventory/product';
     if (productCatagory) {
-      url += `?category=${productCatagory}`;
+      url += `?category={productCatagory}`;
     }
 
     fetch(url, {
@@ -132,11 +132,11 @@ export default function AddPurchaseDetails({
                         Purchase Details
                       </Dialog.Title>
                       <form action='#'>
-                        <div className='grid gap-4 mb-4 sm:grid-cols-2'>
-                          <div>
+                        <div className='grid gap-4 mt-6 sm:grid-cols-2'>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='category'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Category
                             </label>
@@ -159,10 +159,10 @@ export default function AddPurchaseDetails({
                             </select>
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='productID'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Product Name
                             </label>
@@ -189,10 +189,10 @@ export default function AddPurchaseDetails({
                             )}
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='QuantityPurchased'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Quantity Purchased
                             </label>
@@ -215,10 +215,10 @@ export default function AddPurchaseDetails({
                             )}
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='unitPurchaseAmount'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-90'
                             >
                               Unit Purchase Amount
                             </label>
@@ -232,8 +232,7 @@ export default function AddPurchaseDetails({
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5  dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               placeholder='$20'
-                              min='0.01'
-                              step='0.01'
+                              min='1'
                             />
                             {errors.unitPurchaseAmount && (
                               <p className='text-red-500 text-xs mt-1'>
@@ -242,10 +241,10 @@ export default function AddPurchaseDetails({
                             )}
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='salePrice'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Unit Sale Price
                             </label>
@@ -258,7 +257,7 @@ export default function AddPurchaseDetails({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              placeholder='$20'
+                              placeholder='20'
                               min='0.01'
                               step='0.01'
                             />
@@ -269,9 +268,9 @@ export default function AddPurchaseDetails({
                             )}
                           </div>
 
-                          <div className='h-fit w-fit'>
+                          <div className='flex items-start flex-col'>
                             <label
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                               htmlFor='date'
                             >
                               Purchase Date
@@ -292,9 +291,9 @@ export default function AddPurchaseDetails({
                               </p>
                             )}
                           </div>
-                          <div className='h-fit w-fit'>
+                          <div className='flex items-start flex-col'>
                             <label
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                               htmlFor='expiryDate'
                             >
                               Product Expiry Date
