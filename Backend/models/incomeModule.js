@@ -20,6 +20,7 @@ const incomeSchema = new mongoose.Schema(
         'operationModule',
         'yeglizerModel',
         'salesModel',
+        'pharmacyModel',
       ], // Allowed models
     },
     date: {
