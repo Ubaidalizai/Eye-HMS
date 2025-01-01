@@ -83,15 +83,15 @@ export default function MoveHistory() {
         {isLoading ? (
           <div className='text-center py-4'>Loading...</div>
         ) : (
-          <table className='min-w-full border-collapse border border-gray-200'>
-            <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+          <table className='w-full text-sm text-left text-gray-500'>
+            <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       {flexRender(
                         header.column.columnDef.header,
@@ -102,14 +102,11 @@ export default function MoveHistory() {
                 </tr>
               ))}
             </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
+            <tbody>
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className='hover:bg-gray-50'>
+                <tr key={row.id} className='bg-white border-b hover:bg-gray-50'>
                   {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className='px-6 py-4 whitespace-nowrap text-gray-900'
-                    >
+                    <td key={cell.id} className='px-6 py-4 whitespace-nowrap'>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

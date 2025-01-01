@@ -127,7 +127,7 @@ export default function Header() {
   return (
     <>
       <div className='min-h-full'>
-        <Disclosure as='nav' className='fixed top-0 w-4/5   bg-white'>
+        <Disclosure as='nav' className='fixed top-0 w-4/5 z-10   bg-white'>
           {({ open }) => (
             <>
               <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -137,7 +137,7 @@ export default function Header() {
                       onClick={handleBackup}
                       className='text-gray-300 active:scale-95 transition transform duration-150'
                     >
-                      <MdOutlineCloudDownload className=' inline-block text-gray-500 mr-2n text-2xl' />
+                      <MdOutlineCloudDownload className='inline-block  font-bold text-gray-600 mr-2n text-2xl' />
                     </button>
                     <div className='hidden md:block'>
                       <div className='ml-4 flex items-center md:ml-6 gap-5'>
@@ -147,7 +147,10 @@ export default function Header() {
                             className='relative rounded-full text-gray-500 p-2  font-bold hover:bg-gray-200 focus:outline-none'
                             aria-label='View notifications'
                           >
-                            <Bell className='h-6 w-6' aria-hidden='true' />
+                            <Bell
+                              className='font-bold text-gray-600'
+                              aria-hidden='true'
+                            />
 
                             {/* Conditional Rendering Based on Role */}
                             {user.role === 'admin' && totalExpiredCount > 0 && (

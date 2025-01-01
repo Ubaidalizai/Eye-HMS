@@ -52,11 +52,11 @@ export default function BranchesMenu() {
 
   return (
     <details className='group [&_summary::-webkit-details-marker]:hidden'>
-      <summary className='flex cursor-pointer items-center justify-between rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'>
+      <summary className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'>
         <span className='flex items-center justify-center gap-2'>
-          <FaClipboard className='text-lg text-gray-500' />
-          <span className='text-sm flex  font-medium'>
-            Branches <IoMdArrowDropdown className='text-2xl ' />
+          <FaClipboard className='text-lg' />
+          <span className='text-sm flex  font-medium '>
+            Branches <IoMdArrowDropdown className='ml-5 text-2xl ' />
           </span>
         </span>
       </summary>

@@ -47,7 +47,7 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
   if (!isOpen) return null;
 
   return (
-    <div className='fixed inset-0 flex items-center justify-center z-50'>
+    <div className='fixed inset-0 bg-gray-600 flex items-center justify-center overflow-y-auto h-full w-full bg-opacity-50 z-50'>
       <div className='overlay' onClick={onClose}></div>
       <div className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg z-60'>
         <div className='bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4'>
@@ -318,7 +318,7 @@ const ExpenseManagement = () => {
         category: '',
         _id: null,
       });
-      setShowForm(false);
+      setShowModal(false); // Close the modal after submission
       fetchExpenses(); // Refresh the list after adding/updating
       if (summaryType === 'monthly') {
         fetchMonthlyExpenses();
@@ -329,6 +329,54 @@ const ExpenseManagement = () => {
       console.error('Error:', error.message);
     }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   let baseUrl = `http://localhost:4000/api/v1/expense`;
+  //   const url = newExpense._id
+  //     ? baseUrl +
+  //       `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
+  //     : baseUrl +
+  //       `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
+  //   const method = newExpense._id ? 'PATCH' : 'POST';
+
+  //   try {
+  //     const response = await fetch(url, {
+  //       method,
+  //       credentials: 'include',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(newExpense),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(
+  //         newExpense._id ? 'Failed to update expense' : 'Failed to add expense'
+  //       );
+  //     }
+
+  //     // Reset form and refetch expenses
+  //     setNewExpense({
+  //       amount: '',
+  //       date: '',
+  //       reason: '',
+  //       category: '',
+  //       _id: null,
+  //     });
+  //     setShowForm(false);
+  //     fetchExpenses(); // Refresh the list after adding/updating
+  //     if (summaryType === 'monthly') {
+  //       fetchMonthlyExpenses();
+  //     } else {
+  //       fetchYearlyExpenses();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error.message);
+  //   }
+  // };
+
   const editExpense = (expense) => {
     setNewExpense(expense);
     setShowModal(true);
