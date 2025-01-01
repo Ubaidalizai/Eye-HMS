@@ -41,15 +41,20 @@ const authorizeAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    res.status(401).send('Not authorized as an admin.');
+    res.status(403).send('Not authorized as an admin.');
   }
 };
 
-const authorizePharmacist = (req, res, next) => {
-  if (req.user && req.user.role === 'pharmacist') {
-    next();
+const authorizeAdminOrPharmacist = (req, res, next) => {
+  if (
+    req.user &&
+    (req.user.role === 'admin' || req.user.role === 'pharmacist')
+  ) {
+    next(); // Proceed if user is admin or pharmacist
   } else {
-    res.status(401).send('Not authorized as an pharmacist.');
+    res.status(403).json({
+      message: 'Access denied: Admin or Pharmacist authorization required.',
+    });
   }
 };
 
@@ -64,6 +69,6 @@ const authorizeSunglassesSeller = (req, res, next) => {
 module.exports = {
   authenticate,
   authorizeAdmin,
-  authorizePharmacist,
+  authorizeAdminOrPharmacist,
   authorizeSunglassesSeller,
 };

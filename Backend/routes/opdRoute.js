@@ -9,7 +9,14 @@ const {
   deleteRecordByPatientId,
 } = require('../controllers/opdController');
 
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
 const router = express.Router();
+
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 router.get('/:year', getOpdDataByYear);
 router.get('/:year/:month', getOpdDataByMonth);

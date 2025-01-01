@@ -11,6 +11,13 @@ const {
 
 const router = express.Router();
 
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
 router.get('/:year', getYeglizerDataByYear);
 router.get('/:year/:month', getYeglizerDataByMonth);
 

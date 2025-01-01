@@ -11,6 +11,13 @@ const {
   deleteOCTRecordById,
 } = require('../controllers/octController');
 
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
 router.get('/:year', getOctDataByYear);
 router.get('/:year/:month', getOctDataByMonth);
 

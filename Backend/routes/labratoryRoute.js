@@ -11,6 +11,13 @@ const {
   deleteLabRecordById,
 } = require('../controllers/labratoryController');
 
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
 router.get('/:year', getLaboratoryDataByYear);
 router.get('/:year/:month', getLaboratoryDataByMonth);
 

@@ -90,7 +90,7 @@ const IncomeModal = ({
               </label>
               <input
                 type='number'
-                step='0.01'
+                min='1'
                 name='totalNetIncome'
                 id='totalNetIncome'
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 ${

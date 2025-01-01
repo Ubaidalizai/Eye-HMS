@@ -3,9 +3,12 @@ const app = express();
 
 const router = express.Router();
 const pharmacy = require('../controllers/pharmacy');
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
 
-router.use(authenticate); // Enable authentication middleware for all routes in this file
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 router.route('/drugs-summary').get(pharmacy.getDrugsSummary);
 

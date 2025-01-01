@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+  authorizeAdmin,
+} = require('../middlewares/authMiddleware');
 
-// Enable authentication middleware for all routes in this file
-router.use(authenticate);
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 const {
   getAllPatients,
@@ -15,8 +18,8 @@ const {
   getPatientsByYear,
 } = require('../controllers/patientController');
 
-router.get('/:year/:month', getPatientsByMonth);
-router.get('/:year', getPatientsByYear);
+router.get('/:year/:month', authorizeAdmin, getPatientsByMonth);
+router.get('/:year', authorizeAdmin, getPatientsByYear);
 
 // GET and POST /api/v1/patients – To Get all patients or add a new patient.
 router.route('/').get(getAllPatients).post(addPatient);
