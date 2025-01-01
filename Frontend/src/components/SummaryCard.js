@@ -3,7 +3,7 @@ import { HiArrowUp, HiArrowDown } from 'react-icons/hi2';
 
 function SummaryCard({ title, value, trend, trendDirection }) {
   return (
-    <article className='flex flex-col gap-4 rounded-lg border mt-2 bg-white p-6'>
+    <article className='flex flex-col gap-4 rounded-lg border mt-2 mb-10 bg-white p-6'>
       <div
         className={`inline-flex gap-2 self-end rounded ${
           trendDirection === 'up'

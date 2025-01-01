@@ -45,8 +45,8 @@ function SideMenu({ setActiveComponent }) {
       <div className='px-4 py-6'>
         <div className='flex items-center'>
           <div className='flex-shrink-0'>
-            <div className='flex justify-center items-center gap-2'>
-              <span className='font-bold text-xl italic underline'>
+            <div className='flex justify-center  items-center gap-2'>
+              <span className='font-bold text-gray-500 text-xl italic underline'>
                 Al Sayed Eye HMS
               </span>
             </div>

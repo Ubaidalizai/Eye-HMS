@@ -15,7 +15,7 @@ function Layout() {
         </div>
 
         <div
-          className='col-span-12 scrollbar-thin lg:col-span-10   overflow-y-auto  scrollbar-track-gray-200 px-6 py-4'
+          className='col-span-12 lg:col-span-10   overflow-y-auto  scrollbar-track-gray-200 px-6 py-4'
           style={{ maxHeight: '100vh' }}
         >
           <div>
