@@ -12,6 +12,7 @@ const incomeSchema = new mongoose.Schema(
       type: String, // Stores the referenced model name (e.g., 'Sale', 'FrameSale')
       required: true, // Must specify the model name for dynamic referencing
       enum: [
+        'userModel',
         'octModule',
         'opdModule',
         'labratoryModule',
@@ -36,6 +37,7 @@ const incomeSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: [
+        'other',
         'drug',
         'sunglasses',
         'glass',

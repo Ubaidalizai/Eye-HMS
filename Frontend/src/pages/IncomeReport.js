@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { MdOutlineDeleteOutline } from "react-icons/md";
-import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
-import { HiSearch } from "react-icons/hi";
-import Pagination from "../components/Pagination";
-import IncomeModal from "../components/IncomeModal";
+import React, { useState, useEffect } from 'react';
+import { MdOutlineDeleteOutline } from 'react-icons/md';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import { HiSearch } from 'react-icons/hi';
+import Pagination from '../components/Pagination';
+import IncomeModal from '../components/IncomeModal';
 
-const categories = ["drug", "sunglasses", "glass", "frame"];
+const categories = ['drug', 'sunglasses', 'glass', 'frame', 'other'];
 
 export default function IncomeReport() {
   const [income, setIncome] = useState([]);
   const [newIncome, setNewIncome] = useState({
-    totalNetIncome: "",
-    date: "",
-    description: "",
-    category: "",
+    totalNetIncome: '',
+    date: '',
+    description: '',
+    category: '',
   });
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchIncome();
@@ -34,7 +34,7 @@ export default function IncomeReport() {
     try {
       const response = await fetch(
         `http://localhost:4000/api/v1/income?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}&category=${selectedCategory}`,
-        { credentials: "include" }
+        { credentials: 'include' }
       );
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -56,16 +56,16 @@ export default function IncomeReport() {
     try {
       const url = formData._id
         ? `http://localhost:4000/api/v1/income/${formData._id}`
-        : "http://localhost:4000/api/v1/income";
+        : 'http://localhost:4000/api/v1/income';
 
       const response = await fetch(url, {
-        method: formData._id ? "PATCH" : "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        method: formData._id ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Failed to save income");
+      if (!response.ok) throw new Error('Failed to save income');
 
       setShowModal(false);
       fetchIncome();
@@ -82,17 +82,17 @@ export default function IncomeReport() {
   };
 
   const deleteIncome = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this income?")) return;
+    if (!window.confirm('Are you sure you want to delete this income?')) return;
 
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(
         `http://localhost:4000/api/v1/income/${id}`,
-        { method: "DELETE", credentials: "include" }
+        { method: 'DELETE', credentials: 'include' }
       );
 
-      if (!response.ok) throw new Error("Failed to delete income");
+      if (!response.ok) throw new Error('Failed to delete income');
 
       fetchIncome();
     } catch (err) {
@@ -121,10 +121,10 @@ export default function IncomeReport() {
             className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             onClick={() => {
               setNewIncome({
-                totalNetIncome: "",
-                date: "",
-                description: "",
-                category: "",
+                totalNetIncome: '',
+                date: '',
+                description: '',
+                category: '',
               });
               setShowModal(true);
             }}
@@ -157,7 +157,7 @@ export default function IncomeReport() {
                   {item.totalNetIncome}
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                  {item.date.split("T")[0]}
+                  {item.date.split('T')[0]}
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                   {item.description}
@@ -167,12 +167,6 @@ export default function IncomeReport() {
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                   <div className='flex space-x-2'>
-                    <button
-                      onClick={() => editIncome(item)}
-                      className='font-medium text-indigo-600 hover:text-indigo-900'
-                    >
-                      <FaRegEdit className='w-5 h-5' />
-                    </button>
                     <button
                       onClick={() => deleteIncome(item._id)}
                       className='font-medium text-red-600 hover:text-red-700'
