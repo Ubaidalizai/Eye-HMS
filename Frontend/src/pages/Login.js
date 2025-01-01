@@ -1,11 +1,11 @@
-import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import AuthContext from "../AuthContext";
+import { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthContext from '../AuthContext';
 
 function Login() {
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
 
   const authContext = useContext(AuthContext);
@@ -20,14 +20,14 @@ function Login() {
 
     // Ensure form is not empty
     if (!form.email || !form.password) {
-      alert("Please enter your email and password to proceed.");
+      alert('Please enter your email and password to proceed.');
       return;
     }
 
     try {
       // Call the signin method from context
       await authContext.signin(form, () => {
-        navigate("/"); // Redirect to home on successful login
+        navigate('/'); // Redirect to home on successful login
       });
     } catch (err) {
       alert(`Login failed: ${err.message}`);
@@ -35,29 +35,14 @@ function Login() {
   };
 
   return (
-    <div className='grid grid-cols-1 sm:grid-cols-2 h-screen items-center place-items-center'>
-      <div className='flex justify-center'>
-        <img src={require("../assets/signup.jpg")} alt='Signup' />
-      </div>
-      <div className='w-full max-w-md space-y-8 p-10 rounded-lg'>
-        <div>
-          <img
-            className='mx-auto h-12 w-auto'
-            src={require("../assets/logo.png")}
-            alt='Your Company'
-          />
-          <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-gray-900'>
-            Sign in to your account
-          </h2>
-          <p className='mt-2 text-center text-sm text-gray-600'>
-            Or{" "}
-            <span className='font-medium text-indigo-600 hover:text-indigo-500'>
-              start your 14-day free trial
-            </span>
-          </p>
-        </div>
+    <div className='flex h-[100vh] items-center justify-center bg-white'>
+      <div className='w-full  justify-center items-center border bg-slate-50 max-w-md space-y-8 p-10 rounded-lg'>
+        <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-gray-700'>
+          Sign in to your account
+        </h2>
+
         <form className='mt-8 space-y-6' onSubmit={loginUser}>
-          <div className='-space-y-px rounded-md shadow-sm'>
+          <div className=' rounded-md shadow-sm'>
             <div>
               <label htmlFor='email-address' className='sr-only'>
                 Email address
@@ -93,20 +78,6 @@ function Login() {
           </div>
 
           <div className='flex items-center justify-between'>
-            <div className='flex items-center'>
-              <input
-                id='remember-me'
-                name='remember-me'
-                type='checkbox'
-                className='h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600'
-              />
-              <label
-                htmlFor='remember-me'
-                className='ml-2 block text-sm text-gray-900'
-              >
-                Remember me
-              </label>
-            </div>
             <div className='text-sm'>
               <Link
                 to='/forgot-password'

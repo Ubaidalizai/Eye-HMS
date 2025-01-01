@@ -46,7 +46,7 @@ function SideMenu({ setActiveComponent }) {
         <div className='flex items-center'>
           <div className='flex-shrink-0'>
             <div className='flex justify-center  items-center gap-2'>
-              <span className='font-bold text-gray-500 text-xl italic underline'>
+              <span className='font-bold text-gray-500 text-xl italic '>
                 Al Sayed Eye HMS
               </span>
             </div>
@@ -55,49 +55,49 @@ function SideMenu({ setActiveComponent }) {
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
           <Link
             to='/'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
+            className='flex items-center gap-2 rounded-lg  hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaClipboard className='text-lg text-gray-500' />
+            <FaClipboard className='text-lg' />
             <span className='text-sm font-medium'>Dashboard</span>
           </Link>
 
           <Link
             to='/Admin-panel'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-700'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaUsers className='text-lg text-gray-500' />
+            <FaUsers className='text-lg ' />
             <span className='text-sm font-medium'>Admain Panel</span>
           </Link>
 
           <Link
             to='/inventory'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaWarehouse className='text-lg text-gray-500' />
+            <FaWarehouse className='text-lg ' />
             <span className='text-sm font-medium'>Inventory</span>
           </Link>
 
           <Link
             to='/purchase-details'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaFileInvoice className='text-lg text-gray-500' />
+            <FaFileInvoice className='text-lg' />
             <span className='text-sm font-medium'>Purchase Details</span>
           </Link>
 
           <Link
             to='/sales'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaShoppingBag className='text-lg text-gray-500' />
+            <FaShoppingBag className='text-lg' />
             <span className='text-sm font-medium'>Sales</span>
           </Link>
 
           <Link
             to='/patient'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaFileMedical className='text-lg text-gray-500' />
+            <FaFileMedical className='text-lg' />
             <span className='text-sm font-medium'>Patient</span>
           </Link>
 
@@ -111,25 +111,25 @@ function SideMenu({ setActiveComponent }) {
 
           <Link
             to='/expenseManagement'
-            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaFileInvoice className='text-lg text-gray-500' />
+            <FaFileInvoice className='text-lg ' />
             <span className='text-sm font-medium'>Expenses</span>
           </Link>
 
           <Link
             to='/incomeReport'
-            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaFileInvoice className='text-lg text-gray-500' />
+            <FaFileInvoice className='text-lg' />
             <span className='text-sm font-medium'>Income</span>
           </Link>
 
           <Link
             to='/pharmacy'
-            className='flex items-center gap-2 rounded-lg px-4 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
           >
-            <FaCapsules className='text-lg text-gray-500' />
+            <FaCapsules className='text-lg' />
             <span className='text-sm font-medium'>Pharmacy</span>
           </Link>
 
@@ -149,7 +149,7 @@ function SideMenu({ setActiveComponent }) {
         <div className='flex justify-start items-end  gap-2 bg-white py-3 text-center hover:bg-gray-50'>
           <FaUserMd className='h-10 w-10 text-gray-500' />
           <div>
-            <p className='text-xs'>
+            <p className='text-xs flex flex-col items-start'>
               <strong className='block font-medium'>
                 {userInfo.firstName} {userInfo.lastName}
               </strong>
