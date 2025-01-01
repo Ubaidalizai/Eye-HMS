@@ -13,11 +13,10 @@ const router = express.Router();
 
 const {
   authenticate,
-  authorizeAdmin,
-  authorizePharmacist,
+  authorizeAdminOrPharmacist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin, authorizePharmacist);
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 router.get('/:year', getUltrasoundDataByYear);
 router.get('/:year/:month', getUltrasoundDataByMonth);

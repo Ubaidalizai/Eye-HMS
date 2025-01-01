@@ -13,10 +13,10 @@ const {
 const {
   authenticate,
   authorizeAdmin,
-  authorizePharmacist,
+  authorizeAdminOrPharmacist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin, authorizePharmacist);
+router.use(authenticate);
 
 router.get('/totaleSalecategoties', authorizeAdmin, getSalesCategoryTotal);
 // Get Sales Monthly Data
@@ -24,12 +24,15 @@ router.get('/:year/:month', authorizeAdmin, getOneMonthSales);
 router.get('/:year', authorizeAdmin, getOneYearSales);
 router.get(
   '/year-month/:year/:month',
-  authorizeAdmin,
+  authorizeAdminOrPharmacist,
   getOneMonthSalesWithFullDetails
 );
 // Add Sales
-router.route('/').get(authorizeAdmin, getAllSales).post(sellItems);
+router
+  .route('/')
+  .get(authorizeAdminOrPharmacist, getAllSales)
+  .post(authorizeAdminOrPharmacist, sellItems);
 
-router.route('/:id').delete(deleteSale);
+router.route('/:id').delete(authorizeAdminOrPharmacist, deleteSale);
 
 module.exports = router;

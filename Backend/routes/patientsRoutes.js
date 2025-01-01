@@ -3,11 +3,11 @@ const router = express.Router();
 
 const {
   authenticate,
+  authorizeAdminOrPharmacist,
   authorizeAdmin,
-  authorizePharmacist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin, authorizePharmacist);
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 const {
   getAllPatients,
@@ -18,8 +18,8 @@ const {
   getPatientsByYear,
 } = require('../controllers/patientController');
 
-router.get('/:year/:month', getPatientsByMonth);
-router.get('/:year', getPatientsByYear);
+router.get('/:year/:month', authorizeAdmin, getPatientsByMonth);
+router.get('/:year', authorizeAdmin, getPatientsByYear);
 
 // GET and POST /api/v1/patients – To Get all patients or add a new patient.
 router.route('/').get(getAllPatients).post(addPatient);

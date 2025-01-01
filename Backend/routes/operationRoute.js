@@ -9,11 +9,10 @@ const {
 
 const {
   authenticate,
-  authorizeAdmin,
-  authorizePharmacist,
+  authorizeAdminOrPharmacist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin, authorizePharmacist);
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 // Create an operation
 router.route('/').post(createOperation).get(getAllOperations);

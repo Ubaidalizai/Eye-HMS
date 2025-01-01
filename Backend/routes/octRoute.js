@@ -13,11 +13,10 @@ const {
 
 const {
   authenticate,
-  authorizeAdmin,
-  authorizePharmacist,
+  authorizeAdminOrPharmacist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin, authorizePharmacist);
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 router.get('/:year', getOctDataByYear);
 router.get('/:year/:month', getOctDataByMonth);

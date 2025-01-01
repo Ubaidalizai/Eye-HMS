@@ -11,13 +11,12 @@ const {
 
 const {
   authenticate,
-  authorizeAdmin,
-  authorizePharmacist,
+  authorizeAdminOrPharmacist,
 } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-router.use(authenticate, authorizeAdmin, authorizePharmacist);
+router.use(authenticate, authorizeAdminOrPharmacist);
 
 router.get('/:year', getOpdDataByYear);
 router.get('/:year/:month', getOpdDataByMonth);
