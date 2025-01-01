@@ -47,7 +47,6 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
 const getDataByMonth = asyncHandler(async (req, res, Model) => {
   const { year, month } = req.params;
   const { category } = req.query;
-
   if (!year || !month) {
     throw new AppError('Year and month are required', 400);
   }
@@ -69,6 +68,7 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   };
 
   const daysInMonth = new Date(year, month, 0).getDate();
+
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
 
   const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
@@ -105,6 +105,8 @@ const createIncome = asyncHandler(async (req, res) => {
   }
 
   const newIncome = new Income({
+    saleId: req.user._id,
+    saleModel: 'userModel',
     date,
     description,
     totalNetIncome,
@@ -149,10 +151,7 @@ const updateIncome = asyncHandler(async (req, res) => {
   res.json(updatedIncome);
 });
 // Get all income records
-const getAllIncome = getAll(Income, false, {
-  path: 'userID',
-  select: 'firstName lastName',
-});
+const getAllIncome = getAll(Income);
 
 // Delete an income record by ID
 const deleteIncome = asyncHandler(async (req, res) => {
@@ -162,10 +161,16 @@ const deleteIncome = asyncHandler(async (req, res) => {
     throw new AppError('Income ID is required', 400);
   }
 
-  const deletedIncome = await Income.findByIdAndDelete(id);
-  if (!deletedIncome) {
+  const income = await Income.findById(id);
+
+  if (!income) {
     throw new AppError('Income record not found', 404);
   }
+  if (income.category !== 'other') {
+    throw new AppError('You can not delete this income', 400);
+  }
+  await income.deleteOne();
+
   res.json({ message: 'Income record deleted successfully' });
 });
 

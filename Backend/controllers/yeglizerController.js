@@ -8,6 +8,29 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getYeglizerDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Yeglizer);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getYeglizerDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Yeglizer);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Get all Yeglizer records
 const getAllYeglizers = getAll(Yeglizer, false, [
@@ -42,6 +65,7 @@ const createYeglizer = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.price;
+  let doctorPercentage = 0;
 
   if (doctorExist.percentage) {
     // Calculate percentage and update total amount
@@ -50,14 +74,7 @@ const createYeglizer = asyncHandler(async (req, res) => {
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -79,6 +96,16 @@ const createYeglizer = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await newYeglizer.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: newYeglizer._id,
+    branchModel: 'yeglizerModel',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
 
   if (newYeglizer.totalAmount > 0) {
     await Income.create({
@@ -118,9 +145,7 @@ const updateYeglizerById = asyncHandler(async (req, res) => {
 const deleteYeglizerById = asyncHandler(async (req, res) => {
   validateMongoDBId(req.params.id);
 
-  const deletedYeglizer = await Yeglizer.findOneAndDelete({
-    id: req.params.id,
-  });
+  const deletedYeglizer = await Yeglizer.findByIdAndDelete(req.params.id);
   if (!deletedYeglizer) {
     throw new AppError('Record not found', 404);
   }
@@ -129,6 +154,8 @@ const deleteYeglizerById = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getYeglizerDataByMonth,
+  getYeglizerDataByYear,
   createYeglizer,
   getAllYeglizers,
   getYeglizerById,

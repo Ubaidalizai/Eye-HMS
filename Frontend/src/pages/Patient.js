@@ -23,7 +23,7 @@ import {
   BarElement,
 } from 'chart.js';
 
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
 
 // Register Chart.js components
@@ -425,13 +425,13 @@ export default function PatientManagement() {
                         onClick={() => handleEdit(patient)}
                         className='text-indigo-600 hover:text-indigo-900'
                       >
-                        <HiPencil size={20} />
+                        <FaRegEdit className='w-5 h-5' />
                       </button>
                       <button
                         onClick={() => handleDelete(patient._id)}
                         className='text-red-500 hover:text-red-700'
                       >
-                        <HiTrash size={20} />
+                        <FaTrash className='w-4 h-4' />
                       </button>
                       <button
                         onClick={() =>
@@ -461,75 +461,77 @@ export default function PatientManagement() {
       {isModalOpen && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
           <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
-            <h2 className='text-2xl font-bold text-center mb-4 text-indigo-800'>
-              {currentPatient ? 'Edit Patient' : 'Add New Patient'}
+            <h2 className='text-xl font-bold mb-4 text-gray-600'>
+              {currentPatient ? 'Edit Patient' : 'Add Patient'}
             </h2>
-            <form onSubmit={handleSubmit} className='space-y-4'>
-              <input
-                type='text'
-                name='name'
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder='Name'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <input
-                type='number'
-                name='age'
-                value={formData.age}
-                onChange={handleInputChange}
-                placeholder='Age'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <input
-                type='tel'
-                name='contact'
-                value={formData.contact}
-                onChange={handleInputChange}
-                placeholder='Contact'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <input
-                type='text'
-                name='patientID'
-                value={formData.patientID}
-                onChange={handleInputChange}
-                placeholder='Patient ID'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              />
-              <select
-                name='patientGender'
-                value={formData.patientGender}
-                onChange={handleInputChange}
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                required
-              >
-                <option value=''>Select Gender</option>
-                <option value='Male'>Male</option>
-                <option value='Female'>Female</option>
-                <option value='Other'>Other</option>
-              </select>
-              <input
-                type='date'
-                name='date'
-                value={formData.date}
-                onChange={handleInputChange}
-                placeholder='Insurance Contact'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
-              <input
-                type='text'
-                name='insuranceContact'
-                value={formData.insuranceContact}
-                onChange={handleInputChange}
-                placeholder='Insurance Contact'
-                className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
-              <div className='flex justify-end space-x-2'>
+            <form onSubmit={handleSubmit} className=''>
+              <div className='grid grid-cols-2 gap-5'>
+                <input
+                  type='text'
+                  name='name'
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder='Name'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                />
+                <input
+                  type='number'
+                  name='age'
+                  value={formData.age}
+                  onChange={handleInputChange}
+                  placeholder='Age'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                />
+                <input
+                  type='tel'
+                  name='contact'
+                  value={formData.contact}
+                  onChange={handleInputChange}
+                  placeholder='Contact'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                />
+                <input
+                  type='text'
+                  name='patientID'
+                  value={formData.patientID}
+                  onChange={handleInputChange}
+                  placeholder='Patient ID'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                />
+                <select
+                  name='patientGender'
+                  value={formData.patientGender}
+                  onChange={handleInputChange}
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                >
+                  <option value=''>Select Gender</option>
+                  <option value='Male'>Male</option>
+                  <option value='Female'>Female</option>
+                  <option value='Other'>Other</option>
+                </select>
+                <input
+                  type='date'
+                  name='date'
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  placeholder='Insurance Contact'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                />
+                <input
+                  type='text'
+                  name='insuranceContact'
+                  value={formData.insuranceContact}
+                  onChange={handleInputChange}
+                  placeholder='Insurance Contact'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                />
+              </div>
+              <div className='flex justify-end space-x-2 mt-5'>
                 <button
                   type='button'
                   onClick={() => setIsModalOpen(false)}

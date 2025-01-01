@@ -439,7 +439,7 @@ const ExpenseManagement = () => {
 
   return (
     <div className=''>
-      <h2 className='font-semibold text-xl mb-12 mt-6'>Expense List</h2>
+      <h2 className='font-semibold text-xl mb-12'>Expense List</h2>
 
       <div className='expense-list-detail border rounded-md'>
         <div className='summary-display'>
@@ -472,7 +472,7 @@ const ExpenseManagement = () => {
             />
           </div>
 
-          <div className='overflow-x-auto shadow-md sm:rounded-lg'>
+          <div className='overflow-x-auto '>
             <table className='w-full text-sm text-left text-gray-500'>
               <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
                 <tr>
@@ -531,7 +531,7 @@ const ExpenseManagement = () => {
                             onClick={() => deleteExpense(expense._id)}
                             className='font-medium text-red-600 hover:text-red-700'
                           >
-                            <FaTrash className='w-5 h-5' />
+                            <FaTrash className='w-4 h-4' />
                           </button>
                         </div>
                       </td>
@@ -550,7 +550,7 @@ const ExpenseManagement = () => {
           onPageChange={(page) => setCurrentPage(page)}
           onLimitChange={(limit) => setLimit(limit)}
         />
-        <div className='flex items-center justify-start gap-3 mt-10'>
+        <div className='flex items-center px-5 justify-start gap-3 mt-10'>
           <div className='filter-category'>
             <select
               className='dropdown'
@@ -594,10 +594,10 @@ const ExpenseManagement = () => {
           )}
 
           {summaryType === 'yearly' && (
-            <div className='year-selection'>
+            <div className='flex items-center'>
               <h2 className='year-label'>Select Year</h2>
               <input
-                className='year-input'
+                className='mx-2'
                 type='number'
                 value={selectedYear}
                 onChange={handleYearChange}
@@ -608,7 +608,7 @@ const ExpenseManagement = () => {
           )}
         </div>
 
-        <div className='summary-display'>
+        <div className='px-5'>
           <h2>
             {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
             for {selectedCategory}
@@ -632,7 +632,7 @@ const ExpenseManagement = () => {
           />
         </div>
 
-        <div>
+        <div className='px-5 mt-5'>
           <h2>Expense by Category</h2>
           <div className='w-80 h-80'>
             <Doughnut

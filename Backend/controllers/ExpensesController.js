@@ -16,7 +16,7 @@ const {
 const getDataByYear = asyncHandler(async (req, res, Model) => {
   const { year } = req.params;
   const { category } = req.query;
-  console.log(year);
+
   const { startDate, endDate } = getDateRangeForYear(year);
   const matchCriteria = { date: { $gte: startDate, $lte: endDate } };
   if (category) matchCriteria.category = category;

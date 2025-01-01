@@ -3,6 +3,7 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
+import { useAuth } from '../AuthContext';
 
 function Bedroom() {
   const [patientId, setPatientId] = useState('');
@@ -18,11 +19,11 @@ function Bedroom() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [perDoctors, setPerDoctors] = useState([]);
+
+  const { perDoctors } = useAuth();
 
   useEffect(() => {
     fetchData();
-    doctorsWithPercentage();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -34,22 +35,6 @@ function Bedroom() {
       const data = await response.json();
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const doctorsWithPercentage = async () => {
-    try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/user/doctorsHave-percentage',
-        {
-          credentials: 'include',
-        }
-      );
-      if (!response.ok) throw new Error('Failed to fetch data');
-      const data = await response.json();
-      setPerDoctors(data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -130,9 +115,9 @@ function Bedroom() {
 
   const handleRemove = async (index) => {
     try {
-      const { patientId } = submittedData[index];
+      const { _id } = submittedData[index];
       const response = await fetch(
-        `http://localhost:4000/api/v1/bedroom/${patientId}`,
+        `http://localhost:4000/api/v1/bedroom/${_id}`,
         {
           method: 'DELETE',
         }

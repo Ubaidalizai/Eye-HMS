@@ -1,5 +1,7 @@
 const express = require('express');
 const {
+  getOpdDataByYear,
+  getOpdDataByMonth,
   getAllRecords,
   addRecord,
   getRecordByPatientId,
@@ -7,12 +9,22 @@ const {
   deleteRecordByPatientId,
 } = require('../controllers/opdController');
 
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
 const router = express.Router();
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/:year', getOpdDataByYear);
+router.get('/:year/:month', getOpdDataByMonth);
 
 router.route('/').get(getAllRecords).post(addRecord);
 
 router
-  .route('/:patientId')
+  .route('/:id')
   .get(getRecordByPatientId)
   .patch(updateRecordByPatientId)
   .delete(deleteRecordByPatientId);

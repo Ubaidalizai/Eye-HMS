@@ -2,11 +2,35 @@ const Bedroom = require('../models/bedroomModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
+const Income = require('../models/incomeModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+
+const getBedroomDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Bedroom);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getBedroomDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Bedroom);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Create a new bedroom
 const createBedroom = asyncHandler(async (req, res) => {
@@ -24,22 +48,16 @@ const createBedroom = asyncHandler(async (req, res) => {
   }
 
   req.body.totalAmount = req.body.rent;
+  let doctorPercentage = 0;
 
-  if (doctorExist.percentage) {
+  if (doctorExist.percentage > 0) {
     // Calculate percentage and update total amount
     const result = await calculatePercentage(
       req.body.rent,
       doctorExist.percentage
     );
     req.body.totalAmount = result.finalPrice;
-
-    // Create a new record if it doesn't exist
-    await DoctorKhata.create({
-      doctorId: doctorExist._id,
-      amount: result.percentageAmount,
-      date: req.body.date,
-      amountType: 'income',
-    });
+    doctorPercentage = result.percentageAmount;
   }
 
   if (req.body.discount > 0) {
@@ -61,6 +79,27 @@ const createBedroom = asyncHandler(async (req, res) => {
     totalAmount: req.body.totalAmount,
   });
   await bedroom.save();
+
+  // Create a new record if it doesn't exist
+  await DoctorKhata.create({
+    branchNameId: bedroom._id,
+    branchModel: 'bedroomModule',
+    doctorId: doctorExist._id,
+    amount: doctorPercentage,
+    date: req.body.date,
+    amountType: 'income',
+  });
+
+  if (bedroom.totalAmount > 0) {
+    await Income.create({
+      saleId: bedroom._id,
+      saleModel: 'bedroomModule',
+      date: bedroom.date,
+      totalNetIncome: bedroom.totalAmount,
+      category: 'bedroom',
+      description: 'Bedroom income',
+    });
+  }
 
   res.status(201).json({
     success: true,
@@ -122,7 +161,7 @@ const deleteBedroom = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDBId(id);
 
-  const bedroom = await Bedroom.findOneAndDelete({ id });
+  const bedroom = await Bedroom.findByIdAndDelete(id);
 
   if (!bedroom) {
     throw new AppError('Bedroom not found', 404);
@@ -135,6 +174,8 @@ const deleteBedroom = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
+  getBedroomDataByYear,
+  getBedroomDataByMonth,
   createBedroom,
   getAllBedrooms,
   getBedroomById,

@@ -10,20 +10,21 @@ export default function AddPurchaseDetails({
   const [productCatagory, setProductCatagory] = useState('');
   const [purchase, setPurchase] = useState({
     productID: '',
-    QuantityPurchased: 0,
+    QuantityPurchased: '',
     date: '',
-    unitPurchaseAmount: 0,
-    salePrice: 0,
-    category: '', // New category field
-    expiryDate: null,
+    unitPurchaseAmount: '',
+    salePrice: '',
+    category: '',
+    expiryDate: '',
   });
+  const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   const fetchProductsData = (productCatagory) => {
     let url = 'http://localhost:4000/api/v1/inventory/product';
     if (productCatagory) {
-      url += `?category=${productCatagory}`;
+      url += `?category={productCatagory}`;
     }
 
     fetch(url, {
@@ -39,27 +40,54 @@ export default function AddPurchaseDetails({
   useEffect(() => {
     fetchProductsData('');
   }, []);
-  // Handling Input Change for input fields
+
   const handleInputChange = (key, value) => {
     setPurchase({ ...purchase, [key]: value });
+    // Clear error when user starts typing
+    if (errors[key]) {
+      setErrors({ ...errors, [key]: '' });
+    }
   };
 
-  // POST Data
+  const validateForm = () => {
+    let formErrors = {};
+    if (!purchase.productID) formErrors.productID = 'Product is required';
+    if (!purchase.QuantityPurchased)
+      formErrors.QuantityPurchased = 'Quantity is required';
+    if (purchase.QuantityPurchased && parseInt(purchase.QuantityPurchased) <= 0)
+      formErrors.QuantityPurchased = 'Quantity must be positive';
+    if (!purchase.unitPurchaseAmount)
+      formErrors.unitPurchaseAmount = 'Unit purchase amount is required';
+    if (
+      purchase.unitPurchaseAmount &&
+      parseFloat(purchase.unitPurchaseAmount) <= 0
+    )
+      formErrors.unitPurchaseAmount = 'Unit purchase amount must be positive';
+    if (!purchase.salePrice) formErrors.salePrice = 'Sale price is required';
+    if (purchase.salePrice && parseFloat(purchase.salePrice) <= 0)
+      formErrors.salePrice = 'Sale price must be positive';
+    if (!purchase.date) formErrors.date = 'Purchase date is required';
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+  };
+
   const addSale = () => {
-    fetch('http://localhost:4000/api/v1/purchase', {
-      credentials: 'include',
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      body: JSON.stringify(purchase),
-    })
-      .then((result) => {
-        alert('Purchase ADDED');
-        handlePageUpdate();
-        addSaleModalSetting();
+    if (validateForm()) {
+      fetch('http://localhost:4000/api/v1/purchase', {
+        credentials: 'include',
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        body: JSON.stringify(purchase),
       })
-      .catch((err) => console.log(err));
+        .then((result) => {
+          alert('Purchase ADDED');
+          handlePageUpdate();
+          addSaleModalSetting();
+        })
+        .catch((err) => console.log(err));
+    }
   };
 
   return (
@@ -93,28 +121,22 @@ export default function AddPurchaseDetails({
               leaveFrom='opacity-100 translate-y-0 sm:scale-100'
               leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
             >
-              <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg overflow-y-scroll'>
-                <div className='bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4'>
-                  <div className='sm:flex sm:items-start'>
-                    <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10'>
-                      <PlusIcon
-                        className='h-6 w-6 text-blue-400'
-                        aria-hidden='true'
-                      />
-                    </div>
-                    <div className='mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left '>
+              <Dialog.Panel className='relative transform rounded-md pt-5 bg-white shadow-xl transition-all px-10 '>
+                <div className='flex flex-col justify-center items-center'>
+                  <div className=''>
+                    <div className='  '>
                       <Dialog.Title
                         as='h3'
-                        className='text-lg py-4 font-semibold leading-6 text-gray-900 '
+                        className='text-lg font-semibold text-left leading-6 text-gray-900 '
                       >
                         Purchase Details
                       </Dialog.Title>
                       <form action='#'>
-                        <div className='grid gap-4 mb-4 sm:grid-cols-2'>
-                          <div>
+                        <div className='grid gap-4 mt-6 sm:grid-cols-2'>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='category'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Category
                             </label>
@@ -137,34 +159,40 @@ export default function AddPurchaseDetails({
                             </select>
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='productID'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Product Name
                             </label>
                             <select
                               id='productID'
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-[12rem] p-2.5 dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               name='productID'
+                              value={purchase.productID}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
                             >
-                              <option selected=''>Select Products</option>
+                              <option value=''>Select Products</option>
                               {products.map((element) => (
                                 <option key={element._id} value={element._id}>
                                   {element.name}
                                 </option>
                               ))}
                             </select>
+                            {errors.productID && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.productID}
+                              </p>
+                            )}
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
                               htmlFor='QuantityPurchased'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Quantity Purchased
                             </label>
@@ -176,15 +204,21 @@ export default function AddPurchaseDetails({
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              placeholder='0 - 999'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5 dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              placeholder='1 - 999'
+                              min='1'
                             />
+                            {errors.QuantityPurchased && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.QuantityPurchased}
+                              </p>
+                            )}
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
-                              htmlFor='totalPurchaseAmount'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              htmlFor='unitPurchaseAmount'
+                              className='block mb-2 text-sm font-medium text-gray-90'
                             >
                               Unit Purchase Amount
                             </label>
@@ -196,15 +230,21 @@ export default function AddPurchaseDetails({
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5  dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               placeholder='$20'
+                              min='1'
                             />
+                            {errors.unitPurchaseAmount && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.unitPurchaseAmount}
+                              </p>
+                            )}
                           </div>
 
-                          <div>
+                          <div className='flex items-start flex-col'>
                             <label
-                              htmlFor='totalPurchaseAmount'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              htmlFor='salePrice'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Unit Sale Price
                             </label>
@@ -216,20 +256,27 @@ export default function AddPurchaseDetails({
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              placeholder='$20'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              placeholder='20'
+                              min='0.01'
+                              step='0.01'
                             />
+                            {errors.salePrice && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.salePrice}
+                              </p>
+                            )}
                           </div>
 
-                          <div className='h-fit w-fit'>
+                          <div className='flex items-start flex-col'>
                             <label
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                               htmlFor='date'
                             >
                               Purchase Date
                             </label>
                             <input
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5 dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               type='date'
                               id='date'
                               name='date'
@@ -238,16 +285,21 @@ export default function AddPurchaseDetails({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                             />
+                            {errors.date && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.date}
+                              </p>
+                            )}
                           </div>
-                          <div className='h-fit w-fit'>
+                          <div className='flex items-start flex-col'>
                             <label
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-                              htmlFor='date'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                              htmlFor='expiryDate'
                             >
                               Product Expiry Date
                             </label>
                             <input
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               type='date'
                               id='expiryDate'
                               name='expiryDate'
@@ -258,27 +310,26 @@ export default function AddPurchaseDetails({
                             />
                           </div>
                         </div>
-                        <div className='flex items-center space-x-4'></div>
+                        <div className='flex  justify-end gap-2 pb-5'>
+                          <button
+                            type='button'
+                            className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                            onClick={() => addSaleModalSetting()}
+                            ref={cancelButtonRef}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type='button'
+                            className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            onClick={addSale}
+                          >
+                            Add purchase
+                          </button>
+                        </div>
                       </form>
                     </div>
                   </div>
-                </div>
-                <div className='flex justify-end gap-2 pb-5 pr-5'>
-                  <button
-                    type='button'
-                    className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-                    onClick={() => addSaleModalSetting()}
-                    ref={cancelButtonRef}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type='button'
-                    className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                    onClick={addSale}
-                  >
-                    Add purchase
-                  </button>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

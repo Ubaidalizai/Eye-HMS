@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const {
+  getLaboratoryDataByMonth,
+  getLaboratoryDataByYear,
   createLabRecord,
   getAllLabRecords,
   getLabRecordByPatientId,
@@ -9,11 +11,21 @@ const {
   deleteLabRecordById,
 } = require('../controllers/labratoryController');
 
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/:year', getLaboratoryDataByYear);
+router.get('/:year/:month', getLaboratoryDataByMonth);
+
 // Define routes
 router.route('/').post(createLabRecord).get(getAllLabRecords); // Create a new lab record
 
 router
-  .route('/:patientId')
+  .route('/:id')
   .get(getLabRecordByPatientId)
   .patch(updateLabRecordById)
   .delete(deleteLabRecordById); // Get a specific lab record by patientId

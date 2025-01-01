@@ -184,7 +184,7 @@ function PurchaseDetails() {
             ) : error ? (
               <div className='text-center py-4 text-red-600'>{error}</div>
             ) : (
-              <table className='w-full'>
+              <table className='w-full text-sm text-left text-gray-500'>
                 <thead className='bg-gray-50'>
                   <tr>
                     <th
@@ -257,7 +257,7 @@ function PurchaseDetails() {
                           onClick={() => handleDelete(element._id)}
                           className='font-medium text-red-600 hover:text-red-700'
                         >
-                          <FaTrash className='w-5 h-5' />
+                          <FaTrash className='w-4 h-4' />
                         </button>
                       </td>
                     </tr>

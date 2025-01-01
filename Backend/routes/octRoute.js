@@ -2,12 +2,24 @@
 const express = require('express');
 const router = express.Router();
 const {
+  getOctDataByYear,
+  getOctDataByMonth,
   createOCTRecord,
   getAllOCTRecords,
   getOCTRecordById,
   updateOCTRecordById,
   deleteOCTRecordById,
 } = require('../controllers/octController');
+
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/:year', getOctDataByYear);
+router.get('/:year/:month', getOctDataByMonth);
 
 // Define routes
 router.route('/').post(createOCTRecord).get(getAllOCTRecords);

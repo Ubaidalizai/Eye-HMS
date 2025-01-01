@@ -1,8 +1,5 @@
 // saleModel.js
 const mongoose = require('mongoose');
-const Pharmacy = require('./pharmacyModel');
-const Product = require('./pharmacyModel');
-const User = require('./userModel');
 
 const saleSchema = new mongoose.Schema(
   {

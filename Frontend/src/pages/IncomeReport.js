@@ -3,122 +3,14 @@ import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import { HiSearch } from 'react-icons/hi';
 import Pagination from '../components/Pagination';
+import IncomeModal from '../components/IncomeModal';
 
-const categories = ['drug', 'sunglasses', 'glass', 'frame'];
-
-const Modal = ({ isOpen, onClose, onSubmit, newIncome, handleChange }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className='fixed inset-0 flex items-center justify-center z-50'>
-      <div
-        className='overlay absolute inset-0 bg-black opacity-50'
-        onClick={onClose}
-      ></div>
-      <div className='relative bg-white rounded-lg shadow-xl  w-full max-w-lg z-60'>
-        <h3 className='text-lg font-semibold mb-4'>Add Income</h3>
-        <form onSubmit={onSubmit}>
-          <div className='grid gap-4 mb-4 sm:grid-cols-2'>
-            <div>
-              <label
-                htmlFor='totalNetIncome'
-                className='block mb-2 text-sm font-medium text-gray-900'
-              >
-                Total Net Income
-              </label>
-              <input
-                type='number'
-                name='totalNetIncome'
-                id='totalNetIncome'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full p-2.5'
-                value={newIncome.totalNetIncome}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor='date'
-                className='block mb-2 text-sm font-medium text-gray-900'
-              >
-                Date
-              </label>
-              <input
-                type='date'
-                name='date'
-                id='date'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full p-2.5'
-                value={newIncome.date}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor='description'
-                className='block mb-2 text-sm font-medium text-gray-900'
-              >
-                Description
-              </label>
-              <input
-                type='text'
-                name='description'
-                id='description'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full p-2.5'
-                value={newIncome.description}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor='category'
-                className='block mb-2 text-sm font-medium text-gray-900'
-              >
-                Category
-              </label>
-              <select
-                name='category'
-                id='category'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full p-2.5'
-                value={newIncome.category}
-                onChange={handleChange}
-                required
-              >
-                <option value=''>Select Category</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className='flex items-center justify-end gap-2'>
-            <button
-              type='button'
-              className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type='submit'
-              className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-            >
-              Add Income
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+const categories = ['drug', 'sunglasses', 'glass', 'frame', 'other'];
 
 export default function IncomeReport() {
   const [income, setIncome] = useState([]);
   const [newIncome, setNewIncome] = useState({
-    totalNetIncome: 0,
+    totalNetIncome: '',
     date: '',
     description: '',
     category: '',
@@ -135,11 +27,6 @@ export default function IncomeReport() {
   useEffect(() => {
     fetchIncome();
   }, [currentPage, selectedCategory, searchTerm, limit]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewIncome({ ...newIncome, [name]: value });
-  };
 
   const fetchIncome = async () => {
     setIsLoading(true);
@@ -162,31 +49,24 @@ export default function IncomeReport() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (formData) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const url = newIncome._id
-        ? `http://localhost:4000/api/v1/income/${newIncome._id}`
+      const url = formData._id
+        ? `http://localhost:4000/api/v1/income/${formData._id}`
         : 'http://localhost:4000/api/v1/income';
 
       const response = await fetch(url, {
-        method: newIncome._id ? 'PATCH' : 'POST',
+        method: formData._id ? 'PATCH' : 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newIncome),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) throw new Error('Failed to save income');
 
-      setNewIncome({
-        totalNetIncome: '',
-        date: '',
-        description: '',
-        category: '',
-      });
       setShowModal(false);
       fetchIncome();
     } catch (err) {
@@ -222,18 +102,13 @@ export default function IncomeReport() {
     }
   };
 
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
-    setCurrentPage(1);
-  };
-
   return (
     <div className='container mx-auto'>
-      <h2 className='font-semibold text-xl '> Income List</h2>
+      <h2 className='font-semibold text-xl'> Income List</h2>
       <div className='border sm:rounded-lg my-10 '>
         <div className='flex flex-row items-center justify-between my-5'>
           <div className='flex items-center justify-center z-0'>
-            <HiSearch className=' translate-x-7 text-gray-400' size={20} />
+            <HiSearch className='translate-x-7 text-gray-400' size={20} />
             <input
               type='date'
               placeholder='Search by date'
@@ -244,7 +119,15 @@ export default function IncomeReport() {
           </div>
           <button
             className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setNewIncome({
+                totalNetIncome: '',
+                date: '',
+                description: '',
+                category: '',
+              });
+              setShowModal(true);
+            }}
           >
             <FaPlus className='mr-2' /> Add Income
           </button>
@@ -285,12 +168,6 @@ export default function IncomeReport() {
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                   <div className='flex space-x-2'>
                     <button
-                      onClick={() => editIncome(item)}
-                      className='font-medium text-indigo-600 hover:text-indigo-900'
-                    >
-                      <FaRegEdit className='w-5 h-5' />
-                    </button>
-                    <button
                       onClick={() => deleteIncome(item._id)}
                       className='font-medium text-red-600 hover:text-red-700'
                     >
@@ -312,12 +189,12 @@ export default function IncomeReport() {
         onLimitChange={(limit) => setLimit(limit)}
       />
 
-      <Modal
+      <IncomeModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleSubmit}
-        newIncome={newIncome}
-        handleChange={handleChange}
+        initialData={newIncome}
+        categories={categories}
       />
     </div>
   );

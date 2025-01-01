@@ -2,17 +2,14 @@ const express = require('express');
 const backupController = require('../controllers/backupController');
 const {
   authenticate,
-  authorizeAdmin,
+  authorizeAdminOrPharmacist,
 } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
+router.use(authenticate, authorizeAdminOrPharmacist);
+
 // Route to trigger database backup
-router.get(
-  '/download',
-  authenticate,
-  authorizeAdmin,
-  backupController.backupDatabase
-);
+router.get('/download', backupController.backupDatabase);
 
 module.exports = router;

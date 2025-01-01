@@ -85,19 +85,19 @@ function PersonInfoDropdown() {
 
   return (
     <ErrorBoundary>
-      <div className='max-w-4xl mx-auto p-6 bg-gray-50'>
+      <div className='w-full  mt-10'>
         <ToastContainer
           position='top-right'
           autoClose={3000}
           hideProgressBar={false}
         />
-        <h1 className='text-3xl font-bold text-center mb-8 text-gray-800'>
+        <h1 className='text-3xl font-bold text-center mb-8 text-gray-600'>
           Doctor Khata
         </h1>
 
         <select
           onChange={handleDoctorSelect}
-          className='w-full p-3 mb-6 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+          className='w-full h-12 mb-6 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
         >
           <option value=''>Select a doctor</option>
           {doctors.map((doctor) => (

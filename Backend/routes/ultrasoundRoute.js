@@ -1,6 +1,7 @@
-// routes/ultrasoundRoutes.js
 const express = require('express');
 const {
+  getUltrasoundDataByYear,
+  getUltrasoundDataByMonth,
   addRecord,
   getAllRecords,
   getRecordById,
@@ -9,6 +10,16 @@ const {
 } = require('../controllers/ultrasoundController');
 
 const router = express.Router();
+
+const {
+  authenticate,
+  authorizeAdminOrPharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/:year', getUltrasoundDataByYear);
+router.get('/:year/:month', getUltrasoundDataByMonth);
 
 router.route('/').post(addRecord).get(getAllRecords); // Get all records
 

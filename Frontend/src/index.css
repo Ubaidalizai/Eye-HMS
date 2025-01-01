@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Pinyon Script';
+  src: url('./fonts/PinyonScript-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 body {
   overflow-y: hidden;
   margin: 0;
