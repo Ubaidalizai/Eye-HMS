@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { authenticate } = require('../middlewares/authMiddleware');
+const {
+  authenticate,
+  authorizeAdmin,
+  authorizePharmacist,
+} = require('../middlewares/authMiddleware');
 
-// Enable authentication middleware for all routes in this file
-router.use(authenticate);
+router.use(authenticate, authorizeAdmin, authorizePharmacist);
 
 const {
   getAllPatients,

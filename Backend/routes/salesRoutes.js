@@ -13,9 +13,11 @@ const {
 const {
   authenticate,
   authorizeAdmin,
+  authorizePharmacist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate); // Enable authentication middleware for all routes in this file
+router.use(authenticate, authorizeAdmin, authorizePharmacist);
+
 router.get('/totaleSalecategoties', authorizeAdmin, getSalesCategoryTotal);
 // Get Sales Monthly Data
 router.get('/:year/:month', authorizeAdmin, getOneMonthSales);

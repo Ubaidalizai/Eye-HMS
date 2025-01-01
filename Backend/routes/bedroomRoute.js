@@ -10,6 +10,14 @@ const {
   deleteBedroom,
 } = require('../controllers/bedroomConroller');
 
+const {
+  authenticate,
+  authorizeAdmin,
+  authorizePharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdmin, authorizePharmacist);
+
 router.get('/:year', getBedroomDataByYear);
 router.get('/:year/:month', getBedroomDataByMonth);
 

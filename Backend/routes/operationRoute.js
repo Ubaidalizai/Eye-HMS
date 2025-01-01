@@ -7,6 +7,14 @@ const {
   deleteOperation,
 } = require('../controllers/operationController');
 
+const {
+  authenticate,
+  authorizeAdmin,
+  authorizePharmacist,
+} = require('../middlewares/authMiddleware');
+
+router.use(authenticate, authorizeAdmin, authorizePharmacist);
+
 // Create an operation
 router.route('/').post(createOperation).get(getAllOperations);
 
