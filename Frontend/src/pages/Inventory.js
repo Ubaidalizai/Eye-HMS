@@ -258,7 +258,7 @@ function Inventory() {
                   Add New Product
                 </h3>
                 <form onSubmit={handleAddProduct} className='mt-2 text-left'>
-                  <div className='grid grid-cols-2 gap-2'>
+                  <div className='grid grid-cols-1 gap-2'>
                     <input
                       type='text'
                       placeholder='Product Name'
