@@ -153,25 +153,27 @@ export default function Header() {
                             />
 
                             {/* Conditional Rendering Based on Role */}
-                            {user.role === 'admin' && totalExpiredCount > 0 && (
-                              <span
-                                className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
-                                aria-label={`You have ${totalExpiredCount} expired items`}
-                              >
-                                {totalExpiredCount > 99
-                                  ? '99+'
-                                  : totalExpiredCount}
-                              </span>
-                            )}
+                            {user?.role === 'admin' &&
+                              totalExpiredCount > 0 && (
+                                <span
+                                  className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                                  aria-label={`You have ${totalExpiredCount} expired items`}
+                                >
+                                  {totalExpiredCount > 99
+                                    ? '99+'
+                                    : totalExpiredCount}
+                                </span>
+                              )}
 
-                            {user.role === 'pharmacist' && exDrugsCount > 0 && (
-                              <span
-                                className='absolute top-0 right-6 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
-                                aria-label={`You have ${exDrugsCount} expired drugs`}
-                              >
-                                {exDrugsCount > 99 ? '99+' : exDrugsCount}
-                              </span>
-                            )}
+                            {user?.role === 'pharmacist' &&
+                              exDrugsCount > 0 && (
+                                <span
+                                  className='absolute top-0 right-6 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                                  aria-label={`You have ${exDrugsCount} expired drugs`}
+                                >
+                                  {exDrugsCount > 99 ? '99+' : exDrugsCount}
+                                </span>
+                              )}
                           </button>
                         </Link>
 
