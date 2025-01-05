@@ -1,23 +1,62 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
+// Create AuthContext
 const AuthContext = createContext();
 
+// Custom Hook to Use Auth Context
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({ children, perDoctors, fetchDoctors }) => {
-  const [user, setUser] = useState(null);
+// AuthProvider Component
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [perDoctors, setPerDoctors] = useState([]);
 
-  useEffect(() => {
-    checkLoggedIn();
-  }, []);
-
-  const signin = async (credentials, callback) => {
-    console.log("welcome");
+  // Fetch user data from API
+  const fetchDoctors = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError(null); // Reset error before fetching
+
+      const response = await fetch(
+        "http://localhost:4000/api/v1/user/doctorsHave-percentage",
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json(); // Parse error response (if applicable)
+        throw new Error(
+          `Failed to fetch doctors data: ${response.status} ${
+            response.statusText
+          } - ${errorData?.message || "Unknown error"}`
+        );
+      }
+
+      const data = await response.json();
+      setPerDoctors(data);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      setError(err.message);
+      setPerDoctors([]); // Clear doctors on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
+  // Signin function
+  const signin = async (credentials, callback) => {
+    try {
+      setLoading(true);
+      setError(null); // Clear any previous errors
 
       const response = await fetch("http://localhost:4000/api/v1/user/login", {
         method: "POST",
@@ -34,68 +73,38 @@ export const AuthProvider = ({ children, perDoctors, fetchDoctors }) => {
       }
 
       const data = await response.json();
-      setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
-      localStorage.setItem("lastLoginTime", Date.now());
-
-      if (typeof callback === "function") {
-        callback();
-      }
+      setUser(data); // Set the logged-in user in context
+      localStorage.setItem("user", JSON.stringify(data)); // Store user in localStorage
+      // Store in localStorage
+      localStorage.setItem("lastLoginTime", Date.now()); // Store login time
+      callback(); // Execute callback (e.g., navigate after login)
     } catch (err) {
       console.error("Error during login:", err);
       setError(err.message);
-      throw err; // Re-throw the error so it can be caught in the Login component
     } finally {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  }, []);
+  // Logout function
   const logout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/logout`, {
+      await fetch("http://localhost:4000/api/v1/user/logout", {
         method: "POST",
         credentials: "include",
       });
+      setUser(null); // Clear the user state
+      localStorage.removeItem("user"); // Remove from localStorage
     } catch (err) {
-      console.error("Error during logout:", err);
-    } finally {
-      setUser(null);
-      localStorage.removeItem("user");
+      console.error("Logout Error:", err);
     }
   };
 
-  const checkLoggedIn = async () => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/check-auth`,
-        {
-          credentials: "include",
-        }
-      );
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-      } else {
-        setUser(null);
-        localStorage.removeItem("user");
-      }
-    } catch (err) {
-      console.error("Error checking authentication status:", err);
-      setUser(null);
-      localStorage.removeItem("user");
-    }
-  };
-
-  const value = {
-    user,
-    signin,
-    logout,
-    loading,
-    error,
-    perDoctors,
-    fetchDoctors,
-  };
+  // Context value
+  const value = { user, signin, logout, loading, error, perDoctors };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
