@@ -1,11 +1,11 @@
-import { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import AuthContext from '../AuthContext';
+import { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import AuthContext from "../AuthContext";
 
 function Login() {
   const [form, setForm] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const authContext = useContext(AuthContext);
@@ -20,14 +20,14 @@ function Login() {
 
     // Ensure form is not empty
     if (!form.email || !form.password) {
-      alert('Please enter your email and password to proceed.');
+      alert("Please enter your email and password to proceed.");
       return;
     }
 
     try {
       // Call the signin method from context
       await authContext.signin(form, () => {
-        navigate('/'); // Redirect to home on successful login
+        navigate("/"); // Redirect to home on successful login
       });
     } catch (err) {
       alert(`Login failed: ${err.message}`);

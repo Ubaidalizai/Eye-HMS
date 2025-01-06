@@ -29,7 +29,8 @@ function Laboratory() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/labratory?page=${currentPage}&limit=${limit}`
+        `http://localhost:4000/api/v1/labratory?page=${currentPage}&limit=${limit}`,
+        { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
@@ -54,11 +55,12 @@ function Laboratory() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/labratory/${patientId}`,
+          `http://localhost:4000/api/v1/labratory/${patientId}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
@@ -72,11 +74,12 @@ function Laboratory() {
     } else {
       try {
         const response = await fetch(
-          'http://127.0.0.1:4000/api/v1/labratory/',
+          'http://localhost:4000/api/v1/labratory/',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to add data');
@@ -127,9 +130,10 @@ function Laboratory() {
     try {
       const { _id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/labratory/${_id}`,
+        `http://localhost:4000/api/v1/labratory/${_id}`,
         {
           method: 'DELETE',
+          credentials: 'include',
         }
       );
       if (!response.ok) throw new Error('Failed to delete data');
@@ -217,6 +221,7 @@ function Laboratory() {
             : 'http://localhost:4000/api/v1/labratory/'
         }
         method={editMode ? 'PATCH' : 'POST'}
+        withCredentials={true}
       />
 
       <DataTable
