@@ -29,7 +29,8 @@ function OCT() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/oct?page=${currentPage}&limit=${limit}`
+        `http://localhost:4000/api/v1/oct?page=${currentPage}&limit=${limit}`,
+        { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
@@ -54,11 +55,12 @@ function OCT() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/oct/${patientId}`,
+          `http://localhost:4000/api/v1/oct/${patientId}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
@@ -71,10 +73,11 @@ function OCT() {
       }
     } else {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/oct/', {
+        const response = await fetch('http://localhost:4000/api/v1/oct/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry),
+          credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to add data');
 
@@ -125,6 +128,7 @@ function OCT() {
       const { _id } = submittedData[index];
       const response = await fetch(`http://127.0.0.1:4000/api/v1/oct/${_id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to delete data');
 
@@ -211,6 +215,7 @@ function OCT() {
             : 'http://localhost:4000/api/v1/oct/'
         }
         method={editMode ? 'PATCH' : 'POST'}
+        withCredentials={true}
       />
 
       <DataTable

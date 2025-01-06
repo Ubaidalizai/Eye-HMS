@@ -31,7 +31,8 @@ function Operation() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/operation?page=${currentPage}&limit=${limit}`
+        `http://localhost:4000/api/v1/operation?page=${currentPage}&limit=${limit}`,
+        { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
@@ -49,11 +50,12 @@ function Operation() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/operation/${id}`,
+          `http://localhost:4000/api/v1/operation/${id}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
@@ -67,11 +69,12 @@ function Operation() {
     } else {
       try {
         const response = await fetch(
-          'http://127.0.0.1:4000/api/v1/operation/',
+          'http://localhost:4000/api/v1/operation/',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to add data');
@@ -123,9 +126,10 @@ function Operation() {
     try {
       const { _id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/operation/${_id}`,
+        `http://localhost:4000/api/v1/operation/${_id}`,
         {
           method: 'DELETE',
+          credentials: 'include',
         }
       );
       if (!response.ok) throw new Error('Failed to delete data');
@@ -210,10 +214,11 @@ function Operation() {
         setFieldValues={setFieldValues}
         url={
           editMode
-            ? `http://127.0.0.1:4000/api/v1/operation/${id}`
-            : 'http://127.0.0.1:4000/api/v1/operation/'
+            ? `http://localhost:4000/api/v1/operation/${id}`
+            : 'http://localhost:4000/api/v1/operation/'
         }
         method={editMode ? 'PATCH' : 'POST'}
+        withCredentials={true}
       />
       <DataTable
         submittedData={submittedData}

@@ -30,7 +30,8 @@ function Yeglizer() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/yeglizer?page=${currentPage}&limit=${limit}`
+        `http://localhost:4000/api/v1/yeglizer?page=${currentPage}&limit=${limit}`,
+        { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
@@ -56,11 +57,12 @@ function Yeglizer() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/yeglizer/${id}`,
+          `http://localhost:4000/api/v1/yeglizer/${id}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
@@ -73,10 +75,11 @@ function Yeglizer() {
       }
     } else {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/yeglizer/', {
+        const response = await fetch('http://localhost:4000/api/v1/yeglizer/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry),
+          credentials: 'include',
         });
         if (!response.ok) throw new Error('Failed to add data');
 
@@ -127,9 +130,10 @@ function Yeglizer() {
     try {
       const { _id } = submittedData[index];
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/yeglizer/${_id}`,
+        `http://localhost:4000/api/v1/yeglizer/${_id}`,
         {
           method: 'DELETE',
+          credentials: 'include',
         }
       );
       if (!response.ok) throw new Error('Failed to delete data');
@@ -219,6 +223,7 @@ function Yeglizer() {
             : 'http://localhost:4000/api/v1/yeglizer/'
         }
         method={editMode ? 'PATCH' : 'POST'}
+        withCredentials={true}
       />
 
       <DataTable
