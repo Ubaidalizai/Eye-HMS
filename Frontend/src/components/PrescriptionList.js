@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { BASE_URL } from '../config';
 
 export function PrescriptionList() {
   const { patientId } = useParams();
@@ -13,7 +14,7 @@ export function PrescriptionList() {
     const fetchPrescriptions = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/api/v1/prescriptions/patients/name/${patientId}/prescriptions`
+          `${BASE_URL}/prescriptions/patients/name/${patientId}/prescriptions`
         );
         // console.log(response.data.data);
         setPrescriptions(response.data.data); // Assuming `data` contains an array of prescriptions

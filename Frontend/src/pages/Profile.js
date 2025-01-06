@@ -1,14 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { BASE_URL } from '../config';
 
 const Profile = () => {
   const [user, setUser] = useState({
-    id: "",
-    firstName: "",
-    lastName: "",
-    email: "",
+    id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
     profilePic:
-      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png", // Default profile image
+      'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png', // Default profile image
   });
 
   const [isEditing, setIsEditing] = useState(false);
@@ -17,10 +18,9 @@ const Profile = () => {
   // Fetch user data function
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/v1/user/profile",
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${BASE_URL}/user/profile`, {
+        withCredentials: true,
+      });
       if (response.status === 200) {
         const { _id, firstName, lastName, email, imageUrl } =
           response.data.data;
@@ -35,10 +35,10 @@ const Profile = () => {
             : prevUser.profilePic,
         }));
       } else {
-        console.error("Failed to fetch user profile", response);
+        console.error('Failed to fetch user profile', response);
       }
     } catch (error) {
-      console.error("Error fetching user profile", error);
+      console.error('Error fetching user profile', error);
     }
   };
 
@@ -77,7 +77,7 @@ const Profile = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/v1/user/updateCurrentUserProfile`,
+        `${BASE_URL}/user/updateCurrentUserProfile`,
         {
           firstName: user.firstName,
           lastName: user.lastName,
@@ -87,13 +87,13 @@ const Profile = () => {
       );
 
       if (response.status === 200) {
-        alert("Profile updated successfully!");
+        alert('Profile updated successfully!');
         // Refresh user data to get the latest data
         fetchUserData();
       }
     } catch (error) {
-      console.error("Error updating profile", error);
-      alert("Failed to update profile. Please try again.");
+      console.error('Error updating profile', error);
+      alert('Failed to update profile. Please try again.');
     }
   };
 
@@ -115,7 +115,7 @@ const Profile = () => {
             accept='image/*'
             onChange={handleFileChange}
             ref={fileInputRef}
-            style={{ display: "none" }}
+            style={{ display: 'none' }}
           />
         </div>
 

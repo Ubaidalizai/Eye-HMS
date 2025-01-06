@@ -11,6 +11,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FcSalesPerformance } from 'react-icons/fc';
 import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
@@ -33,7 +34,7 @@ const Pharmacy = () => {
     setLoading(true);
     setError(null);
 
-    let baseUrl = `http://localhost:4000/api/v1/pharmacy?page=${currentPage}&limit=${limit}`;
+    let baseUrl = `${BASE_URL}/pharmacy?page=${currentPage}&limit=${limit}`;
 
     if (user.role === 'sunglassesSeller') {
       baseUrl += '&category=sunglasses,frame, glass';
@@ -63,16 +64,13 @@ const Pharmacy = () => {
 
   const fetchDrugsSummary = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/pharmacy/drugs-summary',
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', // Include cookies for authentication if required
-        }
-      );
+      const response = await fetch(`${BASE_URL}/pharmacy/drugs-summary`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for authentication if required
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch drugs summary');
@@ -91,13 +89,10 @@ const Pharmacy = () => {
   const handleDelete = async (drugId) => {
     if (window.confirm('Are you sure you want to delete this drug?')) {
       try {
-        const response = await fetch(
-          `http://localhost:4000/api/v1/pharmacy/${drugId}`,
-          {
-            method: 'DELETE',
-            credentials: 'include',
-          }
-        );
+        const response = await fetch(`${BASE_URL}/pharmacy/${drugId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
         if (response.ok) {
           setUpdatePage(!updatePage);
           toast.success('Product deleted successfully');

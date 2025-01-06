@@ -15,6 +15,7 @@ import Pagination from '../components/Pagination';
 
 import './newManagement.css';
 import { HiSearch } from 'react-icons/hi';
+import { BASE_URL } from '../config';
 
 // Register Chart.js components
 ChartJS.register(
@@ -221,7 +222,7 @@ const ExpenseManagement = () => {
   const fetchExpenses = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/expense?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`,
+        `${BASE_URL}/expense?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -244,7 +245,7 @@ const ExpenseManagement = () => {
   const fetchMonthlyExpenses = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
+        `${BASE_URL}/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -265,7 +266,7 @@ const ExpenseManagement = () => {
   const fetchYearlyExpenses = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/expense/${selectedYear}?category=${selectedCategory}`,
+        `${BASE_URL}/expense/${selectedYear}?category=${selectedCategory}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -286,7 +287,7 @@ const ExpenseManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let baseUrl = `http://localhost:4000/api/v1/expense`;
+    let baseUrl = `${BASE_URL}/expense`;
     const url = newExpense._id
       ? baseUrl +
         `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
@@ -384,13 +385,10 @@ const ExpenseManagement = () => {
 
   const deleteExpense = async (id) => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/expense/${id}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/expense/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         throw new Error('Failed to delete expense');

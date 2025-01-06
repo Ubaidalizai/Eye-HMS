@@ -1,17 +1,15 @@
 import React from 'react';
 import { MdOutlineCloudDownload } from 'react-icons/md';
+import { BASE_URL } from '../config';
 
 const BackupButton = () => {
   const handleBackup = async () => {
     try {
       // Fetch the backup file from the API
-      const response = await fetch(
-        'http://localhost:4000/api/v1/backup/download',
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/backup/download`, {
+        method: 'GET',
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch the backup file.');

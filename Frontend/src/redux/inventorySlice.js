@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { BASE_URL } from '../config';
 
 export const moveItemAPI = createAsyncThunk(
   'inventory/moveItem',
@@ -13,7 +14,7 @@ export const moveItemAPI = createAsyncThunk(
       expiryDate,
     };
 
-    const response = await fetch(`http://localhost:4000/api/v1/move-product`, {
+    const response = await fetch(`${BASE_URL}/move-product`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

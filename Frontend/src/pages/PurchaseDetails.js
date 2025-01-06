@@ -12,6 +12,7 @@ import AuthContext from '../AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
 import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -45,7 +46,7 @@ function PurchaseDetails() {
     setIsLoading(true);
     setError(null);
     try {
-      const baseUrl = `http://localhost:4000/api/v1/purchase?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`;
+      const baseUrl = `${BASE_URL}/purchase?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`;
       const finalUrl = category ? `${baseUrl}&category=${category}` : baseUrl;
 
       const response = await fetch(finalUrl, {
@@ -67,13 +68,10 @@ function PurchaseDetails() {
 
   const fetchProductsData = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/inventory/product',
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/inventory/product`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
@@ -91,13 +89,10 @@ function PurchaseDetails() {
   const handleDelete = async (purchaseId) => {
     if (window.confirm('Are you sure you want to delete this purchase?')) {
       try {
-        const response = await fetch(
-          `http://localhost:4000/api/v1/purchase/${purchaseId}`,
-          {
-            method: 'DELETE',
-            credentials: 'include',
-          }
-        );
+        const response = await fetch(`${BASE_URL}/purchase/${purchaseId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
         if (!response.ok) {
           console.log(response);
           throw new Error(`Error: ${response.status}`);

@@ -15,6 +15,7 @@ import {
   FaUsers,
 } from 'react-icons/fa';
 import BranchesMenu from './BranchesMenu';
+import { BASE_URL } from '../config';
 
 function SideMenu({ setActiveComponent }) {
   const [userInfo, setUserInfo] = useState({});
@@ -22,10 +23,9 @@ function SideMenu({ setActiveComponent }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(
-          'http://localhost:4000/api/v1/user/profile',
-          { withCredentials: true }
-        );
+        const res = await axios.get(`${BASE_URL}/user/profile`, {
+          withCredentials: true,
+        });
 
         if (res.status === 200) {
           setUserInfo(res?.data?.data);

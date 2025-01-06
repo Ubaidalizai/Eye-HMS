@@ -4,6 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useDoctorData } from '../components/useDoctorData';
+import { BASE_URL } from '../config';
 
 function PersonInfoDropdown() {
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
@@ -52,20 +53,17 @@ function PersonInfoDropdown() {
     }
 
     try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/khata/doctor-khata',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            doctorId: selectedDoctorId,
-            date: newOutcome.date,
-            amount: parseFloat(newOutcome.amount),
-            amountType: 'outcome',
-          }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/khata/doctor-khata`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          doctorId: selectedDoctorId,
+          date: newOutcome.date,
+          amount: parseFloat(newOutcome.amount),
+          amountType: 'outcome',
+        }),
+      });
 
       if (!response.ok) throw new Error('Failed to add outcome');
       toast.success('Outcome added successfully!');

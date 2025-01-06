@@ -25,6 +25,7 @@ import {
 
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 // Register Chart.js components
 ChartJS.register(
@@ -51,7 +52,7 @@ const monthLabels = [
   'December',
 ];
 
-const API_BASE_URL = 'http://localhost:4000/api/v1/patient';
+const API_BASE_URL = `${BASE_URL}/patient`;
 
 export default function PatientManagement() {
   const [patients, setPatients] = useState([]);
@@ -124,7 +125,7 @@ export default function PatientManagement() {
   const fetchMonthlyPatients = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/patient/${selectedYear}/${selectedMonth}`,
+        `${BASE_URL}/patient/${selectedYear}/${selectedMonth}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -144,13 +145,10 @@ export default function PatientManagement() {
 
   const fetchYearlyPatients = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/patient/${selectedYear}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/patient/${selectedYear}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);

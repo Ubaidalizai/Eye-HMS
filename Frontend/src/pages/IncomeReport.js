@@ -4,6 +4,7 @@ import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import { HiSearch } from 'react-icons/hi';
 import Pagination from '../components/Pagination';
 import IncomeModal from '../components/IncomeModal';
+import { BASE_URL } from '../config';
 
 const categories = ['drug', 'sunglasses', 'glass', 'frame', 'other'];
 
@@ -33,7 +34,7 @@ export default function IncomeReport() {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/income?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}&category=${selectedCategory}`,
+        `${BASE_URL}/income?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}&category=${selectedCategory}`,
         { credentials: 'include' }
       );
 
@@ -55,8 +56,8 @@ export default function IncomeReport() {
 
     try {
       const url = formData._id
-        ? `http://localhost:4000/api/v1/income/${formData._id}`
-        : 'http://localhost:4000/api/v1/income';
+        ? `${BASE_URL}/income/${formData._id}`
+        : `${BASE_URL}/income`;
 
       const response = await fetch(url, {
         method: formData._id ? 'PATCH' : 'POST',
@@ -87,10 +88,10 @@ export default function IncomeReport() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/v1/income/${id}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
+      const response = await fetch(`${BASE_URL}/income/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
 
       if (!response.ok) throw new Error('Failed to delete income');
 

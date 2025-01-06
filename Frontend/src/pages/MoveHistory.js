@@ -5,6 +5,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 export default function MoveHistory() {
   const [data, setData] = useState([]);
@@ -20,7 +21,7 @@ export default function MoveHistory() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:4000/api/v1/move-product?page=${currentPage}&limit=${limit}&search=${globalFilter}`,
+          `${BASE_URL}/move-product?page=${currentPage}&limit=${limit}&search=${globalFilter}`,
           {
             credentials: 'include',
           }

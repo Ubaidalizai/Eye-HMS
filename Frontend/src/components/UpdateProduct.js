@@ -2,6 +2,7 @@ import { Fragment, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
+import { BASE_URL } from '../config';
 
 export default function UpdateProduct({
   updateProductData,
@@ -31,7 +32,7 @@ export default function UpdateProduct({
 
     const id = product.productID;
 
-    fetch(`http://localhost:4000/api/v1/inventory/product/${id}`, {
+    fetch(`${BASE_URL}/inventory/product/${id}`, {
       method: 'PATCH',
       credentials: 'include',
       headers: {

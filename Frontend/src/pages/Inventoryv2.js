@@ -4,6 +4,7 @@ import AddProduct from '../components/AddProduct';
 import UpdateProduct from '../components/UpdateProduct';
 import AuthContext from '../AuthContext';
 import { moveItemAPI, fetchDrugs } from '../redux/inventorySlice';
+import { BASE_URL } from '../config';
 
 function Inventory() {
   const dispatch = useDispatch();
@@ -16,9 +17,7 @@ function Inventory() {
   const [products, setAllProducts] = useState([]);
   const authContext = useContext(AuthContext);
   const [stores, setAllStores] = useState([]);
-  const [Url, setUrl] = useState(
-    `http://localhost:4000/api/v1/inventory/product`
-  );
+  const [Url, setUrl] = useState(`${BASE_URL}/inventory/product`);
 
   useEffect(() => {
     fetchProductsData();

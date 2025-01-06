@@ -6,6 +6,7 @@ import AuthContext from '../AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Bell } from 'lucide-react'; // Use the Bell icon from lucide-react
+import { BASE_URL } from '../config';
 
 const navigation = [
   { name: 'Dashboard', href: '/', current: true },
@@ -35,7 +36,7 @@ export default function Header() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get('http://localhost:4000/api/v1/user/profile', {
+      const res = await axios.get(`${BASE_URL}/user/profile`, {
         withCredentials: true,
       });
 
@@ -51,12 +52,9 @@ export default function Header() {
 
   const expiredProduct = async () => {
     try {
-      const res = await axios.get(
-        'http://localhost:4000/api/v1/inventory/product/expire',
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await axios.get(`${BASE_URL}/inventory/product/expire`, {
+        withCredentials: true,
+      });
 
       if (res.status === 200 && res.data.length > 0) {
         setExProductsCount(res.data.length);
@@ -70,12 +68,9 @@ export default function Header() {
 
   const expiredDrugs = async () => {
     try {
-      const res = await axios.get(
-        'http://localhost:4000/api/v1/pharmacy/expire',
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await axios.get(`${BASE_URL}/pharmacy/expire`, {
+        withCredentials: true,
+      });
 
       if (res.status === 200 && res.data.length > 0) {
         setExDrugsCount(res.data.length);
@@ -90,13 +85,10 @@ export default function Header() {
   const handleBackup = async () => {
     try {
       // Fetch the backup file from the API
-      const response = await fetch(
-        'http://localhost:4000/api/v1/backup/download',
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/backup/download`, {
+        method: 'GET',
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch the backup file.');
@@ -127,7 +119,7 @@ export default function Header() {
   return (
     <>
       <div className='min-h-full'>
-        <Disclosure as='nav' className='fixed top-0 w-4/5   bg-white'>
+        <Disclosure as='nav' className='fixed top-0 w-4/5 z-10   bg-white'>
           {({ open }) => (
             <>
               <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>

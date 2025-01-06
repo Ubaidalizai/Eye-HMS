@@ -1,9 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaFilter, FaTrash } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
 import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -35,7 +38,7 @@ export default function Sales() {
     setIsLoading(true);
     setError(null);
     try {
-      let baseUrl = `http://localhost:4000/api/v1/sales?page=${currentPage}&limit=${limit}`;
+      let baseUrl = `${BASE_URL}/sales?page=${currentPage}&limit=${limit}`;
 
       if (user.role === 'sunglassesSeller') {
         baseUrl += '&category=sunglasses,frame';
@@ -72,7 +75,7 @@ export default function Sales() {
 
   const fetchProductsData = async () => {
     try {
-      let baseUrl = `http://localhost:4000/api/v1/pharmacy?checkQuantity=true`;
+      let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true`;
 
       if (user.role === 'sunglassesSeller') {
         baseUrl += '&category=sunglasses,frame, glass';
@@ -99,13 +102,10 @@ export default function Sales() {
   const handleDelete = async (saleId) => {
     if (window.confirm('Are you sure you want to delete this sale?')) {
       try {
-        const response = await fetch(
-          `http://localhost:4000/api/v1/sales/${saleId}`,
-          {
-            method: 'DELETE',
-            credentials: 'include',
-          }
-        );
+        const response = await fetch(`${BASE_URL}/sales/${saleId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
         if (!response.ok) {
           throw new Error(`Error: ${response.status}`);
         }
@@ -188,7 +188,7 @@ export default function Sales() {
                 </div>
               </div>
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-8 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-16 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowSaleModal(true)}
               >
                 <FaPlus className='mr-2' />
@@ -202,79 +202,82 @@ export default function Sales() {
             ) : error ? (
               <div className='text-center py-4 text-red-600'>{error}</div>
             ) : (
-              <table className='min-w-full divide-y divide-gray-200'>
-                <thead className='bg-gray-50'>
+              <table className='w-full text-sm text-left text-gray-500'>
+                <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
                   <tr>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Name
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Stock Sold
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Sale Price
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Sales Date
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Sales By
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Total Sale
                     </th>
                     <th
                       scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      className='px-6 py-3 font-bold tracking-wider'
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className='bg-white divide-y divide-gray-200'>
+                <tbody>
                   {sales.length > 0 ? (
                     sales.map((sale) => (
-                      <tr key={`${sale._id}`}>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                      <tr
+                        key={`${sale._id}`}
+                        className='bg-white border-b hover:bg-gray-50'
+                      >
+                        <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.productRefId?.name}
                         </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.quantity}
                         </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <td className='px-6 py-4 whitespace-nowrap'>
                           ${sale.productRefId?.salePrice}
                         </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.date.split('T')[0]}
                         </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <td className='px-6 py-4 whitespace-nowrap'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
+                        <td className='px-6 py-4 whitespace-nowrap'>
                           ${sale.income}
                         </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <td className='px-6 py-4 whitespace-nowrap'>
                           <button
                             onClick={() => handleDelete(sale._id)}
-                            className='text-red-600 hover:text-red-900'
+                            className='font-medium text-red-600 hover:text-red-700'
                           >
-                            <FaTrash />
+                            <FaTrash className='w-4 h-4' />
                           </button>
                         </td>
                       </tr>

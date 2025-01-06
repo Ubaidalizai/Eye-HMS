@@ -5,8 +5,9 @@ import DoughnutChart from '../components/DoughnutChart';
 import Filters from '../components/Filters';
 import SummaryCard from '../components/SummaryCard';
 import MoveHistory from './MoveHistory';
+import { BASE_URL } from '../config';
 
-const API_BASE_URL = 'http://localhost:4000/api/v1';
+const API_BASE_URL = `${BASE_URL}`;
 
 const categories = [
   'drug',

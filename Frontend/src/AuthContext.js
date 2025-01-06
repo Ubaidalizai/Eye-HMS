@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from 'react';
+import { BASE_URL } from './config';
 
 // Create AuthContext
 const AuthContext = createContext();
@@ -9,7 +10,7 @@ export const useAuth = () => useContext(AuthContext);
 // AuthProvider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem('user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [loading, setLoading] = useState(false);
@@ -22,26 +23,23 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null); // Reset error before fetching
 
-      const response = await fetch(
-        "http://localhost:4000/api/v1/user/doctorsHave-percentage",
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${BASE_URL}/user/doctorsHave-percentage`, {
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         const errorData = await response.json(); // Parse error response (if applicable)
         throw new Error(
           `Failed to fetch doctors data: ${response.status} ${
             response.statusText
-          } - ${errorData?.message || "Unknown error"}`
+          } - ${errorData?.message || 'Unknown error'}`
         );
       }
 
       const data = await response.json();
       setPerDoctors(data);
     } catch (err) {
-      console.error("Fetch Error:", err);
+      console.error('Fetch Error:', err);
       setError(err.message);
       setPerDoctors([]); // Clear doctors on error
     } finally {
@@ -58,48 +56,48 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null); // Clear any previous errors
 
-      const response = await fetch("http://localhost:4000/api/v1/user/login", {
-        method: "POST",
+      const response = await fetch(`${BASE_URL}/user/login`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify(credentials),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData?.message || "Login failed");
+        throw new Error(errorData?.message || 'Login failed');
       }
 
       const data = await response.json();
       setUser(data); // Set the logged-in user in context
-      localStorage.setItem("user", JSON.stringify(data)); // Store user in localStorage
+      localStorage.setItem('user', JSON.stringify(data)); // Store user in localStorage
       // Store in localStorage
-      localStorage.setItem("lastLoginTime", Date.now()); // Store login time
+      localStorage.setItem('lastLoginTime', Date.now()); // Store login time
       callback(); // Execute callback (e.g., navigate after login)
     } catch (err) {
-      console.error("Error during login:", err);
+      console.error('Error during login:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem('user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
   }, []);
   // Logout function
   const logout = async () => {
     try {
-      await fetch("http://localhost:4000/api/v1/user/logout", {
-        method: "POST",
-        credentials: "include",
+      await fetch(`${BASE_URL}/user/logout`, {
+        method: 'POST',
+        credentials: 'include',
       });
       setUser(null); // Clear the user state
-      localStorage.removeItem("user"); // Remove from localStorage
+      localStorage.removeItem('user'); // Remove from localStorage
     } catch (err) {
-      console.error("Logout Error:", err);
+      console.error('Logout Error:', err);
     }
   };
 

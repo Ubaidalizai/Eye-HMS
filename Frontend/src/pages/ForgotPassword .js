@@ -47,6 +47,7 @@
 // export default ForgotPassword;
 import React, { useState } from 'react';
 import axios from 'axios';
+import { BASE_URL } from '../config';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -59,12 +60,9 @@ const ForgotPassword = () => {
     setError('');
 
     try {
-      const response = await axios.post(
-        'http://localhost:4000/api/v1/user/forgotPassword',
-        {
-          email,
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/user/forgotPassword`, {
+        email,
+      });
       setMessage(response.data.message || 'Reset link sent successfully!');
     } catch (err) {
       setError(

@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { AddSaleForm } from './AddSaleForm';
 import { BillPrintModal } from './BillPrintModal';
+import { BASE_URL } from '../config';
 
 export default function AddSale({
   addSaleModalSetting,
@@ -51,7 +52,7 @@ export default function AddSale({
   };
 
   const sendSalesToBackend = async (sales) => {
-    const response = await fetch('http://localhost:4000/api/v1/sales', {
+    const response = await fetch(`${BASE_URL}/sales`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',

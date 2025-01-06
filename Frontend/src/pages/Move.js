@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { moveItemAPI } from '../redux/inventorySlice'; // Ensure this is correct
 import AuthContext from '../AuthContext';
 import { Dialog, Transition } from '@headlessui/react'; // Modal
+import { BASE_URL } from '../config';
 
 const Move = () => {
   const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const Move = () => {
     const fetchProductsData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/v1/inventory/product?page=${currentPage}&limit=${limit}`,
+          `${BASE_URL}/inventory/product?page=${currentPage}&limit=${limit}`,
           { credentials: 'include' }
         );
         const data = await response.json();
