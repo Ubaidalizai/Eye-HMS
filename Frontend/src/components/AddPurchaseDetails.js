@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { BASE_URL } from '../config';
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
@@ -22,7 +23,7 @@ export default function AddPurchaseDetails({
   const cancelButtonRef = useRef(null);
 
   const fetchProductsData = (productCatagory) => {
-    let url = 'http://localhost:4000/api/v1/inventory/product';
+    let url = `${BASE_URL}/inventory/product`;
     if (productCatagory) {
       url += `?category={productCatagory}`;
     }
@@ -73,7 +74,7 @@ export default function AddPurchaseDetails({
 
   const addSale = () => {
     if (validateForm()) {
-      fetch('http://localhost:4000/api/v1/purchase', {
+      fetch(`${BASE_URL}/purchase`, {
         credentials: 'include',
         method: 'POST',
         headers: {

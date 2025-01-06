@@ -67,6 +67,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BASE_URL } from '../config';
 
 const ResetPassword = () => {
   const { token } = useParams(); // Capture the token from the URL
@@ -88,7 +89,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:4000/api/v1/user/resetePassword/${token}`,
+        `${BASE_URL}/user/resetePassword/${token}`,
         {
           password,
         }

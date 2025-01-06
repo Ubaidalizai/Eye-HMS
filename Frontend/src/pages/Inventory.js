@@ -22,6 +22,7 @@ import AuthContext from '../AuthContext';
 import { moveItemAPI } from '../redux/inventorySlice';
 import UpdateProduct from '.././components/UpdateProduct';
 import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
@@ -49,9 +50,7 @@ function Inventory() {
   const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
 
-  const [url, setUrl] = useState(
-    `http://localhost:4000/api/v1/inventory/product`
-  );
+  const [url, setUrl] = useState(`${BASE_URL}/inventory/product`);
 
   useEffect(() => {
     fetchInventorySummary();
@@ -60,7 +59,7 @@ function Inventory() {
   }, [updatePage, url, currentPage, category, searchTerm, limit]);
 
   const constructUrl = (page, selectedCategory, searchTerm) => {
-    let baseUrl = `http://localhost:4000/api/v1/inventory/product?page=${page}&limit=${limit}`;
+    let baseUrl = `${BASE_URL}/inventory/product?page=${page}&limit=${limit}`;
 
     if (selectedCategory) {
       baseUrl += `&category=${selectedCategory}`;
@@ -75,13 +74,10 @@ function Inventory() {
   // Fetch the inventory summary from the backend
   const fetchInventorySummary = async () => {
     try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/inventory/product/summary',
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/inventory/product/summary`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       const data = await response.json();
       setSummary(data.data);
     } catch (err) {
@@ -166,7 +162,7 @@ function Inventory() {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/v1/inventory/product/${productId}`,
+          `${BASE_URL}/inventory/product/${productId}`,
           {
             method: 'DELETE',
             credentials: 'include',
@@ -188,17 +184,14 @@ function Inventory() {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/inventory/product',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newProduct),
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/inventory/product`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProduct),
+        credentials: 'include',
+      });
 
       if (response.ok) {
         setShowProductModal(false);

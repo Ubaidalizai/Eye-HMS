@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { BASE_URL } from '../config';
 
 const ExpiredProduct = () => {
   const [expiredProducts, setExpiredProducts] = useState([]);
@@ -19,10 +20,9 @@ const ExpiredProduct = () => {
   // Fetch expired products
   const expiredProduct = async () => {
     try {
-      const res = await axios.get(
-        'http://localhost:4000/api/v1/inventory/product/expire',
-        { withCredentials: true }
-      );
+      const res = await axios.get(`${BASE_URL}/inventory/product/expire`, {
+        withCredentials: true,
+      });
 
       if (res.status === 200 && res?.data?.length > 0) {
         setExpiredProducts(res?.data?.data?.expiredItems);
@@ -35,10 +35,9 @@ const ExpiredProduct = () => {
   // Fetch expired drugs
   const fetchExpiredDrugs = async () => {
     try {
-      const res = await axios.get(
-        'http://localhost:4000/api/v1/pharmacy/expire',
-        { withCredentials: true }
-      );
+      const res = await axios.get(`${BASE_URL}/pharmacy/expire`, {
+        withCredentials: true,
+      });
 
       if (res.status === 200 && res?.data?.length > 0) {
         setExpiredDrugs(res?.data?.data?.expiredItems);

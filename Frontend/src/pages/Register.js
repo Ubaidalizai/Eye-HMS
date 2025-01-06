@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import UploadImage from '../components/UploadImage';
+import { BASE_URL } from '../config';
 
 function Register() {
   const [form, setForm] = useState({
@@ -35,7 +36,7 @@ function Register() {
     data.append('phoneNumber', form.phoneNumber);
     data.append('image', form.image); // Append image file
 
-    fetch('http://localhost:4000/api/v1/user/register', {
+    fetch(`${BASE_URL}/user/register`, {
       method: 'POST',
       body: data, // Send FormData directly
     })

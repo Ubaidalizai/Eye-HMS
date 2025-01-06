@@ -2,6 +2,7 @@ import { Fragment, useContext, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import AuthContext from '../AuthContext';
+import { BASE_URL } from '../config';
 
 export default function AddProduct({
   addProductModalSetting,
@@ -24,7 +25,7 @@ export default function AddProduct({
   };
 
   const addProduct = () => {
-    fetch('http://localhost:4000/api/v1/inventory/product', {
+    fetch(`${BASE_URL}/inventory/product`, {
       method: 'POST',
       headers: {
         'Content-type': 'application/json',

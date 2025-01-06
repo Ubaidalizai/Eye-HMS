@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { BASE_URL } from './config';
 
 // Create AuthContext
 const AuthContext = createContext();
@@ -22,12 +23,9 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null); // Reset error before fetching
 
-      const response = await fetch(
-        'http://localhost:4000/api/v1/user/doctorsHave-percentage',
-        {
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/user/doctorsHave-percentage`, {
+        credentials: 'include',
+      });
 
       if (!response.ok) {
         const errorData = await response.json(); // Parse error response (if applicable)
@@ -58,7 +56,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null); // Clear any previous errors
 
-      const response = await fetch('http://localhost:4000/api/v1/user/login', {
+      const response = await fetch(`${BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +90,7 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      await fetch('http://localhost:4000/api/v1/user/logout', {
+      await fetch(`${BASE_URL}/user/logout`, {
         method: 'POST',
         credentials: 'include',
       });

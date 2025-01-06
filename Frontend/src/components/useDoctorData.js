@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { BASE_URL } from '../config';
 
 export function useDoctorData(selectedDoctorId, viewType) {
   const [doctors, setDoctors] = useState([]);
@@ -12,10 +13,9 @@ export function useDoctorData(selectedDoctorId, viewType) {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch(
-        'http://localhost:4000/api/v1/user/doctorsHave-percentage',
-        { credentials: 'include' }
-      );
+      const response = await fetch(`${BASE_URL}/user/doctorsHave-percentage`, {
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to fetch doctors');
       const data = await response.json();
       setDoctors(data);
@@ -30,7 +30,7 @@ export function useDoctorData(selectedDoctorId, viewType) {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:4000/api/v1/khata/doctor-khata/${doctorId}?amountType=${viewType}`,
+          `${BASE_URL}/khata/doctor-khata/${doctorId}?amountType=${viewType}`,
           { credentials: 'include' }
         );
         if (!response.ok) throw new Error('Failed to fetch records');
@@ -50,7 +50,7 @@ export function useDoctorData(selectedDoctorId, viewType) {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:4000/api/v1/khata/doctor-khata/${doctorId}/summary`,
+        `${BASE_URL}/khata/doctor-khata/${doctorId}/summary`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch khata summary');
