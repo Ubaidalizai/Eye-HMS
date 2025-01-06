@@ -56,11 +56,12 @@ function OPD() {
     if (editMode) {
       try {
         const response = await fetch(
-          `http://127.0.0.1:4000/api/v1/oct/${patientId}`,
+          `http://localhost:4000/api/v1/oct/${patientId}`,
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
+            credentials: 'include',
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
@@ -73,10 +74,11 @@ function OPD() {
       }
     } else {
       try {
-        const response = await fetch('http://127.0.0.1:4000/api/v1/opd/', {
+        const response = await fetch('http://localhost:4000/api/v1/opd/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry),
+          credentials: 'iclude',
         });
         if (!response.ok) throw new Error('Failed to add data');
 
@@ -125,8 +127,9 @@ function OPD() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(`http://127.0.0.1:4000/api/v1/opd/${_id}`, {
+      const response = await fetch(`http://localhost:4000/api/v1/opd/${_id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to delete data');
 
@@ -214,6 +217,7 @@ function OPD() {
             : 'http://localhost:4000/api/v1/opd/'
         }
         method={editMode ? 'PATCH' : 'POST'}
+        withCredentials={true}
       />
       <DataTable
         submittedData={submittedData}

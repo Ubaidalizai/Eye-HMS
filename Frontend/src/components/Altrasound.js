@@ -32,7 +32,8 @@ function Ultrasound() {
 
   const fetchData = async () => {
     const response = await fetch(
-      `http://127.0.0.1:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`
+      `http://localhost:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`,
+      { credentials: 'include' }
     );
     const data = await response.json();
 
@@ -71,8 +72,9 @@ function Ultrasound() {
 
   const handleRemove = async (index) => {
     const { _id } = submittedData[index];
-    await fetch(`http://127.0.0.1:4000/api/v1/ultrasound/${_id}`, {
+    await fetch(`http://localhost:4000/api/v1/ultrasound/${_id}`, {
       method: 'DELETE',
+      credentials: 'include', // Added credentials here
     });
     setSubmittedData(submittedData.filter((_, i) => i !== index));
   };
@@ -87,8 +89,9 @@ function Ultrasound() {
 
     const response = await fetch(
       editMode
-        ? `http://127.0.0.1:4000/api/v1/ultrasound/${fieldValues.id}`
-        : 'http://127.0.0.1:4000/api/v1/ultrasound/',
+        ? `http://localhost:4000/api/v1/ultrasound/${fieldValues.id}`
+        : 'http://localhost:4000/api/v1/ultrasound/',
+      { credentials: 'include' },
       {
         method: editMode ? 'PATCH' : 'POST',
         body: formData,
@@ -170,9 +173,10 @@ function Ultrasound() {
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
         url={
-          editMode
-            ? `http://127.0.0.1:4000/api/v1/ultrasound/${fieldValues.id}`
-            : 'http://127.0.0.1:4000/api/v1/ultrasound/'
+          (editMode
+            ? `http://localhost:4000/api/v1/ultrasound/${fieldValues.id}`
+            : 'http://localhost:4000/api/v1/ultrasound/',
+          { credentials: 'include' })
         }
         method={editMode ? 'PATCH' : 'POST'}
         onSubmit={handleFormSubmit}
