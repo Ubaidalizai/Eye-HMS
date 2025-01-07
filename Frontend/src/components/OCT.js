@@ -147,7 +147,7 @@ function OCT() {
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors.map((doctor) => ({
+      options: perDoctors?.map((doctor) => ({
         label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
         value: doctor._id, // Use unique doctor ID as value
       })),

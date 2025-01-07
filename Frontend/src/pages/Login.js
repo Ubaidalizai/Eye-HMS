@@ -1,48 +1,84 @@
-import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import AuthContext from "../AuthContext";
+import { useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthContext from '../AuthContext';
+
+// API Base URL
+import { BASE_URL } from '../config';
 
 function Login() {
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
+  const [error, setError] = useState(null); // Error state
+  const [loading, setLoading] = useState(false); // Loading state
 
-  const authContext = useContext(AuthContext);
-  const navigate = useNavigate();
+  const authContext = useContext(AuthContext); // Auth Context for user data
+  const navigate = useNavigate(); // Navigation hook
 
+  // Handle input changes
   const handleInputChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Login User Function
   const loginUser = async (e) => {
-    e.preventDefault(); // prevent default form submission
+    e.preventDefault(); // Prevent default form submission
 
-    // Ensure form is not empty
+    // Validation for empty fields
     if (!form.email || !form.password) {
-      alert("Please enter your email and password to proceed.");
+      setError('Please enter both email and password.');
       return;
     }
 
     try {
-      // Call the signin method from context
-      await authContext.signin(form, () => {
-        navigate("/"); // Redirect to home on successful login
+      setError(null); // Clear previous errors
+      setLoading(true); // Enable loading state
+      // API Request
+      const response = await fetch(`${BASE_URL}/user/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for sessions
+        body: JSON.stringify(form),
       });
+
+      if (response.ok) {
+        console.log(response, 'response');
+        const data = await response.json();
+
+        localStorage.setItem('user', JSON.stringify(data));
+        localStorage.setItem('lastLoginTime', Date.now()); // Save login time
+
+        // Navigate to dashboard or home page
+        navigate('/'); // Redirect after login
+      }
+      const errorData = await response.json();
+      throw new Error(errorData?.message || 'Login failed');
     } catch (err) {
-      alert(`Login failed: ${err.message}`);
+      console.error('Error during login:', err);
+      console.log(err, 'asfsf');
+      setError(err.message); // Show error in UI
+    } finally {
+      setLoading(false); // Disable loading state
     }
   };
 
   return (
     <div className='flex h-[100vh] items-center justify-center bg-white'>
-      <div className='w-full  justify-center items-center border bg-slate-50 max-w-md space-y-8 p-10 rounded-lg'>
+      <div className='w-full justify-center items-center border bg-slate-50 max-w-md space-y-8 p-10 rounded-lg'>
         <h2 className='mt-6 text-center text-3xl font-bold tracking-tight text-gray-700'>
           Sign in to your account
         </h2>
 
+        {/* Error Message */}
+        {error && (
+          <div className='text-red-500 text-sm text-center'>{error}</div>
+        )}
+
         <form className='mt-8 space-y-6' onSubmit={loginUser}>
-          <div className=' rounded-md shadow-sm'>
+          <div className='rounded-md shadow-sm'>
             <div>
               <label htmlFor='email-address' className='sr-only'>
                 Email address
@@ -91,9 +127,14 @@ function Login() {
           <div>
             <button
               type='submit'
-              className='group relative flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              disabled={loading} // Disable button during loading
+              className={`group relative flex w-full justify-center rounded-md ${
+                loading
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-500'
+              } py-2 px-3 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>

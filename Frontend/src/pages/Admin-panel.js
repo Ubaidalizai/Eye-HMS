@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import PersonInfoDropdown from './PersonInfoDropdown';
 import { BASE_URL } from '../config';
 
 const UserList = () => {
@@ -569,6 +570,8 @@ const UserList = () => {
           </div>
         </div>
       )}
+
+      <PersonInfoDropdown />
     </div>
   );
 };

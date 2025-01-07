@@ -51,38 +51,38 @@ export const AuthProvider = ({ children }) => {
     fetchDoctors();
   }, []);
   // Signin function
-  const signin = async (credentials, callback) => {
-    try {
-      setLoading(true);
-      setError(null); // Clear any previous errors
+  // const signin = async (credentials, callback) => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null); // Clear any previous errors
 
-      const response = await fetch(`${BASE_URL}/user/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(credentials),
-      });
+  //     const response = await fetch(`${BASE_URL}/user/login`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       credentials: 'include',
+  //       body: JSON.stringify(credentials),
+  //     });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.message || 'Login failed');
-      }
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData?.message || 'Login failed');
+  //     }
 
-      const data = await response.json();
-      setUser(data); // Set the logged-in user in context
-      localStorage.setItem('user', JSON.stringify(data)); // Store user in localStorage
-      // Store in localStorage
-      localStorage.setItem('lastLoginTime', Date.now()); // Store login time
-      callback(); // Execute callback (e.g., navigate after login)
-    } catch (err) {
-      console.error('Error during login:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     const data = await response.json();
+  //     setUser(data); // Set the logged-in user in context
+  //     localStorage.setItem('user', JSON.stringify(data)); // Store user in localStorage
+  //     // Store in localStorage
+  //     localStorage.setItem('lastLoginTime', Date.now()); // Store login time
+  //     callback(); // Execute callback (e.g., navigate after login)
+  //   } catch (err) {
+  //     console.error('Error during login:', err);
+  //     setError(err.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     setUser(storedUser ? JSON.parse(storedUser) : null);
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Context value
-  const value = { user, signin, logout, loading, error, perDoctors };
+  const value = { user, logout, loading, error, perDoctors };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
