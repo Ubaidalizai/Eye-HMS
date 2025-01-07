@@ -382,7 +382,7 @@ const UserList = () => {
                     <option value=''>Select Role</option>
                     <option value='pharmacist'>Pharmacist</option>
                     <option value='admin'>Admin</option>
-                    <option value='nurse'>Nurse</option>
+                    {/* <option value='nurse'>Nurse</option> */}
                     <option value='doctor'>Doctor</option>
                   </select>
                   {validationErrors.role && (
