@@ -45,7 +45,7 @@ function Login() {
       });
 
       if (response.ok) {
-        console.log(response, 'response');
+        // console.log(response, 'response');
         const data = await response.json();
 
         localStorage.setItem('user', JSON.stringify(data));
@@ -53,12 +53,11 @@ function Login() {
 
         // Navigate to dashboard or home page
         navigate('/'); // Redirect after login
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData?.message || 'Login failed');
       }
-      const errorData = await response.json();
-      throw new Error(errorData?.message || 'Login failed');
     } catch (err) {
-      console.error('Error during login:', err);
-      console.log(err, 'asfsf');
       setError(err.message); // Show error in UI
     } finally {
       setLoading(false); // Disable loading state
