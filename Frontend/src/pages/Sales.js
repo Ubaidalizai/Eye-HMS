@@ -79,7 +79,7 @@ export default function Sales() {
 
       if (user.role === 'sunglassesSeller') {
         baseUrl += '&category=sunglasses,frame, glass';
-      } else if (user.role === 'pharmacist') {
+      } else if (user.role === 'pharmacist' || user.role === 'admin') {
         baseUrl += '&category=drug';
       }
 

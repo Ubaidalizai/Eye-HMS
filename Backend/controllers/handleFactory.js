@@ -12,7 +12,7 @@ const getAll = (Model, userID = false, popOptions = null) =>
       searchTerm,
       fieldName,
     } = req.query;
-
+    console.log(req.query);
     if (!Model) {
       throw new AppError('Model is required', 500);
     }

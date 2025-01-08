@@ -38,7 +38,7 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
 
   const groupBy = {
     _id: { month: { $month: '$date' } }, // Group data by month
-    totalAmount: { $sum: '$QuantityPurchased' }, // Sum up the QuantityPurchased field
+    totalAmount: { $sum: '$TotalPurchaseAmount' }, // Sum up the QuantityPurchased field
   };
 
   // Fetch aggregated data
