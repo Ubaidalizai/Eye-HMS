@@ -5,10 +5,10 @@ const router = express.Router();
 const pharmacy = require('../controllers/pharmacy');
 const {
   authenticate,
-  authorizeAdminOrPharmacist,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdminOrPharmacist);
+router.use(authenticate, authorize3Users);
 
 router.route('/drugs-summary').get(pharmacy.getDrugsSummary);
 

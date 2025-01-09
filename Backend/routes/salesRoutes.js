@@ -13,7 +13,7 @@ const {
 const {
   authenticate,
   authorizeAdmin,
-  authorizeAdminOrPharmacist,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
 router.use(authenticate);
@@ -24,15 +24,15 @@ router.get('/:year/:month', authorizeAdmin, getOneMonthSales);
 router.get('/:year', authorizeAdmin, getOneYearSales);
 router.get(
   '/year-month/:year/:month',
-  authorizeAdminOrPharmacist,
+  authorize3Users,
   getOneMonthSalesWithFullDetails
 );
 // Add Sales
 router
   .route('/')
-  .get(authorizeAdminOrPharmacist, getAllSales)
-  .post(authorizeAdminOrPharmacist, sellItems);
+  .get(authorize3Users, getAllSales)
+  .post(authorize3Users, sellItems);
 
-router.route('/:id').delete(authorizeAdminOrPharmacist, deleteSale);
+router.route('/:id').delete(authorize3Users, deleteSale);
 
 module.exports = router;
