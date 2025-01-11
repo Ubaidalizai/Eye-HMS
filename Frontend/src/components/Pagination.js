@@ -41,7 +41,7 @@ const Pagination = ({
     <div className='flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6'>
       <div className='hidden sm:flex sm:flex-1 sm:items-center sm:justify-between'>
         <div>
-          <p className='text-sm text-gray-700'>
+          <p className='text-sm  text-gray-700'>
             Showing{' '}
             <span className='font-medium'>
               {(currentPage - 1) * itemsPerPage + 1}
@@ -67,13 +67,13 @@ const Pagination = ({
           </select>
 
           <div
-            className='relative z-0 inline-flex justify-center items-center rounded-md shadow-sm -space-x-px'
+            className=' inline-flex justify-center items-center rounded-md shadow-sm -space-x-px'
             aria-label='Pagination'
           >
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className='relative inline-flex justify-center items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 mr-3'
+              className=' inline-flex justify-center items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 mr-3'
             >
               <svg
                 className='w-6 h-6'
@@ -108,9 +108,8 @@ const Pagination = ({
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className='relative inline-flex justify-center font-bold items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50'
+              className=' inline-flex justify-center font-bold items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50'
             >
-              {/* <span className='sr-only'>Next</span> */}
               <svg
                 className='w-6 h-6'
                 xmlns='http://www.w3.org/2000/svg'
