@@ -382,7 +382,7 @@ const UserList = () => {
                     <option value=''>Select Role</option>
                     <option value='pharmacist'>Pharmacist</option>
                     <option value='admin'>Admin</option>
-                    <option value='nurse'>Nurse</option>
+                    <option value='sunglassesSeller'>Sunglasses seller</option>
                     <option value='doctor'>Doctor</option>
                   </select>
                   {validationErrors.role && (
@@ -542,7 +542,9 @@ const UserList = () => {
                   <option value=''>Role</option>
                   <option value='pharmacist'>Pharmacist</option>
                   <option value='admin'>Admin</option>
-                  <option value='nurse'>Nurse</option>
+                  <option value='sunglassesSeller'>
+                    Sunglasses <s></s>eller
+                  </option>
                   <option value='doctor'>Doctor</option>
                 </select>
                 {validationErrors.role && (

@@ -340,7 +340,7 @@ function Inventory() {
 
         <div className='overflow-x-auto rounded-lg bg-white border '>
           <div className='flex flex-row justify-between items-end  px-5 pb-3'>
-            <div className=''>
+            <div>
               <FaSearch className=' translate-x-3 translate-y-7 text-gray-400' />
               <input
                 type='text'
@@ -355,7 +355,6 @@ function Inventory() {
               <label htmlFor='category' className='sr-only'>
                 Category
               </label>
-
               <div>
                 <select
                   id='category'
@@ -370,9 +369,6 @@ function Inventory() {
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>
-                {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
-                  <FaFilter className='h-4 w-4' aria-hidden='true' />
-                </div> */}
               </div>
 
               <button
