@@ -104,17 +104,14 @@ export default function PatientManagement() {
           credentials: 'include',
         }
       );
+      if (!response.ok) throw new Error('Failed to fetch patients');
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
-
       setPatients(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.data.total / limit));
     } catch (error) {
-      toast.error(`${error}`, {
+      toast.error('Failed to fetch patients', {
         position: 'top-right',
-        autoClose: 2000,
+        autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,

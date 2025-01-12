@@ -38,7 +38,7 @@ const Pharmacy = () => {
 
     if (user.role === 'sunglassesSeller') {
       baseUrl += '&category=sunglasses,frame, glass';
-    } else if (user.role === 'pharmacist' || user.role === 'admin') {
+    } else if (user.role === 'pharmacist') {
       baseUrl += '&category=drug';
     }
 
@@ -269,15 +269,6 @@ const Pharmacy = () => {
                     >
                       Manufacturer
                     </th>
-                    {user.role === 'sunglasses' ? (
-                      <th
-                        scope='col'
-                        className='px-5 py-3 font-bold tracking-wider'
-                      >
-                        Category
-                      </th>
-                    ) : null}
-
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
@@ -331,12 +322,6 @@ const Pharmacy = () => {
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.manufacturer}
                       </td>
-
-                      {drug.category !== 'drug' ? (
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                          {drug.category}
-                        </td>
-                      ) : null}
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.expiryDate?.split('T')[0]}

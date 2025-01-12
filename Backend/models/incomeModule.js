@@ -32,6 +32,7 @@ const incomeSchema = new mongoose.Schema(
     totalNetIncome: {
       type: Number,
       required: [true, 'An income must have a total net income'],
+      min: 0,
     },
     category: {
       type: String,

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel.js');
 const asyncHandler = require('./asyncHandler.js');
-const AppError = require('../utils/appError');
+const AppError = require('../utils/appError'); // Adjust the path as necessary
 
 const authenticate = asyncHandler(async (req, res, next) => {
   let token;
@@ -41,7 +41,7 @@ const authorizeAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    throw new AppError('Access denied: Admin authorization required.', 403);
+    res.status(403).send('Not authorized as an admin.');
   }
 };
 
@@ -52,26 +52,17 @@ const authorizeAdminOrPharmacist = (req, res, next) => {
   ) {
     next(); // Proceed if user is admin or pharmacist
   } else {
-    throw new AppError(
-      'Access denied: Admin or pharmacist authorization required.',
-      403
-    );
+    res.status(403).json({
+      message: 'Access denied: Admin or Pharmacist authorization required.',
+    });
   }
 };
 
-const authorize3Users = (req, res, next) => {
-  if (
-    req.user &&
-    (req.user.role === 'admin' ||
-      req.user.role === 'pharmacist' ||
-      req.user.role === 'sunglassesSeller')
-  ) {
+const authorizeSunglassesSeller = (req, res, next) => {
+  if (req.user && req.user.role === 'sunglassesSeller') {
     next();
   } else {
-    throw new AppError(
-      ' Access denied: Admin or pharmacist or sunglassesSeller authorization required.',
-      403
-    );
+    res.status(401).send('Not authorized as an sunglasses seller.');
   }
 };
 
@@ -79,5 +70,5 @@ module.exports = {
   authenticate,
   authorizeAdmin,
   authorizeAdminOrPharmacist,
-  authorize3Users,
+  authorizeSunglassesSeller,
 };

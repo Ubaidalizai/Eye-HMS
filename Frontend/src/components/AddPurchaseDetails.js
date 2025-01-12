@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { BASE_URL } from '../config';
 
 export default function AddPurchaseDetails({
@@ -24,7 +25,7 @@ export default function AddPurchaseDetails({
   const fetchProductsData = (productCatagory) => {
     let url = `${BASE_URL}/inventory/product`;
     if (productCatagory) {
-      url += `?category=${productCatagory}`;
+      url += `?category={productCatagory}`;
     }
 
     fetch(url, {
@@ -38,7 +39,7 @@ export default function AddPurchaseDetails({
   };
 
   useEffect(() => {
-    fetchProductsData(productCatagory);
+    fetchProductsData('');
   }, []);
 
   const handleInputChange = (key, value) => {

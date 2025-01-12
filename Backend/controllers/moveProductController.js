@@ -7,7 +7,16 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 
-const getAllProductMovements = getAll(DrugMovement, false);
+const getAllProductMovements = getAll(DrugMovement, false, [
+  {
+    path: 'inventory_id',
+    select: 'name',
+  },
+  {
+    path: 'moved_by',
+    select: 'firstName lastName',
+  },
+]);
 
 // move drug from inventory to pharmacy
 const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
@@ -62,9 +71,10 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
 
     // Create a drug movement record
     const drugMovement = await DrugMovement.create({
-      productName: product.name,
+      inventory_id: product._id,
+      pharmacy_id: pharmacyDrug._id,
       quantity_moved: quantity,
-      moved_by: req.user.firstName,
+      moved_by: req.user._id,
       category,
       expiryDate,
     });
