@@ -29,7 +29,10 @@ function Bedroom() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/bedroom?page=${currentPage}&limit=${limit}`
+        `http://localhost:4000/api/v1/bedroom?page=${currentPage}&limit=${limit}`,
+        {
+          credentials: 'include',
+        }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
@@ -50,6 +53,7 @@ function Bedroom() {
           `http://localhost:4000/api/v1/bedroom/${patientId}`,
           {
             method: 'PATCH',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(entry),
           }
@@ -67,6 +71,7 @@ function Bedroom() {
         const response = await fetch('http://localhost:4000/api/v1/bedroom/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(entry),
         });
         if (!response.ok) throw new Error('Failed to add data');
@@ -120,6 +125,7 @@ function Bedroom() {
         `http://localhost:4000/api/v1/bedroom/${_id}`,
         {
           method: 'DELETE',
+          credentials: 'include',
         }
       );
       if (!response.ok) throw new Error('Failed to delete data');
