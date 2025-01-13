@@ -47,7 +47,9 @@ export default function BranchesMenu() {
     {
       name: 'Yezliger',
       path: '/branches/yeglizer',
-      icon: <LiaHandLizardSolid className='h-4 w-4' />,
+      icon: (
+        <LiaHandLizardSolid className='h-4 w-4 transition-colors duration-300 hover:text-blue-500 focus:text-blue-500' />
+      ),
     },
   ];
 
