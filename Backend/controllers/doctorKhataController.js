@@ -18,6 +18,8 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
   }
 
   const doctorKhata = new DoctorKhata({
+    branchNameId: new mongoose.Types.ObjectId(),
+    branchModel: 'DoctorKhata',
     doctorId,
     amount,
     amountType,
