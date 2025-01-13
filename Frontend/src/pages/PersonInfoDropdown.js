@@ -109,7 +109,7 @@ function PersonInfoDropdown() {
 
         {selectedDoctorId && !loading && (
           <div>
-            <div className='flex justify-around mb-6 p-4 bg-white rounded-lg border'>
+            <div className='flex justify-around mb-6 p-4 bg-white rounded-lg shadow-md'>
               <div>
                 <span className='font-bold text-green-600'>You Will Get:</span>{' '}
                 ${khataSummary.youWillGet || 0}
@@ -120,7 +120,7 @@ function PersonInfoDropdown() {
               </div>
             </div>
 
-            <div className='mb-6 p-4 bg-white rounded-lg border'>
+            <div className='mb-6 p-4 bg-white rounded-lg shadow-md'>
               <h3 className='text-xl font-semibold mb-4 text-gray-700'>
                 Add New Outcome
               </h3>
