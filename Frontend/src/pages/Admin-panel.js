@@ -382,7 +382,11 @@ const UserList = () => {
                     <option value=''>Select Role</option>
                     <option value='pharmacist'>Pharmacist</option>
                     <option value='admin'>Admin</option>
+<<<<<<< HEAD
                     {/* <option value='nurse'>Nurse</option> */}
+=======
+                    <option value='nurse'>Nurse</option>
+>>>>>>> parent of 980134c (solve the error)
                     <option value='doctor'>Doctor</option>
                   </select>
                   {validationErrors.role && (
