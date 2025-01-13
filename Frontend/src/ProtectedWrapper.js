@@ -1,14 +1,26 @@
-import AuthContext from './AuthContext';
-import { useContext } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useAuth } from "./AuthContext";
+import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
 
-function ProtectedWrapper(props) {
-  const auth = useContext(AuthContext);
+function ProtectedWrapper({ children }) {
+  const { user, isTokenValid, loading } = useAuth();
 
-  if (!auth.user) {
+  useEffect(() => {
+    console.log("ProtectedWrapper - User:", user);
+    console.log("ProtectedWrapper - isTokenValid:", isTokenValid());
+    console.log("ProtectedWrapper - Loading:", loading);
+  }, [user, isTokenValid, loading]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user || !isTokenValid()) {
+    console.log("ProtectedWrapper - Redirecting to login");
     return <Navigate to='/login' replace />;
   }
 
-  return props.children;
+  return children;
 }
+
 export default ProtectedWrapper;

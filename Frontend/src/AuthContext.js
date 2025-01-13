@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { BASE_URL } from "./config";
 
 const AuthContext = createContext();
@@ -13,54 +13,34 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [perDoctors, setPerDoctors] = useState([]);
 
+  function isTokenValid() {
+    const lastLoginTime = localStorage.getItem("lastLoginTime");
+    if (!lastLoginTime) return false;
+
+    const currentTime = Date.now();
+    const timeDifference = currentTime - parseInt(lastLoginTime, 10);
+    const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+    return hoursDifference < 24;
+  }
+
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("lastLoginTime");
-  };
-
-  const fetchDoctors = async () => {
-    try {
-      setLoading(true);
-      setError(null); // Reset error before fetching
-
-      const response = await fetch(`${BASE_URL}/user/doctorsHave-percentage`, {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json(); // Parse error response (if applicable)
-        throw new Error(
-          `Failed to fetch doctors data: ${response.status} ${
-            response.statusText
-          } - ${errorData?.message || "Unknown error"}`
-        );
+    const initializeAuth = async () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser && isTokenValid()) {
+        setUser(JSON.parse(storedUser));
+        await fetchDoctors();
+      } else {
+        logout();
       }
-
-      const data = await response.json();
-      setPerDoctors(data);
-    } catch (err) {
-      console.error("Fetch Error:", err);
-      setError(err.message);
-      setPerDoctors([]); // Clear doctors on error
-    } finally {
       setLoading(false);
-    }
-  };
+    };
 
-  useEffect(() => {
-    fetchDoctors();
+    initializeAuth();
   }, []);
 
   const signin = async (credentials, callback) => {
@@ -85,17 +65,62 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       setUser(data);
       localStorage.setItem("user", JSON.stringify(data));
-      localStorage.setItem("lastLoginTime", Date.now());
+      localStorage.setItem("lastLoginTime", Date.now().toString());
+      await fetchDoctors();
       callback();
     } catch (err) {
       console.error("Error during login:", err);
-      setError(err.message);
+      setError(err.message || "An unknown error occurred");
     } finally {
       setLoading(false);
     }
   };
 
-  const value = { user, signin, logout, loading, error, perDoctors };
+  const logout = () => {
+    setUser(null);
+    setPerDoctors([]);
+    localStorage.removeItem("user");
+    localStorage.removeItem("lastLoginTime");
+  };
+
+  const fetchDoctors = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${BASE_URL}/user/doctorsHave-percentage`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Failed to fetch doctors data: ${response.status} ${
+            response.statusText
+          } - ${errorData?.message || "Unknown error"}`
+        );
+      }
+
+      const data = await response.json();
+      setPerDoctors(data);
+    } catch (err) {
+      console.error("Fetch Error:", err);
+      setError(err.message || "An unknown error occurred");
+      setPerDoctors([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const value = {
+    user,
+    signin,
+    logout,
+    loading,
+    error,
+    perDoctors,
+    isTokenValid,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
