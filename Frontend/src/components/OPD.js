@@ -30,7 +30,8 @@ function OPD() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:4000/api/v1/opd?page=${currentPage}&limit=${limit}`
+        `http://localhost:4000/api/v1/opd?page=${currentPage}&limit=${limit}`,
+        { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
@@ -60,8 +61,8 @@ function OPD() {
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry),
             credentials: 'include',
+            body: JSON.stringify(entry),
           }
         );
         if (!response.ok) throw new Error('Failed to update data');
@@ -77,6 +78,7 @@ function OPD() {
         const response = await fetch('http://localhost:4000/api/v1/opd/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(entry),
           credentials: 'iclude',
         });

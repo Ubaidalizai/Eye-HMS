@@ -269,7 +269,7 @@ const Pharmacy = () => {
                     >
                       Manufacturer
                     </th>
-                    {user.role === 'sunglasses' ? (
+                    {user.role === 'sunglassesSeller' ? (
                       <th
                         scope='col'
                         className='px-5 py-3 font-bold tracking-wider'

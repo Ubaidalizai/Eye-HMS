@@ -215,7 +215,6 @@ function OCT() {
             : 'http://localhost:4000/api/v1/oct/'
         }
         method={editMode ? 'PATCH' : 'POST'}
-        withCredentials={true}
       />
 
       <DataTable

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FaTimes } from "react-icons/fa";
+import React, { useState } from 'react';
+import { FaTimes } from 'react-icons/fa';
 
 const FormModal = ({
   title,
@@ -22,18 +22,18 @@ const FormModal = ({
     fields.forEach((field) => {
       const value = fieldValues[field.name];
       if (
-        (field.type === "text" ||
-          field.type === "textarea" ||
-          field.type === "email") &&
-        (!value || (typeof value === "string" && !value.trim()))
+        (field.type === 'text' ||
+          field.type === 'textarea' ||
+          field.type === 'email') &&
+        (!value || (typeof value === 'string' && !value.trim()))
       ) {
         newErrors[field.name] = `${field.label} is required`;
       } else if (
-        field.type === "number" &&
-        (value == null || value === "" || isNaN(value) || value < 0)
+        field.type === 'number' &&
+        (value == null || value === '' || isNaN(value) || value < 0)
       ) {
         newErrors[field.name] = `${field.label} is required`;
-      } else if ((field.type === "date" || field.type === "time") && !value) {
+      } else if ((field.type === 'date' || field.type === 'time') && !value) {
         newErrors[field.name] = `${field.label} is required`;
       }
     });
@@ -45,16 +45,17 @@ const FormModal = ({
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!validateFields()) {
-      console.error("Validation failed, cannot submit form.");
+      console.error('Validation failed, cannot submit form.');
       return;
     }
     try {
-      console.log("Submitting data:", fieldValues);
+      console.log('Submitting data:', fieldValues);
       const response = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(fieldValues),
       });
 
@@ -64,16 +65,16 @@ const FormModal = ({
       }
 
       const result = await response.json();
-      console.log(`${method === "POST" ? "Created" : "Updated"}:`, result);
+      console.log(`${method === 'POST' ? 'Created' : 'Updated'}:`, result);
 
       // Reset form and show success message
       setFieldValues(
-        fields.reduce((acc, field) => ({ ...acc, [field.name]: "" }), {})
+        fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
       );
       setErrors({});
       setSubmissionStatus(
         `Operation record ${
-          method === "POST" ? "created" : "updated"
+          method === 'POST' ? 'created' : 'updated'
         } successfully!`
       );
 
@@ -83,10 +84,10 @@ const FormModal = ({
         handleCancel();
       }, 1500);
     } catch (error) {
-      console.error("Error submitting data:", error);
+      console.error('Error submitting data:', error);
       setSubmissionStatus(
         `Failed to ${
-          method === "POST" ? "create" : "update"
+          method === 'POST' ? 'create' : 'update'
         } record. Please try again.`
       );
     }
@@ -111,14 +112,14 @@ const FormModal = ({
                 <label htmlFor={field.name} className='mb-1'>
                   {field.label}
                 </label>
-                {field.type === "select" ? (
+                {field.type === 'select' ? (
                   <select
                     id={field.name}
                     name={field.name}
                     className={`border rounded w-48 h-10 focus:outline-none focus:ring transition ${
-                      errors[field.name] ? "border-red-500" : "border-gray-300"
+                      errors[field.name] ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    value={fieldValues[field.name] || ""}
+                    value={fieldValues[field.name] || ''}
                     onChange={(e) =>
                       setFieldValues({
                         ...fieldValues,
@@ -141,9 +142,9 @@ const FormModal = ({
                     name={field.name}
                     type={field.type}
                     className={`border rounded w-48 h-10 focus:outline-none focus:ring transition ${
-                      errors[field.name] ? "border-red-500" : "border-gray-300"
+                      errors[field.name] ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    value={fieldValues[field.name] || ""}
+                    value={fieldValues[field.name] || ''}
                     onChange={(e) =>
                       setFieldValues({
                         ...fieldValues,
@@ -172,7 +173,7 @@ const FormModal = ({
               type='submit'
               className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
             >
-              {method === "POST" ? "Add" : "Update"}
+              {method === 'POST' ? 'Add' : 'Update'}
             </button>
           </div>
         </form>
@@ -181,9 +182,9 @@ const FormModal = ({
         {submissionStatus && (
           <p
             className={`mt-4 text-center ${
-              submissionStatus.includes("success")
-                ? "text-green-600"
-                : "text-red-600"
+              submissionStatus.includes('success')
+                ? 'text-green-600'
+                : 'text-red-600'
             }`}
           >
             {submissionStatus}

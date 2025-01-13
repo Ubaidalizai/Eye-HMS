@@ -173,10 +173,9 @@ function Ultrasound() {
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
         url={
-          (editMode
+          editMode
             ? `http://localhost:4000/api/v1/ultrasound/${fieldValues.id}`
-            : 'http://localhost:4000/api/v1/ultrasound/',
-          { credentials: 'include' })
+            : 'http://localhost:4000/api/v1/ultrasound/'
         }
         method={editMode ? 'PATCH' : 'POST'}
         onSubmit={handleFormSubmit}

@@ -53,6 +53,7 @@ const getRecordById = asyncHandler(async (req, res) => {
 // Add a new record
 const addRecord = asyncHandler(async (req, res) => {
   const { patientId, doctor } = req.body;
+  console.log(req.body);
 
   const patient = await Patient.findOne({ patientID: patientId });
   if (!patient) {
