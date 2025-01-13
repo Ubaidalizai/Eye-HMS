@@ -11,6 +11,7 @@ const doctorKhataSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
+        'DoctorKhata',
         'octModule',
         'opdModule',
         'labratoryModule',
