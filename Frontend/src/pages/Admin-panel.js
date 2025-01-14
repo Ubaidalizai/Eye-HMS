@@ -115,11 +115,35 @@ const UserList = () => {
       });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
+
+      // If the user's role is changed to or from 'doctor', update the doctor's ledger
+      if (
+        editingUser.role !== data.user.role &&
+        (editingUser.role === "doctor" || data.user.role === "doctor")
+      ) {
+        await updateDoctorLedger(data.user);
+      }
+
       fetchUsers();
       setEditingUser(null);
       setValidationErrors({});
     } catch (error) {
       console.error("Error updating user:", error);
+    }
+  };
+
+  const updateDoctorLedger = async (user) => {
+    try {
+      const response = await fetch(`${BASE_URL}/doctor-ledger/${user._id}`, {
+        credentials: "include",
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isDoctor: user.role === "doctor" }),
+      });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      console.log("Doctor ledger updated successfully");
+    } catch (error) {
+      console.error("Error updating doctor ledger:", error);
     }
   };
 
