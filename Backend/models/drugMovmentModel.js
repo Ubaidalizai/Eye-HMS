@@ -10,11 +10,6 @@ const drugMovementSchema = new mongoose.Schema(
       ref: 'Product',
       required: true,
     },
-    pharmacy_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Pharmacy',
-      required: true,
-    },
     quantity_moved: { type: Number, required: true, min: 0 },
     date_moved: { type: Date, default: Date.now },
     moved_by: {

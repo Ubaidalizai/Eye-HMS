@@ -23,25 +23,6 @@ const laboratorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-hook for cascade delete
-laboratorySchema.pre('findOneAndDelete', async function (next) {
-  const laboratoryId = this.getQuery()._id; // Get the ID being deleted
-
-  // Delete related records in DoctorKhata
-  await mongoose.model('DoctorKhata').deleteOne({
-    branchNameId: laboratoryId,
-    branchModel: 'labratoryModule',
-  });
-
-  // Delete related records in Income
-  await mongoose.model('Income').deleteOne({
-    saleId: laboratoryId,
-    saleModel: 'labratoryModule',
-  });
-
-  next();
-});
-
 const Laboratory = mongoose.model('Laboratory', laboratorySchema);
 
 module.exports = Laboratory;

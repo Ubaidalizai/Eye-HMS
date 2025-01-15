@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
+const mongoose = require('mongoose');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
@@ -35,7 +36,6 @@ const getBedroomDataByMonth = asyncHandler(async (req, res) => {
 // Create a new bedroom
 const createBedroom = asyncHandler(async (req, res) => {
   const { patientId, doctor } = req.body;
-  console.log(patientId, doctor);
 
   const patient = await Patient.findOne({ patientID: patientId });
   if (!patient) {
@@ -159,18 +159,58 @@ const updateBedroom = asyncHandler(async (req, res, next) => {
 // Delete a bedroom by schema `id`
 const deleteBedroom = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  validateMongoDBId(id);
 
-  const bedroom = await Bedroom.findByIdAndDelete(id);
-
-  if (!bedroom) {
-    throw new AppError('Bedroom not found', 404);
+  // Validate MongoDB ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError('Invalid ID provided', 400);
   }
 
-  res.status(200).json({
-    success: true,
-    message: 'Bedroom deleted successfully',
-  });
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find and delete the bedroom record
+    const bedroom = await Bedroom.findById(id).session(session);
+    if (!bedroom) {
+      throw new AppError('Bedroom not found', 404);
+    }
+
+    await Bedroom.findByIdAndDelete(id, { session });
+
+    const doctorKhataResult = await DoctorKhata.deleteOne(
+      { branchNameId: bedroom._id, branchModel: 'bedroomModule' },
+      { session }
+    );
+
+    if (doctorKhataResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related doctor khata record', 500);
+    }
+
+    const incomeResult = await Income.deleteOne(
+      { saleId: bedroom._id, saleModel: 'bedroomModule' },
+      { session }
+    );
+
+    if (incomeResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related income record', 500);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: 'Bedroom and related records deleted successfully',
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 module.exports = {

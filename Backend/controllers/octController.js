@@ -1,4 +1,5 @@
 // controllers/octController.js
+const mongoose = require('mongoose');
 const OCT = require('../models/octModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
@@ -33,76 +34,112 @@ const getOctDataByMonth = asyncHandler(async (req, res) => {
 });
 
 // Create a new OCT record
-const createOCTRecord = asyncHandler(async (req, res) => {
+const createOCTRecord = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
 
-  const patient = await Patient.findOne({ patientID: patientId });
-  if (!patient) {
-    throw new AppError('Patient not found', 404);
-  }
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const doctorExist = await User.findById(doctor);
-  if (!doctorExist || doctorExist.role !== 'doctor') {
-    throw new AppError('Doctor not found', 404);
-  }
-
-  req.body.totalAmount = req.body.price;
-  let doctorPercentage = 0;
-
-  if (doctorExist.percentage) {
-    // Calculate percentage and update total amount
-    const result = await calculatePercentage(
-      req.body.price,
-      doctorExist.percentage
+  try {
+    // Step 1: Validate patient
+    const patient = await Patient.findOne({ patientID: patientId }).session(
+      session
     );
-    req.body.totalAmount = result.finalPrice;
-    doctorPercentage = result.percentageAmount;
-  }
+    if (!patient) {
+      throw new AppError('Patient not found', 404);
+    }
 
-  if (req.body.discount > 0) {
-    const result = await calculatePercentage(
-      req.body.totalAmount,
-      req.body.discount
-    );
-    req.body.totalAmount = result.finalPrice;
-  }
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not found', 404);
+    }
 
-  const octRecord = new OCT({
-    patientId: patient._id,
-    doctor: doctor,
-    percentage: doctorExist.percentage,
-    price: req.body.price,
-    time: req.body.time,
-    date: req.body.date,
-    discount: req.body.discount,
-    totalAmount: req.body.totalAmount,
-  });
-  await octRecord.save();
+    // Step 3: Calculate total amount and doctor percentage
+    req.body.totalAmount = req.body.price;
+    let doctorPercentage = 0;
 
-  // Create a new record if it doesn't exist
-  await DoctorKhata.create({
-    branchNameId: octRecord._id,
-    branchModel: 'octModule',
-    doctorId: doctorExist._id,
-    amount: doctorPercentage,
-    date: req.body.date,
-    amountType: 'income',
-  });
+    if (doctorExist.percentage) {
+      const result = await calculatePercentage(
+        req.body.price,
+        doctorExist.percentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
+    }
 
-  if (octRecord.totalAmount > 0) {
-    await Income.create({
-      saleId: octRecord._id,
-      saleModel: 'octModule',
-      date: octRecord.date,
-      totalNetIncome: octRecord.totalAmount,
-      category: 'oct',
-      description: 'OCT income',
+    if (req.body.discount > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        req.body.discount
+      );
+      req.body.totalAmount = result.finalPrice;
+    }
+
+    // Step 4: Create OCT record
+    const octRecord = new OCT({
+      patientId: patient._id,
+      doctor: doctor,
+      percentage: doctorExist.percentage,
+      price: req.body.price,
+      time: req.body.time,
+      date: req.body.date,
+      discount: req.body.discount,
+      totalAmount: req.body.totalAmount,
     });
-  }
 
-  res
-    .status(201)
-    .json({ message: 'OCT record created successfully', data: octRecord });
+    await octRecord.save({ session });
+
+    // Step 5: Add to DoctorKhata
+    if (doctorPercentage > 0) {
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: octRecord._id,
+            branchModel: 'octModule',
+            doctorId: doctorExist._id,
+            amount: doctorPercentage,
+            date: req.body.date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Step 6: Add to Income
+    if (octRecord.totalAmount > 0) {
+      await Income.create(
+        [
+          {
+            saleId: octRecord._id,
+            saleModel: 'octModule',
+            date: octRecord.date,
+            totalNetIncome: octRecord.totalAmount,
+            category: 'oct',
+            description: 'OCT income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(201).json({
+      message: 'OCT record created successfully',
+      data: octRecord,
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 // Get all OCT records
@@ -142,13 +179,66 @@ const updateOCTRecordById = asyncHandler(async (req, res) => {
 });
 
 // Delete an OCT record by ID
-const deleteOCTRecordById = asyncHandler(async (req, res) => {
+const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const deletedOCTRecord = await OCT.findByIdAndDelete(id);
-  if (!deletedOCTRecord) {
-    throw new AppError('OCT record not found', 404);
+
+  // Validate MongoDB ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError('Invalid ID provided', 400);
   }
-  res.status(200).json({ message: 'OCT record deleted successfully' });
+
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the OCT record
+    const octRecord = await OCT.findById(id).session(session);
+    if (!octRecord) {
+      throw new AppError('OCT record not found', 404);
+    }
+
+    // Step 2: Delete the OCT record
+    const deletedOCTRecord = await OCT.findByIdAndDelete(id, { session });
+    if (!deletedOCTRecord) {
+      throw new AppError('Failed to delete OCT record', 500);
+    }
+
+    // Step 3: Delete related records in DoctorKhata
+    const doctorKhataResult = await DoctorKhata.deleteOne(
+      { branchNameId: octRecord._id, branchModel: 'octModule' },
+      { session }
+    );
+
+    if (doctorKhataResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    }
+
+    // Step 4: Delete related records in Income
+    const incomeResult = await Income.deleteOne(
+      { saleId: octRecord._id, saleModel: 'octModule' },
+      { session }
+    );
+
+    if (incomeResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related Income record', 500);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: 'OCT record and related records deleted successfully',
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 module.exports = {

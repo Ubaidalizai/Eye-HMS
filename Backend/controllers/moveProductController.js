@@ -7,7 +7,16 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 
-const getAllProductMovements = getAll(DrugMovement, false);
+const getAllProductMovements = getAll(DrugMovement, false, [
+  {
+    path: 'inventory_id',
+    select: 'name',
+  },
+  {
+    path: 'moved_by',
+    select: 'firstName lastName',
+  },
+]);
 
 // move drug from inventory to pharmacy
 const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
@@ -18,38 +27,38 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
     throw new AppError('All fields are required', 400);
   }
 
-  // Track changes for rollback
-  let updatedInventory = null;
-  let createdPharmacyDrug = null;
-  let updatedPharmacyDrug = null;
-  let createdDrugMovement = null;
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
-    // Find the product in inventory
-    const product = await Product.findOne({ name, manufacturer });
+    // Step 1: Find the product in inventory
+    const product = await Product.findOne({ name, manufacturer }).session(
+      session
+    );
     if (!product) {
       throw new AppError('Drug not found in inventory', 404);
     }
 
-    // Update inventory stock
+    // Step 2: Update inventory stock
     if (product.stock < quantity) {
       throw new AppError('Insufficient stock in inventory', 400);
     }
-    const previousStock = product.stock; // Capture current stock for rollback
-    product.stock -= quantity;
-    await product.save();
-    updatedInventory = { product, previousStock }; // Record for rollback
 
-    // Add or update drug in pharmacy
-    let pharmacyDrug = await Pharmacy.findOne({ name, manufacturer });
+    product.stock -= quantity;
+    await product.save({ session });
+
+    // Step 3: Add or update drug in pharmacy
+    let pharmacyDrug = await Pharmacy.findOne({ name, manufacturer }).session(
+      session
+    );
+
     if (pharmacyDrug) {
-      const previousQuantity = pharmacyDrug.quantity; // For rollback
       pharmacyDrug.quantity += quantity;
       pharmacyDrug.salePrice = salePrice; // Update sale price if needed
-      await pharmacyDrug.save();
-      updatedPharmacyDrug = { pharmacyDrug, previousQuantity }; // Track rollback info
+      await pharmacyDrug.save({ session });
     } else {
-      pharmacyDrug = await Pharmacy.create({
+      pharmacyDrug = new Pharmacy({
         name,
         manufacturer,
         quantity,
@@ -57,50 +66,33 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
         category,
         expiryDate,
       });
-      createdPharmacyDrug = pharmacyDrug; // Track for rollback
+      await pharmacyDrug.save({ session });
     }
 
-    // Create a drug movement record
-    const drugMovement = await DrugMovement.create({
-      productName: product.name,
-      quantity_moved: quantity,
-      moved_by: req.user.firstName,
-      category,
-      expiryDate,
-    });
-    createdDrugMovement = drugMovement; // Track for rollback
+    // Step 4: Create a drug movement record
+    await DrugMovement.create(
+      [
+        {
+          inventory_id: product._id,
+          quantity_moved: quantity,
+          moved_by: req.user._id,
+          category,
+          expiryDate,
+        },
+      ],
+      { session }
+    );
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
     // Respond with success
     res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
   } catch (error) {
-    console.error('Error encountered, rolling back changes:', error);
-
-    // Rollback inventory stock update
-    if (updatedInventory) {
-      const { product, previousStock } = updatedInventory;
-      await Product.updateOne({ _id: product._id }, { stock: previousStock });
-    }
-
-    // Rollback pharmacy drug changes
-    if (updatedPharmacyDrug) {
-      const { pharmacyDrug, previousQuantity } = updatedPharmacyDrug;
-      await Pharmacy.updateOne(
-        { _id: pharmacyDrug._id },
-        { quantity: previousQuantity }
-      );
-    }
-
-    // Rollback pharmacy drug creation
-    if (createdPharmacyDrug) {
-      await Pharmacy.deleteOne({ _id: createdPharmacyDrug._id });
-    }
-
-    // Rollback drug movement record creation
-    if (createdDrugMovement) {
-      await DrugMovement.deleteOne({ _id: createdDrugMovement._id });
-    }
-
-    // Forward the error
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
     next(error);
   }
 });
