@@ -67,60 +67,71 @@ const sellItems = asyncHandler(async (req, res, next) => {
     throw new AppError('No sold items provided.', 400);
   }
 
-  const sales = [];
-  const receipt = [];
-  let totalIncome = 0;
-
-  // Track changes for manual rollback
-  const stockUpdates = [];
-  const createdSales = [];
-  const createdIncomes = [];
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
   try {
+    const sales = [];
+    const receipt = [];
+    let totalIncome = 0;
+
     for (const soldItem of soldItems) {
       const { productRefId, quantity, category, date } = soldItem;
 
-      const drug = await Pharmacy.findById(productRefId);
+      // Step 1: Validate and find the drug
+      const drug = await Pharmacy.findById(productRefId).session(session);
       if (!drug) {
         throw new AppError(`Drug with ID ${productRefId} not found.`, 404);
       }
 
-      const income = await validateDrugAndCalculateIncome(drug, {
-        quantity,
-      });
+      // Step 2: Calculate income and net income
+      const income = await validateDrugAndCalculateIncome(drug, { quantity });
       const purchaseCost = await calculateNetIncome(drug, { quantity });
       const productNetIncome = income - purchaseCost;
 
-      // Create a sale record
-      const sale = await Sale.create({
-        productRefId: drug._id,
-        quantity,
-        income,
-        date,
-        category,
-        userID: req.user._id,
-      });
-      createdSales.push(sale);
+      // Step 3: Create a sale record
+      const sale = await Sale.create(
+        [
+          {
+            productRefId: drug._id,
+            quantity,
+            income,
+            date,
+            category,
+            userID: req.user._id,
+          },
+        ],
+        { session }
+      );
 
-      // Update product stock
-      const previousStock = drug.quantity; // Capture current stock for rollback
-      await updateDrugStock(drug, quantity);
-      stockUpdates.push({ drug, previousStock }); // Record state for rollback
+      // Step 4: Update product stock
+      if (drug.quantity < quantity) {
+        throw new AppError(
+          `Insufficient stock for drug: ${drug.name}. Available: ${drug.quantity}, Requested: ${quantity}`,
+          400
+        );
+      }
+      drug.quantity -= quantity;
+      await drug.save({ session });
 
-      // Create an income record
-      const incomeRecord = await Income.create({
-        saleId: sale._id,
-        saleModel: 'pharmacyModel',
-        date,
-        totalNetIncome: productNetIncome,
-        category,
-        description: `Sale of ${drug.name} (${category})`,
-        userID: req.user._id,
-      });
-      createdIncomes.push(incomeRecord);
+      // Step 5: Create an income record
+      await Income.create(
+        [
+          {
+            saleId: sale[0]._id,
+            saleModel: 'pharmacyModel',
+            date,
+            totalNetIncome: productNetIncome,
+            category,
+            description: `Sale of ${drug.name} (${category})`,
+            userID: req.user._id,
+          },
+        ],
+        { session }
+      );
 
       // Update response and receipt data
-      sales.push(sale);
+      sales.push(sale[0]);
       totalIncome += income;
       receipt.push({
         productName: drug.name,
@@ -130,6 +141,10 @@ const sellItems = asyncHandler(async (req, res, next) => {
         date,
       });
     }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
     // Generate the receipt object
     const generatedReceipt = {
@@ -146,23 +161,10 @@ const sellItems = asyncHandler(async (req, res, next) => {
       },
     });
   } catch (error) {
-    // Rollback Changes
-    console.error('Error encountered, rolling back changes:', error);
-
-    // Rollback stock updates
-    for (const { drug, previousStock } of stockUpdates) {
-      await Pharmacy.updateOne({ _id: drug._id }, { stock: previousStock });
-    }
-
-    // Delete created sales and incomes
-    for (const sale of createdSales) {
-      await Sale.deleteOne({ _id: sale._id });
-    }
-    for (const income of createdIncomes) {
-      await Income.deleteOne({ _id: income._id });
-    }
-
-    // Forward the error
+    // Rollback the transaction
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Transaction failed, rolling back:', error);
     next(error);
   }
 });
@@ -361,33 +363,46 @@ const deleteSale = asyncHandler(async (req, res) => {
   // Validate MongoDB ID
   validateMongoDBId(saleId);
 
-  // Fetch the sale record
-  const sale = await Sale.findById(saleId);
-  if (!sale) {
-    throw new AppError('Sale not found.', 404);
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Fetch the sale record
+    const sale = await Sale.findById(saleId).session(session);
+    if (!sale) {
+      throw new AppError('Sale not found.', 404);
+    }
+
+    // Restore product quantity
+    const product = await Pharmacy.findById(sale.productRefId).session(session);
+    if (product) {
+      product.quantity += sale.quantity; // Restore stock
+      await product.save({ session });
+    }
+
+    // Delete the income record associated with the sale
+    await Income.deleteOne({ saleId }).session(session);
+
+    // Delete the sale record
+    await Sale.findByIdAndDelete(saleId, { session });
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(200).json({
+      status: 'success',
+      message: 'Sale deleted successfully.',
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Transaction failed, rolling back:', error);
+    throw new AppError('Failed to delete sale. Transaction rolled back.', 500);
   }
-
-  // Restore product quantity
-  const product = await Pharmacy.findById(sale.productRefId);
-  if (product) {
-    product.quantity += sale.quantity; // Restore stock
-    await product.save();
-  }
-
-  // Delete the income record associated with the sale
-  const incomeRecord = await Income.findOne({ saleId });
-  if (incomeRecord) {
-    await Income.findByIdAndDelete(incomeRecord._id);
-  }
-
-  // Delete the sale record
-  await Sale.findByIdAndDelete(saleId);
-
-  // Send success response
-  res.status(200).json({
-    status: 'success',
-    message: 'Sale deleted successfully.',
-  });
 });
 
 module.exports = {
