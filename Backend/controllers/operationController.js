@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Operation = require('../models/operationModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
@@ -10,76 +11,112 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
 
 // Create a new operation
-const createOperation = asyncHandler(async (req, res) => {
+const createOperation = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
-  console.log(patientId, doctor);
 
-  const patient = await Patient.findOne({ patientID: patientId });
-  if (!patient) {
-    throw new AppError('Patient not found', 404);
-  }
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const doctorExist = await User.findById(doctor);
-  if (!doctorExist || doctorExist.role !== 'doctor') {
-    throw new AppError('Doctor not found', 404);
-  }
-
-  req.body.totalAmount = req.body.price;
-  let doctorPercentage = 0;
-
-  if (doctorExist.percentage) {
-    // Calculate percentage and update total amount
-    const result = await calculatePercentage(
-      req.body.price,
-      doctorExist.percentage
+  try {
+    // Step 1: Validate patient
+    const patient = await Patient.findOne({ patientID: patientId }).session(
+      session
     );
-    req.body.totalAmount = result.finalPrice;
-    doctorPercentage = result.percentageAmount;
-  }
+    if (!patient) {
+      throw new AppError('Patient not found', 404);
+    }
 
-  if (req.body.discount > 0) {
-    const result = await calculatePercentage(
-      req.body.totalAmount,
-      req.body.discount
-    );
-    req.body.totalAmount = result.finalPrice;
-  }
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not found', 404);
+    }
 
-  const operation = new Operation({
-    patientId: patient._id,
-    doctor: doctor,
-    percentage: doctorExist.percentage,
-    price: req.body.price,
-    time: req.body.time,
-    date: req.body.date,
-    discount: req.body.discount,
-    totalAmount: req.body.totalAmount,
-  });
-  await operation.save();
+    // Step 3: Calculate total amount and doctor percentage
+    req.body.totalAmount = req.body.price;
+    let doctorPercentage = 0;
 
-  // Create a new record if it doesn't exist
-  await DoctorKhata.create({
-    branchNameId: operation._id,
-    branchModel: 'operationModule',
-    doctorId: doctorExist._id,
-    amount: doctorPercentage,
-    date: req.body.date,
-    amountType: 'income',
-  });
+    if (doctorExist.percentage) {
+      const result = await calculatePercentage(
+        req.body.price,
+        doctorExist.percentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
+    }
 
-  if (operation.totalAmount > 0) {
-    await Income.create({
-      saleId: operation._id,
-      saleModel: 'operationModule',
-      date: operation.date,
-      totalNetIncome: operation.totalAmount,
-      category: 'operation',
-      description: 'operation income',
+    if (req.body.discount > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        req.body.discount
+      );
+      req.body.totalAmount = result.finalPrice;
+    }
+
+    // Step 4: Create Operation record
+    const operation = new Operation({
+      patientId: patient._id,
+      doctor: doctor,
+      percentage: doctorExist.percentage,
+      price: req.body.price,
+      time: req.body.time,
+      date: req.body.date,
+      discount: req.body.discount,
+      totalAmount: req.body.totalAmount,
     });
+
+    await operation.save({ session });
+
+    // Step 5: Add to DoctorKhata
+    if (doctorPercentage > 0 && doctorExist.percentage > 0) {
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: operation._id,
+            branchModel: 'operationModule',
+            doctorId: doctorExist._id,
+            amount: doctorPercentage,
+            date: req.body.date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Step 6: Add to Income
+    if (operation.totalAmount > 0) {
+      await Income.create(
+        [
+          {
+            saleId: operation._id,
+            saleModel: 'operationModule',
+            date: operation.date,
+            totalNetIncome: operation.totalAmount,
+            category: 'operation',
+            description: 'Operation income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(201).json({
+      message: 'Operation created successfully',
+      data: operation,
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
   }
-  res
-    .status(201)
-    .json({ message: 'Operation created successfully', operation });
 });
 
 // Get all operations
@@ -110,17 +147,63 @@ const updateOperation = asyncHandler(async (req, res) => {
 });
 
 // Delete an operation by ID
-const deleteOperation = asyncHandler(async (req, res) => {
+const deleteOperation = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  validateMongoDBId(id);
 
-  const operation = await Operation.findByIdAndDelete(id);
-
-  if (!operation) {
-    throw new AppError('Operation not found', 404);
+  // Validate MongoDB ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError('Invalid ID provided', 400);
   }
 
-  res.status(200).json({ message: 'Operation deleted successfully' });
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the Operation record
+    const operation = await Operation.findById(id).session(session);
+    if (!operation) {
+      throw new AppError('Operation record not found', 404);
+    }
+
+    // Step 2: Delete the Operation record
+    const deletedRecord = await Operation.findByIdAndDelete(id, { session });
+    if (!deletedRecord) {
+      throw new AppError('Failed to delete OPERATION record', 500);
+    }
+
+    // Step 3: Delete related records in DoctorKhata
+    const doctorKhataResult = await DoctorKhata.deleteOne(
+      { branchNameId: operation._id, branchModel: 'operationModule' },
+      { session }
+    );
+
+    if (doctorKhataResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    }
+
+    // Step 4: Delete related records in Income
+    const incomeResult = await Income.deleteOne(
+      { saleId: operation._id, saleModel: 'operationModule' },
+      { session }
+    );
+
+    if (incomeResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related Income record', 500);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(204).json();
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 module.exports = {

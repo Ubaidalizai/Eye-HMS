@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Yeglizer = require('../models/yeglizerModel');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
@@ -51,74 +52,112 @@ const getYeglizerById = asyncHandler(async (req, res) => {
 });
 
 // Create a new Yeglizer record
-const createYeglizer = asyncHandler(async (req, res) => {
+const createYeglizer = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
 
-  const patient = await Patient.findOne({ patientID: patientId });
-  if (!patient) {
-    throw new AppError('Patient not found', 404);
-  }
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const doctorExist = await User.findById(doctor);
-  if (!doctorExist || doctorExist.role !== 'doctor') {
-    throw new AppError('Doctor not found', 404);
-  }
-
-  req.body.totalAmount = req.body.price;
-  let doctorPercentage = 0;
-
-  if (doctorExist.percentage) {
-    // Calculate percentage and update total amount
-    const result = await calculatePercentage(
-      req.body.price,
-      doctorExist.percentage
+  try {
+    // Step 1: Validate patient
+    const patient = await Patient.findOne({ patientID: patientId }).session(
+      session
     );
-    req.body.totalAmount = result.finalPrice;
-    doctorPercentage = result.percentageAmount;
-  }
+    if (!patient) {
+      throw new AppError('Patient not found', 404);
+    }
 
-  if (req.body.discount > 0) {
-    const result = await calculatePercentage(
-      req.body.totalAmount,
-      req.body.discount
-    );
-    req.body.totalAmount = result.finalPrice;
-  }
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not found', 404);
+    }
 
-  const newYeglizer = new Yeglizer({
-    patientId: patient._id,
-    doctor: doctor,
-    percentage: doctorExist.percentage,
-    price: req.body.price,
-    time: req.body.time,
-    date: req.body.date,
-    discount: req.body.discount,
-    totalAmount: req.body.totalAmount,
-  });
-  await newYeglizer.save();
+    // Step 3: Calculate total amount and doctor percentage
+    req.body.totalAmount = req.body.price;
+    let doctorPercentage = 0;
 
-  // Create a new record if it doesn't exist
-  await DoctorKhata.create({
-    branchNameId: newYeglizer._id,
-    branchModel: 'yeglizerModel',
-    doctorId: doctorExist._id,
-    amount: doctorPercentage,
-    date: req.body.date,
-    amountType: 'income',
-  });
+    if (doctorExist.percentage) {
+      const result = await calculatePercentage(
+        req.body.price,
+        doctorExist.percentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
+    }
 
-  if (newYeglizer.totalAmount > 0) {
-    await Income.create({
-      saleId: newYeglizer._id,
-      saleModel: 'yeglizerModel',
-      date: newYeglizer.date,
-      totalNetIncome: newYeglizer.totalAmount,
-      category: 'yeglizer',
-      description: 'yeglaser income',
+    if (req.body.discount > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        req.body.discount
+      );
+      req.body.totalAmount = result.finalPrice;
+    }
+
+    // Step 4: Create Yeglizer record
+    const newYeglizer = new Yeglizer({
+      patientId: patient._id,
+      doctor: doctor,
+      percentage: doctorExist.percentage,
+      price: req.body.price,
+      time: req.body.time,
+      date: req.body.date,
+      discount: req.body.discount,
+      totalAmount: req.body.totalAmount,
     });
-  }
 
-  res.status(201).json({ status: 'success', data: newYeglizer });
+    await newYeglizer.save({ session });
+
+    // Step 5: Add to DoctorKhata
+    if (doctorPercentage > 0 && doctorExist.percentage > 0) {
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: newYeglizer._id,
+            branchModel: 'yeglizerModel',
+            doctorId: doctorExist._id,
+            amount: doctorPercentage,
+            date: req.body.date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Step 6: Add to Income
+    if (newYeglizer.totalAmount > 0) {
+      await Income.create(
+        [
+          {
+            saleId: newYeglizer._id,
+            saleModel: 'yeglizerModel',
+            date: newYeglizer.date,
+            totalNetIncome: newYeglizer.totalAmount,
+            category: 'yeglizer',
+            description: 'Yeglizer income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(201).json({
+      status: 'success',
+      data: newYeglizer,
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 // Update a Yeglizer record by schema ID (custom `id`)
@@ -142,15 +181,66 @@ const updateYeglizerById = asyncHandler(async (req, res) => {
 });
 
 // Delete a Yeglizer record by schema ID (custom `id`)
-const deleteYeglizerById = asyncHandler(async (req, res) => {
-  validateMongoDBId(req.params.id);
+const deleteYeglizerById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
 
-  const deletedYeglizer = await Yeglizer.findByIdAndDelete(req.params.id);
-  if (!deletedYeglizer) {
-    throw new AppError('Record not found', 404);
+  // Validate MongoDB ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError('Invalid ID provided', 400);
   }
 
-  res.status(204).json({ status: 'success', data: null });
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the Yeglizer record
+    const yeglizerRecord = await Yeglizer.findById(id).session(session);
+    if (!yeglizerRecord) {
+      throw new AppError('Record not found', 404);
+    }
+
+    // Step 2: Delete the Yeglizer record
+    const deletedYeglizer = await Yeglizer.findByIdAndDelete(id, { session });
+    if (!deletedYeglizer) {
+      throw new AppError('Failed to delete Yeglizer record', 500);
+    }
+
+    // Step 3: Delete related records in DoctorKhata
+    const doctorKhataResult = await DoctorKhata.deleteOne(
+      { branchNameId: yeglizerRecord._id, branchModel: 'yeglizerModel' },
+      { session }
+    );
+
+    if (doctorKhataResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    }
+
+    // Step 4: Delete related records in Income
+    const incomeResult = await Income.deleteOne(
+      { saleId: yeglizerRecord._id, saleModel: 'yeglizerModel' },
+      { session }
+    );
+
+    if (incomeResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related Income record', 500);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 module.exports = {

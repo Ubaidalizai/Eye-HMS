@@ -41,11 +41,13 @@ export default function MoveHistory() {
 
   const columns = React.useMemo(
     () => [
-      { accessorKey: 'productName', header: 'productName' },
+      { accessorKey: 'inventory_id.name', header: 'productName' },
       { accessorKey: 'quantity_moved', header: 'Quantity Moved' },
       {
         accessorKey: 'moved_by',
         header: 'Moved By',
+        cell: (data) =>
+          `${data.getValue()?.firstName} ${data.getValue()?.lastName}`,
       },
       { accessorKey: 'category', header: 'Category' },
       {

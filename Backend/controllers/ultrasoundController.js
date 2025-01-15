@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Ultrasound = require('../models/ultraSoundModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
@@ -51,77 +52,112 @@ const getRecordById = asyncHandler(async (req, res) => {
 });
 
 // Add a new record
-const addRecord = asyncHandler(async (req, res) => {
+const addRecord = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
-  console.log(req.body);
 
-  const patient = await Patient.findOne({ patientID: patientId });
-  if (!patient) {
-    throw new AppError('Patient not exist', 404);
-  }
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const doctorExist = await User.findById(doctor);
-  if (!doctorExist || doctorExist.role !== 'doctor') {
-    throw new AppError('Doctor not exist', 404);
-  }
-
-  req.body.totalAmount = req.body.price;
-  let doctorPercentage = 0;
-
-  if (doctorExist.percentage) {
-    // Calculate percentage and update total amount
-    const result = await calculatePercentage(
-      req.body.price,
-      doctorExist.percentage
+  try {
+    // Step 1: Validate patient
+    const patient = await Patient.findOne({ patientID: patientId }).session(
+      session
     );
-    req.body.totalAmount = result.finalPrice;
-    doctorPercentage = result.percentageAmount;
-  }
+    if (!patient) {
+      throw new AppError('Patient not exist', 404);
+    }
 
-  if (req.body.discount > 0) {
-    const result = await calculatePercentage(
-      req.body.totalAmount,
-      req.body.discount
-    );
-    req.body.totalAmount = result.finalPrice;
-  }
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not exist', 404);
+    }
 
-  const ultrasound = new Ultrasound({
-    patientId: patient._id,
-    doctor: doctor,
-    percentage: doctorExist.percentage,
-    price: req.body.price,
-    time: req.body.time,
-    date: req.body.date,
-    discount: req.body.discount,
-    totalAmount: req.body.totalAmount,
-  });
-  await ultrasound.save();
+    // Step 3: Calculate total amount and doctor percentage
+    req.body.totalAmount = req.body.price;
+    let doctorPercentage = 0;
 
-  // Create a new record if it doesn't exist
-  await DoctorKhata.create({
-    branchNameId: ultrasound._id,
-    branchModel: 'ultraSoundModule',
-    doctorId: doctorExist._id,
-    amount: doctorPercentage,
-    date: req.body.date,
-    amountType: 'income',
-  });
+    if (doctorExist.percentage) {
+      const result = await calculatePercentage(
+        req.body.price,
+        doctorExist.percentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
+    }
 
-  if (ultrasound.totalAmount > 0) {
-    await Income.create({
-      saleId: ultrasound._id,
-      saleModel: 'ultraSoundModule',
-      date: ultrasound.date,
-      totalNetIncome: ultrasound.totalAmount,
-      category: 'ultrasound',
-      description: 'ultrasound income',
+    if (req.body.discount > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        req.body.discount
+      );
+      req.body.totalAmount = result.finalPrice;
+    }
+
+    // Step 4: Create Ultrasound record
+    const ultrasound = new Ultrasound({
+      patientId: patient._id,
+      doctor: doctor,
+      percentage: doctorExist.percentage,
+      price: req.body.price,
+      time: req.body.time,
+      date: req.body.date,
+      discount: req.body.discount,
+      totalAmount: req.body.totalAmount,
     });
+
+    await ultrasound.save({ session });
+
+    // Step 5: Add to DoctorKhata
+    if (doctorPercentage > 0 && doctorExist.percentage > 0)
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: ultrasound._id,
+            branchModel: 'ultraSoundModule',
+            doctorId: doctorExist._id,
+            amount: doctorPercentage,
+            date: req.body.date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+
+    // Step 6: Add to Income
+    if (ultrasound.totalAmount > 0) {
+      await Income.create(
+        [
+          {
+            saleId: ultrasound._id,
+            saleModel: 'ultraSoundModule',
+            date: ultrasound.date,
+            totalNetIncome: ultrasound.totalAmount,
+            category: 'ultrasound',
+            description: 'Ultrasound income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(201).json({
+      success: true,
+      message: 'Ultrasound added successfully',
+      data: ultrasound,
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
   }
-  res.status(201).json({
-    success: true,
-    message: 'Ultrasound added successfully',
-  });
 });
 
 // Update an existing record by custom schema id
@@ -142,16 +178,62 @@ const updateRecord = asyncHandler(async (req, res) => {
 });
 
 // Delete a record by custom schema id
-const deleteRecord = asyncHandler(async (req, res) => {
+const deleteRecord = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   validateMongoDBId(id);
-  const deletedRecord = await Ultrasound.findByIdAndDelete(id);
 
-  if (!deletedRecord) {
-    throw new AppError('Record not found', 404);
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the Ultrasound record
+    const ultrasoundRecord = await Ultrasound.findById(id).session(session);
+    if (!ultrasoundRecord) {
+      throw new AppError('Record not found', 404);
+    }
+
+    // Step 2: Delete the Ultrasound record
+    const deletedRecord = await Ultrasound.findByIdAndDelete(id, { session });
+    if (!deletedRecord) {
+      throw new AppError('Failed to delete record', 500);
+    }
+
+    // Step 3: Delete related records in DoctorKhata
+    const doctorKhataResult = await DoctorKhata.deleteOne(
+      { branchNameId: ultrasoundRecord._id, branchModel: 'ultraSoundModule' },
+      { session }
+    );
+
+    if (doctorKhataResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    }
+
+    // Step 4: Delete related records in Income
+    const incomeResult = await Income.deleteOne(
+      { saleId: ultrasoundRecord._id, saleModel: 'ultraSoundModule' },
+      { session }
+    );
+
+    if (incomeResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related Income record', 500);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: 'Record and related records deleted successfully',
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
   }
-
-  res.status(200).json({ message: 'Record deleted successfully' });
 });
 
 module.exports = {

@@ -126,7 +126,7 @@ function OCT() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(`http://127.0.0.1:4000/api/v1/oct/${_id}`, {
+      const response = await fetch(`http://localhost:4000/api/v1/oct/${_id}`, {
         method: 'DELETE',
         credentials: 'include',
       });

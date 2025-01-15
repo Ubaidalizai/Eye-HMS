@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const OPD = require('../models/opdModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
@@ -50,74 +51,113 @@ const getRecordByPatientId = asyncHandler(async (req, res, next) => {
 });
 
 // Add a new OPD record
-const addRecord = asyncHandler(async (req, res) => {
+const addRecord = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
 
-  const patient = await Patient.findOne({ patientID: patientId });
-  if (!patient) {
-    throw new AppError('Patient not found', 404);
-  }
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const doctorExist = await User.findById(doctor);
-  if (!doctorExist || doctorExist.role !== 'doctor') {
-    throw new AppError('Doctor not found', 404);
-  }
-
-  req.body.totalAmount = req.body.price;
-  let doctorPercentage = 0;
-
-  if (doctorExist.percentage) {
-    // Calculate percentage and update total amount
-    const result = await calculatePercentage(
-      req.body.price,
-      doctorExist.percentage
+  try {
+    // Step 1: Validate patient
+    const patient = await Patient.findOne({ patientID: patientId }).session(
+      session
     );
-    req.body.totalAmount = result.finalPrice;
-    doctorPercentage = result.percentageAmount;
-  }
+    if (!patient) {
+      throw new AppError('Patient not found', 404);
+    }
 
-  if (req.body.discount > 0) {
-    const result = await calculatePercentage(
-      req.body.totalAmount,
-      req.body.discount
-    );
-    req.body.totalAmount = result.finalPrice;
-  }
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not found', 404);
+    }
 
-  const opdRecord = new OPD({
-    patientId: patient._id,
-    doctor: doctor,
-    percentage: doctorExist.percentage,
-    price: req.body.price,
-    time: req.body.time,
-    date: req.body.date,
-    discount: req.body.discount,
-    totalAmount: req.body.totalAmount,
-  });
-  await opdRecord.save();
+    // Step 3: Calculate total amount and doctor percentage
+    req.body.totalAmount = req.body.price;
+    let doctorPercentage = 0;
 
-  // Create a new record if it doesn't exist
-  await DoctorKhata.create({
-    branchNameId: opdRecord._id,
-    branchModel: 'opdModule',
-    doctorId: doctorExist._id,
-    amount: doctorPercentage,
-    date: req.body.date,
-    amountType: 'income',
-  });
+    if (doctorExist.percentage) {
+      const result = await calculatePercentage(
+        req.body.price,
+        doctorExist.percentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
+    }
 
-  if (opdRecord.totalAmount > 0) {
-    await Income.create({
-      saleId: opdRecord._id,
-      saleModel: 'opdModule',
-      date: opdRecord.date,
-      totalNetIncome: opdRecord.totalAmount,
-      category: 'opd',
-      description: 'OPD income',
+    if (req.body.discount > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        req.body.discount
+      );
+      req.body.totalAmount = result.finalPrice;
+    }
+
+    // Step 4: Create OPD record
+    const opdRecord = new OPD({
+      patientId: patient._id,
+      doctor: doctor,
+      percentage: doctorExist.percentage,
+      price: req.body.price,
+      time: req.body.time,
+      date: req.body.date,
+      discount: req.body.discount,
+      totalAmount: req.body.totalAmount,
     });
-  }
 
-  res.status(201).json(opdRecord);
+    await opdRecord.save({ session });
+
+    // Step 5: Add to DoctorKhata
+    if (doctorPercentage > 0 && doctorExist.percentage > 0) {
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: opdRecord._id,
+            branchModel: 'opdModule',
+            doctorId: doctorExist._id,
+            amount: doctorPercentage,
+            date: req.body.date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Step 6: Add to Income
+    if (opdRecord.totalAmount > 0) {
+      await Income.create(
+        [
+          {
+            saleId: opdRecord._id,
+            saleModel: 'opdModule',
+            date: opdRecord.date,
+            totalNetIncome: opdRecord.totalAmount,
+            category: 'opd',
+            description: 'OPD income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(201).json({
+      success: true,
+      message: 'OPD record created successfully',
+      data: opdRecord,
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 // Update an existing OPD record by patientId
@@ -137,11 +177,60 @@ const updateRecordByPatientId = asyncHandler(async (req, res, next) => {
 const deleteRecordByPatientId = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const deletedRecord = await OPD.findByIdAndDelete(id);
-  if (!deletedRecord) {
-    return next(new AppError('Record not found', 404));
+  // Validate MongoDB ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new AppError('Invalid ID provided', 400);
   }
-  res.status(204).json();
+
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the OPD record
+    const opdRecord = await OPD.findById(id).session(session);
+    if (!opdRecord) {
+      throw new AppError('Record not found', 404);
+    }
+
+    // Step 2: Delete the OPD record
+    const deletedRecord = await OPD.findByIdAndDelete(id, { session });
+    if (!deletedRecord) {
+      throw new AppError('Failed to delete OPD record', 500);
+    }
+
+    // Step 3: Delete related records in DoctorKhata
+    const doctorKhataResult = await DoctorKhata.deleteOne(
+      { branchNameId: opdRecord._id, branchModel: 'opdModule' },
+      { session }
+    );
+
+    if (doctorKhataResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    }
+
+    // Step 4: Delete related records in Income
+    const incomeResult = await Income.deleteOne(
+      { saleId: opdRecord._id, saleModel: 'opdModule' },
+      { session }
+    );
+
+    if (incomeResult.deletedCount === 0) {
+      throw new AppError('Failed to delete related Income record', 500);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(204).json();
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 module.exports = {

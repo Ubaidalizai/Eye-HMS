@@ -22,22 +22,4 @@ const yeglizerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-yeglizerSchema.pre('findOneAndDelete', async function (next) {
-  const yeglizerId = this.getQuery()._id; // Get the ID being deleted
-
-  // Delete related records in DoctorKhata
-  await mongoose.model('DoctorKhata').deleteOne({
-    branchNameId: yeglizerId,
-    branchModel: 'yeglizerModel',
-  });
-
-  // Delete related records in Income
-  await mongoose.model('Income').deleteOne({
-    saleId: yeglizerId,
-    saleModel: 'yeglizerModel',
-  });
-
-  next();
-});
-
 module.exports = mongoose.model('Yeglizer', yeglizerSchema);
