@@ -77,8 +77,8 @@ exports.getDoctorKhataById = asyncHandler(async (req, res) => {
 
   // Check if doctor exists in User model and has percentage
   const doctor = await User.findById(id);
-  if (!doctor || !doctor.percentage) {
-    throw new AppError('Doctor not found or does not have percentage', 400);
+  if (!doctor) {
+    throw new AppError('Doctor not found.', 404);
   }
 
   let doctorKhata;

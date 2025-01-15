@@ -162,20 +162,29 @@ const addPurchase = asyncHandler(async (req, res) => {
   // Validate MongoDB product ID
   validateMongoDBId(productID);
 
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     // Step 1: Create a new Purchase entry
-    const purchaseDetails = await Purchase.create({
-      userID,
-      ProductID: productID,
-      QuantityPurchased,
-      salePrice,
-      date,
-      UnitPurchaseAmount: unitPurchaseAmount,
-      category,
-    });
+    const purchaseDetails = await Purchase.create(
+      [
+        {
+          userID,
+          ProductID: productID,
+          QuantityPurchased,
+          salePrice,
+          date,
+          UnitPurchaseAmount: unitPurchaseAmount,
+          category,
+        },
+      ],
+      { session }
+    );
 
     // Step 2: Update product stock after purchase
-    const product = await Product.findById(productID);
+    const product = await Product.findById(productID).session(session);
     if (!product) {
       throw new AppError('Product not found', 404);
     }
@@ -184,7 +193,11 @@ const addPurchase = asyncHandler(async (req, res) => {
     product.purchasePrice = Number(unitPurchaseAmount);
     product.salePrice = Number(salePrice);
     product.expiryDate = expiryDate;
-    await product.save();
+    await product.save({ session });
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
 
     // Step 3: Send success response
     res.status(200).json({
@@ -193,21 +206,13 @@ const addPurchase = asyncHandler(async (req, res) => {
       data: { purchaseDetails },
     });
   } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
     console.error('Error adding purchase:', error);
 
-    // If `Purchase.create` was successful but stock update failed, manually rollback
-    const purchase = await Purchase.findOne({
-      userID,
-      ProductID: productID,
-      QuantityPurchased,
-      date,
-    });
-
-    if (purchase) {
-      await purchase.deleteOne(); // Rollback the purchase record
-    }
-
-    throw error; // Re-throw the error to trigger the error handler
+    // Re-throw the error to trigger the error handler
+    throw new AppError('Failed to add purchase. Transaction rolled back.', 500);
   }
 });
 
@@ -251,7 +256,7 @@ const validateMongoDBId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
-const deletePurchase = asyncHandler(async (req, res) => {
+const deletePurchase = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
 
   // Validate MongoDB ID
@@ -259,42 +264,59 @@ const deletePurchase = asyncHandler(async (req, res) => {
     return next(new AppError('Invalid purchase ID.', 400));
   }
 
-  // Find the purchase to get the quantity and product info before deleting
-  const purchase = await Purchase.findById(id);
-  if (!purchase) {
-    throw new AppError('Purchase not found.', 404);
+  // Start a transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Find the purchase record
+    const purchase = await Purchase.findById(id).session(session);
+    if (!purchase) {
+      throw new AppError('Purchase not found.', 404);
+    }
+
+    // Step 2: Find the associated product
+    const product = await Product.findById(purchase.ProductID).session(session);
+    if (!product) {
+      throw new AppError('Associated product not found.', 404);
+    }
+
+    // Step 3: Adjust stock based on the purchase quantity
+    const stockDifference = -purchase.QuantityPurchased;
+    product.stock += stockDifference;
+
+    // Prevent negative stock
+    if (product.stock < 0) {
+      throw new AppError('Insufficient stock quantity.', 400);
+    }
+
+    // Save the updated product stock
+    await product.save({ session });
+
+    // Step 4: Delete the purchase record
+    await Purchase.deleteOne({ _id: id }, { session });
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(200).json({
+      status: 'success',
+      message: 'Purchase deleted successfully.',
+      data: {
+        deletedPurchase: purchase,
+        updatedProductStock: product.stock,
+      },
+    });
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(
+      new AppError('Failed to delete purchase. Transaction rolled back.', 500)
+    );
   }
-
-  // Update the product stock before deleting the purchase
-  const product = await Product.findById(purchase.ProductID);
-  if (!product) {
-    throw new AppError('Associated product not found.', 404);
-  }
-
-  // Adjust stock based on the purchase quantity
-  const stockDifference = -purchase.QuantityPurchased;
-  product.stock += stockDifference;
-
-  // Prevent negative stock
-  if (product.stock < 0) {
-    throw new AppError('Insufficient stock quantity.', 400);
-  }
-
-  // Save updated stock
-  await product.save();
-
-  // Delete the purchase record
-  await purchase.deleteOne();
-
-  // Send success response
-  res.status(200).json({
-    status: 'success',
-    message: 'Purchase deleted successfully.',
-    data: {
-      deletedPurchase: purchase,
-      updatedProductStock: product.stock,
-    },
-  });
 });
 
 module.exports = {
