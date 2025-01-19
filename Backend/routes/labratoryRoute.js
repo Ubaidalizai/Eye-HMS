@@ -9,6 +9,7 @@ const {
   getLabRecordByPatientId,
   updateLabRecordById,
   deleteLabRecordById,
+  fetchRecordsByPatientId,
 } = require('../controllers/labratoryController');
 
 const {
@@ -17,6 +18,8 @@ const {
 } = require('../middlewares/authMiddleware');
 
 router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/search/:patientID', fetchRecordsByPatientId);
 
 router.get('/:year', getLaboratoryDataByYear);
 router.get('/:year/:month', getLaboratoryDataByMonth);

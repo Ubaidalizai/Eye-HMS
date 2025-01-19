@@ -10,6 +10,7 @@ const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+const getPatientRecordsByPatientID = require('../utils/searchBranches');
 
 const getBedroomDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -213,6 +214,16 @@ const deleteBedroom = asyncHandler(async (req, res, next) => {
   }
 });
 
+const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
+  const patientID = req.params.patientID;
+  const results = await getPatientRecordsByPatientID(patientID, Bedroom);
+
+  res.status(200).json({
+    success: true,
+    data: results,
+  });
+});
+
 module.exports = {
   getBedroomDataByYear,
   getBedroomDataByMonth,
@@ -221,4 +232,5 @@ module.exports = {
   getBedroomById,
   updateBedroom,
   deleteBedroom,
+  fetchRecordsByPatientId,
 };

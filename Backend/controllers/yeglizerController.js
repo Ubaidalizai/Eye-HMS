@@ -10,6 +10,7 @@ const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+const getPatientRecordsByPatientID = require('../utils/searchBranches');
 
 const getYeglizerDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -243,6 +244,16 @@ const deleteYeglizerById = asyncHandler(async (req, res, next) => {
   }
 });
 
+const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
+  const patientID = req.params.patientID;
+  const results = await getPatientRecordsByPatientID(patientID, Yeglizer);
+
+  res.status(200).json({
+    success: true,
+    data: results,
+  });
+});
+
 module.exports = {
   getYeglizerDataByMonth,
   getYeglizerDataByYear,
@@ -251,4 +262,5 @@ module.exports = {
   getYeglizerById,
   updateYeglizerById,
   deleteYeglizerById,
+  fetchRecordsByPatientId,
 };

@@ -27,7 +27,6 @@ const getDataByYear = async (year, Model) => {
 
   // Fetch aggregated data
   const aggregatedData = await getAggregatedData(Model, matchCriteria, groupBy);
-
   // Populate data to fill missing months with zero values
   const chartData = populateDataArray(aggregatedData, 12, 'month');
 

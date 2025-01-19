@@ -9,6 +9,30 @@ const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+const getPatientRecordsByPatientID = require('../utils/searchBranches');
+
+const getOperationDataByYear = asyncHandler(async (req, res) => {
+  const { year } = req.params;
+
+  const chartData = await getDataByYear(year, Operation);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
+
+const getOperationDataByMonth = asyncHandler(async (req, res) => {
+  const { year, month } = req.params;
+
+  const chartData = await getDataByMonth(year, month, Operation);
+
+  res.status(200).json({
+    success: true,
+    data: chartData,
+  });
+});
 
 // Create a new operation
 const createOperation = asyncHandler(async (req, res, next) => {
@@ -206,9 +230,22 @@ const deleteOperation = asyncHandler(async (req, res, next) => {
   }
 });
 
+const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
+  const patientID = req.params.patientID;
+  const results = await getPatientRecordsByPatientID(patientID, Operation);
+
+  res.status(200).json({
+    success: true,
+    data: results,
+  });
+});
+
 module.exports = {
+  getOperationDataByYear,
+  getOperationDataByMonth,
   createOperation,
   getAllOperations,
   updateOperation,
   deleteOperation,
+  fetchRecordsByPatientId,
 };

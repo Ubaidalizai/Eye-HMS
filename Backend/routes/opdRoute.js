@@ -7,6 +7,7 @@ const {
   getRecordByPatientId,
   updateRecordByPatientId,
   deleteRecordByPatientId,
+  fetchRecordsByPatientId,
 } = require('../controllers/opdController');
 
 const {
@@ -17,6 +18,8 @@ const {
 const router = express.Router();
 
 router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/search/:patientID', fetchRecordsByPatientId);
 
 router.get('/:year', getOpdDataByYear);
 router.get('/:year/:month', getOpdDataByMonth);
