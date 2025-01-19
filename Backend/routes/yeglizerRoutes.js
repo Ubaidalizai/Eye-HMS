@@ -7,6 +7,7 @@ const {
   getYeglizerById,
   updateYeglizerById,
   deleteYeglizerById,
+  fetchRecordsByPatientId,
 } = require('../controllers/yeglizerController');
 
 const router = express.Router();
@@ -17,6 +18,8 @@ const {
 } = require('../middlewares/authMiddleware');
 
 router.use(authenticate, authorizeAdminOrPharmacist);
+
+router.get('/search/:patientID', fetchRecordsByPatientId);
 
 router.get('/:year', getYeglizerDataByYear);
 router.get('/:year/:month', getYeglizerDataByMonth);

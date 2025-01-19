@@ -10,6 +10,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+const getPatientRecordsByPatientID = require('../utils/searchBranches');
 
 const getLaboratoryDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -237,6 +238,16 @@ const deleteLabRecordById = asyncHandler(async (req, res, next) => {
   }
 });
 
+const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
+  const patientID = req.params.patientID;
+  const results = await getPatientRecordsByPatientID(patientID, Laboratory);
+
+  res.status(200).json({
+    success: true,
+    data: results,
+  });
+});
+
 module.exports = {
   getLaboratoryDataByYear,
   getLaboratoryDataByMonth,
@@ -245,4 +256,5 @@ module.exports = {
   getLabRecordByPatientId,
   updateLabRecordById,
   deleteLabRecordById,
+  fetchRecordsByPatientId,
 };

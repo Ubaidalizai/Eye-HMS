@@ -1,34 +1,11 @@
 import React, { useState } from 'react';
-import { FaTimes, FaEdit, FaTrash, FaRegEdit } from 'react-icons/fa';
+import { FaTrash, FaRegEdit } from 'react-icons/fa';
 
 const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredData = Array.isArray(submittedData)
-    ? submittedData.filter((data) =>
-        fields.some(
-          (field) =>
-            data[field.name] &&
-            data[field.name]
-              .toString()
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())
-        )
-      )
-    : [];
-
   return (
     <div className='bg-white border rounded-md'>
       {/* <h3 className='text-lg font-semibold mb-4'>Submitted Data</h3> */}
-
-      <input
-        type='text'
-        placeholder='Search ...'
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5 ml-5'
-      />
-      {filteredData.length === 0 ? (
+      {submittedData.length === 0 ? (
         <div className='text-gray-500 text-center mt-10'>
           No data submitted yet.
         </div>
@@ -45,7 +22,7 @@ const DataTable = ({ submittedData, fields, handleRemove, handleEdit }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((data, index) => (
+            {submittedData.map((data, index) => (
               <tr key={index} className='hover:bg-gray-50 border'>
                 {fields.map((field, idx) => (
                   <td key={idx} className='py-2 px-2'>

@@ -43,6 +43,19 @@ function Operation() {
     }
   };
 
+  const handleSearchChange = async (patientId) => {
+    const res = await fetch(
+      `http://localhost:4000/api/v1/operation/search/${patientId}`,
+      {
+        method: 'GET',
+        credentials: 'include', // Added credentials here
+      }
+    );
+
+    const result = await res.json();
+    setSubmittedData(result.data.records);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const entry = { patientId, price, time, date, doctor, discount };
@@ -219,6 +232,12 @@ function Operation() {
         }
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
+      />
+      <input
+        type='text'
+        placeholder='Search ...'
+        onChange={(e) => handleSearchChange(e.target.value)}
+        className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />
       <DataTable
         submittedData={submittedData}

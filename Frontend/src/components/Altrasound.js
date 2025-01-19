@@ -22,7 +22,7 @@ function Ultrasound() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [doctor, setDoctor] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { perDoctors } = useAuth();
 
@@ -77,6 +77,19 @@ function Ultrasound() {
       credentials: 'include', // Added credentials here
     });
     setSubmittedData(submittedData.filter((_, i) => i !== index));
+  };
+
+  const handleSearchChange = async (patientId) => {
+    const res = await fetch(
+      `http://localhost:4000/api/v1/ultrasound/search/${patientId}`,
+      {
+        method: 'GET',
+        credentials: 'include', // Added credentials here
+      }
+    );
+
+    const result = await res.json();
+    setSubmittedData(result.data.records);
   };
 
   const handleFormSubmit = async () => {
@@ -180,12 +193,18 @@ function Ultrasound() {
         method={editMode ? 'PATCH' : 'POST'}
         onSubmit={handleFormSubmit}
       />
-
+      <input
+        type='text'
+        placeholder='Search ...'
+        onChange={(e) => handleSearchChange(e.target.value)}
+        className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
+      />
       <DataTable
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
+        setSearchTerm={setSearchTerm}
       />
       <Pagination
         totalItems={submittedData.length}
