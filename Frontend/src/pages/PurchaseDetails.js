@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {
-  FaPlus,
-  FaChevronLeft,
-  FaChevronRight,
-  FaFilter,
-  FaEdit,
-  FaTrash,
-} from 'react-icons/fa';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 import AddPurchaseDetails from '../components/AddPurchaseDetails';
 import AuthContext from '../AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
@@ -16,7 +9,6 @@ import { BASE_URL } from '../config';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [purchases, setAllPurchasesData] = useState([]);
   const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,14 +102,6 @@ function PurchaseDetails() {
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
         <h2 className='font-semibold text-xl'>Purchase Records</h2>
-        {/* <div className='text-center'>
-          <h2 className='text-3xl font-extrabold text-gray-900 sm:text-4xl'>
-            Purchase Details
-          </h2>
-          <p className='mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4'>
-            Manage and track your purchase history
-          </p>
-        </div> */}
 
         {showPurchaseModal && (
           <AddPurchaseDetails

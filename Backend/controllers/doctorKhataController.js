@@ -31,15 +31,17 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
 });
 
 exports.getDocKhataSummary = asyncHandler(async (req, res) => {
-  const id = req.params.doctorId;
+  const id = req.params.id;
   const result = await DoctorKhata.aggregate([
+    {
+      $match: { doctorId: new mongoose.Types.ObjectId(id) }, // Filter by doctorId
+    },
     {
       $group: {
         _id: '$amountType', // Group by 'amountType' (income or outcome)
         totalAmount: { $sum: '$amount' }, // Sum 'amount' for each type
       },
     },
-    { $match: { doctorId: id } },
   ]);
   // Format the result as an object for clarity
   const summary = {

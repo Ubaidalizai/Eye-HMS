@@ -29,6 +29,7 @@ export function useDoctorData(selectedDoctorId, viewType) {
     async (doctorId) => {
       try {
         setLoading(true);
+
         const response = await fetch(
           `${BASE_URL}/khata/doctor-khata/${doctorId}?amountType=${viewType}`,
           { credentials: 'include' }

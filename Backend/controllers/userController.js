@@ -137,7 +137,6 @@ const registerUser = asyncHandler(async (req, res) => {
 // Login user
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
 
   // 1) Check if email and password exist
   if (!email || !password) {

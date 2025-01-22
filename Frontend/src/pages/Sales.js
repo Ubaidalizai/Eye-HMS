@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaFilter, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
 import { toast, ToastContainer } from 'react-toastify';
-import { HiSearch } from 'react-icons/hi';
 import Pagination from '../components/Pagination';
 import { BASE_URL } from '../config';
 
@@ -32,6 +31,10 @@ export default function Sales() {
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
     setCurrentPage(1);
+  };
+
+  const addSaleModalSetting = () => {
+    setShowSaleModal(!showSaleModal);
   };
 
   const fetchSales = async () => {
@@ -168,17 +171,17 @@ export default function Sales() {
                 </select>
               </div>
 
-              {/* <button
+              <button
                 className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                onClick={() => setShowSaleModal(true)}
+                onClick={() => addSaleModalSetting()}
               >
                 <FaPlus className='mr-2' />
                 Add Sale
-              </button> */}
+              </button>
 
               {showSaleModal && (
                 <AddSale
-                  addSaleModalSetting={() => setShowSaleModal(false)}
+                  addSaleModalSetting={addSaleModalSetting}
                   products={products}
                   handlePageUpdate={fetchSales}
                 />

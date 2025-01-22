@@ -211,8 +211,16 @@ const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
       { session }
     );
 
+    // Only throw an error if DoctorKhata record exists but fails to delete
     if (doctorKhataResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related DoctorKhata record', 500);
+      const doctorKhataExists = await DoctorKhata.findOne({
+        branchNameId: octRecord._id,
+        branchModel: 'octModule',
+      }).session(session);
+
+      if (doctorKhataExists) {
+        throw new AppError('Failed to delete related DoctorKhata record', 500);
+      }
     }
 
     // Step 4: Delete related records in Income
@@ -221,8 +229,16 @@ const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
       { session }
     );
 
+    // Only throw an error if Income record exists but fails to delete
     if (incomeResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related Income record', 500);
+      const incomeExists = await Income.findOne({
+        saleId: octRecord._id,
+        saleModel: 'octModule',
+      }).session(session);
+
+      if (incomeExists) {
+        throw new AppError('Failed to delete related Income record', 500);
+      }
     }
 
     // Commit the transaction
@@ -241,6 +257,7 @@ const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
     next(error);
   }
 });
+
 
 const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   const patientID = req.params.patientID;

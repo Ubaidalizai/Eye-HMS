@@ -193,32 +193,52 @@ const deleteLabRecordById = asyncHandler(async (req, res, next) => {
   session.startTransaction();
 
   try {
-    // Step 1: Find and delete the lab record
+    // Step 1: Find the Lab record
     const labRecord = await Laboratory.findById(id).session(session);
     if (!labRecord) {
       throw new AppError('Lab record not found', 404);
     }
 
-    await Laboratory.findByIdAndDelete(id, { session });
+    // Step 2: Delete the Lab record
+    const deletedLabRecord = await Laboratory.findByIdAndDelete(id, {
+      session,
+    });
+    if (!deletedLabRecord) {
+      throw new AppError('Failed to delete Lab record', 500);
+    }
 
-    // Step 2: Delete related records in DoctorKhata
+    // Step 3: Delete related records in DoctorKhata
     const doctorKhataResult = await DoctorKhata.deleteOne(
       { branchNameId: labRecord._id, branchModel: 'labratoryModule' },
       { session }
     );
 
     if (doctorKhataResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related DoctorKhata record', 500);
+      const doctorKhataExists = await DoctorKhata.findOne({
+        branchNameId: labRecord._id,
+        branchModel: 'labratoryModule',
+      }).session(session);
+
+      if (doctorKhataExists) {
+        throw new AppError('Failed to delete related DoctorKhata record', 500);
+      }
     }
 
-    // Step 3: Delete related records in Income
+    // Step 4: Delete related records in Income
     const incomeResult = await Income.deleteOne(
       { saleId: labRecord._id, saleModel: 'labratoryModule' },
       { session }
     );
 
     if (incomeResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related Income record', 500);
+      const incomeExists = await Income.findOne({
+        saleId: labRecord._id,
+        saleModel: 'labratoryModule',
+      }).session(session);
+
+      if (incomeExists) {
+        throw new AppError('Failed to delete related Income record', 500);
+      }
     }
 
     // Commit the transaction

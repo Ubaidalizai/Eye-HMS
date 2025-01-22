@@ -1,8 +1,9 @@
-import React from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { XMarkIcon, PrinterIcon } from "@heroicons/react/24/outline";
+import React from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { XMarkIcon, PrinterIcon } from '@heroicons/react/24/outline';
 
 export function BillPrintModal({ showBill, setShowBill, soldItems }) {
+  console.log(showBill, setShowBill, soldItems);
   return (
     <Transition.Root show={showBill} as='div'>
       <Dialog
@@ -46,9 +47,9 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                         </Dialog.Title>
                         <div className='mt-2'>
                           <p className='text-sm text-gray-500 mb-4'>
-                            <span className='font-medium'>Date:</span>{" "}
+                            <span className='font-medium'>Date:</span>{' '}
                             {soldItems.date ||
-                              new Date().toISOString().split("T")[0]}
+                              new Date().toISOString().split('T')[0]}
                           </p>
                           <div className='border-t border-gray-200 py-4'>
                             <h4 className='text-lg font-medium text-gray-900 mb-2'>
@@ -62,14 +63,14 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                                 >
                                   <div>
                                     <p className='text-sm font-medium text-gray-900'>
-                                      {item.productName || "Unknown"}
+                                      {item.productName || 'Unknown'}
                                     </p>
                                     <p className='text-sm text-gray-500'>
                                       Quantity: {item.quantity}
                                     </p>
                                   </div>
                                   <p className='text-sm font-medium text-gray-900'>
-                                    ${item.income?.toFixed(2) || "0.00"}
+                                    ${item.income?.toFixed(2) || '0.00'}
                                   </p>
                                 </li>
                               ))}
@@ -81,7 +82,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                                 Total Income:
                               </p>
                               <p className='text-lg font-semibold text-gray-900'>
-                                ${soldItems.totalIncome?.toFixed(2) || "0.00"}
+                                ${soldItems.totalIncome?.toFixed(2) || '0.00'}
                               </p>
                             </div>
                           </div>
