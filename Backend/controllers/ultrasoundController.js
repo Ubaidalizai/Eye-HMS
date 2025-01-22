@@ -181,6 +181,8 @@ const updateRecord = asyncHandler(async (req, res) => {
 // Delete a record by custom schema id
 const deleteRecord = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
+
+  // Validate MongoDB ID
   validateMongoDBId(id);
 
   // Start a transaction session
@@ -200,24 +202,38 @@ const deleteRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('Failed to delete record', 500);
     }
 
-    // Step 3: Delete related records in DoctorKhata
-    const doctorKhataResult = await DoctorKhata.deleteOne(
-      { branchNameId: ultrasoundRecord._id, branchModel: 'ultraSoundModule' },
-      { session }
-    );
+    // Step 3: Check and delete related records in DoctorKhata
+    const doctorKhataExists = await DoctorKhata.findOne({
+      branchNameId: ultrasoundRecord._id,
+      branchModel: 'ultraSoundModule',
+    }).session(session);
 
-    if (doctorKhataResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    if (doctorKhataExists) {
+      const doctorKhataResult = await DoctorKhata.deleteOne(
+        { branchNameId: ultrasoundRecord._id, branchModel: 'ultraSoundModule' },
+        { session }
+      );
+
+      if (doctorKhataResult.deletedCount === 0) {
+        throw new AppError('Failed to delete related DoctorKhata record', 500);
+      }
     }
 
-    // Step 4: Delete related records in Income
-    const incomeResult = await Income.deleteOne(
-      { saleId: ultrasoundRecord._id, saleModel: 'ultraSoundModule' },
-      { session }
-    );
+    // Step 4: Check and delete related records in Income
+    const incomeExists = await Income.findOne({
+      saleId: ultrasoundRecord._id,
+      saleModel: 'ultraSoundModule',
+    }).session(session);
 
-    if (incomeResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related Income record', 500);
+    if (incomeExists) {
+      const incomeResult = await Income.deleteOne(
+        { saleId: ultrasoundRecord._id, saleModel: 'ultraSoundModule' },
+        { session }
+      );
+
+      if (incomeResult.deletedCount === 0) {
+        throw new AppError('Failed to delete related Income record', 500);
+      }
     }
 
     // Commit the transaction

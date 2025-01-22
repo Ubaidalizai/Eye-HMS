@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
-import PersonInfoDropdown from "./PersonInfoDropdown";
-import { BASE_URL } from "../config";
+import React, { useState, useEffect } from 'react';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import PersonInfoDropdown from './PersonInfoDropdown';
+import { BASE_URL } from '../config';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "",
-    password: "",
-    phoneNumber: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: '',
+    password: '',
+    phoneNumber: '',
     image: null,
-    percentage: "",
+    percentage: '',
   });
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -22,7 +22,7 @@ const UserList = () => {
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${BASE_URL}/user`, {
-        credentials: "include",
+        credentials: 'include',
       });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
 
@@ -30,11 +30,11 @@ const UserList = () => {
       if (data && data.data && Array.isArray(data.data.results)) {
         setUsers(data.data.results);
       } else {
-        console.error("Unexpected API response structure:", data);
+        console.error('Unexpected API response structure:', data);
         setUsers([]);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error('Error fetching users:', error);
       setUsers([]);
     }
   };
@@ -46,18 +46,18 @@ const UserList = () => {
   const validateForm = (user, isNewUser = false) => {
     const errors = {};
     if (user.firstName.trim().length < 2)
-      errors.firstName = "First name must be at least 2 characters long";
+      errors.firstName = 'First name must be at least 2 characters long';
     if (user.lastName.trim().length < 2)
-      errors.lastName = "Last name must be at least 2 characters long";
+      errors.lastName = 'Last name must be at least 2 characters long';
     if (!/^\S+@\S+\.\S+$/.test(user.email))
-      errors.email = "Invalid email format";
+      errors.email = 'Invalid email format';
     if (isNewUser && user.password.length < 6)
-      errors.password = "Password must be at least 6 characters long";
+      errors.password = 'Password must be at least 6 characters long';
     if (!/^\d{10}$/.test(user.phoneNumber))
-      errors.phoneNumber = "Phone number must be 10 digits";
+      errors.phoneNumber = 'Phone number must be 10 digits';
     if (isNaN(user.percentage) || user.percentage < 0 || user.percentage > 100)
-      errors.percentage = "Percentage must be between 0 and 100";
-    if (!user.role) errors.role = "Please select a role";
+      errors.percentage = 'Percentage must be between 0 and 100';
+    if (!user.role) errors.role = 'Please select a role';
     return errors;
   };
 
@@ -74,27 +74,27 @@ const UserList = () => {
     });
     try {
       const response = await fetch(`${BASE_URL}/user/register`, {
-        credentials: "include",
-        method: "POST",
+        credentials: 'include',
+        method: 'POST',
         body: formData,
       });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
       setUsers([...users, data.user]);
       setNewUser({
-        firstName: "",
-        lastName: "",
-        email: "",
-        role: "",
-        password: "",
-        phoneNumber: "",
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: '',
+        password: '',
+        phoneNumber: '',
         image: null,
-        percentage: "",
+        percentage: '',
       });
       setIsAddModalOpen(false);
       setValidationErrors({});
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error('Error adding user:', error);
     }
   };
 
@@ -108,54 +108,46 @@ const UserList = () => {
     try {
       const { password, ...userDataWithoutPassword } = editingUser;
       const response = await fetch(`${BASE_URL}/user/${editingUser._id}`, {
-        credentials: "include",
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userDataWithoutPassword),
       });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
 
-      // If the user's role is changed to or from 'doctor', update the doctor's ledger
-      if (
-        editingUser.role !== data.user.role &&
-        (editingUser.role === "doctor" || data.user.role === "doctor")
-      ) {
-        await updateDoctorLedger(data.user);
-      }
-
       fetchUsers();
       setEditingUser(null);
       setValidationErrors({});
     } catch (error) {
-      console.error("Error updating user:", error);
+      console.error('Error updating user:', error);
     }
   };
 
-  const updateDoctorLedger = async (user) => {
-    try {
-      const response = await fetch(`${BASE_URL}/doctor-ledger/${user._id}`, {
-        credentials: "include",
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isDoctor: user.role === "doctor" }),
-      });
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      console.log("Doctor ledger updated successfully");
-    } catch (error) {
-      console.error("Error updating doctor ledger:", error);
-    }
-  };
+  // const updateDoctorLedger = async (user) => {
+  //   try {
+  //     const response = await fetch(`${BASE_URL}/doctor-ledger/${user._id}`, {
+  //       credentials: "include",
+  //       method: "PATCH",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ isDoctor: user.role === "doctor" }),
+  //     });
+  //     if (!response.ok) throw new Error(`Error: ${response.status}`);
+  //     console.log("Doctor ledger updated successfully");
+  //   } catch (error) {
+  //     console.error("Error updating doctor ledger:", error);
+  //   }
+  // };
 
   const deleteUser = async (id) => {
     try {
       await fetch(`${BASE_URL}/user/${id}`, {
-        credentials: "include",
-        method: "DELETE",
+        credentials: 'include',
+        method: 'DELETE',
       });
       fetchUsers();
     } catch (error) {
-      console.error("Error deleting user:", error);
+      console.error('Error deleting user:', error);
     }
   };
 
@@ -234,7 +226,7 @@ const UserList = () => {
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.role === "admin" ? (
+                    {user.role === 'admin' ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
                         {user.role}
                       </span>
@@ -245,10 +237,10 @@ const UserList = () => {
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user?.percentage > 0 ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
-                        {user.percentage + "%"}
+                        {user.percentage + '%'}
                       </span>
                     ) : (
-                      user.percentage + "%"
+                      user.percentage + '%'
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>

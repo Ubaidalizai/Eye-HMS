@@ -207,24 +207,38 @@ const deleteYeglizerById = asyncHandler(async (req, res, next) => {
       throw new AppError('Failed to delete Yeglizer record', 500);
     }
 
-    // Step 3: Delete related records in DoctorKhata
-    const doctorKhataResult = await DoctorKhata.deleteOne(
-      { branchNameId: yeglizerRecord._id, branchModel: 'yeglizerModel' },
-      { session }
-    );
+    // Step 3: Check and delete related records in DoctorKhata
+    const doctorKhataExists = await DoctorKhata.findOne({
+      branchNameId: yeglizerRecord._id,
+      branchModel: 'yeglizerModel',
+    }).session(session);
 
-    if (doctorKhataResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    if (doctorKhataExists) {
+      const doctorKhataResult = await DoctorKhata.deleteOne(
+        { branchNameId: yeglizerRecord._id, branchModel: 'yeglizerModel' },
+        { session }
+      );
+
+      if (doctorKhataResult.deletedCount === 0) {
+        throw new AppError('Failed to delete related DoctorKhata record', 500);
+      }
     }
 
-    // Step 4: Delete related records in Income
-    const incomeResult = await Income.deleteOne(
-      { saleId: yeglizerRecord._id, saleModel: 'yeglizerModel' },
-      { session }
-    );
+    // Step 4: Check and delete related records in Income
+    const incomeExists = await Income.findOne({
+      saleId: yeglizerRecord._id,
+      saleModel: 'yeglizerModel',
+    }).session(session);
 
-    if (incomeResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related Income record', 500);
+    if (incomeExists) {
+      const incomeResult = await Income.deleteOne(
+        { saleId: yeglizerRecord._id, saleModel: 'yeglizerModel' },
+        { session }
+      );
+
+      if (incomeResult.deletedCount === 0) {
+        throw new AppError('Failed to delete related Income record', 500);
+      }
     }
 
     // Commit the transaction

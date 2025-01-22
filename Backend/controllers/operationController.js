@@ -196,24 +196,36 @@ const deleteOperation = asyncHandler(async (req, res, next) => {
       throw new AppError('Failed to delete OPERATION record', 500);
     }
 
-    // Step 3: Delete related records in DoctorKhata
-    const doctorKhataResult = await DoctorKhata.deleteOne(
-      { branchNameId: operation._id, branchModel: 'operationModule' },
-      { session }
-    );
+    // Step 3: Check and delete related records in DoctorKhata
+    const doctorKhataExists = await DoctorKhata.findOne({
+      branchNameId: operation._id,
+      branchModel: 'operationModule',
+    }).session(session);
 
-    if (doctorKhataResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related DoctorKhata record', 500);
+    if (doctorKhataExists) {
+      const doctorKhataResult = await DoctorKhata.deleteOne(
+        { branchNameId: operation._id, branchModel: 'operationModule' },
+        { session }
+      );
+      if (doctorKhataResult.deletedCount === 0) {
+        throw new AppError('Failed to delete related DoctorKhata record', 500);
+      }
     }
 
-    // Step 4: Delete related records in Income
-    const incomeResult = await Income.deleteOne(
-      { saleId: operation._id, saleModel: 'operationModule' },
-      { session }
-    );
+    // Step 4: Check and delete related records in Income
+    const incomeExists = await Income.findOne({
+      saleId: operation._id,
+      saleModel: 'operationModule',
+    }).session(session);
 
-    if (incomeResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related Income record', 500);
+    if (incomeExists) {
+      const incomeResult = await Income.deleteOne(
+        { saleId: operation._id, saleModel: 'operationModule' },
+        { session }
+      );
+      if (incomeResult.deletedCount === 0) {
+        throw new AppError('Failed to delete related Income record', 500);
+      }
     }
 
     // Commit the transaction
@@ -221,7 +233,9 @@ const deleteOperation = asyncHandler(async (req, res, next) => {
     session.endSession();
 
     // Send success response
-    res.status(204).json();
+    res
+      .status(204)
+      .json({ message: 'Operation and related records deleted successfully' });
   } catch (error) {
     // Rollback the transaction on error
     await session.abortTransaction();

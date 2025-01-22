@@ -82,15 +82,16 @@ const createBedroom = asyncHandler(async (req, res) => {
   await bedroom.save();
 
   // Create a new record if it doesn't exist
-  await DoctorKhata.create({
-    branchNameId: bedroom._id,
-    branchModel: 'bedroomModule',
-    doctorId: doctorExist._id,
-    amount: doctorPercentage,
-    date: req.body.date,
-    amountType: 'income',
-  });
-
+  if (doctorPercentage > 0 && doctorExist.percentage > 0) {
+    await DoctorKhata.create({
+      branchNameId: bedroom._id,
+      branchModel: 'bedroomModule',
+      doctorId: doctorExist._id,
+      amount: doctorPercentage,
+      date: req.body.date,
+      amountType: 'income',
+    });
+  }
   if (bedroom.totalAmount > 0) {
     await Income.create({
       saleId: bedroom._id,
@@ -171,30 +172,50 @@ const deleteBedroom = asyncHandler(async (req, res, next) => {
   session.startTransaction();
 
   try {
-    // Step 1: Find and delete the bedroom record
+    // Step 1: Find the bedroom record
     const bedroom = await Bedroom.findById(id).session(session);
     if (!bedroom) {
       throw new AppError('Bedroom not found', 404);
     }
 
-    await Bedroom.findByIdAndDelete(id, { session });
+    // Step 2: Delete the bedroom record
+    const deletedBedroom = await Bedroom.findByIdAndDelete(id, { session });
+    if (!deletedBedroom) {
+      throw new AppError('Failed to delete bedroom record', 500);
+    }
 
+    // Step 3: Delete related records in DoctorKhata
     const doctorKhataResult = await DoctorKhata.deleteOne(
       { branchNameId: bedroom._id, branchModel: 'bedroomModule' },
       { session }
     );
 
     if (doctorKhataResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related doctor khata record', 500);
+      const doctorKhataExists = await DoctorKhata.findOne({
+        branchNameId: bedroom._id,
+        branchModel: 'bedroomModule',
+      }).session(session);
+
+      if (doctorKhataExists) {
+        throw new AppError('Failed to delete related doctor khata record', 500);
+      }
     }
 
+    // Step 4: Delete related records in Income
     const incomeResult = await Income.deleteOne(
       { saleId: bedroom._id, saleModel: 'bedroomModule' },
       { session }
     );
 
     if (incomeResult.deletedCount === 0) {
-      throw new AppError('Failed to delete related income record', 500);
+      const incomeExists = await Income.findOne({
+        saleId: bedroom._id,
+        saleModel: 'bedroomModule',
+      }).session(session);
+
+      if (incomeExists) {
+        throw new AppError('Failed to delete related income record', 500);
+      }
     }
 
     // Commit the transaction

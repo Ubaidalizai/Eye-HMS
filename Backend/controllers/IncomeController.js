@@ -36,7 +36,6 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
     _id: { month: { $month: '$date' } },
     totalAmount: { $sum: '$totalNetIncome' },
   };
-
   const data = await getAggregatedData(Model, matchCriteria, groupBy);
 
   const totalAmountsByMonth = populateDataArray(data, 12, 'month');

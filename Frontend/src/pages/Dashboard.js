@@ -14,6 +14,7 @@ const categories = [
   'sunglasses',
   'glass',
   'frame',
+  'other',
   'oct',
   'opd',
   'laboratory',
