@@ -95,7 +95,7 @@ const registerUser = asyncHandler(async (req, res) => {
     role,
     percentage,
   } = req.body;
-  console.log(req.body);
+
   if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new AppError('Please fill all the inputs.', 400);
   }

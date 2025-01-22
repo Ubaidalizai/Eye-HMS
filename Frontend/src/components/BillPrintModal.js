@@ -3,7 +3,6 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, PrinterIcon } from '@heroicons/react/24/outline';
 
 export function BillPrintModal({ showBill, setShowBill, soldItems }) {
-  console.log(showBill, setShowBill, soldItems);
   return (
     <Transition.Root show={showBill} as='div'>
       <Dialog
@@ -70,7 +69,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                                     </p>
                                   </div>
                                   <p className='text-sm font-medium text-gray-900'>
-                                    ${item.income?.toFixed(2) || '0.00'}
+                                    {item.income?.toFixed(2) || '0.00'}
                                   </p>
                                 </li>
                               ))}
@@ -79,10 +78,10 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                           <div className='border-t border-gray-200 pt-4 mt-4'>
                             <div className='flex justify-between items-center'>
                               <p className='text-lg font-semibold text-gray-900'>
-                                Total Income:
+                                Total:
                               </p>
                               <p className='text-lg font-semibold text-gray-900'>
-                                ${soldItems.totalIncome?.toFixed(2) || '0.00'}
+                                {soldItems.totalIncome?.toFixed(2) || '0.00'}
                               </p>
                             </div>
                           </div>

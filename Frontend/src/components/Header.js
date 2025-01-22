@@ -202,7 +202,7 @@ export default function Header() {
                                       )}
                                     >
                                       <span
-                                        onClick={() => authContext.signout()}
+                                        onClick={() => authContext.logout()}
                                       >
                                         {item.name}{' '}
                                       </span>
