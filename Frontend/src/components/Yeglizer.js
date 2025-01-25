@@ -4,6 +4,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
 import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function Yeglizer() {
   const [id, setId] = useState('');
@@ -30,7 +31,7 @@ function Yeglizer() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/yeglizer?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/yeglizer?page=${currentPage}&limit=${limit}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
@@ -44,13 +45,10 @@ function Yeglizer() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/yeglizer/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/yeglizer/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -91,13 +89,10 @@ function Yeglizer() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(
-        `http://localhost:4000/api/v1/yeglizer/${_id}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/yeglizer/${_id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to delete data');
 
       const updatedData = submittedData.filter((_, i) => i !== index);
@@ -179,11 +174,7 @@ function Yeglizer() {
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
-        url={
-          editMode
-            ? `http://localhost:4000/api/v1/yeglizer/${id}`
-            : 'http://localhost:4000/api/v1/yeglizer/'
-        }
+        url={editMode ? `${BASE_URL}/yeglizer/${id}` : `${BASE_URL}/yeglizer/`}
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
       />

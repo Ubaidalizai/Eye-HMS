@@ -4,6 +4,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
 import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function OCT() {
   const [patientId, setPatientId] = useState('');
@@ -29,7 +30,7 @@ function OCT() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/oct?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/oct?page=${currentPage}&limit=${limit}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
@@ -42,13 +43,10 @@ function OCT() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/oct/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/oct/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -88,7 +86,7 @@ function OCT() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(`http://localhost:4000/api/v1/oct/${_id}`, {
+      const response = await fetch(`${BASE_URL}/oct/${_id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -171,11 +169,7 @@ function OCT() {
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
-        url={
-          editMode
-            ? `http://localhost:4000/api/v1/oct/${patientId}`
-            : 'http://localhost:4000/api/v1/oct/'
-        }
+        url={editMode ? `${BASE_URL}/oct/${patientId}` : `${BASE_URL}/oct/`}
         method={editMode ? 'PATCH' : 'POST'}
       />
       <input

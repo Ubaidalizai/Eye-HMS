@@ -4,6 +4,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
 import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function Ultrasound() {
   const [fieldValues, setFieldValues] = useState({
@@ -32,7 +33,7 @@ function Ultrasound() {
 
   const fetchData = async () => {
     const response = await fetch(
-      `http://localhost:4000/api/v1/ultrasound?page=${currentPage}&limit=${limit}`,
+      `${BASE_URL}/ultrasound?page=${currentPage}&limit=${limit}`,
       { credentials: 'include' }
     );
     const data = await response.json();
@@ -72,7 +73,7 @@ function Ultrasound() {
 
   const handleRemove = async (index) => {
     const { _id } = submittedData[index];
-    await fetch(`http://localhost:4000/api/v1/ultrasound/${_id}`, {
+    await fetch(`${BASE_URL}/ultrasound/${_id}`, {
       method: 'DELETE',
       credentials: 'include', // Added credentials here
     });
@@ -80,13 +81,10 @@ function Ultrasound() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/ultrasound/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/ultrasound/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -102,8 +100,8 @@ function Ultrasound() {
 
     const response = await fetch(
       editMode
-        ? `http://localhost:4000/api/v1/ultrasound/${fieldValues.id}`
-        : 'http://localhost:4000/api/v1/ultrasound/',
+        ? `${BASE_URL}/ultrasound/${fieldValues.id}`
+        : `${BASE_URL}/ultrasound/`,
       { credentials: 'include' },
       {
         method: editMode ? 'PATCH' : 'POST',
@@ -188,8 +186,8 @@ function Ultrasound() {
         setFieldValues={setFieldValues}
         url={
           editMode
-            ? `http://localhost:4000/api/v1/ultrasound/${fieldValues.id}`
-            : 'http://localhost:4000/api/v1/ultrasound/'
+            ? `${BASE_URL}/ultrasound/${fieldValues.id}`
+            : `${BASE_URL}/ultrasound/`
         }
         method={editMode ? 'PATCH' : 'POST'}
         onSubmit={handleFormSubmit}
