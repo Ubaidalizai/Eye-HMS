@@ -54,57 +54,6 @@ function OCT() {
     setSubmittedData(result.data.records);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const entry = {
-      patientId,
-      date,
-      time,
-      doctor,
-      price,
-      discount,
-    };
-
-    if (editMode) {
-      try {
-        const response = await fetch(
-          `http://localhost:4000/api/v1/oct/${patientId}`,
-          {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry),
-            credentials: 'include',
-          }
-        );
-        if (!response.ok) throw new Error('Failed to update data');
-
-        const updatedData = [...submittedData];
-        updatedData[editIndex] = entry;
-        setSubmittedData(updatedData);
-      } catch (error) {
-        console.error('Error updating data:', error);
-      }
-    } else {
-      try {
-        const response = await fetch('http://localhost:4000/api/v1/oct/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(entry),
-          credentials: 'include',
-        });
-        if (!response.ok) throw new Error('Failed to add data');
-
-        const newEntry = await response.json();
-        setSubmittedData([...submittedData, newEntry]);
-      } catch (error) {
-        console.error('Error adding data:', error);
-      }
-    }
-
-    clearForm();
-    setIsOpen(false);
-  };
-
   const handleCancel = () => {
     clearForm();
     setIsOpen(false);

@@ -46,7 +46,7 @@ function SideMenu({ setActiveComponent }) {
         <div className='flex items-center'>
           <div className='flex-shrink-0'>
             <div className='flex justify-center  items-center gap-2'>
-              <span className='font-bold text-gray-500 text-xl italic '>
+              <span className='font-semibold text-gray-500 text-xl'>
                 Al Sayed Eye HMS
               </span>
             </div>
