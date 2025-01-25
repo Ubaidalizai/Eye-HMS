@@ -1,12 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv').config();
+require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
-const { scheduleNightlyBackup } = require('./controllers/backupController');
-
-const User = require('./models/userModel');
 const connectDB = require('./config/db');
 
 const userRoutes = require('./routes/userRoutes');
@@ -28,7 +25,6 @@ const backupRoute = require('./routes/backupRoutes');
 const OpdRoute = require('./routes/opdRoute');
 const yeglizerRoute = require('./routes/yeglizerRoutes');
 const doctorKhataRoute = require('./routes/doctorKhataRoutes');
-
 const moveProductRoute = require('./routes/moveProduct');
 
 const app = express();
@@ -71,6 +67,7 @@ app.use('/api/v1/yeglizer', yeglizerRoute);
 app.use('/api/v1/move-product', moveProductRoute);
 app.use('/api/v1/backup', backupRoute);
 app.use('/api/v1/khata', doctorKhataRoute);
+
 
 // Here we are listening to the server
 app.listen(PORT, () => {

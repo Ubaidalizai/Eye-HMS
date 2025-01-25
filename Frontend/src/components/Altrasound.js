@@ -28,7 +28,7 @@ function Ultrasound() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, limit]);
+  }, [currentPage, limit, submittedData]);
 
   const fetchData = async () => {
     const response = await fetch(
@@ -125,7 +125,8 @@ function Ultrasound() {
       setSubmittedData(updatedData);
     } else {
       // Add new record
-      setSubmittedData([...submittedData, result]);
+      setSubmittedData(result);
+      fetchData();
     }
 
     handleCancel();

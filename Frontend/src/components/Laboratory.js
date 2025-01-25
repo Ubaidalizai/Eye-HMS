@@ -4,6 +4,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
 import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function Laboratory() {
   const [patientId, setPatientId] = useState('');
@@ -29,7 +30,7 @@ function Laboratory() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/labratory?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/labratory?page=${currentPage}&limit=${limit}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
@@ -52,60 +53,6 @@ function Laboratory() {
 
     const result = await res.json();
     setSubmittedData(result.data.records);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const entry = {
-      patientId,
-      price,
-      time,
-      date,
-      doctor,
-      discount,
-    };
-
-    if (editMode) {
-      try {
-        const response = await fetch(
-          `http://localhost:4000/api/v1/labratory/${patientId}`,
-          {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry),
-            credentials: 'include',
-          }
-        );
-        if (!response.ok) throw new Error('Failed to update data');
-
-        const updatedData = [...submittedData];
-        updatedData[editIndex] = entry;
-        setSubmittedData(updatedData);
-      } catch (error) {
-        console.error('Error updating data:', error);
-      }
-    } else {
-      try {
-        const response = await fetch(
-          'http://localhost:4000/api/v1/labratory/',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(entry),
-            credentials: 'include',
-          }
-        );
-        if (!response.ok) throw new Error('Failed to add data');
-
-        const newEntry = await response.json();
-        setSubmittedData([...submittedData, newEntry]);
-      } catch (error) {
-        console.error('Error adding data:', error);
-      }
-    }
-
-    clearForm();
-    setIsOpen(false);
   };
 
   const handleCancel = () => {

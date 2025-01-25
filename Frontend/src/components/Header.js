@@ -1,19 +1,11 @@
 import { Fragment, useContext, useState, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { MdOutlineCloudDownload } from 'react-icons/md';
 import AuthContext from '../AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Bell } from 'lucide-react'; // Use the Bell icon from lucide-react
 import { BASE_URL } from '../config';
-
-const navigation = [
-  { name: 'Dashboard', href: '/', current: true },
-  { name: 'Inventory', href: '/inventory', current: false },
-  { name: 'Purchase Details', href: '/purchase-details', current: false },
-  { name: 'Sales', href: '/Sales', current: false },
-];
 
 const userNavigation = [{ name: 'Sign out', href: './login' }];
 
@@ -148,7 +140,7 @@ export default function Header() {
                             {user?.role === 'admin' &&
                               totalExpiredCount > 0 && (
                                 <span
-                                  className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                                  className='absolute top-0 right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
                                   aria-label={`You have ${totalExpiredCount} expired items`}
                                 >
                                   {totalExpiredCount > 99
@@ -160,7 +152,7 @@ export default function Header() {
                             {user?.role === 'pharmacist' &&
                               exDrugsCount > 0 && (
                                 <span
-                                  className='absolute top-0 right-6 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                                  className='absolute top-0 right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
                                   aria-label={`You have ${exDrugsCount} expired drugs`}
                                 >
                                   {exDrugsCount > 99 ? '99+' : exDrugsCount}

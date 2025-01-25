@@ -35,7 +35,6 @@ function OPD() {
       );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
-      console.log(data);
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (error) {
@@ -54,58 +53,6 @@ function OPD() {
 
     const result = await res.json();
     setSubmittedData(result.data.records);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const entry = {
-      patientId,
-      date,
-      time,
-      doctor,
-      price,
-      discount,
-    };
-
-    if (editMode) {
-      try {
-        const response = await fetch(
-          `http://localhost:4000/api/v1/oct/${patientId}`,
-          {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(entry),
-          }
-        );
-        if (!response.ok) throw new Error('Failed to update data');
-
-        const updatedData = [...submittedData];
-        updatedData[editIndex] = entry;
-        setSubmittedData(updatedData);
-      } catch (error) {
-        console.error('Error updating data:', error);
-      }
-    } else {
-      try {
-        const response = await fetch('http://localhost:4000/api/v1/opd/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(entry),
-          credentials: 'iclude',
-        });
-        if (!response.ok) throw new Error('Failed to add data');
-
-        const newEntry = await response.json();
-        setSubmittedData([...submittedData, newEntry]);
-      } catch (error) {
-        console.error('Error adding data:', error);
-      }
-    }
-
-    clearForm();
-    setIsOpen(false);
   };
 
   const handleCancel = () => {

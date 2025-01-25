@@ -49,7 +49,6 @@ const FormModal = ({
       return;
     }
     try {
-      console.log('Submitting data:', fieldValues);
       const response = await fetch(url, {
         method,
         headers: {
@@ -65,8 +64,6 @@ const FormModal = ({
       }
 
       const result = await response.json();
-      console.log(`${method === 'POST' ? 'Created' : 'Updated'}:`, result);
-
       // Reset form and show success message
       setFieldValues(
         fields.reduce((acc, field) => ({ ...acc, [field.name]: '' }), {})
@@ -82,7 +79,7 @@ const FormModal = ({
       setTimeout(() => {
         setSubmissionStatus(null);
         handleCancel();
-      }, 1500);
+      }, 500);
     } catch (error) {
       console.error('Error submitting data:', error);
       setSubmissionStatus(

@@ -80,7 +80,7 @@ const UserList = () => {
       });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
-      setUsers([...users, data.user]);
+      fetchUsers();
       setNewUser({
         firstName: '',
         lastName: '',
@@ -123,21 +123,6 @@ const UserList = () => {
       console.error('Error updating user:', error);
     }
   };
-
-  // const updateDoctorLedger = async (user) => {
-  //   try {
-  //     const response = await fetch(`${BASE_URL}/doctor-ledger/${user._id}`, {
-  //       credentials: "include",
-  //       method: "PATCH",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ isDoctor: user.role === "doctor" }),
-  //     });
-  //     if (!response.ok) throw new Error(`Error: ${response.status}`);
-  //     console.log("Doctor ledger updated successfully");
-  //   } catch (error) {
-  //     console.error("Error updating doctor ledger:", error);
-  //   }
-  // };
 
   const deleteUser = async (id) => {
     try {
@@ -211,40 +196,40 @@ const UserList = () => {
             <tbody>
               {users.map((user) => (
                 <tr
-                  key={user._id}
+                  key={user?._id}
                   className='bg-white border-b hover:bg-gray-50'
                 >
                   <td className='px-6 py-4 whitespace-nowrap'>
                     <img
                       src={`http://localhost:4000/public/img/users/${user?.image}`}
-                      alt={`${user.firstName} ${user.lastName}`}
+                      alt={`${user?.firstName} ${user?.lastName}`}
                       className='h-10 w-10 rounded-full'
                     />
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap font-medium text-gray-900'>
-                    {`${user.firstName} ${user.lastName}`}
+                    {`${user?.firstName} ${user?.lastName}`}
                   </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
+                  <td className='px-6 py-4 whitespace-nowrap'>{user?.email}</td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.role === 'admin' ? (
+                    {user?.role === 'admin' ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
-                        {user.role}
+                        {user?.role}
                       </span>
                     ) : (
-                      user.role
+                      user?.role
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
                     {user?.percentage > 0 ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
-                        {user.percentage + '%'}
+                        {user?.percentage + '%'}
                       </span>
                     ) : (
-                      user.percentage + '%'
+                      user?.percentage + '%'
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user.phoneNumber}
+                    {user?.phoneNumber}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
                     <div className='flex space-x-2'>
@@ -255,7 +240,7 @@ const UserList = () => {
                         <FaRegEdit className='w-5 h-5' />
                       </button>
                       <button
-                        onClick={() => deleteUser(user._id)}
+                        onClick={() => deleteUser(user?._id)}
                         className='font-medium text-red-600 hover:text-red-700'
                       >
                         <FaTrash className='w-4 h-4' />

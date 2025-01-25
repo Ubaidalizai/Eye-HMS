@@ -38,6 +38,10 @@ const getOperationDataByMonth = asyncHandler(async (req, res) => {
 const createOperation = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
 
+  if (!patientId || !doctor) {
+    throw new AppError('Patient ID and Doctor ID are required', 400);
+  }
+
   // Start a MongoDB transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
