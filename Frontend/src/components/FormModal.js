@@ -10,6 +10,7 @@ const FormModal = ({
   setFieldValues,
   url, // API endpoint (handles POST for adding and PATCH for editing)
   method, // HTTP method (POST or PATCH)
+  fetchData,
 }) => {
   const [errors, setErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
@@ -74,6 +75,8 @@ const FormModal = ({
           method === 'POST' ? 'created' : 'updated'
         } successfully!`
       );
+
+      if (fetchData) fetchData();
 
       // Close modal after a short delay
       setTimeout(() => {

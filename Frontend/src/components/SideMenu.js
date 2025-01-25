@@ -3,10 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {
   FaUserMd,
-  FaStethoscope,
-  FaBed,
   FaClipboard,
-  FaStore,
   FaFileInvoice,
   FaShoppingBag,
   FaCapsules,

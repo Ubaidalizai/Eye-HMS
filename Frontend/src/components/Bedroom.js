@@ -166,6 +166,7 @@ function Bedroom() {
           editMode ? `${BASE_URL}/bedroom/${patientId}` : `${BASE_URL}/bedroom/`
         }
         method={editMode ? 'PATCH' : 'POST'}
+        fetchData={fetchData}
       />
 
       <input
