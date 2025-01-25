@@ -171,6 +171,7 @@ function OCT() {
         setFieldValues={setFieldValues}
         url={editMode ? `${BASE_URL}/oct/${patientId}` : `${BASE_URL}/oct/`}
         method={editMode ? 'PATCH' : 'POST'}
+        fetchData={fetchData}
       />
       <input
         type='text'

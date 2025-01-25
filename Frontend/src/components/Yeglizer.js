@@ -177,6 +177,7 @@ function Yeglizer() {
         url={editMode ? `${BASE_URL}/yeglizer/${id}` : `${BASE_URL}/yeglizer/`}
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
+        fetchData={fetchData}
       />
       <input
         type='text'

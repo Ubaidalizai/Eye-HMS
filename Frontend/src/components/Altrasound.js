@@ -191,6 +191,7 @@ function Ultrasound() {
         }
         method={editMode ? 'PATCH' : 'POST'}
         onSubmit={handleFormSubmit}
+        fetchData={fetchData}
       />
       <input
         type='text'

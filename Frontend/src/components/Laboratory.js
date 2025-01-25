@@ -176,6 +176,7 @@ function Laboratory() {
         }
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
+        fetchData={fetchData}
       />
 
       <input

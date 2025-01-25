@@ -31,7 +31,6 @@ function Operation() {
 
   const fetchData = async () => {
     try {
-      console.log('test..........');
       const response = await fetch(
         `${BASE_URL}/operation?page=${currentPage}&limit=${limit}`,
         { credentials: 'include' }
@@ -179,6 +178,7 @@ function Operation() {
         }
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
+        fetchData={fetchData}
       />
       <input
         type='text'

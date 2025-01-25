@@ -174,6 +174,7 @@ function OPD() {
         url={editMode ? `${BASE_URL}/opd/${patientId}` : `${BASE_URL}/opd/`}
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
+        fetchData={fetchData}
       />
 
       <input
