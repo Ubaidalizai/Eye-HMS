@@ -43,13 +43,10 @@ function Laboratory() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/labratory/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/labratory/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -89,13 +86,10 @@ function Laboratory() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(
-        `http://localhost:4000/api/v1/labratory/${_id}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/labratory/${_id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to delete data');
 
       const updatedData = submittedData.filter((_, i) => i !== index);
@@ -177,8 +171,8 @@ function Laboratory() {
         setFieldValues={setFieldValues}
         url={
           editMode
-            ? `http://localhost:4000/api/v1/labratory/${patientId}`
-            : 'http://localhost:4000/api/v1/labratory/'
+            ? `${BASE_URL}/labratory/${patientId}`
+            : `${BASE_URL}/labratory/`
         }
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}

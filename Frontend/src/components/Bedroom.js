@@ -4,6 +4,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
 import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function Bedroom() {
   const [patientId, setPatientId] = useState('');
@@ -29,7 +30,7 @@ function Bedroom() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/bedroom?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/bedroom?page=${currentPage}&limit=${limit}`,
         {
           credentials: 'include',
         }
@@ -44,13 +45,10 @@ function Bedroom() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/bedroom/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/bedroom/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -89,13 +87,10 @@ function Bedroom() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(
-        `http://localhost:4000/api/v1/bedroom/${_id}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/bedroom/${_id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to delete data');
 
       const updatedData = submittedData.filter((_, i) => i !== index);
@@ -168,9 +163,7 @@ function Bedroom() {
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
         url={
-          editMode
-            ? `http://localhost:4000/api/v1/bedroom/${patientId}`
-            : 'http://localhost:4000/api/v1/bedroom/'
+          editMode ? `${BASE_URL}/bedroom/${patientId}` : `${BASE_URL}/bedroom/`
         }
         method={editMode ? 'PATCH' : 'POST'}
       />

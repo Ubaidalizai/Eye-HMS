@@ -4,6 +4,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
 import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function OPD() {
   const [patientId, setPatientId] = useState('');
@@ -30,7 +31,7 @@ function OPD() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/api/v1/opd?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/opd?page=${currentPage}&limit=${limit}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
@@ -43,13 +44,10 @@ function OPD() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/opd/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/opd/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -89,7 +87,7 @@ function OPD() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(`http://localhost:4000/api/v1/opd/${_id}`, {
+      const response = await fetch(`${BASE_URL}/opd/${_id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -173,11 +171,7 @@ function OPD() {
         fields={fields}
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
-        url={
-          editMode
-            ? `http://localhost:4000/api/v1/opd/${patientId}`
-            : 'http://localhost:4000/api/v1/opd/'
-        }
+        url={editMode ? `${BASE_URL}/opd/${patientId}` : `${BASE_URL}/opd/`}
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
       />

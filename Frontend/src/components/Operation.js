@@ -5,6 +5,7 @@ import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import { useAuth } from '../AuthContext';
 import Pagination from './Pagination';
+import { BASE_URL } from '../config';
 
 function Operation() {
   const [id, setId] = useState('');
@@ -32,7 +33,7 @@ function Operation() {
     try {
       console.log('test..........');
       const response = await fetch(
-        `http://localhost:4000/api/v1/operation?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/operation?page=${currentPage}&limit=${limit}`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');
@@ -45,13 +46,10 @@ function Operation() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(
-      `http://localhost:4000/api/v1/operation/search/${patientId}`,
-      {
-        method: 'GET',
-        credentials: 'include', // Added credentials here
-      }
-    );
+    const res = await fetch(`${BASE_URL}/operation/search/${patientId}`, {
+      method: 'GET',
+      credentials: 'include', // Added credentials here
+    });
 
     const result = await res.json();
     setSubmittedData(result.data.records);
@@ -92,13 +90,10 @@ function Operation() {
   const handleRemove = async (index) => {
     try {
       const { _id } = submittedData[index];
-      const response = await fetch(
-        `http://localhost:4000/api/v1/operation/${_id}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/operation/${_id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
       if (!response.ok) throw new Error('Failed to delete data');
 
       const updatedData = submittedData.filter((_, i) => i !== index);
@@ -180,9 +175,7 @@ function Operation() {
         fieldValues={fieldValues}
         setFieldValues={setFieldValues}
         url={
-          editMode
-            ? `http://localhost:4000/api/v1/operation/${id}`
-            : 'http://localhost:4000/api/v1/operation/'
+          editMode ? `${BASE_URL}/operation/${id}` : `${BASE_URL}/operation/`
         }
         method={editMode ? 'PATCH' : 'POST'}
         withCredentials={true}
