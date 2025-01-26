@@ -38,26 +38,29 @@ const uploadUserPhoto = upload.single('image');
 const resizeUserPhoto = asyncHandler(async (req, res, next) => {
   if (!req.file) return next();
 
-  // Ensure directory exists
   const dir = path.join(__dirname, '../public/img/users');
   if (!fs.existsSync(dir)) {
     try {
       fs.mkdirSync(dir, { recursive: true });
     } catch (error) {
+      console.error('Error creating image directory:', error);
       throw new AppError('Failed to create image directory', 500);
     }
   }
 
-  // Create a filename with user ID and timestamp, falling back if needed
-  req.file.filename = `user-${Date.now()}.jpeg`;
+  const filename = `user-${Date.now()}-${Math.random()
+    .toString(36)
+    .substr(2, 9)}.jpeg`;
+  req.file.filename = filename;
 
   try {
     await sharp(req.file.buffer)
       .resize(500, 500)
       .toFormat('jpeg')
       .jpeg({ quality: 90 })
-      .toFile(path.join(dir, req.file.filename));
+      .toFile(path.join(dir, filename));
   } catch (error) {
+    console.error('Error processing image:', error);
     throw new AppError('Error processing image', 500);
   }
 
@@ -292,11 +295,8 @@ const updateCurrentUserProfile = asyncHandler(async (req, res, next) => {
 const forgotPassword = asyncHandler(async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
-  if (!user || user.role !== 'admin') {
-    throw new AppError(
-      'There is no user with this email address or the user is not an admin.',
-      404
-    );
+  if (!user) {
+    throw new AppError('There is no user with this email address.', 404);
   }
 
   // 2) Generate the random reset token
