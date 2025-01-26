@@ -231,7 +231,7 @@ export default function AddPurchaseDetails({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5  dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              placeholder='$20'
+                              placeholder='20'
                               min='1'
                             />
                             {errors.unitPurchaseAmount && (

@@ -1,6 +1,8 @@
 import React from 'react';
 import { HiArrowUp, HiArrowDown } from 'react-icons/hi2';
 
+const formatCurrency = (value) => `${value.toLocaleString()}`;
+
 function SummaryCard({ title, value, trend, trendDirection }) {
   return (
     <article className='flex flex-col gap-4 rounded-lg border mt-2 mb-10 bg-white p-6'>
@@ -23,11 +25,12 @@ function SummaryCard({ title, value, trend, trendDirection }) {
           {title}
         </strong>
         <p>
-          <span className='text-2xl font-medium text-gray-900'>${value}</span>
+          <span className='text-2xl font-medium text-gray-900'>
+            {formatCurrency(value)}
+          </span>
         </p>
       </div>
     </article>
   );
 }
-
 export default SummaryCard;
