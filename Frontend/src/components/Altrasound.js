@@ -29,7 +29,7 @@ function Ultrasound() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, limit, submittedData]);
+  }, [currentPage, limit]);
 
   const fetchData = async () => {
     const response = await fetch(
