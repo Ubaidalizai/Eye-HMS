@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { BillPrintModal } from './BillPrintModal'; // Assuming this is already implemented
-import { BASE_URL } from '../config';
+import React, { useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { BillPrintModal } from "./BillPrintModal"; // Assuming this is already implemented
+import { BASE_URL } from "../config";
 
 export default function AddSale({
   addSaleModalSetting,
@@ -10,17 +10,19 @@ export default function AddSale({
 }) {
   const [sales, setSales] = useState([
     {
-      productRefId: '',
+      productRefId: "",
       quantity: 0,
-      date: new Date().toISOString().split('T')[0],
-      category: '',
+      date: new Date().toISOString().split("T")[0],
+      category: "",
     },
   ]);
 
   const [showBill, setShowBill] = useState(false);
   const [openAddSale, setOpenAddSale] = useState(true); // Controls AddSaleModal
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [soldItems, setSoldItems] = useState({
-    date: '',
+    date: "",
     totalIncome: 0,
     soldItems: [],
   });
@@ -33,9 +35,9 @@ export default function AddSale({
               ...sale,
               [name]: value,
               category:
-                name === 'productRefId'
+                name === "productRefId"
                   ? products.find((product) => product._id === value)
-                      ?.category || ''
+                      ?.category || ""
                   : sale.category,
             }
           : sale
@@ -49,16 +51,16 @@ export default function AddSale({
 
   const sendSalesToBackend = async (sales) => {
     const response = await fetch(`${BASE_URL}/sales`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-type': 'application/json',
+        "Content-type": "application/json",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({ soldItems: sales }),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to add sales');
+      throw new Error("Failed to add sales");
     }
 
     return response.json();
@@ -66,15 +68,17 @@ export default function AddSale({
 
   const addSales = async () => {
     if (!isSaleValid()) {
-      alert('Please fill all product and quantity fields correctly.');
+      alert("Please fill all product and quantity fields correctly.");
       return;
     }
+
+    setIsAddButtonDisabled(true); // Disable the button
 
     try {
       const data = await sendSalesToBackend(sales);
 
       setSoldItems({
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toISOString().split("T")[0],
         totalIncome: data.data.receipt.totalIncome || 0,
         soldItems: data.data.receipt.soldItems || [],
       });
@@ -83,8 +87,10 @@ export default function AddSale({
       setTimeout(() => setShowBill(true), 300); // Open BillPrintModal after delay
       handlePageUpdate();
     } catch (err) {
-      console.error('Error adding sales:', err);
-      alert(err.message || 'Something went wrong while adding sales.');
+      console.error("Error adding sales:", err);
+      alert(err.message || "Something went wrong while adding sales.");
+    } finally {
+      setIsAddButtonDisabled(false); // Re-enable the button
     }
   };
 
@@ -92,10 +98,10 @@ export default function AddSale({
     setSales((prevSales) => [
       ...prevSales,
       {
-        productRefId: '',
+        productRefId: "",
         quantity: 0,
-        date: new Date().toISOString().split('T')[0],
-        category: prevSales[0]?.category || '',
+        date: new Date().toISOString().split("T")[0],
+        category: prevSales[0]?.category || "",
       },
     ]);
   };
@@ -126,7 +132,7 @@ export default function AddSale({
                             onChange={(e) =>
                               handleInputChange(
                                 index,
-                                'productRefId',
+                                "productRefId",
                                 e.target.value
                               )
                             }
@@ -150,7 +156,7 @@ export default function AddSale({
                             onChange={(e) =>
                               handleInputChange(
                                 index,
-                                'quantity',
+                                "quantity",
                                 parseInt(e.target.value, 10)
                               )
                             }
@@ -171,11 +177,13 @@ export default function AddSale({
                   <button
                     type='button'
                     className={`inline-flex justify-center px-4 py-2 text-white rounded-md ${
-                      isSaleValid()
-                        ? 'bg-blue-600 hover:bg-blue-500'
-                        : 'bg-gray-300'
+                      isAddButtonDisabled
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : isSaleValid()
+                        ? "bg-blue-600 hover:bg-blue-500"
+                        : "bg-gray-300"
                     }`}
-                    disabled={!isSaleValid()}
+                    disabled={isAddButtonDisabled || !isSaleValid()} // Disable if already disabled or invalid form
                     onClick={addSales}
                   >
                     Add Sale

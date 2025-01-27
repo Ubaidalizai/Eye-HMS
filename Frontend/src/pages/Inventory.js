@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useContext } from 'react';
-import { useDispatch } from 'react-redux';
-import { Dialog, Transition } from '@headlessui/react';
+import React, { useState, useEffect, useContext } from "react";
+import { useDispatch } from "react-redux";
+import { Dialog, Transition } from "@headlessui/react";
 import {
   // FaEdit,
   FaTrash,
@@ -15,14 +15,14 @@ import {
   FaSearch,
   FaFilter,
   FaRegEdit,
-} from 'react-icons/fa';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AuthContext from '../AuthContext';
-import { moveItemAPI } from '../redux/inventorySlice';
-import UpdateProduct from '.././components/UpdateProduct';
-import Pagination from '../components/Pagination';
-import { BASE_URL } from '../config';
+} from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import AuthContext from "../AuthContext";
+import { moveItemAPI } from "../redux/inventorySlice";
+import UpdateProduct from ".././components/UpdateProduct";
+import Pagination from "../components/Pagination";
+import { BASE_URL } from "../config";
 
 function Inventory() {
   const [showProductModal, setShowProductModal] = useState(false);
@@ -30,22 +30,24 @@ function Inventory() {
   const [updateProduct, setUpdateProduct] = useState(null);
   const [summary, setSummary] = useState({});
   const [products, setAllProducts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [salePrice, setSalePrice] = useState('');
+  const [salePrice, setSalePrice] = useState("");
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    manufacturer: '',
-    description: '',
+    name: "",
+    manufacturer: "",
+    description: "",
     stock: 0,
-    category: '',
+    category: "",
   });
   const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
@@ -75,36 +77,36 @@ function Inventory() {
   const fetchInventorySummary = async () => {
     try {
       const response = await fetch(`${BASE_URL}/inventory/product/summary`, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
       const data = await response.json();
       setSummary(data.data);
     } catch (err) {
       console.log(err);
-      toast.error('Failed to fetch inventory summary');
+      toast.error("Failed to fetch inventory summary");
     }
   };
 
   const fetchProductsData = async () => {
     try {
       const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
       const data = await response.json();
       setAllProducts(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
       console.log(err);
-      toast.error('Failed to fetch products');
+      toast.error("Failed to fetch products");
     }
   };
 
   const openMoveModal = (item) => {
     setSelectedItem(item);
     setQuantity(1);
-    setSalePrice(item.salePrice || '');
+    setSalePrice(item.salePrice || "");
     setIsOpen(true);
   };
 
@@ -121,11 +123,11 @@ function Inventory() {
       quantityNum <= 0 ||
       quantityNum > selectedItem.stock
     ) {
-      toast.error('Please enter a valid quantity.');
+      toast.error("Please enter a valid quantity.");
       return;
     }
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
-      toast.error('Please enter a valid sale price.');
+      toast.error("Please enter a valid sale price.");
       return;
     }
 
@@ -143,7 +145,7 @@ function Inventory() {
       })
     );
     closeMoveModal();
-    toast.success('Item moved successfully');
+    toast.success("Item moved successfully");
     setUpdatePage((show) => !show);
   };
   const handleProductUpdate = (updatedProduct) => {
@@ -159,51 +161,55 @@ function Inventory() {
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         const response = await fetch(
           `${BASE_URL}/inventory/product/${productId}`,
           {
-            method: 'DELETE',
-            credentials: 'include',
+            method: "DELETE",
+            credentials: "include",
           }
         );
         if (response.ok) {
           setUpdatePage(!updatePage);
-          toast.success('Product deleted successfully');
+          toast.success("Product deleted successfully");
         } else {
-          toast.error('Failed to delete the product');
+          toast.error("Failed to delete the product");
         }
       } catch (err) {
         console.log(err);
-        toast.error('An error occurred while deleting the product');
+        toast.error("An error occurred while deleting the product");
       }
     }
   };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setIsAddButtonDisabled(true); // Disable the button
+
     try {
       const response = await fetch(`${BASE_URL}/inventory/product`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newProduct),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (response.ok) {
         setShowProductModal(false);
-        setNewProduct({ name: '', manufacturer: '', stock: 0, category: '' });
+        setNewProduct({ name: "", manufacturer: "", stock: 0, category: "" });
         setUpdatePage(!updatePage);
-        toast.success('Product added successfully');
+        toast.success("Product added successfully");
       } else {
-        toast.error('Failed to add product');
+        toast.error("Failed to add product");
       }
     } catch (error) {
-      console.error('Error adding product:', error);
-      toast.error('An error occurred while adding the product');
+      console.error("Error adding product:", error);
+      toast.error("An error occurred while adding the product");
+    } finally {
+      setIsAddButtonDisabled(false); // Re-enable the button after the operation
     }
   };
 
@@ -318,7 +324,12 @@ function Inventory() {
                     <button
                       id='ok-btn'
                       type='submit'
-                      className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                      disabled={isAddButtonDisabled} // Bind the disabled state
+                      className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                        isAddButtonDisabled
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-indigo-600 hover:bg-indigo-700"
+                      }`}
                     >
                       Add Product
                     </button>
@@ -464,17 +475,17 @@ function Inventory() {
                         <span
                           className={`text-xs font-medium ${
                             item.stock === 0
-                              ? 'text-red-500'
+                              ? "text-red-500"
                               : item.stock <= 10
-                              ? 'text-yellow-500'
-                              : 'text-green-500'
+                              ? "text-yellow-500"
+                              : "text-green-500"
                           }`}
                         >
                           {item.stock === 0
-                            ? 'Out of stock'
+                            ? "Out of stock"
                             : item.stock <= 10
-                            ? 'Low'
-                            : 'Available'}
+                            ? "Low"
+                            : "Available"}
                         </span>
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>

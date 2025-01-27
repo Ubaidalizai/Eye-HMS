@@ -1,21 +1,23 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { BASE_URL } from '../config';
+import { Fragment, useEffect, useRef, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { BASE_URL } from "../config";
 
 export default function AddPurchaseDetails({
   addSaleModalSetting,
   handlePageUpdate,
 }) {
   const [products, setAllProducts] = useState([]);
-  const [productCatagory, setProductCatagory] = useState('');
+  const [productCatagory, setProductCatagory] = useState("");
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [purchase, setPurchase] = useState({
-    productID: '',
-    QuantityPurchased: '',
-    date: '',
-    unitPurchaseAmount: '',
-    salePrice: '',
-    category: '',
-    expiryDate: '',
+    productID: "",
+    QuantityPurchased: "",
+    date: "",
+    unitPurchaseAmount: "",
+    salePrice: "",
+    category: "",
+    expiryDate: "",
   });
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
@@ -28,7 +30,7 @@ export default function AddPurchaseDetails({
     }
 
     fetch(url, {
-      credentials: 'include',
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -45,48 +47,52 @@ export default function AddPurchaseDetails({
     setPurchase({ ...purchase, [key]: value });
     // Clear error when user starts typing
     if (errors[key]) {
-      setErrors({ ...errors, [key]: '' });
+      setErrors({ ...errors, [key]: "" });
     }
   };
 
   const validateForm = () => {
     let formErrors = {};
-    if (!purchase.productID) formErrors.productID = 'Product is required';
+    if (!purchase.productID) formErrors.productID = "Product is required";
     if (!purchase.QuantityPurchased)
-      formErrors.QuantityPurchased = 'Quantity is required';
+      formErrors.QuantityPurchased = "Quantity is required";
     if (purchase.QuantityPurchased && parseInt(purchase.QuantityPurchased) <= 0)
-      formErrors.QuantityPurchased = 'Quantity must be positive';
+      formErrors.QuantityPurchased = "Quantity must be positive";
     if (!purchase.unitPurchaseAmount)
-      formErrors.unitPurchaseAmount = 'Unit purchase amount is required';
+      formErrors.unitPurchaseAmount = "Unit purchase amount is required";
     if (
       purchase.unitPurchaseAmount &&
       parseFloat(purchase.unitPurchaseAmount) <= 0
     )
-      formErrors.unitPurchaseAmount = 'Unit purchase amount must be positive';
-    if (!purchase.salePrice) formErrors.salePrice = 'Sale price is required';
+      formErrors.unitPurchaseAmount = "Unit purchase amount must be positive";
+    if (!purchase.salePrice) formErrors.salePrice = "Sale price is required";
     if (purchase.salePrice && parseFloat(purchase.salePrice) <= 0)
-      formErrors.salePrice = 'Sale price must be positive';
-    if (!purchase.date) formErrors.date = 'Purchase date is required';
+      formErrors.salePrice = "Sale price must be positive";
+    if (!purchase.date) formErrors.date = "Purchase date is required";
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
 
   const addSale = () => {
     if (validateForm()) {
+      setIsAddButtonDisabled(true); // Disable the button
       fetch(`${BASE_URL}/purchase`, {
-        credentials: 'include',
-        method: 'POST',
+        credentials: "include",
+        method: "POST",
         headers: {
-          'Content-type': 'application/json',
+          "Content-type": "application/json",
         },
         body: JSON.stringify(purchase),
       })
         .then((result) => {
-          alert('Purchase ADDED');
+          alert("Purchase ADDED");
           handlePageUpdate();
           addSaleModalSetting();
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err))
+        .finally(() => {
+          setIsAddButtonDisabled(false); // Re-enable the button after operation
+        });
     }
   };
 
@@ -145,7 +151,7 @@ export default function AddPurchaseDetails({
                               name='category'
                               value={purchase.category}
                               onChange={(e) => {
-                                handleInputChange('category', e.target.value);
+                                handleInputChange("category", e.target.value);
                                 setProductCatagory(e.target.value);
                                 fetchProductsData(e.target.value);
                               }}
@@ -321,7 +327,12 @@ export default function AddPurchaseDetails({
                           </button>
                           <button
                             type='button'
-                            className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            disabled={isAddButtonDisabled} // Bind the disabled state
+                            className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                              isAddButtonDisabled
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-indigo-600 hover:bg-indigo-700"
+                            }`}
                             onClick={addSale}
                           >
                             Add purchase
