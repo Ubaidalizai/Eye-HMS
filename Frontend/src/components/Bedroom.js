@@ -45,14 +45,29 @@ function Bedroom() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(`${BASE_URL}/bedroom/search/${patientId}`, {
-      method: 'GET',
-      credentials: 'include', // Added credentials here
-    });
+    if (!patientId.trim()) {
+      // If search term is empty, fetch all data
+      fetchData();
+      return;
+    }
 
-    const result = await res.json();
-    setSubmittedData(result.data.records);
+    try {
+      const res = await fetch(`${BASE_URL}/bedroom/search/${patientId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch search results');
+      }
+
+      const result = await res.json();
+      setSubmittedData(result?.data?.records || []);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
   };
+
   const handleCancel = () => {
     clearForm();
     setIsOpen(false);

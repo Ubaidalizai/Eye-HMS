@@ -60,8 +60,15 @@ const FormModal = ({
       });
 
       if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Failed to submit: ${errorMessage}`);
+        // Attempt to parse backend error as JSON
+        let errorMessage = 'An unexpected error occurred.';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text(); // Fallback to plain text
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -84,11 +91,9 @@ const FormModal = ({
         handleCancel();
       }, 500);
     } catch (error) {
-      console.error('Error submitting data:', error);
+      console.error('Error submitting data:', error.message);
       setSubmissionStatus(
-        `Failed to ${
-          method === 'POST' ? 'create' : 'update'
-        } record. Please try again.`
+        error.message || 'An error occurred. Please try again.'
       );
     }
   };
