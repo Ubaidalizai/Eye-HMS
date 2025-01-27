@@ -1,13 +1,13 @@
-import { useContext, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import AuthContext from "../AuthContext";
-import { useAuth } from "../AuthContext";
-import { BASE_URL } from "../config";
+import { useContext, useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthContext from '../AuthContext';
+import { useAuth } from '../AuthContext';
+import { BASE_URL } from '../config';
 
 function Login() {
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
   const [error, setError] = useState(null); // Error state
   const [loading, setLoading] = useState(false); // Loading state
@@ -26,7 +26,7 @@ function Login() {
     e.preventDefault();
 
     if (!form.email || !form.password) {
-      setError("Please enter both email and password.");
+      setError('Please enter both email and password.');
       return;
     }
 
@@ -35,43 +35,14 @@ function Login() {
 
     try {
       await signin(form, () => {
-        navigate("/");
+        navigate('/');
       });
     } catch (err) {
-      setError(err.message || "Login failed");
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const user = localStorage.getItem("user");
-      if (user) {
-        try {
-          const response = await fetch(`${BASE_URL}/user/verify`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-          });
-
-          if (response.ok) {
-            const userData = await response.json();
-            authContext.setUser(userData);
-            navigate("/");
-          } else {
-            localStorage.removeItem("user");
-          }
-        } catch (error) {
-          console.error("Error verifying authentication:", error);
-        }
-      }
-    };
-
-    checkAuth();
-  }, [authContext, navigate]);
 
   return (
     <div className='flex h-[100vh] items-center justify-center bg-white'>
@@ -137,11 +108,11 @@ function Login() {
               disabled={loading} // Disable button during loading
               className={`group relative flex w-full justify-center rounded-md ${
                 loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-500"
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-500'
               } py-2 px-3 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`}
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
