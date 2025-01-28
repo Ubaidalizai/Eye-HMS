@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Doughnut, Bar } from "react-chartjs-2";
+import React, { useState, useEffect } from 'react';
+import { Doughnut, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -8,14 +8,14 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from "chart.js";
-import { MdOutlineDeleteOutline } from "react-icons/md";
-import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
-import Pagination from "../components/Pagination";
+} from 'chart.js';
+import { MdOutlineDeleteOutline } from 'react-icons/md';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import Pagination from '../components/Pagination';
 
-import "./newManagement.css";
-import { HiSearch } from "react-icons/hi";
-import { BASE_URL } from "../config";
+import './newManagement.css';
+import { HiSearch } from 'react-icons/hi';
+import { BASE_URL } from '../config';
 
 // Register Chart.js components
 ChartJS.register(
@@ -27,21 +27,21 @@ ChartJS.register(
   BarElement
 );
 
-const categories = ["food", "salary", "furniture", "other"];
+const categories = ['food', 'salary', 'furniture', 'other'];
 
 const monthLabels = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
@@ -179,26 +179,26 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
-    amount: "",
-    date: "",
-    reason: "",
-    category: "",
+    amount: '',
+    date: '',
+    reason: '',
+    category: '',
     id: null,
   });
-  const [summaryType, setSummaryType] = useState("monthly");
+  const [summaryType, setSummaryType] = useState('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (summaryType === "monthly") {
+    if (summaryType === 'monthly') {
       fetchMonthlyExpenses();
     } else {
       fetchYearlyExpenses();
@@ -224,8 +224,8 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `${BASE_URL}/expense?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`,
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
 
@@ -247,8 +247,8 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `${BASE_URL}/expense/${selectedYear}/${selectedMonth}?category=${selectedCategory}`,
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
 
@@ -268,8 +268,8 @@ const ExpenseManagement = () => {
       const response = await fetch(
         `${BASE_URL}/expense/${selectedYear}?category=${selectedCategory}`,
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
 
@@ -293,90 +293,43 @@ const ExpenseManagement = () => {
         `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
       : baseUrl +
         `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
-    const method = newExpense._id ? "PATCH" : "POST";
+    const method = newExpense._id ? 'PATCH' : 'POST';
 
     try {
       const response = await fetch(url, {
         method,
-        credentials: "include",
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(newExpense),
       });
 
       if (!response.ok) {
         throw new Error(
-          newExpense._id ? "Failed to update expense" : "Failed to add expense"
+          newExpense._id ? 'Failed to update expense' : 'Failed to add expense'
         );
       }
 
       // Reset form and refetch expenses
       setNewExpense({
-        amount: "",
-        date: "",
-        reason: "",
-        category: "",
+        amount: '',
+        date: '',
+        reason: '',
+        category: '',
         _id: null,
       });
       setShowModal(false); // Close the modal after submission
       fetchExpenses(); // Refresh the list after adding/updating
-      if (summaryType === "monthly") {
+      if (summaryType === 'monthly') {
         fetchMonthlyExpenses();
       } else {
         fetchYearlyExpenses();
       }
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error('Error:', error.message);
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   let baseUrl = `http://localhost:4000/api/v1/expense`;
-  //   const url = newExpense._id
-  //     ? baseUrl +
-  //       `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
-  //     : baseUrl +
-  //       `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
-  //   const method = newExpense._id ? 'PATCH' : 'POST';
-
-  //   try {
-  //     const response = await fetch(url, {
-  //       method,
-  //       credentials: 'include',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(newExpense),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(
-  //         newExpense._id ? 'Failed to update expense' : 'Failed to add expense'
-  //       );
-  //     }
-
-  //     // Reset form and refetch expenses
-  //     setNewExpense({
-  //       amount: '',
-  //       date: '',
-  //       reason: '',
-  //       category: '',
-  //       _id: null,
-  //     });
-  //     setShowForm(false);
-  //     fetchExpenses(); // Refresh the list after adding/updating
-  //     if (summaryType === 'monthly') {
-  //       fetchMonthlyExpenses();
-  //     } else {
-  //       fetchYearlyExpenses();
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error.message);
-  //   }
-  // };
 
   const editExpense = (expense) => {
     setNewExpense(expense);
@@ -384,19 +337,20 @@ const ExpenseManagement = () => {
   };
 
   const deleteExpense = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
     try {
       const response = await fetch(`${BASE_URL}/expense/${id}`, {
-        method: "DELETE",
-        credentials: "include",
+        method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete expense");
+        throw new Error('Failed to delete expense');
       }
 
       fetchExpenses();
     } catch (error) {
-      console.error("Error:", error.message);
+      console.error('Error:', error.message);
     }
   };
 
@@ -411,7 +365,7 @@ const ExpenseManagement = () => {
       const year = date.getFullYear();
 
       // Aggregate for yearly summary
-      if (summaryType === "yearly") {
+      if (summaryType === 'yearly') {
         if (!yearlyData[year]) {
           yearlyData[year] = Array(12).fill(0); // Initialize months for the year
         }
@@ -420,7 +374,7 @@ const ExpenseManagement = () => {
 
       // Aggregate for monthly summary
       if (
-        summaryType === "monthly" &&
+        summaryType === 'monthly' &&
         month + 1 === selectedMonth &&
         year === selectedYear
       ) {
@@ -428,7 +382,7 @@ const ExpenseManagement = () => {
       }
     });
 
-    return summaryType === "yearly" ? yearlyData : monthlyData;
+    return summaryType === 'yearly' ? yearlyData : monthlyData;
   };
 
   const updateSummary = () => {
@@ -461,7 +415,7 @@ const ExpenseManagement = () => {
   const getBarChartData = () => {
     let labels, data;
 
-    if (summaryType === "yearly") {
+    if (summaryType === 'yearly') {
       labels = monthLabels; // Month names for the x-axis
       data = summary || Array(12).fill(0); // Use data from the API or zeros
     } else {
@@ -473,10 +427,10 @@ const ExpenseManagement = () => {
       labels,
       datasets: [
         {
-          label: "Expenses",
+          label: 'Expenses',
           data,
-          backgroundColor: "rgb(0, 179, 255)",
-          borderColor: "rgb(0, 179, 255)",
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
           borderWidth: 1,
         },
       ],
@@ -556,15 +510,15 @@ const ExpenseManagement = () => {
                       className='bg-white border-b hover:bg-gray-50'
                     >
                       <td className='px-6 py-4 font-medium text-gray-900 whitespace-nowrap'>
-                        ${expense.amount?.toFixed(2) ?? "0.00"}
+                        {expense.amount?.toFixed(2) ?? '0.00'}
                       </td>
                       <td className='px-6 py-4'>
                         {expense.date
                           ? new Date(expense.date).toLocaleDateString()
-                          : "N/A"}
+                          : 'N/A'}
                       </td>
-                      <td className='px-6 py-4'>{expense.reason ?? "N/A"}</td>
-                      <td className='px-6 py-4'>{expense.category ?? "N/A"}</td>
+                      <td className='px-6 py-4'>{expense.reason ?? 'N/A'}</td>
+                      <td className='px-6 py-4'>{expense.category ?? 'N/A'}</td>
                       <td className='px-6 py-4'>
                         <div className='flex space-x-2'>
                           <button
@@ -623,7 +577,7 @@ const ExpenseManagement = () => {
             </select>
           </div>
 
-          {summaryType === "monthly" && (
+          {summaryType === 'monthly' && (
             <div className='month-selection'>
               <select
                 className='dropdown'
@@ -639,7 +593,7 @@ const ExpenseManagement = () => {
             </div>
           )}
 
-          {summaryType === "yearly" && (
+          {summaryType === 'yearly' && (
             <div className='flex items-center'>
               <h2 className='year-label'>Select Year</h2>
               <input
@@ -665,7 +619,7 @@ const ExpenseManagement = () => {
               responsive: true,
               plugins: {
                 legend: {
-                  position: "top",
+                  position: 'top',
                 },
                 title: {
                   display: true,
@@ -692,10 +646,10 @@ const ExpenseManagement = () => {
                         .reduce((sum, exp) => sum + parseFloat(exp.amount), 7)
                     ),
                     backgroundColor: [
-                      "#FF6384",
-                      "#36A2EB",
-                      "#FFCE56",
-                      "#4BC0C0",
+                      '#FF6384',
+                      '#36A2EB',
+                      '#FFCE56',
+                      '#4BC0C0',
                     ],
                   },
                 ],

@@ -99,6 +99,7 @@ function OPD() {
   };
 
   const handleRemove = async (index) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
     try {
       const { _id } = submittedData[index];
       const response = await fetch(`${BASE_URL}/opd/${_id}`, {
