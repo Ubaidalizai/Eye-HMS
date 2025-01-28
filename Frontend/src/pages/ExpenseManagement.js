@@ -44,7 +44,14 @@ const monthLabels = [
   "December",
 ];
 
-const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  newExpense,
+  handleChange,
+  isSubmitting,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -157,14 +164,16 @@ const Modal = ({ isOpen, onClose, onSubmit, newExpense, handleChange }) => {
                     type='button'
                     className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
                     onClick={onClose}
+                    disabled={isSubmitting}
                   >
                     Cancel
                   </button>
                   <button
                     type='submit'
-                    className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed'
+                    disabled={isSubmitting}
                   >
-                    Add Expense
+                    {isSubmitting ? "Adding..." : "Add Expense"}
                   </button>
                 </div>
               </form>
@@ -196,6 +205,7 @@ const ExpenseManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // Added state for submitting
 
   useEffect(() => {
     if (summaryType === "monthly") {
@@ -286,8 +296,9 @@ const ExpenseManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true); // Set isSubmitting to true before submission
 
-    let baseUrl = `${BASE_URL}/expense`;
+    const baseUrl = `${BASE_URL}/expense`;
     const url = newExpense._id
       ? baseUrl +
         `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
@@ -328,55 +339,10 @@ const ExpenseManagement = () => {
       }
     } catch (error) {
       console.error("Error:", error.message);
+    } finally {
+      setIsSubmitting(false); // Set isSubmitting to false after submission (success or failure)
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   let baseUrl = `http://localhost:4000/api/v1/expense`;
-  //   const url = newExpense._id
-  //     ? baseUrl +
-  //       `/${newExpense._id}?page=${currentPage}&limit=${limit}&category=${selectedCategory}`
-  //     : baseUrl +
-  //       `?page=${currentPage}&limit=${limit}&category=${selectedCategory}`; // Update URL for editing or adding new expense
-  //   const method = newExpense._id ? 'PATCH' : 'POST';
-
-  //   try {
-  //     const response = await fetch(url, {
-  //       method,
-  //       credentials: 'include',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(newExpense),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(
-  //         newExpense._id ? 'Failed to update expense' : 'Failed to add expense'
-  //       );
-  //     }
-
-  //     // Reset form and refetch expenses
-  //     setNewExpense({
-  //       amount: '',
-  //       date: '',
-  //       reason: '',
-  //       category: '',
-  //       _id: null,
-  //     });
-  //     setShowForm(false);
-  //     fetchExpenses(); // Refresh the list after adding/updating
-  //     if (summaryType === 'monthly') {
-  //       fetchMonthlyExpenses();
-  //     } else {
-  //       fetchYearlyExpenses();
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error.message);
-  //   }
-  // };
 
   const editExpense = (expense) => {
     setNewExpense(expense);
@@ -406,7 +372,7 @@ const ExpenseManagement = () => {
 
     expenses.forEach((expense) => {
       const date = new Date(expense.date);
-      const amount = parseFloat(expense.amount);
+      const amount = Number.parseFloat(expense.amount);
       const month = date.getMonth(); // Zero-based index
       const year = date.getFullYear();
 
@@ -515,6 +481,7 @@ const ExpenseManagement = () => {
               onSubmit={handleSubmit}
               newExpense={newExpense}
               handleChange={handleChange}
+              isSubmitting={isSubmitting}
             />
           </div>
 
@@ -686,10 +653,14 @@ const ExpenseManagement = () => {
                 labels: categories,
                 datasets: [
                   {
-                    data: categories.map((category) =>
-                      expenses
-                        .filter((exp) => exp.category === category)
-                        .reduce((sum, exp) => sum + parseFloat(exp.amount), 7)
+                    data: categories.map(
+                      (category) =>
+                        expenses
+                          .filter((exp) => exp.category === category)
+                          .reduce(
+                            (sum, exp) => sum + Number.parseFloat(exp.amount),
+                            0
+                          ) // Initialize sum to 0
                     ),
                     backgroundColor: [
                       "#FF6384",
