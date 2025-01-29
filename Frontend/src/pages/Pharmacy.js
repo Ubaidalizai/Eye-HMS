@@ -93,15 +93,34 @@ const Pharmacy = () => {
           method: 'DELETE',
           credentials: 'include',
         });
+
         if (response.ok) {
+          // Refresh the page or fetch updated data
           setUpdatePage(!updatePage);
           toast.success('Product deleted successfully');
         } else {
-          toast.error('Failed to delete the product');
+          let errorMessage = 'Failed to delete the drug.';
+
+          // Attempt to extract the error message from the server response
+          try {
+            const errorResponse = await response.json();
+            errorMessage = errorResponse.message || errorMessage;
+          } catch (jsonError) {
+            // If response is not JSON, fallback to plain text
+            errorMessage = (await response.text()) || errorMessage;
+          }
+
+          // Throw error with the extracted message
+          throw new Error(errorMessage);
         }
       } catch (err) {
-        console.log(err);
-        toast.error('An error occurred while deleting the product');
+        console.error('Error during deletion:', err.message);
+
+        // Show error toast with the extracted error message
+        toast.error(
+          err.message ||
+            'An unexpected error occurred while deleting the product.'
+        );
       }
     }
   };
