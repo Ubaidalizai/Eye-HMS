@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
 import PersonInfoDropdown from "./PersonInfoDropdown";
 import { BASE_URL } from "../config";
+import { toast } from "react-toastify"; // Import toast
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -25,17 +26,20 @@ const UserList = () => {
       const res = await fetch(`${BASE_URL}/user`, {
         credentials: "include",
       });
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || `Error: ${res.status}`);
+      }
 
       const data = await res.json();
       if (data && data.data && Array.isArray(data.data.results)) {
         setUsers(data.data.results);
       } else {
-        console.error("Unexpected API response structure:", data);
-        setUsers([]);
+        throw new Error("Unexpected API response structure");
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+      toast.error(`Failed to fetch users: ${error.message}`); // Use toast
       setUsers([]);
     }
   };
@@ -64,11 +68,11 @@ const UserList = () => {
 
   const addUser = async (e) => {
     e.preventDefault();
-    setIsButtonDisabled(true); // Disable the button
+    setIsButtonDisabled(true);
     const errors = validateForm(newUser, true);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
-      setIsButtonDisabled(false); // Re-enable the button on validation error
+      setIsButtonDisabled(false);
       return;
     }
 
@@ -84,9 +88,12 @@ const UserList = () => {
         body: formData,
       });
 
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
 
-      fetchUsers();
+      await fetchUsers();
       setNewUser({
         firstName: "",
         lastName: "",
@@ -99,10 +106,12 @@ const UserList = () => {
       });
       setIsAddModalOpen(false);
       setValidationErrors({});
+      toast.success("User added successfully"); // Use toast
     } catch (error) {
       console.error("Error adding user:", error);
+      toast.error(`Failed to add user: ${error.message}`); // Use toast
     } finally {
-      setIsButtonDisabled(false); // Re-enable the button after the operation
+      setIsButtonDisabled(false);
     }
   };
 
@@ -121,26 +130,35 @@ const UserList = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userDataWithoutPassword),
       });
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
-
-      fetchUsers();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+      await fetchUsers();
       setEditingUser(null);
       setValidationErrors({});
+      toast.success("User updated successfully"); // Use toast
     } catch (error) {
       console.error("Error updating user:", error);
+      toast.error(`Failed to update user: ${error.message}`); // Use toast
     }
   };
 
   const deleteUser = async (id) => {
     try {
-      await fetch(`${BASE_URL}/user/${id}`, {
+      const response = await fetch(`${BASE_URL}/user/${id}`, {
         credentials: "include",
         method: "DELETE",
       });
-      fetchUsers();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+      await fetchUsers();
+      toast.success("User deleted successfully"); // Use toast
     } catch (error) {
       console.error("Error deleting user:", error);
+      toast.error(`Failed to delete user: ${error.message}`); // Use toast
     }
   };
 
@@ -427,7 +445,7 @@ const UserList = () => {
                       ? "bg-gray-400 cursor-not-allowed"
                       : "bg-indigo-600 hover:bg-indigo-700"
                   }`}
-                  disabled={isButtonDisabled} // Disable button based on state
+                  disabled={isButtonDisabled}
                 >
                   Add User
                 </button>

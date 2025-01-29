@@ -115,23 +115,33 @@ function Inventory() {
   };
 
   const handleMoveItem = () => {
-    const quantityNum = parseInt(quantity, 10);
-    const salePriceNum = parseFloat(salePrice);
+    const quantityNum = Number.parseInt(quantity, 10);
+    const salePriceNum = Number.parseFloat(salePrice);
 
     if (
       isNaN(quantityNum) ||
       quantityNum <= 0 ||
       quantityNum > selectedItem.stock
     ) {
+      console.error("Invalid quantity:", quantityNum);
       toast.error("Please enter a valid quantity.");
       return;
     }
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
+      console.error("Invalid sale price:", salePriceNum);
       toast.error("Please enter a valid sale price.");
       return;
     }
 
-    // Add the additional properties from selectedItem
+    console.log(
+      "Moving item:",
+      selectedItem.name,
+      "Quantity:",
+      quantityNum,
+      "Sale Price:",
+      salePriceNum
+    );
+
     dispatch(
       moveItemAPI({
         item: {
