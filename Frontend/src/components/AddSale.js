@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { BillPrintModal } from './BillPrintModal'; // Assuming this is already implemented
+import { BillPrintModal } from './BillPrintModal';
 import { BASE_URL } from '../config';
 
 export default function AddSale({

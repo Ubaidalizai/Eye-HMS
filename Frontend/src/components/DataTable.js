@@ -67,16 +67,16 @@ const DataTable = ({ submittedData, fields, handleRemove }) => {
                 )}
                 <td className='py-2 px-4 flex space-x-2'>
                   <button
-                    onClick={() => handleRemove(index)}
-                    className='text-red-500 hover:text-red-700'
-                  >
-                    <FaTrash className='w-4 h-4' />
-                  </button>
-                  <button
                     onClick={() => openPrintModal(data)}
                     className='text-blue-500 hover:text-blue-700'
                   >
                     <FaPrint className='w-4 h-4' />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(index)}
+                    className='text-red-500 hover:text-red-700'
+                  >
+                    <FaTrash className='w-4 h-4' />
                   </button>
                 </td>
               </tr>
@@ -92,7 +92,7 @@ const DataTable = ({ submittedData, fields, handleRemove }) => {
           onClick={closePrintModal}
         >
           <div
-            className='bg-white rounded-md shadow-lg p-6 w-1/2'
+            className='bg-white rounded-md shadow-lg p-6 w-1/4'
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className='text-lg font-bold mb-4'>Record Details</h2>
@@ -126,16 +126,16 @@ const DataTable = ({ submittedData, fields, handleRemove }) => {
             </table>
             <div className='flex justify-end mt-4'>
               <button
-                onClick={handlePrint}
-                className='bg-blue-600 text-white px-4 py-2 rounded-md mr-2'
-              >
-                Print
-              </button>
-              <button
                 onClick={closePrintModal}
-                className='bg-gray-300 text-gray-700 px-4 py-2 rounded-md'
+                className='bg-gray-300 text-gray-700 px-4 py-2 rounded-md mr-2'
               >
                 Close
+              </button>
+              <button
+                onClick={handlePrint}
+                className='bg-blue-600 text-white px-4 py-2 rounded-md'
+              >
+                Print
               </button>
             </div>
           </div>

@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSearch, FaPrint } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
 import { toast, ToastContainer } from 'react-toastify';
 import Pagination from '../components/Pagination';
 import { BASE_URL } from '../config';
+import { BillPrintModal } from '../components/BillPrintModal';
 
 export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -20,6 +21,8 @@ export default function Sales() {
   const [error, setError] = useState(null);
   const [editingSale, setEditingSale] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showBillModal, setShowBillModal] = useState(false);
+  const [selectedSale, setSelectedSale] = useState(null);
 
   const user = JSON.parse(localStorage.getItem('user'));
 
@@ -129,6 +132,21 @@ export default function Sales() {
     setShowEditModal(false);
     setEditingSale(null);
     fetchSales();
+  };
+
+  const handlePrintSale = (sale) => {
+    setSelectedSale({
+      date: sale.date,
+      soldItems: [
+        {
+          productName: sale.productRefId?.name,
+          quantity: sale.quantity,
+          income: sale.income,
+        },
+      ],
+      totalIncome: sale.income,
+    });
+    setShowBillModal(true);
   };
 
   return (
@@ -256,22 +274,30 @@ export default function Sales() {
                           {sale.quantity}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
-                          ${sale.productRefId?.salePrice}
+                          {sale.productRefId?.salePrice}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.date.split('T')[0]}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
                         <td className='px-6 py-4 whitespace-nowrap'>
-                          ${sale.income}
+                          {sale.income}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
-                          <button
-                            onClick={() => handleDelete(sale._id)}
-                            className='font-medium text-red-600 hover:text-red-700'
-                          >
-                            <FaTrash className='w-4 h-4' />
-                          </button>
+                          <div className='flex gap-2'>
+                            <button
+                              onClick={() => handlePrintSale(sale)}
+                              className='font-medium text-blue-600 hover:text-blue-800'
+                            >
+                              <FaPrint className='w-4 h-4' />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(sale._id)}
+                              className='font-medium text-red-600 hover:text-red-700'
+                            >
+                              <FaTrash className='w-4 h-4' />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -300,6 +326,12 @@ export default function Sales() {
           onLimitChange={(limit) => setLimit(limit)}
         />
       </div>
+
+      <BillPrintModal
+        showBill={showBillModal}
+        setShowBill={setShowBillModal}
+        soldItems={selectedSale}
+      />
     </div>
   );
 }
