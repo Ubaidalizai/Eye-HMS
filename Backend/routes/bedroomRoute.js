@@ -9,16 +9,19 @@ const {
   updateBedroom,
   deleteBedroom,
   fetchRecordsByPatientId,
+  getBedroomDoctors,
 } = require('../controllers/bedroomConroller');
 
 const {
   authenticate,
-  authorizeAdminOrPharmacist,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdminOrPharmacist);
+router.use(authenticate, authorize3Users);
 
 router.get('/search/:patientID', fetchRecordsByPatientId);
+
+router.get('/bedroom-doctors', getBedroomDoctors);
 
 router.get('/:year', getBedroomDataByYear);
 router.get('/:year/:month', getBedroomDataByMonth);

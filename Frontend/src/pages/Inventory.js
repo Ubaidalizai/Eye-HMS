@@ -220,7 +220,7 @@ function Inventory() {
 
   return (
     <div className=' flex flex-col justify-center'>
-      <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
+      <h2 className='font-semibold text-xl '>Inventory</h2>
       <div className='flex flex-col gap-5  w-full'>
         <ToastContainer />
         <div className='bg-white rounded'>
@@ -386,11 +386,7 @@ function Inventory() {
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>
-                {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
-                  <FaFilter className='h-4 w-4' aria-hidden='true' />
-                </div> */}
               </div>
-
               <button
                 className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowProductModal(true)}

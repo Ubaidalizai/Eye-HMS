@@ -154,7 +154,7 @@ export default function Sales() {
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
 
-        <h2 className='font-semibold text-xl mb-10'>Sales Data</h2>
+        <h2 className='font-semibold text-xl mb-10'>Sales List</h2>
 
         <div className='overflow-x-auto rounded-lg bg-white border '>
           <div className='flex flex-row justify-between items-end  px-5 pb-3'>

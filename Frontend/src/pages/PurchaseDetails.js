@@ -101,7 +101,7 @@ function PurchaseDetails() {
     <div className='min-h-screen'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
-        <h2 className='font-semibold text-xl'>Purchase Records</h2>
+        <h2 className='font-semibold text-xl'>Purchase List</h2>
 
         {showPurchaseModal && (
           <AddPurchaseDetails
@@ -223,12 +223,12 @@ function PurchaseDetails() {
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.UnitPurchaseAmount !== undefined
-                          ? `$${element.UnitPurchaseAmount.toFixed(2)}`
+                          ? `${element.UnitPurchaseAmount.toFixed(2)}`
                           : 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.TotalPurchaseAmount !== undefined
-                          ? `$${element.TotalPurchaseAmount.toFixed(2)}`
+                          ? `${element.TotalPurchaseAmount.toFixed(2)}`
                           : 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>

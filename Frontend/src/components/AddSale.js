@@ -173,6 +173,7 @@ export default function AddSale({
                                 parseInt(e.target.value, 10)
                               )
                             }
+                            min='1'
                           />
                         </div>
                       </div>

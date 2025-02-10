@@ -20,7 +20,7 @@ export default function BranchesMenu() {
       icon: <FaUserMd className='h-4 w-4' />,
     },
     {
-      name: 'Ultrasound',
+      name: 'Biscayne',
       path: '/branches/ultrasound',
       icon: <FaStethoscope className='h-4 w-4' />,
     },
@@ -45,7 +45,7 @@ export default function BranchesMenu() {
       icon: <GiDoctorFace className='h-4 w-4 ' />,
     },
     {
-      name: 'Yezliger',
+      name: 'Yeglizer',
       path: '/branches/yeglizer',
       icon: (
         <LiaHandLizardSolid className='h-4 w-4 transition-colors duration-300 hover:text-blue-500 focus:text-blue-500' />

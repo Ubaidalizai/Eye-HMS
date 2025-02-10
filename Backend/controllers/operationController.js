@@ -4,6 +4,7 @@ const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
+const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
@@ -11,6 +12,7 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
+const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
 
 const getOperationDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -42,7 +44,6 @@ const createOperation = asyncHandler(async (req, res, next) => {
     throw new AppError('Patient ID and Doctor ID are required', 400);
   }
 
-  // Start a MongoDB transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -61,14 +62,24 @@ const createOperation = asyncHandler(async (req, res, next) => {
       throw new AppError('Doctor not found', 404);
     }
 
-    // Step 3: Calculate total amount and doctor percentage
-    req.body.totalAmount = req.body.price;
-    let doctorPercentage = 0;
+    // Step 3: Check if doctor is assigned to operationModule
+    const assignedDoctor = await DoctorBranchAssignment.findOne({
+      doctorId: doctorExist._id,
+      branchModel: 'operationModule',
+    }).session(session);
 
-    if (doctorExist.percentage) {
+    if (!assignedDoctor) {
+      throw new AppError('Doctor is not assigned to this branch', 403);
+    }
+
+    // Step 4: Calculate total amount and doctor percentage
+    req.body.totalAmount = assignedDoctor.price;
+    let doctorPercentage = assignedDoctor.percentage || 0; // Use assigned percentage
+
+    if (doctorPercentage > 0) {
       const result = await calculatePercentage(
-        req.body.price,
-        doctorExist.percentage
+        assignedDoctor.price,
+        doctorPercentage
       );
       req.body.totalAmount = result.finalPrice;
       doctorPercentage = result.percentageAmount;
@@ -82,12 +93,12 @@ const createOperation = asyncHandler(async (req, res, next) => {
       req.body.totalAmount = result.finalPrice;
     }
 
-    // Step 4: Create Operation record
+    // Step 5: Create Operation record
     const operation = new Operation({
       patientId: patient._id,
       doctor: doctor,
-      percentage: doctorExist.percentage,
-      price: req.body.price,
+      percentage: doctorPercentage,
+      price: assignedDoctor.price,
       time: req.body.time,
       date: req.body.date,
       discount: req.body.discount,
@@ -96,8 +107,8 @@ const createOperation = asyncHandler(async (req, res, next) => {
 
     await operation.save({ session });
 
-    // Step 5: Add to DoctorKhata
-    if (doctorPercentage > 0 && doctorExist.percentage > 0) {
+    // Step 6: Add to DoctorKhata
+    if (doctorPercentage > 0) {
       await DoctorKhata.create(
         [
           {
@@ -113,7 +124,7 @@ const createOperation = asyncHandler(async (req, res, next) => {
       );
     }
 
-    // Step 6: Add to Income
+    // Step 7: Add to Income
     if (operation.totalAmount > 0) {
       await Income.create(
         [
@@ -258,6 +269,16 @@ const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   });
 });
 
+const getOperationDoctors = asyncHandler(async (req, res, next) => {
+  const branchModel = 'operationModule';
+  const doctors = await getDoctorsByBranch(branchModel);
+
+  res.status(200).json({
+    success: true,
+    data: doctors,
+  });
+});
+
 module.exports = {
   getOperationDataByYear,
   getOperationDataByMonth,
@@ -266,4 +287,5 @@ module.exports = {
   updateOperation,
   deleteOperation,
   fetchRecordsByPatientId,
+  getOperationDoctors,
 };

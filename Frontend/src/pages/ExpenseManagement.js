@@ -97,6 +97,7 @@ const Modal = ({
                       value={newExpense.amount}
                       onChange={handleChange}
                       required
+                      min='1'
                     />
                   </div>
                   <div>

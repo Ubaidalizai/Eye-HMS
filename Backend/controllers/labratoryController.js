@@ -1,9 +1,9 @@
-// controllers/laboratoryController.js
 const Laboratory = require('../models/labratoryModule');
 const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
+const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const mongoose = require('mongoose');
 const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
@@ -11,6 +11,7 @@ const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
+const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
 
 const getLaboratoryDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -36,9 +37,9 @@ const getLaboratoryDataByMonth = asyncHandler(async (req, res) => {
 
 // Create a new lab record
 const createLabRecord = asyncHandler(async (req, res, next) => {
-  const { patientId, doctor } = req.body;
+  const { patientId, doctor, time, date, discount } = req.body;
 
-  // Start a MongoDB session for the transaction
+  // Start a MongoDB transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -51,57 +52,59 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('Patient not found', 404);
     }
 
-    // Step 2: Validate doctor
-    const doctorExist = await User.findById(doctor).session(session);
-    if (!doctorExist || doctorExist.role !== 'doctor') {
-      throw new AppError('Doctor not found', 404);
+    // Step 2: Check if doctor is assigned to this branch
+    const doctorAssignment = await DoctorBranchAssignment.findOne({
+      doctorId: doctor,
+      branchModel: 'labratoryModule',
+    }).session(session);
+
+    if (!doctorAssignment) {
+      throw new AppError('This doctor is not assigned to this branch', 400);
     }
 
-    // Step 3: Calculate total amount and doctor percentage
-    req.body.totalAmount = req.body.price;
-    let doctorPercentage = 0;
+    const doctorPercentage = doctorAssignment.percentage;
 
-    if (doctorExist.percentage) {
+    // Step 3: Calculate total amount after doctor percentage & discount
+    let totalAmount = doctorAssignment.price;
+    let doctorIncome = 0;
+
+    if (doctorPercentage > 0) {
       const result = await calculatePercentage(
-        req.body.price,
-        doctorExist.percentage
+        doctorAssignment.price,
+        doctorPercentage
       );
-      req.body.totalAmount = result.finalPrice;
-      doctorPercentage = result.percentageAmount;
+      doctorIncome = result.percentageAmount;
+      totalAmount = result.finalPrice;
     }
 
-    if (req.body.discount > 0) {
-      const result = await calculatePercentage(
-        req.body.totalAmount,
-        req.body.discount
-      );
-      req.body.totalAmount = result.finalPrice;
+    if (discount > 0) {
+      const discountResult = await calculatePercentage(totalAmount, discount);
+      totalAmount = discountResult.finalPrice;
     }
 
-    // Step 4: Create laboratory record
+    // Step 4: Create Laboratory Record
     const laboratory = new Laboratory({
       patientId: patient._id,
-      doctor: doctor,
-      percentage: doctorExist.percentage,
-      price: req.body.price,
-      time: req.body.time,
-      date: req.body.date,
-      discount: req.body.discount,
-      totalAmount: req.body.totalAmount,
+      doctor,
+      percentage: doctorPercentage,
+      price: doctorAssignment.price,
+      time,
+      date,
+      discount,
+      totalAmount,
     });
-
     await laboratory.save({ session });
 
-    // Step 5: Add to DoctorKhata
-    if (doctorPercentage > 0) {
+    // Step 5: Create DoctorKhata Record
+    if (doctorIncome > 0) {
       await DoctorKhata.create(
         [
           {
             branchNameId: laboratory._id,
             branchModel: 'labratoryModule',
-            doctorId: doctorExist._id,
-            amount: doctorPercentage,
-            date: req.body.date,
+            doctorId: doctor,
+            amount: doctorIncome,
+            date,
             amountType: 'income',
           },
         ],
@@ -109,15 +112,15 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
       );
     }
 
-    // Step 6: Add to Income
-    if (laboratory.totalAmount > 0) {
+    // Step 6: Create Income Record
+    if (totalAmount > 0) {
       await Income.create(
         [
           {
             saleId: laboratory._id,
             saleModel: 'labratoryModule',
-            date: laboratory.date,
-            totalNetIncome: laboratory.totalAmount,
+            date,
+            totalNetIncome: totalAmount,
             category: 'laboratory',
             description: 'Laboratory income',
           },
@@ -126,17 +129,18 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
       );
     }
 
-    // Commit the transaction
+    // Commit transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Respond with success
+    // Send success response
     res.status(201).json({
+      success: true,
       message: 'Lab record created successfully',
       data: laboratory,
     });
   } catch (error) {
-    // Rollback the transaction on error
+    // Rollback transaction on error
     await session.abortTransaction();
     session.endSession();
     next(error);
@@ -268,6 +272,16 @@ const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   });
 });
 
+const getLaboratoryDoctors = asyncHandler(async (req, res, next) => {
+  const branchModel = 'labratoryModule';
+  const doctors = await getDoctorsByBranch(branchModel);
+
+  res.status(200).json({
+    success: true,
+    data: doctors,
+  });
+});
+
 module.exports = {
   getLaboratoryDataByYear,
   getLaboratoryDataByMonth,
@@ -277,4 +291,5 @@ module.exports = {
   updateLabRecordById,
   deleteLabRecordById,
   fetchRecordsByPatientId,
+  getLaboratoryDoctors,
 };

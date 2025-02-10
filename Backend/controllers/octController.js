@@ -5,12 +5,14 @@ const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
+const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const calculatePercentage = require('../utils/calculatePercentage');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
+const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
 
 const getOctDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -38,6 +40,10 @@ const getOctDataByMonth = asyncHandler(async (req, res) => {
 const createOCTRecord = asyncHandler(async (req, res, next) => {
   const { patientId, doctor } = req.body;
 
+  if (!patientId || !doctor) {
+    throw new AppError('Patient ID and Doctor ID are required', 400);
+  }
+
   // Start a MongoDB transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -57,14 +63,24 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('Doctor not found', 404);
     }
 
-    // Step 3: Calculate total amount and doctor percentage
-    req.body.totalAmount = req.body.price;
-    let doctorPercentage = 0;
+    // Step 3: Check if doctor is assigned to OCT module
+    const assignedDoctor = await DoctorBranchAssignment.findOne({
+      doctorId: doctorExist._id,
+      branchModel: 'octModule',
+    }).session(session);
 
-    if (doctorExist.percentage) {
+    if (!assignedDoctor) {
+      throw new AppError('Doctor is not assigned to this branch', 403);
+    }
+
+    // Step 4: Calculate total amount and doctor percentage
+    req.body.totalAmount = assignedDoctor.price;
+    let doctorPercentage = assignedDoctor.percentage || 0; // Use assigned percentage
+
+    if (doctorPercentage > 0) {
       const result = await calculatePercentage(
-        req.body.price,
-        doctorExist.percentage
+        assignedDoctor.price,
+        doctorPercentage
       );
       req.body.totalAmount = result.finalPrice;
       doctorPercentage = result.percentageAmount;
@@ -78,12 +94,12 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
       req.body.totalAmount = result.finalPrice;
     }
 
-    // Step 4: Create OCT record
+    // Step 5: Create OCT record
     const octRecord = new OCT({
       patientId: patient._id,
       doctor: doctor,
-      percentage: doctorExist.percentage,
-      price: req.body.price,
+      percentage: doctorPercentage,
+      price: assignedDoctor.price,
       time: req.body.time,
       date: req.body.date,
       discount: req.body.discount,
@@ -92,7 +108,7 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
 
     await octRecord.save({ session });
 
-    // Step 5: Add to DoctorKhata
+    // Step 6: Add to DoctorKhata
     if (doctorPercentage > 0) {
       await DoctorKhata.create(
         [
@@ -109,7 +125,7 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
       );
     }
 
-    // Step 6: Add to Income
+    // Step 7: Add to Income
     if (octRecord.totalAmount > 0) {
       await Income.create(
         [
@@ -132,6 +148,7 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
 
     // Send success response
     res.status(201).json({
+      success: true,
       message: 'OCT record created successfully',
       data: octRecord,
     });
@@ -258,7 +275,6 @@ const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
   }
 });
 
-
 const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   const patientID = req.params.patientID;
   const results = await getPatientRecordsByPatientID(patientID, OCT);
@@ -266,6 +282,16 @@ const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: results,
+  });
+});
+
+const getOctDoctors = asyncHandler(async (req, res, next) => {
+  const branchModel = 'octModule';
+  const doctors = await getDoctorsByBranch(branchModel);
+
+  res.status(200).json({
+    success: true,
+    data: doctors,
   });
 });
 
@@ -278,4 +304,5 @@ module.exports = {
   updateOCTRecordById,
   deleteOCTRecordById,
   fetchRecordsByPatientId,
+  getOctDoctors,
 };

@@ -10,11 +10,11 @@ import { BASE_URL } from '../config';
 function Operation() {
   const [id, setId] = useState('');
   const [patientId, setPatientId] = useState('');
-  const [price, setPrice] = useState('');
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
-  const [discount, setDiscount] = useState('');
+  const [operationDoctors, setOperationDoctors] = useState([]);
+  const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -23,10 +23,9 @@ function Operation() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { perDoctors } = useAuth();
-
   useEffect(() => {
     fetchData();
+    fetchOperationDoctors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -39,6 +38,19 @@ function Operation() {
       const data = await response.json();
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchOperationDoctors = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/operation/operation-doctors`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setOperationDoctors(data.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -75,11 +87,10 @@ function Operation() {
 
   const clearForm = () => {
     setPatientId('');
-    setPrice('');
     setTime('');
     setDate('');
     setDoctor('');
-    setDiscount('');
+    setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
   };
@@ -89,7 +100,6 @@ function Operation() {
     setId(recordToEdit._id || '');
     setFieldValues({
       patientId: recordToEdit.patientId || '',
-      price: recordToEdit.price || 0,
       time: recordToEdit.time || '',
       date: recordToEdit.date || '',
       doctor: recordToEdit.doctor || '',
@@ -118,47 +128,40 @@ function Operation() {
   };
 
   const fields = [
-    { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Price', type: 'text', name: 'price' },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors?.map((doctor) => ({
-        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
-        value: doctor._id, // Use unique doctor ID as value
-      })),
+      options: Array.isArray(operationDoctors)
+        ? operationDoctors.map((doctor) => ({
+            label: doctor.doctorName,
+            value: doctor.doctorId,
+          }))
+        : [],
       name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
-    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Dr. Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
   const AllFields = [...fields, ...dataTableFields];
 
   const fieldValues = {
     patientId,
-    price,
     time,
     date,
     doctor,
     discount,
   };
 
-  const setFieldValues = ({
-    patientId,
-    price,
-    time,
-    date,
-    doctor,
-    discount,
-  }) => {
+  const setFieldValues = ({ patientId, time, date, doctor, discount }) => {
     setPatientId(patientId);
-    setPrice(price);
     setTime(time);
     setDate(date);
     setDoctor(doctor);

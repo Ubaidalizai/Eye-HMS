@@ -171,9 +171,7 @@ const Pharmacy = () => {
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
         <h2 className='font-semibold text-xl'>
-          {user.role === 'sunglassesSeller'
-            ? 'Sunglasses Inventory'
-            : 'Pharmacy Inventory'}
+          {user.role === 'receptionist' ? 'Sunglasses' : 'Pharmacy'}
         </h2>
         <div className='mt-10'>
           <div className='bg-white shadow overflow-hidden sm:rounded-md'>

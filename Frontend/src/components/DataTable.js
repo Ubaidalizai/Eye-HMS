@@ -29,42 +29,36 @@ const DataTable = ({ submittedData, fields, handleRemove }) => {
         <table className='w-full text-sm border-collapse text-gray-500'>
           <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
             <tr className='bg-gray-100 text-left'>
-              {fields.map(
-                (field, index) =>
-                  field.name !== 'percentage' &&
-                  field.name !== 'totalAmount' && ( // Exclude percentage and totalAmount
-                    <th key={index} className='py-2 px-2 border-b'>
-                      {field.label}
-                    </th>
-                  )
-              )}
+              {fields.map((field, index) => (
+                <th key={index} className='py-2 px-2 border-b'>
+                  {field.label}
+                </th>
+              ))}
               <th className='py-2 border-b'>Actions</th>
             </tr>
           </thead>
           <tbody>
             {submittedData.map((data, index) => (
               <tr key={index} className='hover:bg-gray-50 border'>
-                {fields.map(
-                  (field, idx) =>
-                    field.name !== 'percentage' &&
-                    field.name !== 'totalAmount' && ( // Exclude percentage and totalAmount
-                      <td key={idx} className='py-2 px-2'>
-                        {field.name === 'date'
-                          ? data[field.name]?.split('T')[0]
-                          : field.name === 'patientId'
-                          ? typeof data[field.name] === 'object'
-                            ? data[field.name]?.name || 'N/A'
-                            : data[field.name]
-                          : field.name === 'doctor'
-                          ? typeof data[field.name] === 'object'
-                            ? `${data[field.name]?.firstName} ${
-                                data[field.name]?.lastName
-                              }`
-                            : data[field.name]
-                          : data[field.name]}
-                      </td>
-                    )
-                )}
+                {fields.map((field, idx) => (
+                  <td key={idx} className='py-2 px-2'>
+                    {field.name === 'date'
+                      ? data[field.name]?.split('T')[0]
+                      : field.name === 'patientId'
+                      ? typeof data[field.name] === 'object'
+                        ? data[field.name]?.name || 'N/A'
+                        : data[field.name]
+                      : field.name === 'doctor'
+                      ? typeof data[field.name] === 'object'
+                        ? `${data[field.name]?.firstName} ${
+                            data[field.name]?.lastName
+                          }`
+                        : data[field.name]
+                      : field.name === 'discount' || field.name === 'percentage' // Add % for discount and percentage
+                      ? `${data[field.name]}%`
+                      : data[field.name]}
+                  </td>
+                ))}
                 <td className='py-2 px-4 flex space-x-2'>
                   <button
                     onClick={() => openPrintModal(data)}
@@ -117,6 +111,8 @@ const DataTable = ({ submittedData, fields, handleRemove }) => {
                                   selectedRecord[field.name]?.lastName
                                 }`
                               : selectedRecord[field.name]
+                            : field.name === 'discount' // Add % for discount in modal
+                            ? `${selectedRecord[field.name]}%`
                             : selectedRecord[field.name]}
                         </td>
                       </tr>

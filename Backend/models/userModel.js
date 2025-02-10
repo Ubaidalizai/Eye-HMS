@@ -27,14 +27,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['pharmacist', 'admin', 'sunglassesSeller', 'doctor'],
-      default: 'sunglassesSeller',
-    },
-    percentage: {
-      type: Number,
-      min: 0,
-      max: 100,
-      default: 0,
+      enum: ['pharmacist', 'admin', 'receptionist', 'doctor'],
+      default: 'doctor',
     },
     image: String,
     passwordChangedAt: Date,

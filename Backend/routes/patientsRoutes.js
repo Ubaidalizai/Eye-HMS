@@ -3,11 +3,11 @@ const router = express.Router();
 
 const {
   authenticate,
-  authorizeAdminOrPharmacist,
   authorizeAdmin,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdminOrPharmacist);
+router.use(authenticate, authorize3Users);
 
 const {
   getAllPatients,

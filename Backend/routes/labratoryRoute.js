@@ -10,27 +10,28 @@ const {
   updateLabRecordById,
   deleteLabRecordById,
   fetchRecordsByPatientId,
+  getLaboratoryDoctors,
 } = require('../controllers/labratoryController');
 
 const {
   authenticate,
-  authorizeAdminOrPharmacist,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdminOrPharmacist);
+router.use(authenticate, authorize3Users);
 
 router.get('/search/:patientID', fetchRecordsByPatientId);
+
+router.get('/labratory-doctors', getLaboratoryDoctors);
 
 router.get('/:year', getLaboratoryDataByYear);
 router.get('/:year/:month', getLaboratoryDataByMonth);
 
-// Define routes
-router.route('/').post(createLabRecord).get(getAllLabRecords); // Create a new lab record
+router.route('/').post(createLabRecord).get(getAllLabRecords);
 
 router
   .route('/:id')
   .get(getLabRecordByPatientId)
   .patch(updateLabRecordById)
-  .delete(deleteLabRecordById); // Get a specific lab record by patientId
-
+  .delete(deleteLabRecordById);
 module.exports = router;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { RoleMenus } from '../roles';
 import {
-  FaUserMd,
   FaClipboard,
   FaFileInvoice,
   FaShoppingBag,
@@ -14,8 +14,56 @@ import {
 import BranchesMenu from './BranchesMenu';
 import { BASE_URL } from '../config';
 
-function SideMenu({ setActiveComponent }) {
-  const [userInfo, setUserInfo] = useState({});
+const menuItems = [
+  { id: 'dashboard', path: '/', icon: <FaClipboard />, label: 'Dashboard' },
+  {
+    id: 'admin-panel',
+    path: '/Admin-panel',
+    icon: <FaUsers />,
+    label: 'Admin Panel',
+  },
+  {
+    id: 'inventory',
+    path: '/inventory',
+    icon: <FaWarehouse />,
+    label: 'Inventory',
+  },
+  {
+    id: 'purchase-details',
+    path: '/purchase-details',
+    icon: <FaFileInvoice />,
+    label: 'Purchase',
+  },
+  { id: 'sales', path: '/sales', icon: <FaShoppingBag />, label: 'Sales' },
+  {
+    id: 'patient',
+    path: '/patient',
+    icon: <FaFileMedical />,
+    label: 'Patient',
+  },
+  {
+    id: 'expenses',
+    path: '/expenseManagement',
+    icon: <FaFileInvoice />,
+    label: 'Expenses',
+  },
+  {
+    id: 'income',
+    path: '/incomeReport',
+    icon: <FaFileInvoice />,
+    label: 'Income',
+  },
+  {
+    id: 'pharmacy',
+    path: '/pharmacy',
+    icon: <FaCapsules />,
+    label: 'Pharmacy',
+  },
+  { id: 'branches', path: '', icon: null, label: 'Branches' }, // Placeholder for branches menu
+];
+
+function SideMenu() {
+  const [userInfo, setUserInfo] = useState({ role: null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,9 +71,8 @@ function SideMenu({ setActiveComponent }) {
         const res = await axios.get(`${BASE_URL}/user/profile`, {
           withCredentials: true,
         });
-
         if (res.status === 200) {
-          setUserInfo(res?.data?.data);
+          setUserInfo(res.data.data);
         } else {
           console.error('Failed to fetch user profile', res);
         }
@@ -33,118 +80,52 @@ function SideMenu({ setActiveComponent }) {
         console.error('Error fetching user profile', error);
       }
     };
-
     fetchData();
   }, []);
+
+  // Filter menu items based on the user's role
+  const allowedMenus = RoleMenus[userInfo.role] || [];
 
   return (
     <div className='h-full flex-col justify-between bg-white hidden lg:flex'>
       <div className='px-4 py-6'>
         <div className='flex items-center'>
-          <div className='flex-shrink-0'>
-            <div className='flex justify-center  items-center gap-2'>
-              <span className='font-semibold text-gray-500 text-xl'>
-                Al Sayed Eye HMS
-              </span>
-            </div>
+          <div className='flex justify-center items-center gap-2'>
+            <span className='font-semibold text-gray-500 text-xl'>
+              Al Sayed Eye HMS
+            </span>
           </div>
         </div>
+
+        {/* Navigation Menu */}
         <nav aria-label='Main Nav' className='mt-6 flex flex-col space-y-1'>
-          <Link
-            to='/'
-            className='flex items-center gap-2 rounded-lg  hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaClipboard className='text-lg' />
-            <span className='text-sm font-medium'>Dashboard</span>
-          </Link>
-
-          <Link
-            to='/Admin-panel'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaUsers className='text-lg ' />
-            <span className='text-sm font-medium'>Admain Panel</span>
-          </Link>
-
-          <Link
-            to='/inventory'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaWarehouse className='text-lg ' />
-            <span className='text-sm font-medium'>Inventory</span>
-          </Link>
-
-          <Link
-            to='/purchase-details'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaFileInvoice className='text-lg' />
-            <span className='text-sm font-medium'>Purchase Details</span>
-          </Link>
-
-          <Link
-            to='/sales'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaShoppingBag className='text-lg' />
-            <span className='text-sm font-medium'>Sales</span>
-          </Link>
-
-          <Link
-            to='/patient'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaFileMedical className='text-lg' />
-            <span className='text-sm font-medium'>Patient</span>
-          </Link>
-
-          {/* <Link
-            to='/move'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
-          >
-            <FaUserMd className='text-lg text-gray-500' />
-            <span className='text-sm font-medium'>Move</span>
-          </Link> */}
-
-          <Link
-            to='/expenseManagement'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaFileInvoice className='text-lg ' />
-            <span className='text-sm font-medium'>Expenses</span>
-          </Link>
-
-          <Link
-            to='/incomeReport'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaFileInvoice className='text-lg' />
-            <span className='text-sm font-medium'>Income</span>
-          </Link>
-
-          <Link
-            to='/pharmacy'
-            className='flex items-center gap-2 rounded-lg hover:text-blue-500 focus:text-blue-500 px-4 py-2 text-gray-500 transition-colors duration-300'
-          >
-            <FaCapsules className='text-lg' />
-            <span className='text-sm font-medium'>Pharmacy</span>
-          </Link>
-
-          {/* <Link
-            to='/manage-store'
-            className='flex items-center gap-2 rounded-lg hover:bg-gray-100 px-4 py-2 text-gray-500'
-          >
-            <FaStore className='text-lg text-gray-500' />
-            <span className='text-sm font-medium'>Manage Store</span>
-          </Link> */}
-
-          <BranchesMenu />
+          {menuItems.map(({ id, path, icon, label }) =>
+            allowedMenus.includes(id) ? (
+              id === 'branches' ? (
+                <BranchesMenu key={id} />
+              ) : (
+                <Link
+                  key={id}
+                  to={path}
+                  className='flex items-center gap-2 rounded-lg hover:text-blue-500 px-4 py-2 text-gray-500 transition'
+                >
+                  {icon}
+                  <span className='text-sm font-medium'>{label}</span>
+                </Link>
+              )
+            ) : null
+          )}
         </nav>
       </div>
 
-      <div className='sticky inset-x-0 bottom-0  border-t border-gray-100'>
-        <div className='flex justify-start items-end  gap-2 bg-white py-3 text-center hover:bg-gray-50'>
-          <FaUserMd className='h-10 w-10 text-gray-500' />
+      {/* User Info at Bottom */}
+      <div className='sticky inset-x-0 bottom-0 border-t ml-2 border-gray-100'>
+        <div className='flex justify-start items-end gap-2 bg-white py-3 hover:bg-gray-50'>
+          <img
+            src={`http://localhost:4000/public/img/users/${userInfo?.image}`}
+            alt={userInfo.firstName + ' ' + userInfo.lastName}
+            className='h-10 w-10 rounded-full object-cover'
+          />
           <div>
             <p className='text-xs flex flex-col items-start'>
               <strong className='block font-medium'>

@@ -10,27 +10,29 @@ const {
   updateOCTRecordById,
   deleteOCTRecordById,
   fetchRecordsByPatientId,
+  getOctDoctors,
 } = require('../controllers/octController');
 
 const {
   authenticate,
-  authorizeAdminOrPharmacist,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdminOrPharmacist);
+router.use(authenticate, authorize3Users);
 
 router.get('/search/:patientID', fetchRecordsByPatientId);
+
+router.get('/oct-doctors', getOctDoctors);
 
 router.get('/:year', getOctDataByYear);
 router.get('/:year/:month', getOctDataByMonth);
 
-// Define routes
 router.route('/').post(createOCTRecord).get(getAllOCTRecords);
 
 router
   .route('/:id')
   .get(getOCTRecordById)
   .patch(updateOCTRecordById)
-  .delete(deleteOCTRecordById); // Get a specific OCT record by ID
+  .delete(deleteOCTRecordById);
 
 module.exports = router;

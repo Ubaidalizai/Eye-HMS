@@ -11,8 +11,8 @@ function OPD() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [doctor, setDoctor] = useState('');
+  const [opdDoctors, setOpdDoctors] = useState([]);
   const [discount, setDiscount] = useState(0);
-  const [price, setPrice] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -21,11 +21,10 @@ function OPD() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { perDoctors } = useAuth();
-
   // Fetch data from backend API
   useEffect(() => {
     fetchData();
+    fetchOpdDoctors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -38,6 +37,19 @@ function OPD() {
       const data = await response.json();
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchOpdDoctors = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/opd/opd-doctors`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch opd doctors');
+      const data = await response.json();
+      setOpdDoctors(data.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -77,7 +89,6 @@ function OPD() {
     setDate('');
     setTime('');
     setDoctor('');
-    setPrice(0);
     setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
@@ -90,7 +101,6 @@ function OPD() {
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
       doctor: recordToEdit.doctor || '',
-      price: recordToEdit.price || 0,
       discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
@@ -116,23 +126,25 @@ function OPD() {
   };
 
   const fields = [
-    { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors?.map((doctor) => ({
-        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
-        value: doctor._id, // Use unique doctor ID as value
-      })),
+      options: Array.isArray(opdDoctors)
+        ? opdDoctors.map((doctor) => ({
+            label: doctor.doctorName,
+            value: doctor.doctorId,
+          }))
+        : [],
       name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
+    { label: 'Price', type: 'number', name: 'price' },
     { label: 'Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
@@ -143,23 +155,14 @@ function OPD() {
     date,
     time,
     doctor,
-    price,
     discount,
   };
 
-  const setFieldValues = ({
-    patientId,
-    date,
-    time,
-    doctor,
-    price,
-    discount,
-  }) => {
+  const setFieldValues = ({ patientId, date, time, doctor, discount }) => {
     setPatientId(patientId);
     setDate(date);
     setTime(time);
     setDoctor(doctor);
-    setPrice(price);
     setDiscount(discount);
   };
 
@@ -175,7 +178,7 @@ function OPD() {
           }}
           className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 mr-5 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
         >
-          <FaPlus className='mr-2' /> Add OPD Record
+          <FaPlus className='mr-2' /> Add Record
         </button>
       </div>
 
