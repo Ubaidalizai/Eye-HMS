@@ -1,5 +1,6 @@
 const DoctorKhata = require('../models/doctorKhataModel');
 const User = require('../models/userModel');
+const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const mongoose = require('mongoose');
@@ -12,9 +13,12 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
   }
 
   // Check if doctor exists in User model and has percentage
-  const doctor = await User.findById(doctorId);
+  const doctor = await DoctorBranchAssignment.findOne({ doctorId });
   if (!doctor || !doctor.percentage) {
-    throw new AppError('Doctor not found or does not have percentage', 400);
+    throw new AppError(
+      'Doctor not assigned to a branch or does not have percentage',
+      400
+    );
   }
 
   const doctorKhata = new DoctorKhata({

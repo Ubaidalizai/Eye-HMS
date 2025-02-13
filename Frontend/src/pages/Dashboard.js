@@ -110,7 +110,7 @@ function Dashboard() {
               trendDirection='up'
             />
             <SummaryCard
-              title='Purchase'
+              title='Total Purchase'
               value={dashboardSummary.data.totalPurchases}
               trend={67.81}
               trendDirection='down'

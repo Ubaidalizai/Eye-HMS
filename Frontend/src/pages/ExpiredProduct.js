@@ -49,12 +49,10 @@ const ExpiredProduct = () => {
 
   return (
     <div className='container mx-auto p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Expired Products and Drugs</h1>
-
-      {/* Conditionally render the expired products table for admin only */}
+      <h3 className='text-2xl font-medium mb-8'>Expired Products</h3>
       {user.role === 'admin' && (
         <>
-          <h2 className='text-xl font-bold mb-4'>Expired Products</h2>
+          <h2 className='text-lg font-medium mb-4'>Inventory Expiry</h2>
           {expiredProducts.length === 0 ? (
             <p>No expired products available.</p>
           ) : (
@@ -98,10 +96,9 @@ const ExpiredProduct = () => {
         </>
       )}
 
-      {/* Conditionally render the expired drugs table for both admin and pharmacist */}
       {(user.role === 'admin' || user.role === 'pharmacist') && (
         <>
-          <h2 className='text-xl font-bold mb-4'>Expired Drugs</h2>
+          <h2 className='text-lg font-medium mb-4'>Pharmacy Expiry</h2>
           {expiredDrugs.length === 0 ? (
             <p>No expired drugs available.</p>
           ) : (

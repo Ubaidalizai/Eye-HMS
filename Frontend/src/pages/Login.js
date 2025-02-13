@@ -1,6 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import AuthContext from '../AuthContext';
 import { useAuth } from '../AuthContext';
 import { BASE_URL } from '../config';
 
@@ -11,8 +10,6 @@ function Login() {
   });
   const [error, setError] = useState(null); // Error state
   const [loading, setLoading] = useState(false); // Loading state
-
-  const authContext = useContext(AuthContext); // Correct use of AuthContext
   const { signin } = useAuth(); // Access the custom hook
   const navigate = useNavigate(); // Navigation hook
 
@@ -38,6 +35,7 @@ function Login() {
         navigate('/');
       });
     } catch (err) {
+      console.log('Login Error:', err);
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);

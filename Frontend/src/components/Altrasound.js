@@ -13,9 +13,8 @@ function Ultrasound() {
     time: '',
     date: '',
     discount: 0,
-    price: 0,
   });
-
+  const [ultrasoundDoctors, setUltrasoundDoctors] = useState([]);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -25,10 +24,9 @@ function Ultrasound() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { perDoctors } = useAuth();
-
   useEffect(() => {
     fetchData();
+    fetchUltrasoundDotors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -42,6 +40,15 @@ function Ultrasound() {
     setTotalPages(data.totalPages || Math.ceil(data.results / limit));
   };
 
+  const fetchUltrasoundDotors = async () => {
+    const response = await fetch(`${BASE_URL}/ultrasound/ultrasound-doctors`, {
+      credentials: 'include',
+    });
+    const data = await response.json();
+
+    setUltrasoundDoctors(data.data);
+  };
+
   const handleCancel = () => {
     setFieldValues({
       id: '',
@@ -49,7 +56,6 @@ function Ultrasound() {
       time: '',
       date: '',
       discount: 0,
-      price: 0,
     });
     setIsOpen(false);
     setEditMode(false);
@@ -64,7 +70,6 @@ function Ultrasound() {
       time: record.time,
       date: record.date,
       discount: record.discount,
-      price: record.price,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -146,23 +151,25 @@ function Ultrasound() {
   };
 
   const fields = [
-    { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors?.map((doctor) => ({
-        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
-        value: doctor._id, // Use unique doctor ID as value
-      })),
+      options: Array.isArray(ultrasoundDoctors)
+        ? ultrasoundDoctors.map((doctor) => ({
+            label: `${doctor.doctorName}`,
+            value: doctor.doctorId,
+          }))
+        : [],
       name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
+    { label: 'Price', type: 'number', name: 'price' },
     { label: 'Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
@@ -180,7 +187,6 @@ function Ultrasound() {
               time: '',
               date: '',
               discount: 0,
-              price: 0,
             });
             setIsOpen(true);
             setEditMode(false);

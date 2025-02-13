@@ -47,8 +47,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                         <div className='mt-2'>
                           <p className='text-sm text-gray-500 mb-4'>
                             <span className='font-medium'>Date:</span>{' '}
-                            {soldItems.date ||
-                              new Date().toISOString().split('T')[0]}
+                            {soldItems.date || new Date().split('T')[0]}
                           </p>
                           <div className='border-t border-gray-200 py-4'>
                             <h4 className='text-lg font-medium text-gray-900 mb-2'>

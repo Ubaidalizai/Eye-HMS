@@ -10,4 +10,8 @@ const DoughnutChart = ({ data, title }) => (
   </div>
 );
 
+// `${BASE_URL}/doctor-branch`
+// `${BASE_URL}/doctor-branch`
+
+
 export default DoughnutChart;

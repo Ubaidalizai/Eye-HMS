@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
+const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const mongoose = require('mongoose');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
@@ -11,6 +12,7 @@ const validateMongoDBId = require('../utils/validateMongoDBId');
 const calculatePercentage = require('../utils/calculatePercentage');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
+const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
 
 const getBedroomDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -35,79 +37,115 @@ const getBedroomDataByMonth = asyncHandler(async (req, res) => {
 });
 
 // Create a new bedroom
-const createBedroom = asyncHandler(async (req, res) => {
-  const { patientId, doctor } = req.body;
+const createBedroom = asyncHandler(async (req, res, next) => {
+  const { patientId, doctor, time, date, discount } = req.body;
 
-  const patient = await Patient.findOne({ patientID: patientId });
-  if (!patient) {
-    throw new AppError('Patient not found', 404);
-  }
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const doctorExist = await User.findById(doctor);
-  if (!doctorExist || doctorExist.role !== 'doctor') {
-    throw new AppError('Doctor not found', 404);
-  }
-
-  req.body.totalAmount = req.body.rent;
-  let doctorPercentage = 0;
-
-  if (doctorExist.percentage > 0) {
-    // Calculate percentage and update total amount
-    const result = await calculatePercentage(
-      req.body.rent,
-      doctorExist.percentage
+  try {
+    // Step 1: Validate patient
+    const patient = await Patient.findOne({ patientID: patientId }).session(
+      session
     );
-    req.body.totalAmount = result.finalPrice;
-    doctorPercentage = result.percentageAmount;
-  }
+    if (!patient) {
+      throw new AppError('Patient not found', 404);
+    }
 
-  if (req.body.discount > 0) {
-    const result = await calculatePercentage(
-      req.body.totalAmount,
-      req.body.discount
-    );
-    req.body.totalAmount = result.finalPrice;
-  }
-
-  const bedroom = new Bedroom({
-    patientId: patient._id,
-    doctor: doctor,
-    percentage: doctorExist.percentage,
-    rent: req.body.rent,
-    time: req.body.time,
-    date: req.body.date,
-    discount: req.body.discount,
-    totalAmount: req.body.totalAmount,
-  });
-  await bedroom.save();
-
-  // Create a new record if it doesn't exist
-  if (doctorPercentage > 0 && doctorExist.percentage > 0) {
-    await DoctorKhata.create({
-      branchNameId: bedroom._id,
+    // Step 2: Check if doctor is assigned to this branch
+    const doctorAssignment = await DoctorBranchAssignment.findOne({
+      doctorId: doctor,
       branchModel: 'bedroomModule',
-      doctorId: doctorExist._id,
-      amount: doctorPercentage,
-      date: req.body.date,
-      amountType: 'income',
-    });
-  }
-  if (bedroom.totalAmount > 0) {
-    await Income.create({
-      saleId: bedroom._id,
-      saleModel: 'bedroomModule',
-      date: bedroom.date,
-      totalNetIncome: bedroom.totalAmount,
-      category: 'bedroom',
-      description: 'Bedroom income',
-    });
-  }
+    }).session(session);
 
-  res.status(201).json({
-    success: true,
-    message: 'Bedroom created successfully',
-    data: bedroom,
-  });
+    if (!doctorAssignment) {
+      throw new AppError('Doctor is not assigned to this branch', 400);
+    }
+
+    const doctorPercentage = doctorAssignment.percentage;
+
+    // Step 3: Calculate total amount after doctor percentage & discount
+    let totalAmount = doctorAssignment.price;
+    let doctorIncome = 0;
+
+    if (doctorPercentage > 0) {
+      const result = await calculatePercentage(
+        doctorAssignment.price,
+        doctorPercentage
+      );
+      doctorIncome = result.percentageAmount;
+      totalAmount = result.finalPrice;
+    }
+
+    if (discount > 0) {
+      const discountResult = await calculatePercentage(totalAmount, discount);
+      totalAmount = discountResult.finalPrice;
+    }
+
+    // Step 4: Create Bedroom Record
+    const bedroom = new Bedroom({
+      patientId: patient._id,
+      time,
+      date,
+      rent: doctorAssignment.price,
+      doctor,
+      percentage: doctorAssignment.percentage,
+      discount,
+      totalAmount,
+    });
+    await bedroom.save({ session });
+
+    // Step 5: Create DoctorKhata Record
+    if (doctorIncome > 0) {
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: bedroom._id,
+            branchModel: 'bedroomModule',
+            doctorId: doctor,
+            amount: doctorIncome,
+            date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Step 6: Create Income Record
+    if (totalAmount > 0) {
+      await Income.create(
+        [
+          {
+            saleId: bedroom._id,
+            saleModel: 'bedroomModule',
+            date,
+            totalNetIncome: totalAmount,
+            category: 'bedroom',
+            description: 'Bedroom income',
+          },
+        ],
+        { session }
+      );
+    }
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Send success response
+    res.status(201).json({
+      success: true,
+      message: 'Bedroom created successfully',
+      data: bedroom,
+    });
+  } catch (error) {
+    // Rollback transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    next(error);
+  }
 });
 
 // Get all bedrooms
@@ -245,6 +283,16 @@ const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   });
 });
 
+const getBedroomDoctors = asyncHandler(async (req, res, next) => {
+  const branchModel = 'bedroomModule';
+  const doctors = await getDoctorsByBranch(branchModel);
+
+  res.status(200).json({
+    success: true,
+    data: doctors,
+  });
+});
+
 module.exports = {
   getBedroomDataByYear,
   getBedroomDataByMonth,
@@ -254,4 +302,5 @@ module.exports = {
   updateBedroom,
   deleteBedroom,
   fetchRecordsByPatientId,
+  getBedroomDoctors,
 };

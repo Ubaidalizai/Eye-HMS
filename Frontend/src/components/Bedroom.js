@@ -3,7 +3,6 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
-import { useAuth } from '../AuthContext';
 import { BASE_URL } from '../config';
 
 function Bedroom() {
@@ -11,8 +10,8 @@ function Bedroom() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
-  const [rent, setRent] = useState('');
-  const [discount, setDiscount] = useState('');
+  const [bedroomDoctors, setBedroomDoctors] = useState('');
+  const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -21,10 +20,9 @@ function Bedroom() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { perDoctors } = useAuth();
-
   useEffect(() => {
     fetchData();
+    fetchBedroomDoctors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -39,6 +37,19 @@ function Bedroom() {
       const data = await response.json();
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchBedroomDoctors = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/bedroom/bedroom-doctors`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setBedroomDoctors(data.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -78,7 +89,6 @@ function Bedroom() {
     setTime('');
     setDate('');
     setDoctor('');
-    setRent(0);
     setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
@@ -91,7 +101,6 @@ function Bedroom() {
       time: recordToEdit.time || '',
       date: recordToEdit.date || '',
       doctor: recordToEdit.doctor || '',
-      rent: recordToEdit.rent || 0,
       discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
@@ -117,42 +126,36 @@ function Bedroom() {
   };
 
   const fields = [
-    { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Rent', type: 'number', name: 'rent' },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors?.map((doctor) => ({
-        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
-        value: doctor._id, // Use unique doctor PATIENTID as value
-      })),
+      options: Array.isArray(bedroomDoctors)
+        ? bedroomDoctors.map((doctor) => ({
+            label: `${doctor.doctorName}`,
+            value: doctor.doctorId,
+          }))
+        : [],
       name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
-    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Rent', type: 'number', name: 'rent' },
+    { label: 'Percentage', type: 'number', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
   const AllFields = [...fields, ...dataTableFields];
 
-  const fieldValues = { patientId, time, date, doctor, rent, discount };
-  const setFieldValues = ({
-    patientId,
-    time,
-    date,
-    doctor,
-    rent,
-    discount,
-  }) => {
+  const fieldValues = { patientId, time, date, doctor, discount };
+  const setFieldValues = ({ patientId, time, date, doctor, discount }) => {
     setPatientId(patientId);
     setTime(time);
     setDate(date);
     setDoctor(doctor);
-    setRent(rent);
     setDiscount(discount);
   };
 

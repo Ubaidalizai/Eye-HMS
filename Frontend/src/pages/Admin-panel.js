@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
-import PersonInfoDropdown from "./PersonInfoDropdown";
-import { BASE_URL } from "../config";
-import { toast } from "react-toastify"; // Import toast
+import React, { useState, useEffect } from 'react';
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import PersonInfoDropdown from './PersonInfoDropdown';
+import { BASE_URL } from '../config';
+import { toast } from 'react-toastify';
+import DoctorBranchAssignment from '../components/DoctorAssigenment';
+import OperationTypeManagement from '../components/OperationTypeManagement';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "",
-    password: "",
-    phoneNumber: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: '',
+    password: '',
+    phoneNumber: '',
     image: null,
-    percentage: "",
+    percentage: '',
   });
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -24,7 +26,7 @@ const UserList = () => {
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${BASE_URL}/user`, {
-        credentials: "include",
+        credentials: 'include',
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -35,10 +37,10 @@ const UserList = () => {
       if (data && data.data && Array.isArray(data.data.results)) {
         setUsers(data.data.results);
       } else {
-        throw new Error("Unexpected API response structure");
+        throw new Error('Unexpected API response structure');
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error('Error fetching users:', error);
       toast.error(`Failed to fetch users: ${error.message}`); // Use toast
       setUsers([]);
     }
@@ -51,18 +53,16 @@ const UserList = () => {
   const validateForm = (user, isNewUser = false) => {
     const errors = {};
     if (user.firstName.trim().length < 2)
-      errors.firstName = "First name must be at least 2 characters long";
+      errors.firstName = 'First name must be at least 2 characters long';
     if (user.lastName.trim().length < 2)
-      errors.lastName = "Last name must be at least 2 characters long";
+      errors.lastName = 'Last name must be at least 2 characters long';
     if (!/^\S+@\S+\.\S+$/.test(user.email))
-      errors.email = "Invalid email format";
+      errors.email = 'Invalid email format';
     if (isNewUser && user.password.length < 6)
-      errors.password = "Password must be at least 6 characters long";
+      errors.password = 'Password must be at least 6 characters long';
     if (!/^\d{10}$/.test(user.phoneNumber))
-      errors.phoneNumber = "Phone number must be 10 digits";
-    if (isNaN(user.percentage) || user.percentage < 0 || user.percentage > 100)
-      errors.percentage = "Percentage must be between 0 and 100";
-    if (!user.role) errors.role = "Please select a role";
+      errors.phoneNumber = 'Phone number must be 10 digits';
+    if (!user.role) errors.role = 'Please select a role';
     return errors;
   };
 
@@ -83,8 +83,8 @@ const UserList = () => {
       });
 
       const response = await fetch(`${BASE_URL}/user/register`, {
-        credentials: "include",
-        method: "POST",
+        credentials: 'include',
+        method: 'POST',
         body: formData,
       });
 
@@ -95,20 +95,20 @@ const UserList = () => {
 
       await fetchUsers();
       setNewUser({
-        firstName: "",
-        lastName: "",
-        email: "",
-        role: "",
-        password: "",
-        phoneNumber: "",
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: '',
+        password: '',
+        phoneNumber: '',
         image: null,
-        percentage: "",
+        percentage: '',
       });
       setIsAddModalOpen(false);
       setValidationErrors({});
-      toast.success("User added successfully"); // Use toast
+      toast.success('User added successfully'); // Use toast
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error('Error adding user:', error);
       toast.error(`Failed to add user: ${error.message}`); // Use toast
     } finally {
       setIsButtonDisabled(false);
@@ -118,6 +118,7 @@ const UserList = () => {
   const updateUser = async (e) => {
     e.preventDefault();
     const errors = validateForm(editingUser);
+    console.log(errors, 'ssssssssss');
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
@@ -125,9 +126,9 @@ const UserList = () => {
     try {
       const { password, ...userDataWithoutPassword } = editingUser;
       const response = await fetch(`${BASE_URL}/user/${editingUser._id}`, {
-        credentials: "include",
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userDataWithoutPassword),
       });
       if (!response.ok) {
@@ -137,27 +138,28 @@ const UserList = () => {
       await fetchUsers();
       setEditingUser(null);
       setValidationErrors({});
-      toast.success("User updated successfully"); // Use toast
+      toast.success('User updated successfully'); // Use toast
     } catch (error) {
-      console.error("Error updating user:", error);
+      console.error('Error updating user:', error);
       toast.error(`Failed to update user: ${error.message}`); // Use toast
     }
   };
 
   const deleteUser = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       const response = await fetch(`${BASE_URL}/user/${id}`, {
-        credentials: "include",
-        method: "DELETE",
+        credentials: 'include',
+        method: 'DELETE',
       });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Error: ${response.status}`);
       }
       await fetchUsers();
-      toast.success("User deleted successfully"); // Use toast
+      toast.success('User deleted successfully'); // Use toast
     } catch (error) {
-      console.error("Error deleting user:", error);
+      console.error('Error deleting user:', error);
       toast.error(`Failed to delete user: ${error.message}`); // Use toast
     }
   };
@@ -209,10 +211,7 @@ const UserList = () => {
                   Role
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Percentage
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  P.No
+                  Phone
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Actions
@@ -237,21 +236,12 @@ const UserList = () => {
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>{user?.email}</td>
                   <td className='px-6 py-4 whitespace-nowrap'>
-                    {user?.role === "admin" ? (
+                    {user?.role === 'admin' ? (
                       <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
                         {user?.role}
                       </span>
                     ) : (
                       user?.role
-                    )}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user?.percentage > 0 ? (
-                      <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
-                        {user?.percentage + "%"}
-                      </span>
-                    ) : (
-                      user?.percentage + "%"
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
@@ -327,25 +317,6 @@ const UserList = () => {
                 </div>
                 <div>
                   <input
-                    type='number'
-                    placeholder='Percentage'
-                    value={newUser.percentage}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, percentage: e.target.value })
-                    }
-                    className='border p-2 rounded w-full mb-2'
-                    required
-                    min={0}
-                    max={100}
-                  />
-                  {validationErrors.percentage && (
-                    <p className='text-red-500 text-xs'>
-                      {validationErrors.percentage}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <input
                     type='tel'
                     placeholder='Phone Number'
                     value={newUser.phoneNumber}
@@ -409,7 +380,7 @@ const UserList = () => {
                     <option value=''>Select Role</option>
                     <option value='pharmacist'>Pharmacist</option>
                     <option value='admin'>Admin</option>
-                    <option value='sunglassesSeller'>Sunglasses seller</option>
+                    <option value='receptionist'>Receptionist</option>
                     <option value='doctor'>Doctor</option>
                   </select>
                   {validationErrors.role && (
@@ -442,8 +413,8 @@ const UserList = () => {
                   type='submit'
                   className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
                     isButtonDisabled
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700"
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700'
                   }`}
                   disabled={isButtonDisabled}
                 >
@@ -541,28 +512,6 @@ const UserList = () => {
                 )}
               </div>
               <div>
-                <input
-                  type='number'
-                  placeholder='Percentage'
-                  value={editingUser.percentage}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      percentage: e.target.value,
-                    })
-                  }
-                  className='border p-2 rounded w-full mb-2'
-                  required
-                  min={0}
-                  max={100}
-                />
-                {validationErrors.percentage && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.percentage}
-                  </p>
-                )}
-              </div>
-              <div>
                 <select
                   value={editingUser.role}
                   onChange={(e) =>
@@ -574,9 +523,7 @@ const UserList = () => {
                   <option value=''>Role</option>
                   <option value='pharmacist'>Pharmacist</option>
                   <option value='admin'>Admin</option>
-                  <option value='sunglassesSeller'>
-                    Sunglasses <s></s>eller
-                  </option>
+                  <option value='receptionist'>Receptionist</option>
                   <option value='doctor'>Doctor</option>
                 </select>
                 {validationErrors.role && (
@@ -606,6 +553,8 @@ const UserList = () => {
       )}
 
       <PersonInfoDropdown />
+      <DoctorBranchAssignment />
+      <OperationTypeManagement />
     </div>
   );
 };

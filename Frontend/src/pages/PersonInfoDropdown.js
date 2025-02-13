@@ -65,14 +65,23 @@ function PersonInfoDropdown() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to add outcome');
+      if (!response.ok) {
+        let errorMessage = 'Failed to add Outcome';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text();
+        }
+        throw new Error(errorMessage);
+      }
       toast.success('Outcome added successfully!');
       fetchRecords(selectedDoctorId);
       fetchDocKhataSummary(selectedDoctorId);
       setNewOutcome({ date: '', amount: '' });
     } catch (error) {
-      console.error('Error adding outcome:', error);
-      toast.error('Failed to add outcome.');
+      console.error('Error adding outcome:', error.message);
+      toast.error(error.message);
     }
   };
 
@@ -83,19 +92,19 @@ function PersonInfoDropdown() {
 
   return (
     <ErrorBoundary>
-      <div className='w-full  mt-10'>
+      <div className='w-full border pt-5 rounded-lg mt-20'>
         <ToastContainer
           position='top-right'
           autoClose={3000}
           hideProgressBar={false}
         />
-        <h1 className='text-3xl font-bold text-center mb-8 text-gray-600'>
-          Doctor Khata
+        <h1 className='text-2xl font-semibold ml-3 mb-10 text-gray-700'>
+          Doctor Kahta List
         </h1>
 
         <select
           onChange={handleDoctorSelect}
-          className='w-full h-12 mb-6 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+          className='w-full h-12 mb-6 text-lg border border-l-0 border-r-0 border-gray-300'
         >
           <option value=''>Select a doctor</option>
           {doctors.map((doctor) => (
@@ -120,7 +129,7 @@ function PersonInfoDropdown() {
               </div>
             </div>
 
-            <div className='mb-6 p-4 bg-white rounded-lg border border-gray-300'>
+            <div className='mb-6 p-4 bg-white border border-l-0 border-r-0 border-gray-300'>
               <h3 className='text-xl font-semibold mb-4 text-gray-700'>
                 Add New Outcome
               </h3>

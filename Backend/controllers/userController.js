@@ -89,15 +89,7 @@ const updateUserPhoto = asyncHandler(async (req, res) => {
 
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
-  const {
-    firstName,
-    lastName,
-    email,
-    password,
-    phoneNumber,
-    role,
-    percentage,
-  } = req.body;
+  const { firstName, lastName, email, password, phoneNumber, role } = req.body;
 
   if (!firstName || !lastName || !email || !password || !phoneNumber) {
     throw new AppError('Please fill all the inputs.', 400);
@@ -115,7 +107,6 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     phoneNumber,
     role,
-    percentage,
     image: req.file ? req.file.filename : null,
   });
 
@@ -129,7 +120,6 @@ const registerUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       phoneNumber: newUser.phoneNumber,
       role: newUser.role,
-      percentage: newUser.percentage,
       image: newUser.image,
     });
   } catch (error) {
@@ -393,7 +383,6 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 });
 
 const getAllDoctorsWithPercentage = asyncHandler(async (req, res) => {
-  // Check if doctor exists in User model and has percentage
   const doctors = await User.find({ role: 'doctor' });
 
   res.status(200).json(doctors);

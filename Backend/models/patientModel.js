@@ -28,10 +28,7 @@ const patientSchema = new mongoose.Schema(
       enum: ['Male', 'Female', 'Other'],
       required: true,
     },
-    insuranceContact: {
-      type: String,
-      required: true,
-    },
+    insuranceContact: String,
     prescriptions: [
       {
         type: mongoose.Schema.Types.ObjectId,

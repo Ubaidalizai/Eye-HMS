@@ -1,6 +1,7 @@
 import { Fragment, useContext, useState, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MdOutlineCloudDownload } from 'react-icons/md';
+import { TbLogout } from 'react-icons/tb';
 import AuthContext from '../AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -111,7 +112,7 @@ export default function Header() {
   return (
     <>
       <div className='min-h-full'>
-        <Disclosure as='nav' className='fixed top-0 w-4/5 z-10   bg-white'>
+        <Disclosure as='nav' className='fixed top-0 w-4/5 bg-white'>
           {({ open }) => (
             <>
               <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -119,7 +120,7 @@ export default function Header() {
                   <div className='flex items-center gap-2'>
                     <button
                       onClick={handleBackup}
-                      className='text-gray-300 active:scale-95 transition transform duration-150'
+                      className='text-gray-300 active:scale-95 transition transform duration-150v rounded-full hover:bg-gray-200 p-2'
                     >
                       <MdOutlineCloudDownload className='inline-block  font-bold text-gray-600 mr-2n text-2xl' />
                     </button>
@@ -164,13 +165,9 @@ export default function Header() {
                         {/* Profile dropdown */}
                         <Menu as='div' className='relative ml-3'>
                           <div>
-                            <Menu.Button className='flex max-w-xs items-center rounded-full b text-sm focus:outline-none focus:ring-2'>
+                            <Menu.Button className='flex max-w-xs items-center text-2xl rounded-full focus:outline-none font-bold text-gray-600 hover:bg-gray-200 p-2'>
                               <span className='sr-only'>Open user menu</span>
-                              <img
-                                className='h-8 w-8 rounded-full'
-                                src={`http://localhost:4000/public/img/users/${userInfo.image}`}
-                                alt='profile'
-                              />
+                              <TbLogout />
                             </Menu.Button>
                           </div>
                           <Transition

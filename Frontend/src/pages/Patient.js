@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Doughnut, Bar } from 'react-chartjs-2';
-import {
-  HiPlus,
-  HiSearch,
-  HiPencil,
-  HiTrash,
-  HiDocumentAdd,
-  HiChevronLeft,
-  HiChevronRight,
-} from 'react-icons/hi';
+import { Bar } from 'react-chartjs-2';
+import { HiSearch } from 'react-icons/hi';
 
 import {
   Chart as ChartJS,
@@ -78,8 +69,6 @@ export default function PatientManagement() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (summaryType === 'monthly') {
@@ -172,7 +161,7 @@ export default function PatientManagement() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsAddButtonDisabled(true); // Disable the button
+    setIsAddButtonDisabled(true);
 
     try {
       const method = currentPatient ? 'PATCH' : 'POST';
@@ -452,14 +441,6 @@ export default function PatientManagement() {
                       >
                         <FaTrash className='w-4 h-4' />
                       </button>
-                      <button
-                        onClick={() =>
-                          navigate(`/patients/${patient.name}/prescriptions`)
-                        }
-                        className='text-green-500 hover:text-green-700'
-                      >
-                        <HiDocumentAdd size={20} />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -502,6 +483,7 @@ export default function PatientManagement() {
                   placeholder='Age'
                   className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                   required
+                  min='0'
                 />
                 <input
                   type='tel'
