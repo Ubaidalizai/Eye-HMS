@@ -83,7 +83,7 @@ const Table = ({ headers, data, onDelete, onEdit }) => (
 const DoctorBranchAssignment = () => {
   const [assignments, setAssignments] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('opdModule');
+  const [selectedBranch, setSelectedBranch] = useState('');
   const [percentage, setPercentage] = useState(0);
   const [price, setPrice] = useState(0);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -149,33 +149,51 @@ const DoctorBranchAssignment = () => {
   };
 
   const handleEdit = (assignment) => {
-    setEditingAssignment(assignment);
+    setEditingAssignment(assignment.id);
     setPercentage(assignment.percentage);
     setPrice(assignment.price);
     setShowEditModal(true);
   };
 
   const handleUpdate = async () => {
-    await fetch(
-      `${BASE_URL}/doctor-branch/${editingAssignment.id}/${editingAssignment.branch}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          percentage,
-          price,
-        }),
-      }
-    );
+    try {
+      const response = await fetch(
+        `${BASE_URL}/doctor-branch/${editingAssignment}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            percentage,
+            price,
+          }),
+        }
+      );
 
-    fetchAssignments();
-    setShowEditModal(false);
-    resetForm();
+      if (!response.ok) {
+        let errorMessage = 'Failed to update doctor assignment';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text();
+        }
+        throw new Error(errorMessage);
+      }
+
+      fetchAssignments();
+      setShowEditModal(false);
+      resetForm();
+    } catch (err) {
+      console.error('Error assigning doctor:', err);
+      setError(err.message);
+    }
   };
 
-  const handleDelete = async (doctorId) => {
-    await fetch(`${BASE_URL}/doctor-branch/${doctorId}`, {
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this assignment?'))
+      return;
+    await fetch(`${BASE_URL}/doctor-branch/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });
@@ -193,8 +211,8 @@ const DoctorBranchAssignment = () => {
 
   return (
     <div className='border pt-5 rounded-lg mt-20 mb-20'>
-      <h2 className='text-2xl text-gray-600 font-bold mb-4 text-center'>
-        Assign Doctor to a Branch
+      <h2 className='text-2xl text-gray-600 font-semibold ml-3 mb-10'>
+        Assigned Doctors List
       </h2>
       <div className='flex flex-row items-center justify-end gap-3'>
         <label htmlFor='category' className='sr-only'>
@@ -234,7 +252,8 @@ const DoctorBranchAssignment = () => {
         ]}
         data={assignments?.map((ass) => ({
           image: ass.image,
-          id: ass.doctorId,
+          id: ass._id,
+          doctorId: ass.doctorId,
           doctorName: `${ass.doctorName}`,
           branch: ass.branch,
           percentage: ass.percentage,
@@ -274,19 +293,14 @@ const DoctorBranchAssignment = () => {
           value={selectedBranch}
           onChange={(e) => setSelectedBranch(e.target.value)}
         >
-          {[
-            'opdModule',
-            'bedroomModule',
-            'labratoryModule',
-            'octModule',
-            'labratoryModule',
-            'operationModule',
-            'ultraSoundModule',
-          ].map((branch) => (
-            <option key={branch} value={branch}>
-              {branch}
-            </option>
-          ))}
+          <option value=''>Select Branch</option>
+          <option value='operationModule'>Operation</option>
+          <option value='opdModule'>OPD</option>
+          <option value='octModule'>OCT</option>
+          <option value='ultraSoundModule'>Biscayne</option>
+          <option value='yeglizerModel'>Yeglizer</option>
+          <option value='labratoryModule'>Laboratory</option>
+          <option value='bedroomModule'>Bedroom</option>
         </select>
         <label className='block mt-2'>Percentage %</label>
         <input

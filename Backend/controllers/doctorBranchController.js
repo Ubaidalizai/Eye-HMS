@@ -65,7 +65,6 @@ const updateDoctorAssignment = asyncHandler(async (req, res) => {
 
 const deleteDoctorAssignment = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
   const deleted = await DoctorBranchAssignment.findByIdAndDelete(id);
   if (!deleted) {
     throw new AppError('Assignment not found', 404);

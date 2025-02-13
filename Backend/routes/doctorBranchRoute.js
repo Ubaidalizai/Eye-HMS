@@ -10,12 +10,14 @@ const router = express.Router();
 
 router.use(authenticate, authorizeAdmin);
 
-router.patch('/:id', doctorBranchController.updateDoctorAssignment);
-router.delete('/:id', doctorBranchController.deleteDoctorAssignment);
-
 router
   .route('/')
   .get(doctorBranchController.getAllBranchesWithDoctors)
   .post(doctorBranchController.assignDoctorToBranch);
+
+router
+  .route('/:id')
+  .patch(doctorBranchController.updateDoctorAssignment)
+  .delete(doctorBranchController.deleteDoctorAssignment);
 
 module.exports = router;

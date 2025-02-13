@@ -115,7 +115,7 @@ const addRecord = asyncHandler(async (req, res, next) => {
     const opdRecord = new OPD({
       patientId: patient._id,
       doctor: doctor,
-      percentage: doctorPercentage,
+      percentage: assignedDoctor.percentage,
       price: assignedDoctor.price,
       time: req.body.time,
       date: req.body.date,

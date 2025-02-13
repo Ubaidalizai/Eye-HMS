@@ -4,6 +4,7 @@ import PersonInfoDropdown from './PersonInfoDropdown';
 import { BASE_URL } from '../config';
 import { toast } from 'react-toastify';
 import DoctorBranchAssignment from '../components/DoctorAssigenment';
+import OperationTypeManagement from '../components/OperationTypeManagement';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -553,6 +554,7 @@ const UserList = () => {
 
       <PersonInfoDropdown />
       <DoctorBranchAssignment />
+      <OperationTypeManagement />
     </div>
   );
 };

@@ -5,6 +5,7 @@ const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
 const DoctorBranchAssignment = require('../models/doctorBranchModel');
+const operationTypeModel = require('../models/operationTypeModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
@@ -38,7 +39,7 @@ const getOperationDataByMonth = asyncHandler(async (req, res) => {
 
 // Create a new operation
 const createOperation = asyncHandler(async (req, res, next) => {
-  const { patientId, doctor } = req.body;
+  const { patientId, operationType, doctor } = req.body;
 
   if (!patientId || !doctor) {
     throw new AppError('Patient ID and Doctor ID are required', 400);
@@ -67,18 +68,24 @@ const createOperation = asyncHandler(async (req, res, next) => {
       doctorId: doctorExist._id,
       branchModel: 'operationModule',
     }).session(session);
-
+    console.log(assignedDoctor);
     if (!assignedDoctor) {
       throw new AppError('Doctor is not assigned to this branch', 403);
     }
 
+    const findOperationType = await operationTypeModel
+      .findById(operationType)
+      .session(session);
+    if (!findOperationType) {
+      throw new AppError('Operation type not found', 403);
+    }
     // Step 4: Calculate total amount and doctor percentage
-    req.body.totalAmount = assignedDoctor.price;
+    req.body.totalAmount = findOperationType.price;
     let doctorPercentage = assignedDoctor.percentage || 0; // Use assigned percentage
 
     if (doctorPercentage > 0) {
       const result = await calculatePercentage(
-        assignedDoctor.price,
+        findOperationType.price,
         doctorPercentage
       );
       req.body.totalAmount = result.finalPrice;
@@ -97,8 +104,9 @@ const createOperation = asyncHandler(async (req, res, next) => {
     const operation = new Operation({
       patientId: patient._id,
       doctor: doctor,
-      percentage: doctorPercentage,
-      price: assignedDoctor.price,
+      percentage: assignedDoctor.percentage,
+      price: findOperationType.price,
+      operationType: findOperationType._id,
       time: req.body.time,
       date: req.body.date,
       discount: req.body.discount,
@@ -164,6 +172,10 @@ const getAllOperations = getAll(Operation, false, [
   {
     path: 'doctor',
     select: 'firstName lastName percentage',
+  },
+  {
+    path: 'operationType',
+    select: 'name',
   },
 ]);
 

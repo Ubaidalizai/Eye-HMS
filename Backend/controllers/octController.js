@@ -98,7 +98,7 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
     const octRecord = new OCT({
       patientId: patient._id,
       doctor: doctor,
-      percentage: doctorPercentage,
+      percentage: assignedDoctor.percentage,
       price: assignedDoctor.price,
       time: req.body.time,
       date: req.body.date,

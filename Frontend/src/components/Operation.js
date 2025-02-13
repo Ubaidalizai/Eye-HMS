@@ -1,15 +1,16 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
-import { useAuth } from '../AuthContext';
 import Pagination from './Pagination';
 import { BASE_URL } from '../config';
 
 function Operation() {
   const [id, setId] = useState('');
   const [patientId, setPatientId] = useState('');
+  const [typesData, setTypesData] = useState([]);
+  const [operationType, setOperationType] = useState('');
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
@@ -25,6 +26,7 @@ function Operation() {
 
   useEffect(() => {
     fetchData();
+    fetchTypes();
     fetchOperationDoctors();
   }, [currentPage, limit]);
 
@@ -38,6 +40,21 @@ function Operation() {
       const data = await response.json();
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchTypes = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/operation-types`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      console.log(data.data);
+      setTypesData(data.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -87,6 +104,7 @@ function Operation() {
 
   const clearForm = () => {
     setPatientId('');
+    setOperationType('');
     setTime('');
     setDate('');
     setDoctor('');
@@ -129,6 +147,17 @@ function Operation() {
 
   const fields = [
     { label: 'Patient ID', type: 'text', name: 'patientId' },
+    {
+      label: 'Type',
+      type: 'select',
+      options: Array.isArray(typesData)
+        ? typesData.map((opType) => ({
+            label: opType.name,
+            value: opType._id,
+          }))
+        : [],
+      name: 'operationType',
+    },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
@@ -154,14 +183,23 @@ function Operation() {
 
   const fieldValues = {
     patientId,
+    operationType,
     time,
     date,
     doctor,
     discount,
   };
 
-  const setFieldValues = ({ patientId, time, date, doctor, discount }) => {
+  const setFieldValues = ({
+    patientId,
+    operationType,
+    time,
+    date,
+    doctor,
+    discount,
+  }) => {
     setPatientId(patientId);
+    setOperationType(operationType || '');
     setTime(time);
     setDate(date);
     setDoctor(doctor);

@@ -86,7 +86,7 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
     const laboratory = new Laboratory({
       patientId: patient._id,
       doctor,
-      percentage: doctorPercentage,
+      percentage: doctorAssignment.percentage,
       price: doctorAssignment.price,
       time,
       date,

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import LoadingScreen from './components/LoadingScreen';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 
 function ProtectedWrapper({ children, allowedRoles }) {
   const { user, isTokenValid, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   if (!user || !isTokenValid()) {

@@ -116,7 +116,7 @@ const createYeglizer = asyncHandler(async (req, res, next) => {
     const newYeglizer = new Yeglizer({
       patientId: patient._id,
       doctor: doctor,
-      percentage: doctorPercentage,
+      percentage: assignedDoctor.percentage,
       price: assignedDoctor.price,
       time: req.body.time,
       date: req.body.date,

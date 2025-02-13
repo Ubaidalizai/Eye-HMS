@@ -90,7 +90,7 @@ const createBedroom = asyncHandler(async (req, res, next) => {
       date,
       rent: doctorAssignment.price,
       doctor,
-      percentage: doctorPercentage,
+      percentage: doctorAssignment.percentage,
       discount,
       totalAmount,
     });

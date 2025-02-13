@@ -5,16 +5,16 @@ const FormModal = ({
   title,
   isOpen,
   handleCancel,
-  fields = [], // Default to an empty array
+  fields = [],
   fieldValues,
   setFieldValues,
-  url, // API endpoint (handles POST for adding and PATCH for editing)
-  method, // HTTP method (POST or PATCH)
+  url,
+  method,
   fetchData,
 }) => {
   const [errors, setErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Add isSubmitting state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -35,7 +35,12 @@ const FormModal = ({
         (value == null || value === '' || isNaN(value) || value < 0)
       ) {
         newErrors[field.name] = `${field.label} is required`;
-      } else if ((field.type === 'date' || field.type === 'time') && !value) {
+      } else if (
+        (field.type === 'date' ||
+          field.type === 'time' ||
+          field.type === 'select') &&
+        !value
+      ) {
         newErrors[field.name] = `${field.label} is required`;
       }
     });
