@@ -97,7 +97,7 @@ const FormModal = ({
       setTimeout(() => {
         setSubmissionStatus(null);
         handleCancel();
-      }, 500);
+      }, 300);
     } catch (error) {
       console.error('Error submitting data:', error.message);
       setSubmissionStatus(

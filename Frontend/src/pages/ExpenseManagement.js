@@ -9,11 +9,9 @@ import {
   LinearScale,
   BarElement,
 } from 'chart.js';
-import { MdOutlineDeleteOutline } from 'react-icons/md';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import Pagination from '../components/Pagination';
 
-import './newManagement.css';
 import { HiSearch } from 'react-icons/hi';
 import { BASE_URL } from '../config';
 

@@ -285,8 +285,8 @@ const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
   });
 });
 
-const getYglizerDoctors = asyncHandler(async (req, res, next) => {
-  const branchModel = 'yeglizer';
+const getYglizerDoctors = asyncHandler(async (req, res) => {
+  const branchModel = 'yeglizerModel';
   const doctors = await getDoctorsByBranch(branchModel);
 
   res.status(200).json({
