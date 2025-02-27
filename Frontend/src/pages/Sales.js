@@ -46,7 +46,7 @@ export default function Sales() {
     try {
       let baseUrl = `${BASE_URL}/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === 'sunglassesSeller') {
+      if (user.role === 'receptionist') {
         baseUrl += '&category=sunglasses,frame';
       } else if (user.role === 'pharmacist') {
         baseUrl += '&category=drug';
@@ -83,7 +83,7 @@ export default function Sales() {
     try {
       let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true`;
 
-      if (user.role === 'sunglassesSeller') {
+      if (user.role === 'receptionist') {
         baseUrl += '&category=sunglasses,frame, glass';
       } else if (user.role === 'pharmacist' || user.role === 'admin') {
         baseUrl += '&category=drug';

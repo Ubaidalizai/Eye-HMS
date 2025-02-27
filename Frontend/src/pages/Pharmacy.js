@@ -36,7 +36,7 @@ const Pharmacy = () => {
 
     let baseUrl = `${BASE_URL}/pharmacy?page=${currentPage}&limit=${limit}`;
 
-    if (user.role === 'sunglassesSeller') {
+    if (user.role === 'receptionist') {
       baseUrl += '&category=sunglasses,frame, glass';
     } else if (user.role === 'pharmacist' || user.role === 'admin') {
       baseUrl += '&category=drug';
@@ -106,11 +106,8 @@ const Pharmacy = () => {
             const errorResponse = await response.json();
             errorMessage = errorResponse.message || errorMessage;
           } catch (jsonError) {
-            // If response is not JSON, fallback to plain text
             errorMessage = (await response.text()) || errorMessage;
           }
-
-          // Throw error with the extracted message
           throw new Error(errorMessage);
         }
       } catch (err) {
@@ -222,7 +219,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
-                        {user.role === 'sunglassesSeller' ? (
+                        {user.role === 'receptionist' ? (
                           <FaGlasses className='h-6 w-6 text-white' />
                         ) : (
                           <FaPills className='h-6 w-6 text-white' />
@@ -231,7 +228,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            {user.role === 'sunglassesSeller'
+                            {user.role === 'receptionist'
                               ? 'Products'
                               : 'Drugs'}
                           </dt>
@@ -286,7 +283,7 @@ const Pharmacy = () => {
                     >
                       Manufacturer
                     </th>
-                    {user.role === 'sunglassesSeller' ? (
+                    {user.role === 'receptionist' ? (
                       <th
                         scope='col'
                         className='px-5 py-3 font-bold tracking-wider'
@@ -335,7 +332,7 @@ const Pharmacy = () => {
                       className='hover:bg-gray-50 transition duration-150 ease-in-out'
                     >
                       <td className='px-6 py-4 whitespace-nowrap text-center'>
-                        {user.role === 'sunglassesSeller' ? (
+                        {user.role === 'receptionist' ? (
                           <FaGlasses className='h-6 w-6 text-gray-400' />
                         ) : (
                           <FaPills className='h-6 w-6 text-gray-400' />
