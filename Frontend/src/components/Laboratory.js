@@ -205,6 +205,7 @@ function Laboratory() {
       />
 
       <DataTable
+        title={'Laboratory'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}

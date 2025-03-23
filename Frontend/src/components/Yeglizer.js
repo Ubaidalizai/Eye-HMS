@@ -205,6 +205,7 @@ function Yeglizer() {
         className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />
       <DataTable
+        title={'Yeglizer'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}

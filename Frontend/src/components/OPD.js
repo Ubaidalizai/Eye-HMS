@@ -203,6 +203,7 @@ function OPD() {
       />
 
       <DataTable
+        title={'OPD'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}
