@@ -53,7 +53,6 @@ function Operation() {
       });
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
-      console.log(data.data);
       setTypesData(data.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -243,6 +242,7 @@ function Operation() {
         className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />
       <DataTable
+        title={'Operation'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}

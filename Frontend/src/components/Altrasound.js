@@ -177,7 +177,7 @@ function Ultrasound() {
 
   return (
     <div className='p-6  min-h-screen'>
-      <h2 className='font-semibold text-xl mb-16'>Ultrasound</h2>
+      <h2 className='font-semibold text-xl mb-16'>Biscayne</h2>
       <div className='flex justify-end mb-[-4.4rem]'>
         <button
           onClick={() => {
@@ -199,7 +199,7 @@ function Ultrasound() {
       </div>
 
       <FormModal
-        title={editMode ? 'Edit Ultrasound Record' : 'Ultrasound Record'}
+        title={editMode ? 'Edit Biscayne Record' : 'Biscayne Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields} // Exclude image in edit mode
@@ -221,6 +221,7 @@ function Ultrasound() {
         className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />
       <DataTable
+        title={'Biscayne'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}

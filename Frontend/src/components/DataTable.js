@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { FaTrash, FaPrint } from 'react-icons/fa';
 import PrintModal from './PrintModal';
 
-const DataTable = ({ submittedData, fields, handleRemove }) => {
+const DataTable = ({ title, submittedData, fields, handleRemove }) => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -68,6 +68,7 @@ const DataTable = ({ submittedData, fields, handleRemove }) => {
 
       {showModal && selectedRecord && (
         <PrintModal
+          title={title}
           selectedRecord={selectedRecord}
           fields={fields}
           onClose={closePrintModal}

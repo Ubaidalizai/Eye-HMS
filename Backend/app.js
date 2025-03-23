@@ -114,7 +114,7 @@ app.use('/api/v1/doctor-branch', doctorBranchRoute);
 app.use('/api/v1/operation-types', operationTypeRoute);
 
 app.all('*', (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  throw new AppError(`Can't find ${req.originalUrl} on this server!`, 404);
 });
 
 app.use(globalErrorHandler);
