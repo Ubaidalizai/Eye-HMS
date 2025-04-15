@@ -22,30 +22,34 @@ const Pharmacy = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [updatePage, setUpdatePage] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [category, setCategory] = useState('');
   const [limit, setLimit] = useState(10);
   const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     fetchData();
     fetchDrugsSummary();
-  }, [updatePage, currentPage, limit]);
+  }, [category, currentPage, limit]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
 
     let baseUrl = `${BASE_URL}/pharmacy?page=${currentPage}&limit=${limit}`;
 
-    if (user.role === 'receptionist') {
-      baseUrl += '&category=sunglasses,frame, glass';
-    } else if (user.role === 'pharmacist' || user.role === 'admin') {
-      baseUrl += '&category=drug';
+    // if (user.role === 'receptionist') {
+    //   baseUrl += '&category=sunglasses,frame, glass';
+    // } else if (user.role === 'pharmacist' || user.role === 'admin') {
+    //   baseUrl += '&category=drug';
+    // }
+    if (category) {
+      baseUrl += `&category=${category}`;
     }
 
     try {
       const res = await fetch(baseUrl, {
-        credentials: 'include',
         method: 'GET',
+        credentials: 'include',
       });
 
       if (!res.ok) {
@@ -60,7 +64,7 @@ const Pharmacy = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, user.role]);
+  };
 
   const fetchDrugsSummary = async () => {
     try {
@@ -122,6 +126,11 @@ const Pharmacy = () => {
     }
   };
 
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    setCurrentPage(1);
+  };
+
   if (loading) {
     return (
       <div className='flex items-center justify-center h-screen bg-gray-100'>
@@ -167,9 +176,7 @@ const Pharmacy = () => {
     <div className='min-h-screen '>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
-        <h2 className='font-semibold text-xl'>
-          {user.role === 'receptionist' ? 'Sunglasses' : 'Pharmacy'}
-        </h2>
+        <h2 className='font-semibold text-xl'>Pharmacy</h2>
         <div className='mt-10'>
           <div className='bg-white shadow overflow-hidden sm:rounded-md'>
             <div className='px-4 py-5 sm:p-6'>
@@ -218,13 +225,7 @@ const Pharmacy = () => {
                 <div className='bg-green-100 overflow-hidden shadow rounded-lg'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
-                      <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
-                        {user.role === 'receptionist' ? (
-                          <FaGlasses className='h-6 w-6 text-white' />
-                        ) : (
-                          <FaPills className='h-6 w-6 text-white' />
-                        )}
-                      </div>
+                      <div className='flex-shrink-0 bg-green-500 rounded-md p-3'></div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
@@ -262,6 +263,26 @@ const Pharmacy = () => {
               </div>
             </div>
             <div className='overflow-x-auto rounded-lg shadow-md'>
+              <div className='flex flex-row items-center justify-center gap-3'>
+                <label htmlFor='category' className='sr-only'>
+                  Category
+                </label>
+                <div>
+                  <select
+                    id='category'
+                    name='category'
+                    value={category}
+                    onChange={handleCategoryChange}
+                    className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                  >
+                    <option value=''>All Categories</option>
+                    <option value='drug'>Drug</option>
+                    <option value='sunglasses'>sunglasses</option>
+                    <option value='glass'>Glass</option>
+                    <option value='frame'>Frame</option>
+                  </select>
+                </div>
+              </div>
               <table className='w-full text-sm text-left text-gray-500'>
                 <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>
@@ -283,15 +304,12 @@ const Pharmacy = () => {
                     >
                       Manufacturer
                     </th>
-                    {user.role === 'receptionist' ? (
-                      <th
-                        scope='col'
-                        className='px-5 py-3 font-bold tracking-wider'
-                      >
-                        Category
-                      </th>
-                    ) : null}
-
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Category
+                    </th>
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
@@ -331,13 +349,6 @@ const Pharmacy = () => {
                       key={index}
                       className='hover:bg-gray-50 transition duration-150 ease-in-out'
                     >
-                      <td className='px-6 py-4 whitespace-nowrap text-center'>
-                        {user.role === 'receptionist' ? (
-                          <FaGlasses className='h-6 w-6 text-gray-400' />
-                        ) : (
-                          <FaPills className='h-6 w-6 text-gray-400' />
-                        )}
-                      </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                         {drug.name}
                       </td>
