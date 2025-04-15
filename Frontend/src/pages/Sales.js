@@ -46,11 +46,11 @@ export default function Sales() {
     try {
       let baseUrl = `${BASE_URL}/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === 'receptionist') {
-        baseUrl += '&category=sunglasses,frame';
-      } else if (user.role === 'pharmacist') {
-        baseUrl += '&category=drug';
-      }
+      // if (user.role === 'receptionist') {
+      //   baseUrl += '&category=sunglasses,frame';
+      // } else if (user.role === 'pharmacist') {
+      //   baseUrl += '&category=drug';
+      // }
 
       if (category) {
         baseUrl += `&category=${category}`;
@@ -84,7 +84,7 @@ export default function Sales() {
       let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true`;
 
       if (user.role === 'receptionist') {
-        baseUrl += '&category=sunglasses,frame, glass';
+        baseUrl += '&category=sunglasses,frame, glass, drug';
       } else if (user.role === 'pharmacist' || user.role === 'admin') {
         baseUrl += '&category=drug';
       }
