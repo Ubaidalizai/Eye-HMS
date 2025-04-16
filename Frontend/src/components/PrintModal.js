@@ -1,44 +1,29 @@
-'use client';
-
 import { useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
-const PrintModal = ({ selectedRecord, fields, onClose }) => {
+const PrintModal = ({ title, selectedRecord, fields, onClose }) => {
   const componentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
     documentTitle: 'Print Document',
     removeAfterPrint: true,
     onBeforeGetContent: () => {
-      console.log('🔍 Before getting content for printing');
-      console.log('📌 Checking componentRef:', componentRef.current);
       return new Promise((resolve) => {
         resolve();
       });
     },
-    onBeforePrint: () => console.log('🖨️ Before print'),
-    onAfterPrint: () => console.log('✅ After print'),
-    onPrintError: (error) => console.error('❌ Print error:', error),
   });
-
-  useEffect(() => {
-    if (componentRef.current) {
-      console.log('🟢 componentRef is ready:', componentRef.current);
-    } else {
-      console.error('❌ componentRef is NOT set');
-    }
-  }, []);
 
   const printContent = (
     <div className='print:p-0'>
       <h2 className='text-center mb-8 font-semibold print:text-xl'>
         السید د سترګو روغتون
       </h2>
-      <h4 className='text-lg font-semibold mb-4 print:text-base'>
-        Record Details
+      <h4 className='text-lg font-semibold mb-4 ml-2 print:text-base'>
+        {title} Record Details
       </h4>
-      <table className='w-full text-sm border-collapse'>
+      <table className='w-full text-1xl border-collapse'>
         <tbody>
           {fields.map(
             (field, idx) =>
@@ -78,9 +63,7 @@ const PrintModal = ({ selectedRecord, fields, onClose }) => {
           </button>
           <button
             onClick={() => {
-              console.log('✅ Print button clicked');
               if (componentRef.current) {
-                console.log('📄 Printing content:', componentRef.current);
                 handlePrint();
               } else {
                 console.error('❌ No content available to print');

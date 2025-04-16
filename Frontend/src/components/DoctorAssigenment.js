@@ -97,7 +97,7 @@ const DoctorBranchAssignment = () => {
 
   useEffect(() => {
     fetchAssignments();
-  }, []);
+  }, [category]);
 
   const fetchAssignments = async () => {
     const response = await fetch(

@@ -196,6 +196,7 @@ function Bedroom() {
       />
 
       <DataTable
+        title={'Bedroom'}
         submittedData={Array.isArray(submittedData) ? submittedData : []}
         fields={AllFields}
         handleEdit={handleEdit}
