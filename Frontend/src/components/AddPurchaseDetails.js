@@ -8,6 +8,8 @@ export default function AddPurchaseDetails({
 }) {
   const [products, setAllProducts] = useState([]);
   const [productCatagory, setProductCatagory] = useState('');
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [purchase, setPurchase] = useState({
     productID: '',
     QuantityPurchased: '',
@@ -73,6 +75,8 @@ export default function AddPurchaseDetails({
 
   const addSale = () => {
     if (validateForm()) {
+      setIsAddButtonDisabled(true); // Disable the button
+
       fetch(`${BASE_URL}/purchase`, {
         credentials: 'include',
         method: 'POST',
@@ -81,12 +85,35 @@ export default function AddPurchaseDetails({
         },
         body: JSON.stringify(purchase),
       })
-        .then((result) => {
-          alert('Purchase ADDED');
-          handlePageUpdate();
-          addSaleModalSetting();
+        .then(async (result) => {
+          if (!result.ok) {
+            // Attempt to parse error from backend response
+            let errorMessage = 'Failed to add purchase.';
+            try {
+              const errorResponse = await result.json();
+              errorMessage = errorResponse.message || errorMessage;
+            } catch {
+              errorMessage = await result.text(); // Fallback to plain text
+            }
+            throw new Error(errorMessage);
+          }
+
+          return result.json(); // Parse success response
         })
-        .catch((err) => console.log(err));
+        .then((data) => {
+          alert('Purchase added successfully!');
+          handlePageUpdate(); // Refresh the list or page data
+          addSaleModalSetting(); // Close the modal
+        })
+        .catch((err) => {
+          console.error('Error adding purchase:', err.message);
+          alert(
+            err.message || 'Something went wrong while adding the purchase.'
+          );
+        })
+        .finally(() => {
+          setIsAddButtonDisabled(false); // Re-enable the button after operation
+        });
     }
   };
 
@@ -258,8 +285,7 @@ export default function AddPurchaseDetails({
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
                               placeholder='20'
-                              min='0.01'
-                              step='0.01'
+                              min='1'
                             />
                             {errors.salePrice && (
                               <p className='text-red-500 text-xs mt-1'>
@@ -321,7 +347,12 @@ export default function AddPurchaseDetails({
                           </button>
                           <button
                             type='button'
-                            className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                            disabled={isAddButtonDisabled} // Bind the disabled state
+                            className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                              isAddButtonDisabled
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-700'
+                            }`}
                             onClick={addSale}
                           >
                             Add purchase

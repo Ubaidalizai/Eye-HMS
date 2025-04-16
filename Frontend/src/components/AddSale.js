@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { BillPrintModal } from './BillPrintModal'; // Assuming this is already implemented
+import { BillPrintModal } from './BillPrintModal';
 import { BASE_URL } from '../config';
 
 export default function AddSale({
@@ -19,6 +19,8 @@ export default function AddSale({
 
   const [showBill, setShowBill] = useState(false);
   const [openAddSale, setOpenAddSale] = useState(true); // Controls AddSaleModal
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [soldItems, setSoldItems] = useState({
     date: '',
     totalIncome: 0,
@@ -48,20 +50,33 @@ export default function AddSale({
   };
 
   const sendSalesToBackend = async (sales) => {
-    const response = await fetch(`${BASE_URL}/sales`, {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ soldItems: sales }),
-    });
+    try {
+      const response = await fetch(`${BASE_URL}/sales`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ soldItems: sales }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to add sales');
+      if (!response.ok) {
+        // Attempt to parse error message from backend
+        let errorMessage = 'Failed to add sales.';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text(); // Fallback to plain text
+        }
+        throw new Error(errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error in sendSalesToBackend:', error.message);
+      throw error; // Re-throw the error to be handled by the calling function
     }
-
-    return response.json();
   };
 
   const addSales = async () => {
@@ -69,6 +84,8 @@ export default function AddSale({
       alert('Please fill all product and quantity fields correctly.');
       return;
     }
+
+    setIsAddButtonDisabled(true); // Disable the button
 
     try {
       const data = await sendSalesToBackend(sales);
@@ -83,8 +100,10 @@ export default function AddSale({
       setTimeout(() => setShowBill(true), 300); // Open BillPrintModal after delay
       handlePageUpdate();
     } catch (err) {
-      console.error('Error adding sales:', err);
+      console.error('Error adding sales:', err.message);
       alert(err.message || 'Something went wrong while adding sales.');
+    } finally {
+      setIsAddButtonDisabled(false); // Re-enable the button
     }
   };
 
@@ -154,6 +173,7 @@ export default function AddSale({
                                 parseInt(e.target.value, 10)
                               )
                             }
+                            min='1'
                           />
                         </div>
                       </div>
@@ -171,11 +191,13 @@ export default function AddSale({
                   <button
                     type='button'
                     className={`inline-flex justify-center px-4 py-2 text-white rounded-md ${
-                      isSaleValid()
+                      isAddButtonDisabled
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : isSaleValid()
                         ? 'bg-blue-600 hover:bg-blue-500'
                         : 'bg-gray-300'
                     }`}
-                    disabled={!isSaleValid()}
+                    disabled={isAddButtonDisabled || !isSaleValid()} // Disable if already disabled or invalid form
                     onClick={addSales}
                   >
                     Add Sale

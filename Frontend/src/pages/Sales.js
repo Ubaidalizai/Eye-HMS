@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSearch, FaPrint } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
 import { toast, ToastContainer } from 'react-toastify';
 import Pagination from '../components/Pagination';
 import { BASE_URL } from '../config';
+import { BillPrintModal } from '../components/BillPrintModal';
 
 export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -20,6 +21,8 @@ export default function Sales() {
   const [error, setError] = useState(null);
   const [editingSale, setEditingSale] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showBillModal, setShowBillModal] = useState(false);
+  const [selectedSale, setSelectedSale] = useState(null);
 
   const user = JSON.parse(localStorage.getItem('user'));
 
@@ -43,11 +46,11 @@ export default function Sales() {
     try {
       let baseUrl = `${BASE_URL}/sales?page=${currentPage}&limit=${limit}`;
 
-      if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses,frame';
-      } else if (user.role === 'pharmacist') {
-        baseUrl += '&category=drug';
-      }
+      // if (user.role === 'receptionist') {
+      //   baseUrl += '&category=sunglasses,frame';
+      // } else if (user.role === 'pharmacist') {
+      //   baseUrl += '&category=drug';
+      // }
 
       if (category) {
         baseUrl += `&category=${category}`;
@@ -80,8 +83,8 @@ export default function Sales() {
     try {
       let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true`;
 
-      if (user.role === 'sunglassesSeller') {
-        baseUrl += '&category=sunglasses,frame, glass';
+      if (user.role === 'receptionist') {
+        baseUrl += '&category=sunglasses,frame, glass, drug';
       } else if (user.role === 'pharmacist' || user.role === 'admin') {
         baseUrl += '&category=drug';
       }
@@ -131,12 +134,27 @@ export default function Sales() {
     fetchSales();
   };
 
+  const handlePrintSale = (sale) => {
+    setSelectedSale({
+      date: sale.date,
+      soldItems: [
+        {
+          productName: sale.productRefId?.name,
+          quantity: sale.quantity,
+          income: sale.income,
+        },
+      ],
+      totalIncome: sale.income,
+    });
+    setShowBillModal(true);
+  };
+
   return (
     <div className='min-h-screen'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
 
-        <h2 className='font-semibold text-xl mb-10'>Sales Data</h2>
+        <h2 className='font-semibold text-xl mb-10'>Sales List</h2>
 
         <div className='overflow-x-auto rounded-lg bg-white border '>
           <div className='flex flex-row justify-between items-end  px-5 pb-3'>
@@ -256,22 +274,30 @@ export default function Sales() {
                           {sale.quantity}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
-                          ${sale.productRefId?.salePrice}
+                          {sale.productRefId?.salePrice}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.date.split('T')[0]}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
                         <td className='px-6 py-4 whitespace-nowrap'>
-                          ${sale.income}
+                          {sale.income}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
-                          <button
-                            onClick={() => handleDelete(sale._id)}
-                            className='font-medium text-red-600 hover:text-red-700'
-                          >
-                            <FaTrash className='w-4 h-4' />
-                          </button>
+                          <div className='flex gap-2'>
+                            <button
+                              onClick={() => handlePrintSale(sale)}
+                              className='font-medium text-blue-600 hover:text-blue-800'
+                            >
+                              <FaPrint className='w-4 h-4' />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(sale._id)}
+                              className='font-medium text-red-600 hover:text-red-700'
+                            >
+                              <FaTrash className='w-4 h-4' />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -300,6 +326,12 @@ export default function Sales() {
           onLimitChange={(limit) => setLimit(limit)}
         />
       </div>
+
+      <BillPrintModal
+        showBill={showBillModal}
+        setShowBill={setShowBillModal}
+        soldItems={selectedSale}
+      />
     </div>
   );
 }

@@ -5,15 +5,16 @@ const FormModal = ({
   title,
   isOpen,
   handleCancel,
-  fields = [], // Default to an empty array
+  fields = [],
   fieldValues,
   setFieldValues,
-  url, // API endpoint (handles POST for adding and PATCH for editing)
-  method, // HTTP method (POST or PATCH)
+  url,
+  method,
   fetchData,
 }) => {
   const [errors, setErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -34,7 +35,12 @@ const FormModal = ({
         (value == null || value === '' || isNaN(value) || value < 0)
       ) {
         newErrors[field.name] = `${field.label} is required`;
-      } else if ((field.type === 'date' || field.type === 'time') && !value) {
+      } else if (
+        (field.type === 'date' ||
+          field.type === 'time' ||
+          field.type === 'select') &&
+        !value
+      ) {
         newErrors[field.name] = `${field.label} is required`;
       }
     });
@@ -49,6 +55,8 @@ const FormModal = ({
       console.error('Validation failed, cannot submit form.');
       return;
     }
+
+    setIsSubmitting(true); // Set submitting state to true
     try {
       const response = await fetch(url, {
         method,
@@ -60,8 +68,15 @@ const FormModal = ({
       });
 
       if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Failed to submit: ${errorMessage}`);
+        // Attempt to parse backend error as JSON
+        let errorMessage = 'An unexpected error occurred.';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text(); // Fallback to plain text
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -82,14 +97,14 @@ const FormModal = ({
       setTimeout(() => {
         setSubmissionStatus(null);
         handleCancel();
-      }, 500);
+      }, 300);
     } catch (error) {
-      console.error('Error submitting data:', error);
+      console.error('Error submitting data:', error.message);
       setSubmissionStatus(
-        `Failed to ${
-          method === 'POST' ? 'create' : 'update'
-        } record. Please try again.`
+        error.message || 'An error occurred. Please try again.'
       );
+    } finally {
+      setIsSubmitting(false); // Reset submitting state
     }
   };
 
@@ -144,13 +159,14 @@ const FormModal = ({
                     className={`border rounded w-48 h-10 focus:outline-none focus:ring transition ${
                       errors[field.name] ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    value={fieldValues[field.name] || ''}
+                    value={fieldValues[field.name]}
                     onChange={(e) =>
                       setFieldValues({
                         ...fieldValues,
                         [field.name]: e.target.value,
                       })
                     }
+                    min='0'
                   />
                 )}
                 {errors[field.name] && (
@@ -172,8 +188,13 @@ const FormModal = ({
             <button
               type='submit'
               className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+              disabled={isSubmitting}
             >
-              {method === 'POST' ? 'Add' : 'Update'}
+              {isSubmitting
+                ? 'Submitting...'
+                : method === 'POST'
+                ? 'Add'
+                : 'Update'}
             </button>
           </div>
         </form>

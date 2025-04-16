@@ -8,18 +8,21 @@ const {
   updateRecord,
   deleteRecord,
   fetchRecordsByPatientId,
+  getUltrasoundDoctors,
 } = require('../controllers/ultrasoundController');
 
 const router = express.Router();
 
 const {
   authenticate,
-  authorizeAdminOrPharmacist,
+  authorize3Users,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdminOrPharmacist);
+router.use(authenticate, authorize3Users);
 
 router.get('/search/:patientID', fetchRecordsByPatientId);
+
+router.get('/ultrasound-doctors', getUltrasoundDoctors);
 
 router.get('/:year', getUltrasoundDataByYear);
 router.get('/:year/:month', getUltrasoundDataByMonth);

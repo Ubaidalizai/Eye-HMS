@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Doughnut, Bar } from 'react-chartjs-2';
-import {
-  HiPlus,
-  HiSearch,
-  HiPencil,
-  HiTrash,
-  HiDocumentAdd,
-  HiChevronLeft,
-  HiChevronRight,
-} from 'react-icons/hi';
+import { Bar } from 'react-chartjs-2';
+import { HiSearch } from 'react-icons/hi';
 
 import {
   Chart as ChartJS,
@@ -59,6 +50,8 @@ export default function PatientManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPatient, setCurrentPatient] = useState(null);
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -76,8 +69,6 @@ export default function PatientManagement() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (summaryType === 'monthly') {
@@ -168,9 +159,10 @@ export default function PatientManagement() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsAddButtonDisabled(true);
+
     try {
       const method = currentPatient ? 'PATCH' : 'POST';
       const url = currentPatient
@@ -184,8 +176,19 @@ export default function PatientManagement() {
         credentials: 'include',
       });
 
-      if (!response.ok) throw new Error('Failed to save patient');
+      if (!response.ok) {
+        // Attempt to parse error message from backend
+        let errorMessage = 'Failed to add Patient';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text(); // Fallback to plain text
+        }
+        throw new Error(errorMessage);
+      }
 
+      const result = await response.json(); // Parse the response if needed
       toast.success(
         `Patient ${currentPatient ? 'updated' : 'added'} successfully!`,
         {
@@ -197,10 +200,12 @@ export default function PatientManagement() {
           draggable: true,
         }
       );
-      setIsModalOpen(false);
-      fetchPatients();
+
+      setIsModalOpen(false); // Close the modal
+      fetchPatients(); // Refresh the patients list
     } catch (error) {
-      toast.error('Failed to save patient', {
+      console.error('Error saving patient:', error.message);
+      toast.error(error.message, {
         position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
@@ -208,6 +213,8 @@ export default function PatientManagement() {
         pauseOnHover: true,
         draggable: true,
       });
+    } finally {
+      setIsAddButtonDisabled(false); // Re-enable the button
     }
   };
 
@@ -434,14 +441,6 @@ export default function PatientManagement() {
                       >
                         <FaTrash className='w-4 h-4' />
                       </button>
-                      <button
-                        onClick={() =>
-                          navigate(`/patients/${patient.name}/prescriptions`)
-                        }
-                        className='text-green-500 hover:text-green-700'
-                      >
-                        <HiDocumentAdd size={20} />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -484,6 +483,7 @@ export default function PatientManagement() {
                   placeholder='Age'
                   className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                   required
+                  min='0'
                 />
                 <input
                   type='tel'
@@ -542,7 +542,12 @@ export default function PatientManagement() {
                 </button>
                 <button
                   type='submit'
-                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  className={`inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                    isAddButtonDisabled
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}
+                  disabled={isAddButtonDisabled} // Disable the button
                 >
                   {currentPatient ? 'Update' : 'Add'} Patient
                 </button>

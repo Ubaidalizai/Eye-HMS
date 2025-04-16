@@ -64,12 +64,12 @@ const authorize3Users = (req, res, next) => {
     req.user &&
     (req.user.role === 'admin' ||
       req.user.role === 'pharmacist' ||
-      req.user.role === 'sunglassesSeller')
+      req.user.role === 'receptionist')
   ) {
     next();
   } else {
     throw new AppError(
-      ' Access denied: Admin or pharmacist or sunglassesSeller authorization required.',
+      ' Access denied: Admin or pharmacist or receptionist authorization required.',
       403
     );
   }

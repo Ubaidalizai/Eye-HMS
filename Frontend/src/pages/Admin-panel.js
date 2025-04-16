@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import PersonInfoDropdown from './PersonInfoDropdown';
 import { BASE_URL } from '../config';
+import { toast } from 'react-toastify';
+import DoctorBranchAssignment from '../components/DoctorAssigenment';
+import OperationTypeManagement from '../components/OperationTypeManagement';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -18,23 +21,27 @@ const UserList = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${BASE_URL}/user`, {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || `Error: ${res.status}`);
+      }
 
       const data = await res.json();
       if (data && data.data && Array.isArray(data.data.results)) {
         setUsers(data.data.results);
       } else {
-        console.error('Unexpected API response structure:', data);
-        setUsers([]);
+        throw new Error('Unexpected API response structure');
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+      toast.error(`Failed to fetch users: ${error.message}`); // Use toast
       setUsers([]);
     }
   };
@@ -55,32 +62,38 @@ const UserList = () => {
       errors.password = 'Password must be at least 6 characters long';
     if (!/^\d{10}$/.test(user.phoneNumber))
       errors.phoneNumber = 'Phone number must be 10 digits';
-    if (isNaN(user.percentage) || user.percentage < 0 || user.percentage > 100)
-      errors.percentage = 'Percentage must be between 0 and 100';
     if (!user.role) errors.role = 'Please select a role';
     return errors;
   };
 
   const addUser = async (e) => {
     e.preventDefault();
+    setIsButtonDisabled(true);
     const errors = validateForm(newUser, true);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
+      setIsButtonDisabled(false);
       return;
     }
-    const formData = new FormData();
-    Object.keys(newUser).forEach((key) => {
-      formData.append(key, newUser[key]);
-    });
+
     try {
+      const formData = new FormData();
+      Object.keys(newUser).forEach((key) => {
+        formData.append(key, newUser[key]);
+      });
+
       const response = await fetch(`${BASE_URL}/user/register`, {
         credentials: 'include',
         method: 'POST',
         body: formData,
       });
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
-      fetchUsers();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+
+      await fetchUsers();
       setNewUser({
         firstName: '',
         lastName: '',
@@ -93,14 +106,19 @@ const UserList = () => {
       });
       setIsAddModalOpen(false);
       setValidationErrors({});
+      toast.success('User added successfully'); // Use toast
     } catch (error) {
       console.error('Error adding user:', error);
+      toast.error(`Failed to add user: ${error.message}`); // Use toast
+    } finally {
+      setIsButtonDisabled(false);
     }
   };
 
   const updateUser = async (e) => {
     e.preventDefault();
     const errors = validateForm(editingUser);
+    console.log(errors, 'ssssssssss');
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
@@ -113,26 +131,36 @@ const UserList = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userDataWithoutPassword),
       });
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
-
-      fetchUsers();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+      await fetchUsers();
       setEditingUser(null);
       setValidationErrors({});
+      toast.success('User updated successfully'); // Use toast
     } catch (error) {
       console.error('Error updating user:', error);
+      toast.error(`Failed to update user: ${error.message}`); // Use toast
     }
   };
 
   const deleteUser = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      await fetch(`${BASE_URL}/user/${id}`, {
+      const response = await fetch(`${BASE_URL}/user/${id}`, {
         credentials: 'include',
         method: 'DELETE',
       });
-      fetchUsers();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Error: ${response.status}`);
+      }
+      await fetchUsers();
+      toast.success('User deleted successfully'); // Use toast
     } catch (error) {
       console.error('Error deleting user:', error);
+      toast.error(`Failed to delete user: ${error.message}`); // Use toast
     }
   };
 
@@ -183,10 +211,7 @@ const UserList = () => {
                   Role
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Percentage
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  P.No
+                  Phone
                 </th>
                 <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
                   Actions
@@ -217,15 +242,6 @@ const UserList = () => {
                       </span>
                     ) : (
                       user?.role
-                    )}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user?.percentage > 0 ? (
-                      <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-blue-800'>
-                        {user?.percentage + '%'}
-                      </span>
-                    ) : (
-                      user?.percentage + '%'
                     )}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap'>
@@ -301,25 +317,6 @@ const UserList = () => {
                 </div>
                 <div>
                   <input
-                    type='number'
-                    placeholder='Percentage'
-                    value={newUser.percentage}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, percentage: e.target.value })
-                    }
-                    className='border p-2 rounded w-full mb-2'
-                    required
-                    min={0}
-                    max={100}
-                  />
-                  {validationErrors.percentage && (
-                    <p className='text-red-500 text-xs'>
-                      {validationErrors.percentage}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <input
                     type='tel'
                     placeholder='Phone Number'
                     value={newUser.phoneNumber}
@@ -383,7 +380,7 @@ const UserList = () => {
                     <option value=''>Select Role</option>
                     <option value='pharmacist'>Pharmacist</option>
                     <option value='admin'>Admin</option>
-                    <option value='sunglassesSeller'>Sunglasses seller</option>
+                    <option value='receptionist'>Receptionist</option>
                     <option value='doctor'>Doctor</option>
                   </select>
                   {validationErrors.role && (
@@ -414,7 +411,12 @@ const UserList = () => {
                 </button>
                 <button
                   type='submit'
-                  className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                    isButtonDisabled
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}
+                  disabled={isButtonDisabled}
                 >
                   Add User
                 </button>
@@ -510,28 +512,6 @@ const UserList = () => {
                 )}
               </div>
               <div>
-                <input
-                  type='number'
-                  placeholder='Percentage'
-                  value={editingUser.percentage}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      percentage: e.target.value,
-                    })
-                  }
-                  className='border p-2 rounded w-full mb-2'
-                  required
-                  min={0}
-                  max={100}
-                />
-                {validationErrors.percentage && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.percentage}
-                  </p>
-                )}
-              </div>
-              <div>
                 <select
                   value={editingUser.role}
                   onChange={(e) =>
@@ -543,9 +523,7 @@ const UserList = () => {
                   <option value=''>Role</option>
                   <option value='pharmacist'>Pharmacist</option>
                   <option value='admin'>Admin</option>
-                  <option value='sunglassesSeller'>
-                    Sunglasses <s></s>eller
-                  </option>
+                  <option value='receptionist'>Receptionist</option>
                   <option value='doctor'>Doctor</option>
                 </select>
                 {validationErrors.role && (
@@ -575,6 +553,8 @@ const UserList = () => {
       )}
 
       <PersonInfoDropdown />
+      <DoctorBranchAssignment />
+      <OperationTypeManagement />
     </div>
   );
 };

@@ -1,20 +1,21 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
-import { useAuth } from '../AuthContext';
 import Pagination from './Pagination';
 import { BASE_URL } from '../config';
 
 function Operation() {
   const [id, setId] = useState('');
   const [patientId, setPatientId] = useState('');
-  const [price, setPrice] = useState('');
+  const [typesData, setTypesData] = useState([]);
+  const [operationType, setOperationType] = useState('');
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
-  const [discount, setDiscount] = useState('');
+  const [operationDoctors, setOperationDoctors] = useState([]);
+  const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -23,10 +24,10 @@ function Operation() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const { perDoctors } = useAuth();
-
   useEffect(() => {
     fetchData();
+    fetchTypes();
+    fetchOperationDoctors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -44,14 +45,55 @@ function Operation() {
     }
   };
 
-  const handleSearchChange = async (patientId) => {
-    const res = await fetch(`${BASE_URL}/operation/search/${patientId}`, {
-      method: 'GET',
-      credentials: 'include', // Added credentials here
-    });
+  const fetchTypes = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/operation-types`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setTypesData(data.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-    const result = await res.json();
-    setSubmittedData(result.data.records);
+  const fetchOperationDoctors = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/operation/operation-doctors`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setOperationDoctors(data.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSearchChange = async (patientId) => {
+    if (!patientId.trim()) {
+      // If search term is empty, fetch all data
+      fetchData();
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/operation/search/${patientId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch search results');
+      }
+
+      const result = await res.json();
+      setSubmittedData(result?.data?.records || []);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -61,11 +103,11 @@ function Operation() {
 
   const clearForm = () => {
     setPatientId('');
-    setPrice('');
+    setOperationType('');
     setTime('');
     setDate('');
     setDoctor('');
-    setDiscount('');
+    setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
   };
@@ -75,7 +117,6 @@ function Operation() {
     setId(recordToEdit._id || '');
     setFieldValues({
       patientId: recordToEdit.patientId || '',
-      price: recordToEdit.price || 0,
       time: recordToEdit.time || '',
       date: recordToEdit.date || '',
       doctor: recordToEdit.doctor || '',
@@ -87,6 +128,7 @@ function Operation() {
   };
 
   const handleRemove = async (index) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
     try {
       const { _id } = submittedData[index];
       const response = await fetch(`${BASE_URL}/operation/${_id}`, {
@@ -103,31 +145,44 @@ function Operation() {
   };
 
   const fields = [
-    { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Price', type: 'text', name: 'price' },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    {
+      label: 'Type',
+      type: 'select',
+      options: Array.isArray(typesData)
+        ? typesData.map((opType) => ({
+            label: opType.name,
+            value: opType._id,
+          }))
+        : [],
+      name: 'operationType',
+    },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors?.map((doctor) => ({
-        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
-        value: doctor._id, // Use unique doctor ID as value
-      })),
+      options: Array.isArray(operationDoctors)
+        ? operationDoctors.map((doctor) => ({
+            label: doctor.doctorName,
+            value: doctor.doctorId,
+          }))
+        : [],
       name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
-    { label: 'Percentage', type: 'text', name: 'percentage' },
+    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Dr. Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
   const AllFields = [...fields, ...dataTableFields];
 
   const fieldValues = {
     patientId,
-    price,
+    operationType,
     time,
     date,
     doctor,
@@ -136,14 +191,14 @@ function Operation() {
 
   const setFieldValues = ({
     patientId,
-    price,
+    operationType,
     time,
     date,
     doctor,
     discount,
   }) => {
     setPatientId(patientId);
-    setPrice(price);
+    setOperationType(operationType || '');
     setTime(time);
     setDate(date);
     setDoctor(doctor);
@@ -187,6 +242,7 @@ function Operation() {
         className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />
       <DataTable
+        title={'Operation'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}

@@ -1,12 +1,12 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import { BASE_URL } from "./config";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { BASE_URL } from './config';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [perDoctors, setPerDoctors] = useState([]);
 
   function isTokenValid() {
-    const lastLoginTime = localStorage.getItem("lastLoginTime");
+    const lastLoginTime = localStorage.getItem('lastLoginTime');
     if (!lastLoginTime) return false;
 
     const currentTime = Date.now();
@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedUser = localStorage.getItem("user");
+      const storedUser = localStorage.getItem('user');
       if (storedUser && isTokenValid()) {
         setUser(JSON.parse(storedUser));
         await fetchDoctors();
@@ -49,28 +49,35 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       const response = await fetch(`${BASE_URL}/user/login`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify(credentials),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.message || "Login failed");
+        let errorMessage = 'Failed to login';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text();
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       setUser(data);
-      localStorage.setItem("user", JSON.stringify(data));
-      localStorage.setItem("lastLoginTime", Date.now().toString());
+      localStorage.setItem('user', JSON.stringify(data));
+      localStorage.setItem('lastLoginTime', Date.now().toString());
       await fetchDoctors();
       callback();
     } catch (err) {
-      console.error("Error during login:", err);
-      setError(err.message || "An unknown error occurred");
+      console.error('Error during login:', err);
+      setError(err.message || 'An unknown error occurred');
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -79,8 +86,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setPerDoctors([]);
-    localStorage.removeItem("user");
-    localStorage.removeItem("lastLoginTime");
+    localStorage.removeItem('user');
+    localStorage.removeItem('lastLoginTime');
   };
 
   const fetchDoctors = async () => {
@@ -89,7 +96,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       const response = await fetch(`${BASE_URL}/user/doctorsHave-percentage`, {
-        credentials: "include",
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -97,15 +104,15 @@ export const AuthProvider = ({ children }) => {
         throw new Error(
           `Failed to fetch doctors data: ${response.status} ${
             response.statusText
-          } - ${errorData?.message || "Unknown error"}`
+          } - ${errorData?.message || 'Unknown error'}`
         );
       }
 
       const data = await response.json();
       setPerDoctors(data);
     } catch (err) {
-      console.error("Fetch Error:", err);
-      setError(err.message || "An unknown error occurred");
+      console.error('Fetch Error:', err);
+      setError(err.message || 'An unknown error occurred');
       setPerDoctors([]);
     } finally {
       setLoading(false);

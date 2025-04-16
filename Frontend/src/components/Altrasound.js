@@ -13,9 +13,8 @@ function Ultrasound() {
     time: '',
     date: '',
     discount: 0,
-    price: 0,
   });
-
+  const [ultrasoundDoctors, setUltrasoundDoctors] = useState([]);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -25,10 +24,9 @@ function Ultrasound() {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { perDoctors } = useAuth();
-
   useEffect(() => {
     fetchData();
+    fetchUltrasoundDotors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -42,6 +40,15 @@ function Ultrasound() {
     setTotalPages(data.totalPages || Math.ceil(data.results / limit));
   };
 
+  const fetchUltrasoundDotors = async () => {
+    const response = await fetch(`${BASE_URL}/ultrasound/ultrasound-doctors`, {
+      credentials: 'include',
+    });
+    const data = await response.json();
+
+    setUltrasoundDoctors(data.data);
+  };
+
   const handleCancel = () => {
     setFieldValues({
       id: '',
@@ -49,7 +56,6 @@ function Ultrasound() {
       time: '',
       date: '',
       discount: 0,
-      price: 0,
     });
     setIsOpen(false);
     setEditMode(false);
@@ -64,7 +70,6 @@ function Ultrasound() {
       time: record.time,
       date: record.date,
       discount: record.discount,
-      price: record.price,
     });
     setEditMode(true);
     setEditIndex(index);
@@ -72,6 +77,7 @@ function Ultrasound() {
   };
 
   const handleRemove = async (index) => {
+    if (!window.confirm('Are you sure you want to delete this record?')) return;
     const { _id } = submittedData[index];
     await fetch(`${BASE_URL}/ultrasound/${_id}`, {
       method: 'DELETE',
@@ -81,13 +87,27 @@ function Ultrasound() {
   };
 
   const handleSearchChange = async (patientId) => {
-    const res = await fetch(`${BASE_URL}/ultrasound/search/${patientId}`, {
-      method: 'GET',
-      credentials: 'include', // Added credentials here
-    });
+    if (!patientId.trim()) {
+      // If search term is empty, fetch all data
+      fetchData();
+      return;
+    }
 
-    const result = await res.json();
-    setSubmittedData(result.data.records);
+    try {
+      const res = await fetch(`${BASE_URL}/ultrasound/search/${patientId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch search results');
+      }
+
+      const result = await res.json();
+      setSubmittedData(result?.data?.records || []);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
   };
 
   const handleFormSubmit = async () => {
@@ -131,23 +151,25 @@ function Ultrasound() {
   };
 
   const fields = [
-    { label: 'Patient', type: 'text', name: 'patientId' },
-    { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Patient ID', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
       label: 'Doctor',
       type: 'select',
-      options: perDoctors?.map((doctor) => ({
-        label: doctor.firstName + ' ' + doctor.lastName, // Combine first and last name
-        value: doctor._id, // Use unique doctor ID as value
-      })),
+      options: Array.isArray(ultrasoundDoctors)
+        ? ultrasoundDoctors.map((doctor) => ({
+            label: `${doctor.doctorName}`,
+            value: doctor.doctorId,
+          }))
+        : [],
       name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
+    { label: 'Price', type: 'number', name: 'price' },
     { label: 'Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
@@ -155,7 +177,7 @@ function Ultrasound() {
 
   return (
     <div className='p-6  min-h-screen'>
-      <h2 className='font-semibold text-xl mb-16'>Ultrasound</h2>
+      <h2 className='font-semibold text-xl mb-16'>Biscayne</h2>
       <div className='flex justify-end mb-[-4.4rem]'>
         <button
           onClick={() => {
@@ -165,7 +187,6 @@ function Ultrasound() {
               time: '',
               date: '',
               discount: 0,
-              price: 0,
             });
             setIsOpen(true);
             setEditMode(false);
@@ -178,7 +199,7 @@ function Ultrasound() {
       </div>
 
       <FormModal
-        title={editMode ? 'Edit Ultrasound Record' : 'Ultrasound Record'}
+        title={editMode ? 'Edit Biscayne Record' : 'Biscayne Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields} // Exclude image in edit mode
@@ -200,6 +221,7 @@ function Ultrasound() {
         className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />
       <DataTable
+        title={'Biscayne'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}

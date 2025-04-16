@@ -24,10 +24,15 @@ export default function IncomeReport() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
     fetchIncome();
   }, [currentPage, selectedCategory, searchTerm, limit]);
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+    setCurrentPage(1);
+  };
 
   const fetchIncome = async () => {
     setIsLoading(true);
@@ -51,6 +56,7 @@ export default function IncomeReport() {
   };
 
   const handleSubmit = async (formData) => {
+    setIsSubmitting(true); // Set submitting state to true
     setIsLoading(true);
     setError(null);
 
@@ -118,20 +124,46 @@ export default function IncomeReport() {
               className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
             />
           </div>
-          <button
-            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-            onClick={() => {
-              setNewIncome({
-                totalNetIncome: '',
-                date: '',
-                description: '',
-                category: '',
-              });
-              setShowModal(true);
-            }}
-          >
-            <FaPlus className='mr-2' /> Add Income
-          </button>
+          <div className='flex items-center justify-center z-0 gap-6'>
+            <div>
+              <select
+                id='selectedCategory'
+                name='selectedCategory'
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+              >
+                <option value=''>All Categories</option>
+                <option value='drug'>Drug</option>
+                <option value='sunglasses'>sunglasses</option>
+                <option value='glass'>Glass</option>
+                <option value='frame'>Frame</option>
+                <option value='other'>Other</option>
+                <option value='oct'>Oct</option>
+                <option value='opd'>Opd</option>
+                <option value='laboratory'>Laboratory</option>
+                <option value='bedroom'>Bedroom</option>
+                <option value='ultrasound'>Ultrasound</option>
+                <option value='operation'>Operation</option>
+                <option value='yeglizer'>Yeglizer</option>
+              </select>
+            </div>
+            <button
+              className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+              onClick={() => {
+                setNewIncome({
+                  totalNetIncome: '',
+                  date: '',
+                  description: '',
+                  category: '',
+                });
+                setShowModal(true);
+              }}
+              disabled={showModal} // Disable the button when the modal is open
+            >
+              <FaPlus className='mr-2' /> Add Income
+            </button>
+          </div>
         </div>
 
         {isLoading && <p>Loading...</p>}
@@ -196,6 +228,7 @@ export default function IncomeReport() {
         onSubmit={handleSubmit}
         initialData={newIncome}
         categories={categories}
+        isSubmitting={isSubmitting} // Pass the isSubmitting state
       />
     </div>
   );

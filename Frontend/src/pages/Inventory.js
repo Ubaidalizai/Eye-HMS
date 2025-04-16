@@ -40,6 +40,8 @@ function Inventory() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [salePrice, setSalePrice] = useState('');
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     manufacturer: '',
@@ -88,10 +90,13 @@ function Inventory() {
 
   const fetchProductsData = async () => {
     try {
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${BASE_URL}/inventory/product?page=${1}&limit=${10}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
       const data = await response.json();
       setAllProducts(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
@@ -112,25 +117,26 @@ function Inventory() {
     setIsOpen(false);
   };
 
-  const handleMoveItem = () => {
-    const quantityNum = parseInt(quantity, 10);
-    const salePriceNum = parseFloat(salePrice);
+  const handleMoveItem = async () => {
+    const quantityNum = Number.parseInt(quantity, 10);
+    const salePriceNum = Number.parseFloat(salePrice);
 
     if (
       isNaN(quantityNum) ||
       quantityNum <= 0 ||
       quantityNum > selectedItem.stock
     ) {
+      console.error('Invalid quantity:', quantityNum);
       toast.error('Please enter a valid quantity.');
       return;
     }
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
+      console.error('Invalid sale price:', salePriceNum);
       toast.error('Please enter a valid sale price.');
       return;
     }
 
-    // Add the additional properties from selectedItem
-    dispatch(
+    await dispatch(
       moveItemAPI({
         item: {
           name: selectedItem.name,
@@ -143,6 +149,7 @@ function Inventory() {
       })
     );
     closeMoveModal();
+    fetchProductsData();
     toast.success('Item moved successfully');
     setUpdatePage((show) => !show);
   };
@@ -183,6 +190,8 @@ function Inventory() {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setIsAddButtonDisabled(true); // Disable the button
+
     try {
       const response = await fetch(`${BASE_URL}/inventory/product`, {
         method: 'POST',
@@ -204,12 +213,14 @@ function Inventory() {
     } catch (error) {
       console.error('Error adding product:', error);
       toast.error('An error occurred while adding the product');
+    } finally {
+      setIsAddButtonDisabled(false); // Re-enable the button after the operation
     }
   };
 
   return (
     <div className=' flex flex-col justify-center'>
-      <h2 className='font-semibold text-xl '>Inventory Dashboard</h2>
+      <h2 className='font-semibold text-xl '>Inventory</h2>
       <div className='flex flex-col gap-5  w-full'>
         <ToastContainer />
         <div className='bg-white rounded'>
@@ -318,7 +329,12 @@ function Inventory() {
                     <button
                       id='ok-btn'
                       type='submit'
-                      className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                      disabled={isAddButtonDisabled} // Bind the disabled state
+                      className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                        isAddButtonDisabled
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : 'bg-indigo-600 hover:bg-indigo-700'
+                      }`}
                     >
                       Add Product
                     </button>
@@ -370,11 +386,7 @@ function Inventory() {
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>
-                {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
-                  <FaFilter className='h-4 w-4' aria-hidden='true' />
-                </div> */}
               </div>
-
               <button
                 className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowProductModal(true)}

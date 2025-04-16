@@ -32,6 +32,8 @@ const OpdRoute = require('./routes/opdRoute');
 const yeglizerRoute = require('./routes/yeglizerRoutes');
 const doctorKhataRoute = require('./routes/doctorKhataRoutes');
 const moveProductRoute = require('./routes/moveProduct');
+const doctorBranchRoute = require('./routes/doctorBranchRoute');
+const operationTypeRoute = require('./routes/operationTypeRoutes');
 
 const app = express();
 
@@ -108,9 +110,11 @@ app.use('/api/v1/yeglizer', yeglizerRoute);
 app.use('/api/v1/move-product', moveProductRoute);
 app.use('/api/v1/backup', backupRoute);
 app.use('/api/v1/khata', doctorKhataRoute);
+app.use('/api/v1/doctor-branch', doctorBranchRoute);
+app.use('/api/v1/operation-types', operationTypeRoute);
 
 app.all('*', (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+  throw new AppError(`Can't find ${req.originalUrl} on this server!`, 404);
 });
 
 app.use(globalErrorHandler);
