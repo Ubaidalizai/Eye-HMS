@@ -1,7 +1,7 @@
-import React from 'react';
-import { LiaHandLizardSolid } from 'react-icons/lia';
-import { GiDoctorFace } from 'react-icons/gi';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { LiaHandLizardSolid } from "react-icons/lia";
+import { GiDoctorFace } from "react-icons/gi";
+import { Link } from "react-router-dom";
 import {
   FaClipboard,
   FaUserMd,
@@ -9,44 +9,44 @@ import {
   FaBed,
   FaFlask,
   FaEye,
-} from 'react-icons/fa';
-import { IoMdArrowDropdown } from 'react-icons/io';
+} from "react-icons/fa";
+import { IoMdArrowDropdown } from "react-icons/io";
 
 export default function BranchesMenu() {
   const branches = [
     {
-      name: 'Operation',
-      path: '/branches/operation',
+      name: "Operation",
+      path: "/branches/operation",
       icon: <FaUserMd className='h-4 w-4' />,
     },
     {
-      name: 'Biscayne',
-      path: '/branches/ultrasound',
+      name: "B-Scan",
+      path: "/branches/ultrasound",
       icon: <FaStethoscope className='h-4 w-4' />,
     },
     {
-      name: 'Bedroom',
-      path: '/branches/bedroom',
+      name: "Bedroom",
+      path: "/branches/bedroom",
       icon: <FaBed className='h-4 w-4' />,
     },
     {
-      name: 'Laboratory',
-      path: '/branches/laboratory',
+      name: "Laboratory",
+      path: "/branches/laboratory",
       icon: <FaFlask className='h-4 w-4' />,
     },
     {
-      name: 'OCT',
-      path: '/branches/oct',
+      name: "OCT",
+      path: "/branches/oct",
       icon: <FaEye className='h-4 w-4' />,
     },
     {
-      name: 'OPD',
-      path: '/branches/opd',
+      name: "OPD",
+      path: "/branches/opd",
       icon: <GiDoctorFace className='h-4 w-4 ' />,
     },
     {
-      name: 'Yeglizer',
-      path: '/branches/yeglizer',
+      name: "Yeglizer",
+      path: "/branches/yeglizer",
       icon: (
         <LiaHandLizardSolid className='h-4 w-4 transition-colors duration-300 hover:text-blue-500 focus:text-blue-500' />
       ),
