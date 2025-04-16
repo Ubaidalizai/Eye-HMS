@@ -12,22 +12,24 @@ exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
 // Get summary of drug sales
 exports.getDrugsSummary = asyncHandler(async (req, res) => {
+  const { category } = req.query;
+  const matchStage = category ? { category: category } : {}; // No filtering if no category provided
+
   const total = await Pharmacy.aggregate([
-    {
-      $match: { category: 'drug' }, // Filter for only the drug category
-    },
+    { $match: matchStage },
     {
       $project: {
-        totalValue: { $multiply: ['$salePrice', '$quantity'] }, // Calculate total value (salePrice * quantity)
+        totalValue: { $multiply: ['$salePrice', '$quantity'] },
       },
     },
     {
       $group: {
-        _id: null, // No specific group, calculate a single total
-        totalDrugSalesValue: { $sum: '$totalValue' }, // Sum up the total values
+        _id: null,
+        totalDrugSalesValue: { $sum: '$totalValue' },
       },
     },
   ]);
+
   const totalSalePrice = total.length > 0 ? total[0].totalDrugSalesValue : 0;
 
   res.status(200).json({
