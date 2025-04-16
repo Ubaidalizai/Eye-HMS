@@ -68,13 +68,16 @@ const Pharmacy = () => {
 
   const fetchDrugsSummary = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/pharmacy/drugs-summary`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies for authentication if required
-      });
+      const response = await fetch(
+        `${BASE_URL}/pharmacy/drugs-summary?category=${category}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch drugs summary');
@@ -190,7 +193,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            sales Price
+                            Total Price
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {totalSalePrice}
@@ -209,7 +212,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Items
+                            Total Quantity
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugs.reduce(
@@ -229,9 +232,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            {user.role === 'receptionist'
-                              ? 'Products'
-                              : 'Drugs'}
+                            Total Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugs.length}
@@ -286,12 +287,6 @@ const Pharmacy = () => {
               <table className='w-full text-sm text-left text-gray-500'>
                 <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Icon
-                    </th>
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
@@ -356,13 +351,9 @@ const Pharmacy = () => {
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.manufacturer}
                       </td>
-
-                      {drug.category !== 'drug' ? (
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                          {drug.category}
-                        </td>
-                      ) : null}
-
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.category}
+                      </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.expiryDate?.split('T')[0]}
                       </td>
