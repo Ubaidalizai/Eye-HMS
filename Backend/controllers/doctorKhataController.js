@@ -14,11 +14,8 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
 
   // Check if doctor exists in User model and has percentage
   const doctor = await DoctorBranchAssignment.findOne({ doctorId });
-  if (!doctor || !doctor.percentage) {
-    throw new AppError(
-      'Doctor not assigned to a branch or does not have percentage',
-      400
-    );
+  if (!doctor) {
+    throw new AppError('Doctor not assigned to a branch', 400);
   }
 
   const doctorKhata = new DoctorKhata({
