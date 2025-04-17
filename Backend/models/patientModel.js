@@ -12,7 +12,7 @@ const patientSchema = new mongoose.Schema(
     },
     contact: {
       type: String,
-      required: true,
+    
     },
     patientID: {
       type: String,
