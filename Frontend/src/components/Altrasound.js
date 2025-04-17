@@ -3,18 +3,17 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
-import { useAuth } from '../AuthContext';
 import { BASE_URL } from '../config';
 
 function Ultrasound() {
   const [fieldValues, setFieldValues] = useState({
     id: '',
-    doctor: '',
+    type: '',
     time: '',
     date: '',
     discount: 0,
   });
-  const [ultrasoundDoctors, setUltrasoundDoctors] = useState([]);
+  const [types, setTypes] = useState([]);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -26,8 +25,23 @@ function Ultrasound() {
 
   useEffect(() => {
     fetchData();
-    fetchUltrasoundDotors();
+    fetchAtrasoundTypes();
   }, [currentPage, limit]);
+
+  const fetchAtrasoundTypes = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/operation-types?type=biscayne`,
+        {
+          credentials: 'include',
+        }
+      );
+      const data = await response.json();
+      setTypes(data.data);
+    } catch (error) {
+      console.error('Error fetching biscayne types:', error);
+    }
+  };
 
   const fetchData = async () => {
     const response = await fetch(
@@ -40,19 +54,10 @@ function Ultrasound() {
     setTotalPages(data.totalPages || Math.ceil(data.results / limit));
   };
 
-  const fetchUltrasoundDotors = async () => {
-    const response = await fetch(`${BASE_URL}/ultrasound/ultrasound-doctors`, {
-      credentials: 'include',
-    });
-    const data = await response.json();
-
-    setUltrasoundDoctors(data.data);
-  };
-
   const handleCancel = () => {
     setFieldValues({
       id: '',
-      doctor: '',
+      type: '',
       time: '',
       date: '',
       discount: 0,
@@ -66,7 +71,7 @@ function Ultrasound() {
     const record = submittedData[index];
     setFieldValues({
       id: record.id,
-      doctor: record.doctor,
+      type: record.type,
       time: record.time,
       date: record.date,
       discount: record.discount,
@@ -155,22 +160,21 @@ function Ultrasound() {
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
-      label: 'Doctor',
+      label: 'Type',
       type: 'select',
-      options: Array.isArray(ultrasoundDoctors)
-        ? ultrasoundDoctors.map((doctor) => ({
-            label: `${doctor.doctorName}`,
-            value: doctor.doctorId,
+      options: Array.isArray(types)
+        ? types.map((type) => ({
+            label: `${type.name}`,
+            value: type._id,
           }))
         : [],
-      name: 'doctor',
+      name: 'type',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
     { label: 'Price', type: 'number', name: 'price' },
-    { label: 'Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
   const AllFields = [...fields, ...dataTableFields];
@@ -183,7 +187,7 @@ function Ultrasound() {
           onClick={() => {
             setFieldValues({
               id: '',
-              doctor: '',
+              type: '',
               time: '',
               date: '',
               discount: 0,

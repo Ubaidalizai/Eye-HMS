@@ -10,9 +10,9 @@ const opdSchema = new mongoose.Schema(
     price: { type: Number, required: true, min: 0 },
     date: { type: Date, required: true },
     time: { type: String, required: true },
-    doctor: {
+    type: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'OperationType',
       required: true,
     },
     percentage: { type: Number, required: true, default: 0, min: 0, max: 100 },

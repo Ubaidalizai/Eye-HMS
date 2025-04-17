@@ -47,10 +47,13 @@ function Operation() {
 
   const fetchTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${BASE_URL}/operation-types?type=operation`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
       setTypesData(data.data);

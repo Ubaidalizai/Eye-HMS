@@ -68,7 +68,6 @@ const createOperation = asyncHandler(async (req, res, next) => {
       doctorId: doctorExist._id,
       branchModel: 'operationModule',
     }).session(session);
-    console.log(assignedDoctor);
     if (!assignedDoctor) {
       throw new AppError('Doctor is not assigned to this branch', 403);
     }
