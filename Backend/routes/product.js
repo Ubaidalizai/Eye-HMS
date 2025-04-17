@@ -11,6 +11,8 @@ router.use(authenticate, authorizeAdmin);
 
 // Check for expired products
 router.get('/product/expire', product.checkProductExpiry);
+router.get('/product/expire/:months', product.giveProductExpireByMonth);
+
 
 // Route to get inventory summary
 router.get('/product/summary', product.getInventorySummary);
