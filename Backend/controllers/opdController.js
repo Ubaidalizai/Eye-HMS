@@ -12,7 +12,6 @@ const getAll = require('./handleFactory');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
-const operationTypeModel = require('../models/operationTypeModel');
 
 const getOpdDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -40,8 +39,8 @@ const getOpdDataByMonth = asyncHandler(async (req, res) => {
 const getAllRecords = getAll(OPD, false, [
   { path: 'patientId', select: 'name' },
   {
-    path: 'type',
-    select: 'name',
+    path: 'doctor',
+    select: 'firstName lastName percentage',
   },
 ]);
 
@@ -56,9 +55,9 @@ const getRecordByPatientId = asyncHandler(async (req, res, next) => {
 
 // Add a new OPD record
 const addRecord = asyncHandler(async (req, res, next) => {
-  const { patientId, type } = req.body;
-
-  if (!patientId || !type) {
+  const { patientId, doctor } = req.body;
+  console.log(req.body);
+  if (!patientId || !doctor) {
     throw new AppError('Patient ID and Doctor ID are required', 400);
   }
 
@@ -75,14 +74,34 @@ const addRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('Patient not found', 404);
     }
 
-    // Step 2: Validate type
-    const typeExist = await operationTypeModel.findById(type).session(session);
-    if (!typeExist) {
-      throw new AppError('Type not found', 404);
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not found', 404);
     }
 
-    // Step 4: Calculate total amount
-    req.body.totalAmount = typeExist.price;
+    // Step 3: Check if doctor is assigned to OPD module
+    const assignedDoctor = await DoctorBranchAssignment.findOne({
+      doctorId: doctorExist._id,
+      branchModel: 'opdModule',
+    }).session(session);
+
+    if (!assignedDoctor) {
+      throw new AppError('Doctor is not assigned to this branch', 403);
+    }
+
+    // Step 4: Calculate total amount and doctor percentage
+    req.body.totalAmount = assignedDoctor.price;
+    let doctorPercentage = assignedDoctor.percentage || 0; // Use assigned percentage
+
+    if (doctorPercentage > 0) {
+      const result = await calculatePercentage(
+        assignedDoctor.price,
+        doctorPercentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
+    }
 
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
@@ -95,8 +114,9 @@ const addRecord = asyncHandler(async (req, res, next) => {
     // Step 5: Create OPD record
     const opdRecord = new OPD({
       patientId: patient._id,
-      type,
-      price: typeExist.price,
+      doctor: doctor,
+      percentage: assignedDoctor.percentage,
+      price: assignedDoctor.price,
       time: req.body.time,
       date: req.body.date,
       discount: req.body.discount,
@@ -104,6 +124,23 @@ const addRecord = asyncHandler(async (req, res, next) => {
     });
 
     await opdRecord.save({ session });
+
+    // Step 6: Add to DoctorKhata
+    if (doctorPercentage > 0) {
+      await DoctorKhata.create(
+        [
+          {
+            branchNameId: opdRecord._id,
+            branchModel: 'opdModule',
+            doctorId: doctorExist._id,
+            amount: doctorPercentage,
+            date: req.body.date,
+            amountType: 'income',
+          },
+        ],
+        { session }
+      );
+    }
 
     // Step 7: Add to Income
     if (opdRecord.totalAmount > 0) {

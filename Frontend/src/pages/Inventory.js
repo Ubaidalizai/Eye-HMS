@@ -4,14 +4,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { Dialog, Transition } from '@headlessui/react';
 import {
-  // FaEdit,
   FaTrash,
   FaBoxOpen,
   FaWarehouse,
   FaExchangeAlt,
   FaPlus,
-  FaChevronLeft,
-  FaChevronRight,
   FaSearch,
   FaFilter,
   FaRegEdit,
@@ -45,33 +42,18 @@ function Inventory() {
   const [newProduct, setNewProduct] = useState({
     name: '',
     manufacturer: '',
-    description: '',
+    minLevel: '',
+    expireNotifyDuration: '',
     stock: 0,
     category: '',
   });
   const dispatch = useDispatch();
   const authContext = useContext(AuthContext);
 
-  const [url, setUrl] = useState(`${BASE_URL}/inventory/product`);
-
   useEffect(() => {
     fetchInventorySummary();
     fetchProductsData();
-    constructUrl(currentPage, category, searchTerm);
-  }, [updatePage, url, currentPage, category, searchTerm, limit]);
-
-  const constructUrl = (page, selectedCategory, searchTerm) => {
-    let baseUrl = `${BASE_URL}/inventory/product?page=${page}&limit=${limit}`;
-
-    if (selectedCategory) {
-      baseUrl += `&category=${selectedCategory}`;
-    }
-
-    if (searchTerm) {
-      baseUrl += `&fieldName=name&searchTerm=${searchTerm}`; // Add search term to the URL
-    }
-    setUrl(baseUrl);
-  };
+  }, [updatePage, currentPage, category, searchTerm, limit]);
 
   // Fetch the inventory summary from the backend
   const fetchInventorySummary = async () => {
@@ -91,7 +73,7 @@ function Inventory() {
   const fetchProductsData = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/inventory/product?page=${1}&limit=${10}`,
+        `${BASE_URL}/inventory/product?page=${currentPage}&limit=${limit}&fieldName=name&searchTerm=${searchTerm}&category=${category}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -287,13 +269,26 @@ function Inventory() {
                       required
                     />
                     <input
-                      type='text'
-                      placeholder='Description'
-                      value={newProduct.description}
+                      type='number'
+                      placeholder='Min Level'
+                      value={newProduct.minLevel}
                       onChange={(e) =>
                         setNewProduct({
                           ...newProduct,
-                          description: e.target.value,
+                          minLevel: e.target.value,
+                        })
+                      }
+                      className='mt-2 p-2 w-full border rounded'
+                      required
+                    />
+                    <input
+                      type='number'
+                      placeholder='Expire notify duration (days)'
+                      value={newProduct.expireNotifyDuration}
+                      onChange={(e) =>
+                        setNewProduct({
+                          ...newProduct,
+                          expireNotifyDuration: e.target.value,
                         })
                       }
                       className='mt-2 p-2 w-full border rounded'
@@ -417,6 +412,18 @@ function Inventory() {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
+                      Min level
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Expire
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
                       Purchase
                     </th>
                     <th
@@ -461,6 +468,12 @@ function Inventory() {
                         {item.manufacturer}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.minLevel}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.expireNotifyDuration} days
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                         {item.purchasePrice}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
@@ -484,7 +497,7 @@ function Inventory() {
                         >
                           {item.stock === 0
                             ? 'Out of stock'
-                            : item.stock <= 10
+                            : item.stock <= item.minLevel
                             ? 'Low'
                             : 'Available'}
                         </span>

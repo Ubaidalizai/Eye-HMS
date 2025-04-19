@@ -19,11 +19,18 @@ const addProduct = asyncHandler(async (req, res, next) => {
   validateMongoDBId(_id);
 
   // Validate required fields
-  const { name, manufacturer, description, category } = req.body;
-  if (!name || !manufacturer || !description || !category) {
+  const { name, manufacturer, minLevel, expireNotifyDuration, category } =
+    req.body;
+  if (
+    !name ||
+    !manufacturer ||
+    !minLevel ||
+    !expireNotifyDuration ||
+    !category
+  ) {
     return next(
       new AppError(
-        'All fields (name, manufacturer, description, category) are required.',
+        'All fields (name, manufacturer, min level, expire notify duration, category) are required.',
         400
       )
     );
@@ -36,7 +43,8 @@ const addProduct = asyncHandler(async (req, res, next) => {
     stock: 0, // Default stock is 0
     purchasePrice: 0, // Default purchase price is 0
     salePrice: 0, // Default sale price is 0
-    description,
+    minLevel,
+    expireNotifyDuration,
     category,
   });
 
@@ -96,7 +104,8 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
       {
         name: req.body.name,
         manufacturer: req.body.manufacturer,
-        description: req.body.description,
+        minLevel: req.body.minLevel,
+        expireNotifyDuration: req.body.expireNotifyDuration,
         category: req.body.category,
       },
       { new: true, session } // Return the updated document and bind the session

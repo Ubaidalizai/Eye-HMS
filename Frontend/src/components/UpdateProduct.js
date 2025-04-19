@@ -10,12 +10,14 @@ export default function UpdateProduct({
   onProductUpdate,
   setUpdatePage, // <-- This prop is passed from Inventory to update the product in the UI
 }) {
-  const { _id, name, manufacturer, description, category } = updateProductData;
+  const { _id, name, manufacturer, minLevel, expireNotifyDuration, category } =
+    updateProductData;
   const [product, setProduct] = useState({
     productID: _id,
     name: name,
     manufacturer: manufacturer,
-    description: description,
+    minLevel: minLevel,
+    expireNotifyDuration: expireNotifyDuration,
     category: category, // Initialize category
   });
   const [open, setOpen] = useState(true);

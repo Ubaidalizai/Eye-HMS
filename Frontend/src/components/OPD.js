@@ -3,14 +3,15 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
+import { useAuth } from '../AuthContext';
 import { BASE_URL } from '../config';
 
 function OPD() {
   const [patientId, setPatientId] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [type, setType] = useState('');
-  const [opdTypes, setOpdTypes] = useState([]);
+  const [doctor, setDoctor] = useState('');
+  const [opdDoctors, setOpdDoctors] = useState([]);
   const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -23,7 +24,7 @@ function OPD() {
   // Fetch data from backend API
   useEffect(() => {
     fetchData();
-    fetchOpdTypes();
+    fetchOpdDoctors();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -41,15 +42,16 @@ function OPD() {
     }
   };
 
-  const fetchOpdTypes = async () => {
+  const fetchOpdDoctors = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=opd`, {
+      const response = await fetch(`${BASE_URL}/opd/opd-doctors`, {
         credentials: 'include',
       });
+      if (!response.ok) throw new Error('Failed to fetch opd doctors');
       const data = await response.json();
-      setOpdTypes(data.data);
+      setOpdDoctors(data.data);
     } catch (error) {
-      console.error('Error fetching oopd types:', error);
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -86,7 +88,7 @@ function OPD() {
     setPatientId('');
     setDate('');
     setTime('');
-    setType('');
+    setDoctor('');
     setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
@@ -98,7 +100,7 @@ function OPD() {
       patientId: recordToEdit.patientId || '',
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
-      type: recordToEdit.type || '',
+      doctor: recordToEdit.doctor || '',
       discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
@@ -128,21 +130,22 @@ function OPD() {
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
-      label: 'Type',
+      label: 'Doctor',
       type: 'select',
-      options: Array.isArray(opdTypes)
-        ? opdTypes.map((type) => ({
-            label: type.name,
-            value: type._id,
+      options: Array.isArray(opdDoctors)
+        ? opdDoctors.map((doctor) => ({
+            label: doctor.doctorName,
+            value: doctor.doctorId,
           }))
         : [],
-      name: 'type',
+      name: 'doctor',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
     { label: 'Price', type: 'number', name: 'price' },
+    { label: 'Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
   const AllFields = [...fields, ...dataTableFields];
@@ -151,15 +154,15 @@ function OPD() {
     patientId,
     date,
     time,
-    type,
+    doctor,
     discount,
   };
 
-  const setFieldValues = ({ patientId, date, time, type, discount }) => {
+  const setFieldValues = ({ patientId, date, time, doctor, discount }) => {
     setPatientId(patientId);
     setDate(date);
     setTime(time);
-    setType(type);
+    setDoctor(doctor);
     setDiscount(discount);
   };
 
