@@ -92,8 +92,8 @@ const OperationTypeManagement = () => {
 
   return (
     <div className='p-6 bg-white rounded-lg border mb-10'>
-      <h2 className='text-2xl font-semibold mb-8 text-gray-600'>
-        Operation Biscayne OPD Price Management
+      <h2 className='text-xl font-semibold mb-8 text-gray-600'>
+        Operation Biscayne OCT Price Management
       </h2>
 
       {/* Add / Edit Form */}
@@ -122,7 +122,7 @@ const OperationTypeManagement = () => {
             Type
           </option>
           <option value='operation'>Operation</option>
-          <option value='opd'>OPD</option>
+          <option value='oct'>OCT</option>
           <option value='biscayne'>Biscayne</option>
         </select>
         <input

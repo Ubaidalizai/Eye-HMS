@@ -3,15 +3,14 @@ import FormModal from '../components/FormModal';
 import DataTable from '../components/DataTable';
 import { FaPlus } from 'react-icons/fa';
 import Pagination from './Pagination';
-import { useAuth } from '../AuthContext';
 import { BASE_URL } from '../config';
 
 function OCT() {
   const [patientId, setPatientId] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [doctor, setDoctor] = useState('');
-  const [octDoctors, setOctDoctors] = useState([]);
+  const [octTypes, setOctTypes] = useState('');
+  const [type, setType] = useState('');
   const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -23,8 +22,21 @@ function OCT() {
 
   useEffect(() => {
     fetchData();
-    fetchOctDoctors();
+    fetchOctTypes();
   }, [currentPage, limit]);
+
+  const fetchOctTypes = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/operation-types?type=oct`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      console.log(data.data);
+      setOctTypes(data.data);
+    } catch (error) {
+      console.error('Error fetching biscayne types:', error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -36,19 +48,6 @@ function OCT() {
       const data = await response.json();
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const fetchOctDoctors = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/oct/oct-doctors`, {
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to fetch oct doctors');
-      const data = await response.json();
-      setOctDoctors(data.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -87,7 +86,7 @@ function OCT() {
     setPatientId('');
     setDate('');
     setTime('');
-    setDoctor('');
+    setType('');
     setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
@@ -99,7 +98,7 @@ function OCT() {
       patientId: recordToEdit.patientId || '',
       date: recordToEdit.date || '',
       time: recordToEdit.time || '',
-      doctor: recordToEdit.doctor || '',
+      type: recordToEdit.type || '',
       discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
@@ -129,22 +128,21 @@ function OCT() {
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
-      label: 'Doctor',
+      label: 'Type',
       type: 'select',
-      options: Array.isArray(octDoctors)
-        ? octDoctors.map((doctor) => ({
-            label: `${doctor.doctorName}`,
-            value: doctor.doctorId,
+      options: Array.isArray(octTypes)
+        ? octTypes.map((octType) => ({
+            label: octType.name,
+            value: octType._id,
           }))
         : [],
-      name: 'doctor',
+      name: 'type',
     },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
   const dataTableFields = [
     { label: 'Price', type: 'number', name: 'price' },
-    { label: 'Percentage', type: 'text', name: 'percentage' },
     { label: 'Total Amount', type: 'number', name: 'totalAmount' },
   ];
   const AllFields = [...fields, ...dataTableFields];
@@ -153,15 +151,15 @@ function OCT() {
     patientId,
     date,
     time,
-    doctor,
+    type,
     discount,
   };
 
-  const setFieldValues = ({ patientId, date, time, doctor, discount }) => {
+  const setFieldValues = ({ patientId, date, time, type, discount }) => {
     setPatientId(patientId);
     setDate(date);
     setTime(time);
-    setDoctor(doctor);
+    setType(type);
     setDiscount(discount);
   };
 

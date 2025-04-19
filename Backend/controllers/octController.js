@@ -13,6 +13,7 @@ const AppError = require('../utils/appError');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
+const operationTypeModel = require('../models/operationTypeModel');
 
 const getOctDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -38,10 +39,10 @@ const getOctDataByMonth = asyncHandler(async (req, res) => {
 
 // Create a new OCT record
 const createOCTRecord = asyncHandler(async (req, res, next) => {
-  const { patientId, doctor } = req.body;
+  const { patientId, type } = req.body;
 
-  if (!patientId || !doctor) {
-    throw new AppError('Patient ID and Doctor ID are required', 400);
+  if (!patientId || !type) {
+    throw new AppError('Patient ID and Type are required', 400);
   }
 
   // Start a MongoDB transaction session
@@ -57,34 +58,13 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('Patient not found', 404);
     }
 
-    // Step 2: Validate doctor
-    const doctorExist = await User.findById(doctor).session(session);
-    if (!doctorExist || doctorExist.role !== 'doctor') {
-      throw new AppError('Doctor not found', 404);
+    const typeExist = await operationTypeModel.findById(type).session(session);
+    if (!typeExist) {
+      throw new AppError('Type not found', 404);
     }
 
-    // Step 3: Check if doctor is assigned to OCT module
-    const assignedDoctor = await DoctorBranchAssignment.findOne({
-      doctorId: doctorExist._id,
-      branchModel: 'octModule',
-    }).session(session);
-
-    if (!assignedDoctor) {
-      throw new AppError('Doctor is not assigned to this branch', 403);
-    }
-
-    // Step 4: Calculate total amount and doctor percentage
-    req.body.totalAmount = assignedDoctor.price;
-    let doctorPercentage = assignedDoctor.percentage || 0; // Use assigned percentage
-
-    if (doctorPercentage > 0) {
-      const result = await calculatePercentage(
-        assignedDoctor.price,
-        doctorPercentage
-      );
-      req.body.totalAmount = result.finalPrice;
-      doctorPercentage = result.percentageAmount;
-    }
+    // Step 4: Calculate total amount
+    req.body.totalAmount = typeExist.price;
 
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
@@ -97,9 +77,8 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
     // Step 5: Create OCT record
     const octRecord = new OCT({
       patientId: patient._id,
-      doctor: doctor,
-      percentage: assignedDoctor.percentage,
-      price: assignedDoctor.price,
+      type,
+      price: typeExist.price,
       time: req.body.time,
       date: req.body.date,
       discount: req.body.discount,
@@ -107,23 +86,6 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
     });
 
     await octRecord.save({ session });
-
-    // Step 6: Add to DoctorKhata
-    if (doctorPercentage > 0) {
-      await DoctorKhata.create(
-        [
-          {
-            branchNameId: octRecord._id,
-            branchModel: 'octModule',
-            doctorId: doctorExist._id,
-            amount: doctorPercentage,
-            date: req.body.date,
-            amountType: 'income',
-          },
-        ],
-        { session }
-      );
-    }
 
     // Step 7: Add to Income
     if (octRecord.totalAmount > 0) {
@@ -164,8 +126,8 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
 const getAllOCTRecords = getAll(OCT, false, [
   { path: 'patientId', select: 'name' },
   {
-    path: 'doctor',
-    select: 'firstName lastName percentage',
+    path: 'type',
+    select: 'name',
   },
 ]);
 
