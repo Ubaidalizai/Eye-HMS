@@ -58,12 +58,16 @@ function Inventory() {
   // Fetch the inventory summary from the backend
   const fetchInventorySummary = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/inventory/product/summary`, {
-        method: 'GET',
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${BASE_URL}/inventory/product/summary?category=${category}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
       const data = await response.json();
-      setSummary(data.data);
+      console.log(data);
+      setSummary(data);
     } catch (err) {
       console.log(err);
       toast.error('Failed to fetch inventory summary');
@@ -125,6 +129,8 @@ function Inventory() {
           manufacturer: selectedItem.manufacturer,
           category: selectedItem.category,
           salePrice: salePriceNum,
+          minLevel: 10,
+          expireNotifyDuration: 10,
           expiryDate: selectedItem.expiryDate,
         },
         quantity: quantityNum,
@@ -210,10 +216,17 @@ function Inventory() {
             <div className='flex items-center'>
               <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
               <div>
-                <p className='text-sm text-gray-500'>Total Products</p>
+                <p className='text-sm text-gray-500'>Total Value</p>
                 <p className='text-xl font-semibold'>
-                  {summary.totalProductsCount}
+                  {summary.totalSalePrice}
                 </p>
+              </div>
+            </div>
+            <div className='flex items-center'>
+              <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
+              <div>
+                <p className='text-sm text-gray-500'>Total Products</p>
+                <p className='text-xl font-semibold'>{summary.length}</p>
               </div>
             </div>
             <div className='flex items-center'>
@@ -418,7 +431,7 @@ function Inventory() {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Expire
+                      Expire Duration
                     </th>
                     <th
                       scope='col'
@@ -490,7 +503,7 @@ function Inventory() {
                           className={`text-xs font-medium ${
                             item.stock === 0
                               ? 'text-red-500'
-                              : item.stock <= 10
+                              : item.stock <= item.minLevel
                               ? 'text-yellow-500'
                               : 'text-green-500'
                           }`}
