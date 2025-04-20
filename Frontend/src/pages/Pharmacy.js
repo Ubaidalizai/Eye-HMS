@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import {
-  FaPills,
-  FaGlasses,
   FaBoxOpen,
   FaExclamationTriangle,
+  FaEdit,
   FaTrash,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
@@ -13,10 +12,28 @@ import { FcSalesPerformance } from 'react-icons/fc';
 import Pagination from '../components/Pagination';
 import { BASE_URL } from '../config';
 
+//Custom Modal/Dialog Component
+const Modal = ({ open, onClose, children }) => {
+  if (!open) return null;
+  return (
+    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+      <div className='bg-white p-6 rounded shadow-md'>
+        {children}
+        <button
+          onClick={onClose}
+          className='mt-4 bg-red-500 text-white px-3 py-1 rounded '
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
   const [drugs, setDrugs] = useState([]);
-  const [totalSalePrice, setTotalSalePrice] = useState([]);
+  const [drugSummary, setDrugSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
@@ -24,7 +41,10 @@ const Pharmacy = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState(10);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState(null);
+  const [minLevel, setMinLevel] = useState(0);
+  const [expireNotifyDuration, setExpireNotifyDuration] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -84,12 +104,54 @@ const Pharmacy = () => {
       }
 
       const data = await response.json();
-      setTotalSalePrice(data.totalSalePrice);
+      setDrugSummary(data);
     } catch (err) {
       console.error('Error fetching drugs summary:', err);
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (record) => {
+    setEditingAssignment(record._id);
+    setMinLevel(record.minLevel);
+    setExpireNotifyDuration(record.expireNotifyDuration);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/pharmacy/${editingAssignment}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            minLevel,
+            expireNotifyDuration,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to update doctor assignment';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text();
+        }
+        throw new Error(errorMessage);
+      }
+
+      fetchData();
+      fetchDrugsSummary();
+      setShowEditModal(false);
+    } catch (err) {
+      console.error('Error assigning doctor:', err);
+      setError(err.message);
     }
   };
 
@@ -103,7 +165,8 @@ const Pharmacy = () => {
 
         if (response.ok) {
           // Refresh the page or fetch updated data
-          setUpdatePage(!updatePage);
+          fetchData();
+          fetchDrugsSummary();
           toast.success('Product deleted successfully');
         } else {
           let errorMessage = 'Failed to delete the drug.';
@@ -196,7 +259,7 @@ const Pharmacy = () => {
                             Total Price
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {totalSalePrice}
+                            {drugSummary.totalSalePrice}
                           </dd>
                         </dl>
                       </div>
@@ -215,10 +278,7 @@ const Pharmacy = () => {
                             Total Quantity
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {drugs.reduce(
-                              (sum, drug) => sum + drug.quantity,
-                              0
-                            )}
+                            {drugSummary.length}
                           </dd>
                         </dl>
                       </div>
@@ -235,7 +295,7 @@ const Pharmacy = () => {
                             Total Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {drugs.length}
+                            {drugSummary.totalQuantity}
                           </dd>
                         </dl>
                       </div>
@@ -254,7 +314,7 @@ const Pharmacy = () => {
                             Low Stock Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {drugs.filter((drug) => drug.quantity < 10).length}
+                            {drugSummary.lowQuantityCount}
                           </dd>
                         </dl>
                       </div>
@@ -291,7 +351,7 @@ const Pharmacy = () => {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Drug Name
+                      Name
                     </th>
                     <th
                       scope='col'
@@ -303,19 +363,31 @@ const Pharmacy = () => {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
+                      Min-Level
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Expire-Duration
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
                       Category
                     </th>
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Expiry Date
+                      Expiry-Date
                     </th>
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Sale price
+                      Sale-price
                     </th>
                     <th
                       scope='col'
@@ -350,6 +422,12 @@ const Pharmacy = () => {
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.manufacturer}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.minLevel}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.expireNotifyDuration}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.category}
@@ -387,6 +465,12 @@ const Pharmacy = () => {
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <button
+                          onClick={() => handleEdit(drug)}
+                          className='font-medium text-blue-600 hover:text-blue-700'
+                        >
+                          <FaEdit className='w-4 h-4' />
+                        </button>
+                        <button
                           onClick={() => handleDelete(drug._id)}
                           className='font-medium text-red-600 hover:text-red-700'
                         >
@@ -409,6 +493,38 @@ const Pharmacy = () => {
           onLimitChange={(limit) => setLimit(limit)}
         />
       </div>
+
+      {/* Edit Assignment Modal */}
+      <Modal
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          // resetForm();
+        }}
+      >
+        <h3 className='text-lg font-bold text-center'>Edit Record</h3>
+        <label className='block mt-2'>Min-Level</label>
+        <input
+          type='number'
+          className='border px-3 py-1 rounded w-full'
+          value={minLevel}
+          min={0}
+          max={100}
+          onChange={(e) => setMinLevel(e.target.value)}
+        />
+        <label className='block mt-2'>Expire-Duration-Days</label>
+        <input
+          type='number'
+          className='border px-3 py-1 rounded w-full'
+          value={expireNotifyDuration}
+          min={0}
+          onChange={(e) => setExpireNotifyDuration(e.target.value)}
+        />
+        {error && <p className='text-red-600'>{error}</p>}
+        <button onClick={handleUpdate} className='mt-4 w-full'>
+          Update
+        </button>
+      </Modal>
     </div>
   );
 };

@@ -21,9 +21,16 @@ const getAllProductMovements = getAll(DrugMovement, false, [
 
 // move drug from inventory to pharmacy
 const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
-  const { name, manufacturer, quantity, salePrice, category, expiryDate } =
-    req.body;
-
+  const {
+    name,
+    manufacturer,
+    quantity,
+    salePrice,
+    minLevel,
+    expireNotifyDuration,
+    category,
+    expiryDate,
+  } = req.body;
   if (!name || !manufacturer || !quantity || !salePrice || !category) {
     throw new AppError('All fields are required', 400);
   }
@@ -64,6 +71,8 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
         manufacturer,
         quantity,
         salePrice,
+        minLevel,
+        expireNotifyDuration,
         category,
         expiryDate,
       });

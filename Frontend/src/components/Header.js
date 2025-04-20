@@ -48,9 +48,8 @@ export default function Header() {
       const res = await axios.get(`${BASE_URL}/inventory/product/expire`, {
         withCredentials: true,
       });
-
-      if (res.status === 200 && res.data.length > 0) {
-        setExProductsCount(res.data.length);
+      if (res?.data?.length > 0) {
+        setExProductsCount(res?.data?.length);
       } else {
         setExProductsCount(0);
       }
@@ -65,8 +64,8 @@ export default function Header() {
         withCredentials: true,
       });
 
-      if (res.status === 200 && res.data.length > 0) {
-        setExDrugsCount(res.data.length);
+      if (res.status === 200 && res?.data?.length > 0) {
+        setExDrugsCount(res?.data?.length);
       } else {
         setExDrugsCount(0);
       }
