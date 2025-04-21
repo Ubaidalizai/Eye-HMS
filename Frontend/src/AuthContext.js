@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('lastLoginTime', Date.now().toString());
       await fetchDoctors();
-      callback();
+      callback(data); // Pass the user object here
     } catch (err) {
       console.error('Error during login:', err);
       setError(err.message || 'An unknown error occurred');

@@ -209,6 +209,12 @@ export default function Sales() {
                       scope='col'
                       className='px-6 py-3 font-bold tracking-wider'
                     >
+                      Category
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 font-bold tracking-wider'
+                    >
                       Sales Date
                     </th>
                     <th
@@ -246,6 +252,9 @@ export default function Sales() {
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.productRefId?.salePrice}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap'>
+                          {sale.category}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.date.split('T')[0]}

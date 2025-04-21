@@ -31,8 +31,13 @@ function Login() {
     setLoading(true);
 
     try {
-      await signin(form, () => {
-        navigate('/');
+      await signin(form, (user) => {
+        // Redirect based on role
+        if (user.role === 'receptionist') {
+          navigate('/pharmacy');
+        } else {
+          navigate('/');
+        }
       });
     } catch (err) {
       console.log('Login Error:', err);

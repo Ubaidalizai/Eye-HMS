@@ -49,7 +49,11 @@ router
 router
   .route('/:id')
   .get(userController.findUserByID)
-  .patch(userController.updateUserById)
+  .patch(
+    userController.uploadUserPhoto,
+    userController.resizeUserPhoto,
+    userController.updateUserById
+  )
   .delete(userController.deleteUserByID);
 
 module.exports = router;

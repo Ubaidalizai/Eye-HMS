@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import PersonInfoDropdown from './PersonInfoDropdown';
 import { BASE_URL } from '../config';
 import { toast } from 'react-toastify';
 import DoctorBranchAssignment from '../components/DoctorAssigenment';
 import OperationTypeManagement from '../components/OperationTypeManagement';
+import EditUser from '../components/EditUser';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -115,34 +118,19 @@ const UserList = () => {
     }
   };
 
-  const updateUser = async (e) => {
-    e.preventDefault();
-    const errors = validateForm(editingUser);
-    console.log(errors, 'ssssssssss');
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-    try {
-      const { password, ...userDataWithoutPassword } = editingUser;
-      const response = await fetch(`${BASE_URL}/user/${editingUser._id}`, {
-        credentials: 'include',
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userDataWithoutPassword),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Error: ${response.status}`);
-      }
-      await fetchUsers();
-      setEditingUser(null);
-      setValidationErrors({});
-      toast.success('User updated successfully'); // Use toast
-    } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error(`Failed to update user: ${error.message}`); // Use toast
-    }
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setNewUser({ ...newUser, image: file });
+  };
+
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setValidationErrors({});
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingUser(null);
+    setValidationErrors({});
   };
 
   const deleteUser = async (id) => {
@@ -162,21 +150,6 @@ const UserList = () => {
       console.error('Error deleting user:', error);
       toast.error(`Failed to delete user: ${error.message}`); // Use toast
     }
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    setNewUser({ ...newUser, image: file });
-  };
-
-  const handleEdit = (user) => {
-    setEditingUser(user);
-    setValidationErrors({});
-  };
-
-  const handleCancel = () => {
-    setEditingUser(null);
-    setValidationErrors({});
   };
 
   return (
@@ -228,7 +201,7 @@ const UserList = () => {
                     <img
                       src={`http://localhost:4000/public/img/users/${user?.image}`}
                       alt={`${user?.firstName} ${user?.lastName}`}
-                      className='h-10 w-10 rounded-full'
+                      className='h-10 w-10 rounded-full object-cover'
                     />
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap font-medium text-gray-900'>
@@ -426,130 +399,13 @@ const UserList = () => {
         </div>
       )}
 
-      {/* Edit User Modal */}
+      {/* Edit User Component */}
       {editingUser && (
-        <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center'>
-          <div className='relative p-5 border w-96 shadow-lg rounded-md bg-white'>
-            <h3 className='text-lg font-medium leading-6 text-gray-900 mb-4'>
-              Edit User
-            </h3>
-            <form onSubmit={updateUser}>
-              <div>
-                <input
-                  type='text'
-                  placeholder='First Name'
-                  value={editingUser.firstName}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      firstName: e.target.value,
-                    })
-                  }
-                  className='border p-2 rounded w-full mb-2'
-                  required
-                  minLength={2}
-                />
-                {validationErrors.firstName && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.firstName}
-                  </p>
-                )}
-              </div>
-              <div>
-                <input
-                  type='text'
-                  placeholder='Last Name'
-                  value={editingUser.lastName}
-                  onChange={(e) =>
-                    setEditingUser({ ...editingUser, lastName: e.target.value })
-                  }
-                  className='border p-2 rounded w-full mb-2'
-                  required
-                  minLength={2}
-                />
-                {validationErrors.lastName && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.lastName}
-                  </p>
-                )}
-              </div>
-              <div>
-                <input
-                  type='email'
-                  placeholder='Email'
-                  value={editingUser.email}
-                  onChange={(e) =>
-                    setEditingUser({ ...editingUser, email: e.target.value })
-                  }
-                  className='border p-2 rounded w-full mb-2'
-                  required
-                />
-                {validationErrors.email && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.email}
-                  </p>
-                )}
-              </div>
-              <div>
-                <input
-                  type='tel'
-                  placeholder='Phone Number'
-                  value={editingUser.phoneNumber}
-                  onChange={(e) =>
-                    setEditingUser({
-                      ...editingUser,
-                      phoneNumber: e.target.value,
-                    })
-                  }
-                  className='border p-2 rounded w-full mb-2'
-                  required
-                  pattern='\d{10}'
-                />
-                {validationErrors.phoneNumber && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.phoneNumber}
-                  </p>
-                )}
-              </div>
-              <div>
-                <select
-                  value={editingUser.role}
-                  onChange={(e) =>
-                    setEditingUser({ ...editingUser, role: e.target.value })
-                  }
-                  className='border p-2 rounded w-full mb-4'
-                  required
-                >
-                  <option value=''>Role</option>
-                  <option value='pharmacist'>Pharmacist</option>
-                  <option value='admin'>Admin</option>
-                  <option value='receptionist'>Receptionist</option>
-                  <option value='doctor'>Doctor</option>
-                </select>
-                {validationErrors.role && (
-                  <p className='text-red-500 text-xs'>
-                    {validationErrors.role}
-                  </p>
-                )}
-              </div>
-              <div className='flex items-center justify-end gap-2'>
-                <button
-                  type='button'
-                  onClick={handleCancel}
-                  className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-                >
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-                >
-                  Update User
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <EditUser
+          user={editingUser}
+          onClose={handleCloseEditModal}
+          onUserUpdated={fetchUsers}
+        />
       )}
 
       <PersonInfoDropdown />

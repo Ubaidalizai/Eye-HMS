@@ -1,94 +1,187 @@
-import React, { useState, useEffect } from "react";
-import { FaTimes } from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { BASE_URL } from '../config';
 
-function EditPurchaseDetails({ purchase, products, onUpdate, onClose }) {
-  const [editedPurchase, setEditedPurchase] = useState(purchase);
+function EditPurchaseDetails({ editModalSetting, purchase, handlePageUpdate }) {
+  const [formData, setFormData] = useState({
+    QuantityPurchased: purchase?.QuantityPurchased || 0,
+    date: purchase.date ? purchase.date.split('T')[0] : '',
+    expiryDate: purchase?.expiryDate ? purchase.expiryDate.split('T')[0] : '',
+    UnitPurchaseAmount: purchase?.UnitPurchaseAmount || 0,
+    salePrice: purchase?.salePrice || 0,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setEditedPurchase(purchase);
+    // Update form data when purchase prop changes
+    if (purchase) {
+      setFormData({
+        QuantityPurchased: purchase.QuantityPurchased || 0,
+        date: purchase.date ? purchase.date.split('T')[0] : '',
+        expiryDate: purchase?.expiryDate
+          ? purchase.expiryDate.split('T')[0]
+          : '',
+        UnitPurchaseAmount: purchase.UnitPurchaseAmount || 0,
+        salePrice: purchase.salePrice || 0,
+      });
+    }
   }, [purchase]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEditedPurchase((prev) => ({ ...prev, [name]: Number(value) }));
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onUpdate(editedPurchase); // Calls handleEditSubmit with the edited purchase
+    setIsSubmitting(true);
+
+    try {
+      const payload = { ...formData };
+
+      const response = await fetch(`${BASE_URL}/purchase/${purchase._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        // Try to extract error message from server response
+        let errorMsg = 'Failed to update purchase.';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || errorMsg;
+        } catch (err) {
+          // If response is not JSON (e.g. HTML error page), use fallback
+          errorMsg = (await response.text()) || errorMsg;
+        }
+        throw new Error(errorMsg);
+      }
+
+      toast.success('Purchase updated successfully!');
+      handlePageUpdate();
+      editModalSetting();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div
-      className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full'
-      aria-labelledby='modal-title'
-      role='dialog'
-      aria-modal='true'
-    >
-      <div className='relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white'>
-        <div className='mt-3 text-center'>
-          <h3
-            className='text-lg font-medium leading-6 text-gray-900'
-            id='modal-title'
+    <div className='fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center'>
+      <div className='bg-white rounded-lg p-8 max-w-md w-full'>
+        <div className='flex justify-between items-center mb-6'>
+          <h2 className='text-xl font-semibold'>
+            Edit{' '}
+            <span className='text-blue-700'>{purchase.ProductID.name}</span>{' '}
+            Purchase
+          </h2>
+          <button
+            onClick={editModalSetting}
+            className='text-gray-500 hover:text-gray-700'
           >
-            Edit Purchase
-          </h3>
-          <form onSubmit={handleSubmit} className='mt-2 text-left'>
-            <div className='mb-4'>
-              <label
-                htmlFor='QuantityPurchased'
-                className='block text-sm font-medium text-gray-700'
-              >
-                Quantity
-              </label>
-              <input
-                type='number'
-                id='QuantityPurchased'
-                name='QuantityPurchased'
-                value={editedPurchase.QuantityPurchased}
-                onChange={handleChange}
-                className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-                min='1'
-                required
-              />
-            </div>
-            <div className='mb-4'>
-              <label
-                htmlFor='UnitPurchaseAmount'
-                className='block text-sm font-medium text-gray-700'
-              >
-                Unit Purchase Amount
-              </label>
-              <input
-                type='number'
-                id='UnitPurchaseAmount'
-                name='UnitPurchaseAmount'
-                value={editedPurchase.UnitPurchaseAmount}
-                onChange={handleChange}
-                className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
-                min='0'
-                step='0.01'
-                required
-              />
-            </div>
-
-            <div className='flex items-center justify-between mt-4'>
-              <button
-                type='submit'
-                className='inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-              >
-                Update Purchase
-              </button>
-              <button
-                type='button'
-                onClick={onClose}
-                className='inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+            ✕
+          </button>
         </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Quantity Purchased
+            </label>
+            <input
+              type='number'
+              name='QuantityPurchased'
+              value={formData.QuantityPurchased}
+              onChange={handleChange}
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              required
+              min='1'
+            />
+          </div>
+
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Purchase Date
+            </label>
+            <input
+              type='date'
+              name='date'
+              value={formData.date}
+              onChange={handleChange}
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              required
+            />
+          </div>
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Purchase Expiry Date
+            </label>
+            <input
+              type='date'
+              name='expiryDate'
+              value={formData.expiryDate}
+              onChange={handleChange}
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              required
+            />
+          </div>
+
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Unit Purchase Amount
+            </label>
+            <input
+              type='number'
+              name='UnitPurchaseAmount'
+              value={formData.UnitPurchaseAmount}
+              onChange={handleChange}
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              required
+              min='1'
+              step='1'
+            />
+          </div>
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Unit Sale Amount
+            </label>
+            <input
+              type='number'
+              name='salePrice'
+              value={formData.salePrice}
+              onChange={handleChange}
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              required
+              min='1'
+              step='1'
+            />
+          </div>
+
+          <div className='flex items-center justify-end'>
+            <button
+              type='button'
+              onClick={editModalSetting}
+              className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2'
+            >
+              Cancel
+            </button>
+            <button
+              type='submit'
+              className='bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Updating...' : 'Update Purchase'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
