@@ -12,7 +12,6 @@ export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [sales, setSales] = useState([]);
-  const [products, setAllProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -28,7 +27,6 @@ export default function Sales() {
 
   useEffect(() => {
     fetchSales();
-    fetchProductsData();
   }, [currentPage, category, searchTerm, limit]);
 
   const handleCategoryChange = (e) => {
@@ -76,32 +74,6 @@ export default function Sales() {
       setError(err.message);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchProductsData = async () => {
-    try {
-      let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true`;
-
-      if (user.role === 'receptionist') {
-        baseUrl += '&category=sunglasses,frame, glass, drug';
-      } else if (user.role === 'pharmacist' || user.role === 'admin') {
-        baseUrl += '&category=drug';
-      }
-
-      const response = await fetch(baseUrl, {
-        credentials: 'include',
-        method: 'GET',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setAllProducts(data.data.results);
-    } catch (err) {
-      console.error('Error fetching products:', err);
     }
   };
 
@@ -200,7 +172,6 @@ export default function Sales() {
               {showSaleModal && (
                 <AddSale
                   addSaleModalSetting={addSaleModalSetting}
-                  products={products}
                   handlePageUpdate={fetchSales}
                 />
               )}
@@ -233,6 +204,12 @@ export default function Sales() {
                       className='px-6 py-3 font-bold tracking-wider'
                     >
                       Sale Price
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3 font-bold tracking-wider'
+                    >
+                      Category
                     </th>
                     <th
                       scope='col'
@@ -275,6 +252,9 @@ export default function Sales() {
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.productRefId?.salePrice}
+                        </td>
+                        <td className='px-6 py-4 whitespace-nowrap'>
+                          {sale.category}
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap'>
                           {sale.date.split('T')[0]}

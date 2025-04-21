@@ -15,7 +15,16 @@ const ProductSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    description: String,
+    minLevel:{
+      type: Number,
+      required: [true, 'Pharmacy product must have a minimum level'],
+      min: 0,
+    },
+    expireNotifyDuration: {
+      type: Number,
+      required: [true, 'Pharmacy product must have an expiry notify duration'],
+      min: 0,
+    },
     category: {
       type: String,
       enum: ['drug', 'sunglasses', 'glass', 'frame'],

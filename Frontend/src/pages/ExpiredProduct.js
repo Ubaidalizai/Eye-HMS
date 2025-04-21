@@ -23,9 +23,8 @@ const ExpiredProduct = () => {
       const res = await axios.get(`${BASE_URL}/inventory/product/expire`, {
         withCredentials: true,
       });
-
-      if (res.status === 200 && res?.data?.length > 0) {
-        setExpiredProducts(res?.data?.data?.expiredItems);
+      if (res?.data?.length > 0) {
+        setExpiredProducts(res?.data?.expiringSoon);
       }
     } catch (error) {
       console.error('Error fetching expired products', error);
@@ -40,7 +39,7 @@ const ExpiredProduct = () => {
       });
 
       if (res.status === 200 && res?.data?.length > 0) {
-        setExpiredDrugs(res?.data?.data?.expiredItems);
+        setExpiredDrugs(res?.data?.expiringSoon);
       }
     } catch (error) {
       console.error('Error fetching expired drugs', error);
@@ -56,13 +55,16 @@ const ExpiredProduct = () => {
           {expiredProducts.length === 0 ? (
             <p>No expired products available.</p>
           ) : (
-            <table className='min-w-full border-collapse border border-gray-300 mb-8'>
+            <table className='min-w-full border-collapse border border-gray-300 mb-8 text-left'>
               <thead>
                 <tr className='bg-gray-200'>
                   <th className='border border-gray-300 p-2'>Product</th>
                   <th className='border border-gray-300 p-2'>Manufacturer</th>
                   <th className='border border-gray-300 p-2'>Stock</th>
                   <th className='border border-gray-300 p-2'>Category</th>
+                  <th className='border border-gray-300 p-2'>
+                    Expiry duration
+                  </th>
                   <th className='border border-gray-300 p-2'>Expiry Date</th>
                   <th className='border border-gray-300 p-2'>Description</th>
                 </tr>
@@ -81,6 +83,9 @@ const ExpiredProduct = () => {
                     </td>
                     <td className='border border-gray-300 p-2'>
                       {product.category}
+                    </td>
+                    <td className='border border-gray-300 p-2'>
+                      {product.expireNotifyDuration} days
                     </td>
                     <td className='border border-gray-300 p-2'>
                       {product.expiryDate.split('T')[0]}

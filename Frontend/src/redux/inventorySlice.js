@@ -4,12 +4,22 @@ import { BASE_URL } from '../config';
 export const moveItemAPI = createAsyncThunk(
   'inventory/moveItem',
   async ({ item, quantity }) => {
-    const { name, manufacturer, category, salePrice, expiryDate } = item;
+    const {
+      name,
+      manufacturer,
+      category,
+      salePrice,
+      minLevel,
+      expireNotifyDuration,
+      expiryDate,
+    } = item;
     const payload = {
       name,
       manufacturer,
       quantity,
       salePrice,
+      minLevel,
+      expireNotifyDuration,
       category,
       expiryDate,
     };

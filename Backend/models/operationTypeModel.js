@@ -4,9 +4,15 @@ const operationTypeSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Operation type name is required'],
+      required: [true, 'Name is required'],
       unique: true,
       trim: true,
+    },
+    type: {
+      type: String,
+      required: [true, 'Type is required'],
+      enum: ['operation', 'oct', 'biscayne'],
+      default: 'operation',
     },
     price: {
       type: Number,

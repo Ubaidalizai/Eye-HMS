@@ -67,6 +67,20 @@ const resizeUserPhoto = asyncHandler(async (req, res, next) => {
   next();
 });
 
+// Function to delete old images
+const deleteOldImage = (imagePath, subdirectory = 'users') => {
+  if (imagePath) {
+    const fullPath = path.join(
+      __dirname,
+      `../public/img/${subdirectory}`,
+      imagePath
+    );
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+  }
+};
+
 const updateUserPhoto = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user._id,
@@ -107,7 +121,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     phoneNumber,
     role,
-    image: req.file ? req.file.filename : null,
+    image: req.file ? req?.file?.filename : null,
   });
 
   try {
@@ -189,6 +203,14 @@ const updateUserById = asyncHandler(async (req, res, next) => {
     req.body;
 
   const user = await User.findById(id);
+  if (!user) {
+    throw new AppError('User not found!', 404);
+  }
+
+  // Delete old image if new one is uploaded and an old one exists
+  if (req.file && user.image) {
+    deleteOldImage(user.image, 'users');
+  }
 
   if (user) {
     user.firstName = firstName || user.firstName;
@@ -197,6 +219,7 @@ const updateUserById = asyncHandler(async (req, res, next) => {
     user.phoneNumber = phoneNumber || user.phoneNumber;
     user.role = role || user.role;
     user.percentage = percentage || user.percentage;
+    user.image = req?.file?.filename || user.image;
 
     const updatedUser = await user.save();
     res.status(200).json({
@@ -224,6 +247,7 @@ const deleteUserByID = asyncHandler(async (req, res, next) => {
       throw new AppError('Cannot delete user as admin!', 400);
     }
 
+    deleteOldImage(user.image, 'users');
     await User.deleteOne({ _id: user._id });
     res.status(204).json({ message: 'User removed successfully' });
   } else {

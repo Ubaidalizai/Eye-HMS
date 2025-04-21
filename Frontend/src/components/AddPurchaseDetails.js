@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import Select from 'react-select';
 import { BASE_URL } from '../config';
 
 export default function AddPurchaseDetails({
@@ -16,7 +17,6 @@ export default function AddPurchaseDetails({
     date: '',
     unitPurchaseAmount: '',
     salePrice: '',
-    category: '',
     expiryDate: '',
   });
   const [errors, setErrors] = useState({});
@@ -69,6 +69,7 @@ export default function AddPurchaseDetails({
     if (purchase.salePrice && parseFloat(purchase.salePrice) <= 0)
       formErrors.salePrice = 'Sale price must be positive';
     if (!purchase.date) formErrors.date = 'Purchase date is required';
+    if (!purchase.expiryDate) formErrors.expiryDate = 'Expiry date is required';
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
@@ -117,6 +118,12 @@ export default function AddPurchaseDetails({
     }
   };
 
+  // Convert product list to react-select options
+  const productOptions = products.map((product) => ({
+    value: product._id,
+    label: product.name,
+  }));
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -162,15 +169,49 @@ export default function AddPurchaseDetails({
                         <div className='grid gap-4 mt-6 sm:grid-cols-2'>
                           <div className='flex items-start flex-col'>
                             <label
+                              htmlFor='productID'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                            >
+                              Product Name
+                            </label>
+
+                            <div className='w-[12rem]'>
+                              <Select
+                                id='productID'
+                                name='productID'
+                                options={productOptions}
+                                value={productOptions.find(
+                                  (option) =>
+                                    option.value === purchase.productID
+                                )}
+                                onChange={(selectedOption) =>
+                                  handleInputChange(
+                                    'productID',
+                                    selectedOption ? selectedOption.value : ''
+                                  )
+                                }
+                                isClearable
+                                placeholder='Select Product...'
+                              />
+                            </div>
+
+                            {errors.productID && (
+                              <p className='text-red-500 text-xs mt-1'>
+                                {errors.productID}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className='flex items-start flex-col'>
+                            <label
                               htmlFor='category'
                               className='block mb-2 text-sm font-medium text-gray-900'
                             >
-                              Category
+                              Category (!Optional)
                             </label>
                             <select
                               id='category'
                               name='category'
-                              value={purchase.category}
                               onChange={(e) => {
                                 handleInputChange('category', e.target.value);
                                 setProductCatagory(e.target.value);
@@ -178,42 +219,12 @@ export default function AddPurchaseDetails({
                               }}
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
                             >
-                              <option value=''>Select a category</option>
+                              <option value=''>Filter by Category</option>
                               <option value='drug'>Drug</option>
                               <option value='sunglasses'>sunglasses</option>
                               <option value='glass'>Glass</option>
                               <option value='frame'>frame</option>
                             </select>
-                          </div>
-
-                          <div className='flex items-start flex-col'>
-                            <label
-                              htmlFor='productID'
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                            >
-                              Product Name
-                            </label>
-                            <select
-                              id='productID'
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-[12rem] p-2.5 dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              name='productID'
-                              value={purchase.productID}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                            >
-                              <option value=''>Select Products</option>
-                              {products.map((element) => (
-                                <option key={element._id} value={element._id}>
-                                  {element.name}
-                                </option>
-                              ))}
-                            </select>
-                            {errors.productID && (
-                              <p className='text-red-500 text-xs mt-1'>
-                                {errors.productID}
-                              </p>
-                            )}
                           </div>
 
                           <div className='flex items-start flex-col'>
