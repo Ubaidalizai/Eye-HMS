@@ -66,7 +66,6 @@ function Inventory() {
         }
       );
       const data = await response.json();
-      console.log(data);
       setSummary(data);
     } catch (err) {
       console.log(err);
@@ -437,6 +436,12 @@ function Inventory() {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
+                      Expiry Date
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
                       Purchase
                     </th>
                     <th
@@ -485,6 +490,9 @@ function Inventory() {
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                         {item.expireNotifyDuration} days
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
+                        {item.expiryDate?.split('T')[0]}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                         {item.purchasePrice}
@@ -582,7 +590,9 @@ function Inventory() {
                         Enter the quantity and sale price to move this item.
                       </p>
                       <div className='mt-4'>
+                        <label htmlFor='quality'>Quantity</label>
                         <input
+                          id='quantity'
                           type='number'
                           className='border border-gray-300 p-2 rounded w-full'
                           placeholder='Quantity'
@@ -591,12 +601,14 @@ function Inventory() {
                         />
                       </div>
                       <div className='mt-4'>
+                        <label htmlFor='quality'>Sale Price</label>
                         <input
                           type='text'
                           className='border border-gray-300 p-2 rounded w-full'
                           placeholder='Sale Price'
                           value={salePrice}
                           onChange={(e) => setSalePrice(e.target.value)}
+                          disabled
                         />
                       </div>
                     </div>

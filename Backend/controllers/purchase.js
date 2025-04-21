@@ -5,6 +5,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError'); // Custom error handler
 const getAll = require('./handleFactory');
 const mongoose = require('mongoose');
+const validateMongoDBId = require('../utils/validateMongoDBId');
 
 const {
   getDateRangeForYear,
@@ -142,7 +143,6 @@ const addPurchase = asyncHandler(async (req, res) => {
     date,
     unitPurchaseAmount,
     salePrice,
-    category,
     expiryDate,
   } = req.body;
 
@@ -153,21 +153,38 @@ const addPurchase = asyncHandler(async (req, res) => {
     !date ||
     !unitPurchaseAmount ||
     !salePrice ||
-    !category ||
     !expiryDate
   ) {
     throw new AppError('All fields are required.', 400);
   }
 
-  // Validate MongoDB product ID
+  if (QuantityPurchased <= 0 || unitPurchaseAmount < 0 || salePrice < 0) {
+    throw new AppError('Invalid purchase data values.', 400);
+  }
+
   validateMongoDBId(productID);
 
-  // Start a transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Step 1: Create a new Purchase entry
+    // Step 1: Check and update the product
+    const product = await Product.findById(productID).session(session);
+    if (!product) {
+      throw new AppError('Product not found', 404);
+    }
+
+    // Update product values
+    product.stock += Number(QuantityPurchased);
+    product.purchasePrice = Number(unitPurchaseAmount);
+    product.salePrice = Number(salePrice);
+    product.expiryDate = expiryDate;
+
+    await product.save({ session });
+
+    // Step 2: Create purchase with calculated total
+    const TotalPurchaseAmount = unitPurchaseAmount * QuantityPurchased;
+
     const purchaseDetails = await Purchase.create(
       [
         {
@@ -177,41 +194,26 @@ const addPurchase = asyncHandler(async (req, res) => {
           salePrice,
           date,
           UnitPurchaseAmount: unitPurchaseAmount,
-          category,
+          category: product.category,
+          TotalPurchaseAmount,
+          expiryDate,
         },
       ],
       { session }
     );
 
-    // Step 2: Update product stock after purchase
-    const product = await Product.findById(productID).session(session);
-    if (!product) {
-      throw new AppError('Product not found', 404);
-    }
-
-    product.stock += Number(QuantityPurchased);
-    product.purchasePrice = Number(unitPurchaseAmount);
-    product.salePrice = Number(salePrice);
-    product.expiryDate = expiryDate;
-    await product.save({ session });
-
-    // Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Step 3: Send success response
     res.status(200).json({
       status: 'success',
       message: 'Purchase added successfully.',
       data: { purchaseDetails },
     });
   } catch (error) {
-    // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
     console.error('Error adding purchase:', error);
-
-    // Re-throw the error to trigger the error handler
     throw new AppError('Failed to add purchase. Transaction rolled back.', 500);
   }
 });
@@ -251,18 +253,89 @@ const getTotalPurchaseAmount = asyncHandler(async (req, res) => {
   });
 });
 
-// Helper function to validate MongoDB ID
-const validateMongoDBId = (id) => {
-  return mongoose.Types.ObjectId.isValid(id);
-};
+const editPurchase = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDBId(id);
+
+  const { QuantityPurchased, UnitPurchaseAmount, salePrice, date, expiryDate } =
+    req.body;
+  if (
+    QuantityPurchased === undefined ||
+    UnitPurchaseAmount === undefined ||
+    salePrice === undefined ||
+    !date ||
+    !expiryDate
+  ) {
+    throw new AppError('All fields are required for update.', 400);
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Find the purchase to be edited
+    const existingPurchase = await Purchase.findById(id).session(session);
+    if (!existingPurchase) {
+      throw new AppError('Purchase not found', 404);
+    }
+
+    const product = await Product.findById(existingPurchase.ProductID).session(
+      session
+    );
+    if (!product) throw new AppError('Product not found', 404);
+
+    // Calculate net change
+    const delta = QuantityPurchased - existingPurchase.QuantityPurchased;
+
+    // Prevent negative stock
+    if (product.stock + delta < 0) {
+      throw new AppError(
+        `Insufficient stock. Current stock is ${
+          product.stock
+        }, cannot reduce by ${-delta}.`,
+        400
+      );
+    }
+
+    // Apply only the difference
+    product.stock += delta;
+    product.purchasePrice = UnitPurchaseAmount;
+    product.salePrice = salePrice;
+    product.expiryDate = expiryDate;
+    await product.save({ session });
+
+    // Update purchase
+    existingPurchase.QuantityPurchased = QuantityPurchased;
+    existingPurchase.UnitPurchaseAmount = UnitPurchaseAmount;
+    existingPurchase.salePrice = salePrice;
+    existingPurchase.date = date;
+    existingPurchase.expiryDate = expiryDate;
+    existingPurchase.TotalPurchaseAmount =
+      QuantityPurchased * UnitPurchaseAmount;
+    await existingPurchase.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Purchase updated successfully.',
+      data: existingPurchase,
+    });
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Edit purchase failed:', err);
+    throw new AppError(
+      'Failed to update purchase. Transaction rolled back.',
+      500
+    );
+  }
+});
 
 const deletePurchase = asyncHandler(async (req, res, next) => {
   const id = req.params.id;
-
-  // Validate MongoDB ID
-  if (!validateMongoDBId(id)) {
-    return next(new AppError('Invalid purchase ID.', 400));
-  }
+  validateMongoDBId(id);
 
   // Start a transaction session
   const session = await mongoose.startSession();
@@ -313,8 +386,10 @@ const deletePurchase = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(
-      new AppError('Failed to delete purchase. Transaction rolled back.', 500)
+
+    throw new AppError(
+      'Failed to delete purchase. Transaction rolled back.',
+      500
     );
   }
 });
@@ -325,6 +400,7 @@ module.exports = {
   addPurchase,
   getPurchaseData,
   getTotalPurchaseAmount,
+  editPurchase,
   deletePurchase,
   getPurchesCategoryTotal,
 };

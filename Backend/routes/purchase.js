@@ -16,6 +16,9 @@ router.get('/:year', purchase.filterPurchasesByYear);
 
 router.route('/').get(purchase.getPurchaseData).post(purchase.addPurchase);
 
-router.route('/:id').delete(purchase.deletePurchase);
+router
+  .route('/:id')
+  .patch(purchase.editPurchase)
+  .delete(purchase.deletePurchase);
 
 module.exports = router;
