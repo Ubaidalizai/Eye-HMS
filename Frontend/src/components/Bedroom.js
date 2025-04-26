@@ -10,6 +10,8 @@ function Bedroom() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [doctor, setDoctor] = useState('');
+  const [types, setTypes] = useState('');
+  const [type, setType] = useState('');
   const [bedroomDoctors, setBedroomDoctors] = useState('');
   const [discount, setDiscount] = useState(0);
   const [submittedData, setSubmittedData] = useState([]);
@@ -23,6 +25,7 @@ function Bedroom() {
   useEffect(() => {
     fetchData();
     fetchBedroomDoctors();
+    fetchTypes();
   }, [currentPage, limit]);
 
   const fetchData = async () => {
@@ -39,6 +42,20 @@ function Bedroom() {
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const fetchTypes = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/operation-types?type=bedroom`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch data');
+      const data = await response.json();
+      setTypes(data.data);
+    } catch (error) {
+      console.error('Error fetching bedroom types:', error);
     }
   };
 
@@ -88,6 +105,7 @@ function Bedroom() {
     setPatientId('');
     setTime('');
     setDate('');
+    setType('');
     setDoctor('');
     setDiscount(0);
     setEditMode(false);
@@ -101,6 +119,7 @@ function Bedroom() {
       time: recordToEdit.time || '',
       date: recordToEdit.date || '',
       doctor: recordToEdit.doctor || '',
+      type: recordToEdit.type || '',
       discount: recordToEdit.discount || 0,
     });
     setEditMode(true);
@@ -140,6 +159,17 @@ function Bedroom() {
         : [],
       name: 'doctor',
     },
+    {
+      label: 'Type',
+      type: 'select',
+      options: Array.isArray(types)
+        ? types.map((types) => ({
+            label: types.name,
+            value: types._id,
+          }))
+        : [],
+      name: 'type',
+    },
     { label: 'Discount', type: 'number', name: 'discount' },
   ];
 
@@ -150,10 +180,18 @@ function Bedroom() {
   ];
   const AllFields = [...fields, ...dataTableFields];
 
-  const fieldValues = { patientId, time, date, doctor, discount };
-  const setFieldValues = ({ patientId, time, date, doctor, discount }) => {
+  const fieldValues = { patientId, time, type, date, doctor, discount };
+  const setFieldValues = ({
+    patientId,
+    time,
+    type,
+    date,
+    doctor,
+    discount,
+  }) => {
     setPatientId(patientId);
     setTime(time);
+    setType(type);
     setDate(date);
     setDoctor(doctor);
     setDiscount(discount);

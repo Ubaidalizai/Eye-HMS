@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Bar } from "react-chartjs-2";
-import { HiSearch } from "react-icons/hi";
+import React, { useState, useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Bar } from 'react-chartjs-2';
+import { HiSearch } from 'react-icons/hi';
 
 import {
   Chart as ChartJS,
@@ -12,11 +12,11 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from "chart.js";
+} from 'chart.js';
 
-import { FaPlus, FaRegEdit, FaTrash } from "react-icons/fa";
-import Pagination from "../components/Pagination";
-import { BASE_URL } from "../config";
+import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
+import Pagination from '../components/Pagination';
+import { BASE_URL } from '../config';
 
 // Register Chart.js components
 ChartJS.register(
@@ -29,49 +29,50 @@ ChartJS.register(
 );
 
 const monthLabels = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 const API_BASE_URL = `${BASE_URL}/patient`;
 
 export default function PatientManagement() {
   const [patients, setPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPatient, setCurrentPatient] = useState(null);
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    contact: "",
-    patientID: "",
-    date: "",
-    patientGender: "",
-    insuranceContact: "",
+    name: '',
+    fatherName: '',
+    age: '',
+    contact: '',
+    patientID: '',
+    date: '',
+    patientGender: '',
+    insuranceContact: '',
   });
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
-  const [summaryType, setSummaryType] = useState("monthly");
+  const [summaryType, setSummaryType] = useState('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
 
   useEffect(() => {
-    if (summaryType === "monthly") {
+    if (summaryType === 'monthly') {
       fetchMonthlyPatients();
     } else {
       fetchYearlyPatients();
@@ -92,7 +93,7 @@ export default function PatientManagement() {
       const response = await fetch(
         `${API_BASE_URL}?fieldName=name&searchTerm=${searchTerm}&page=${currentPage}&limit=${limit}`,
         {
-          credentials: "include",
+          credentials: 'include',
         }
       );
       const data = await response.json();
@@ -104,7 +105,7 @@ export default function PatientManagement() {
       setTotalPages(data.totalPages || Math.ceil(data.data.total / limit));
     } catch (error) {
       toast.error(`${error}`, {
-        position: "top-right",
+        position: 'top-right',
         autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -121,8 +122,8 @@ export default function PatientManagement() {
       const response = await fetch(
         `${BASE_URL}/patient/${selectedYear}/${selectedMonth}`,
         {
-          method: "GET",
-          credentials: "include",
+          method: 'GET',
+          credentials: 'include',
         }
       );
 
@@ -140,8 +141,8 @@ export default function PatientManagement() {
   const fetchYearlyPatients = async () => {
     try {
       const response = await fetch(`${BASE_URL}/patient/${selectedYear}`, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -164,21 +165,21 @@ export default function PatientManagement() {
     setIsAddButtonDisabled(true);
 
     try {
-      const method = currentPatient ? "PATCH" : "POST";
+      const method = currentPatient ? 'PATCH' : 'POST';
       const url = currentPatient
         ? `${API_BASE_URL}/${currentPatient._id}`
         : API_BASE_URL;
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
-        credentials: "include",
+        credentials: 'include',
       });
 
       if (!response.ok) {
         // Attempt to parse error message from backend
-        let errorMessage = "Failed to add Patient";
+        let errorMessage = 'Failed to add Patient';
         try {
           const errorResponse = await response.json();
           errorMessage = errorResponse.message || errorMessage;
@@ -190,9 +191,9 @@ export default function PatientManagement() {
 
       const result = await response.json(); // Parse the response if needed
       toast.success(
-        `Patient ${currentPatient ? "updated" : "added"} successfully!`,
+        `Patient ${currentPatient ? 'updated' : 'added'} successfully!`,
         {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -204,9 +205,9 @@ export default function PatientManagement() {
       setIsModalOpen(false); // Close the modal
       fetchPatients(); // Refresh the patients list
     } catch (error) {
-      console.error("Error saving patient:", error.message);
+      console.error('Error saving patient:', error.message);
       toast.error(error.message, {
-        position: "top-right",
+        position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -225,15 +226,15 @@ export default function PatientManagement() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this patient?")) {
+    if (window.confirm('Are you sure you want to delete this patient?')) {
       try {
         const response = await fetch(`${API_BASE_URL}/${id}`, {
-          method: "DELETE",
-          credentials: "include",
+          method: 'DELETE',
+          credentials: 'include',
         });
-        if (!response.ok) throw new Error("Failed to delete patient");
-        toast.success("Patient deleted successfully!", {
-          position: "top-right",
+        if (!response.ok) throw new Error('Failed to delete patient');
+        toast.success('Patient deleted successfully!', {
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -242,8 +243,8 @@ export default function PatientManagement() {
         });
         fetchPatients();
       } catch (error) {
-        toast.error("Failed to delete patient", {
-          position: "top-right",
+        toast.error('Failed to delete patient', {
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -258,63 +259,22 @@ export default function PatientManagement() {
     setCurrentPage(newPage);
   };
 
-  const aggregatePatients = () => {
-    const monthlyData = Array(12).fill(0);
-    const yearlyData = {};
-
-    patients.forEach((patient) => {
-      const date = new Date(patient.date);
-      const amount = parseFloat(patient.amount);
-      const month = date.getMonth(); // Zero-based index
-      const year = date.getFullYear();
-
-      // Aggregate for yearly summary
-      if (summaryType === "yearly") {
-        if (!yearlyData[year]) {
-          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
-        }
-        yearlyData[year][month] += amount; // Sum amount for the respective month
-      }
-
-      // Aggregate for monthly summary
-      if (
-        summaryType === "monthly" &&
-        month + 1 === selectedMonth &&
-        year === selectedYear
-      ) {
-        monthlyData[month] += amount; // Sum amount for the respective day
-      }
-    });
-
-    return summaryType === "yearly" ? yearlyData : monthlyData;
-  };
-
-  const updateSummary = () => {
-    const newSummary = aggregatePatients();
-    setSummary(newSummary);
-  };
-
   const handleSummaryTypeChange = (e) => {
     setSummaryType(e.target.value);
-    updateSummary();
   };
 
   const handleMonthChange = (e) => {
-    const month = Number(e.target.value);
-    setSelectedMonth(month);
-    updateSummary();
+    setSelectedMonth(Number(e.target.value));
   };
 
   const handleYearChange = (e) => {
-    const year = Number(e.target.value);
-    setSelectedYear(year);
-    updateSummary();
+    setSelectedYear(Number(e.target.value));
   };
 
   const getBarChartData = () => {
     let labels, data;
 
-    if (summaryType === "yearly") {
+    if (summaryType === 'yearly') {
       labels = monthLabels; // Month names for the x-axis
       data = summary || Array(12).fill(0); // Use data from the API or zeros
     } else {
@@ -326,10 +286,10 @@ export default function PatientManagement() {
       labels,
       datasets: [
         {
-          label: "Patients",
+          label: 'Patients',
           data,
-          backgroundColor: "rgb(0, 179, 255)",
-          borderColor: "rgb(0, 179, 255)",
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
           borderWidth: 1,
         },
       ],
@@ -358,12 +318,13 @@ export default function PatientManagement() {
             onClick={() => {
               setCurrentPatient(null);
               setFormData({
-                name: "",
-                age: "",
-                contact: "",
-                patientID: "",
-                patientGender: "",
-                insuranceContact: "",
+                name: '',
+                fatherName: '',
+                age: '',
+                contact: '',
+                patientID: '',
+                patientGender: '',
+                insuranceContact: '',
               });
               setIsModalOpen(true);
             }}
@@ -379,6 +340,9 @@ export default function PatientManagement() {
               <tr>
                 <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Name
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Father Name
                 </th>
                 <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Age
@@ -407,25 +371,28 @@ export default function PatientManagement() {
               {patients.map((patient) => (
                 <tr key={patient._id} className='hover:bg-gray-50'>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
-                    {patient.name}
+                    {patient?.name}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
+                    {patient?.fatherName}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.age}
+                    {patient?.age}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.contact}
+                    {patient?.contact}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.patientID}
+                    {patient?.patientID}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.patientGender}
+                    {patient?.patientGender}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.date?.split("T")[0]}
+                    {patient?.date?.split('T')[0]}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.insuranceContact}
+                    {patient?.insuranceContact}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                     <div className='flex space-x-2'>
@@ -462,7 +429,7 @@ export default function PatientManagement() {
         <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
           <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
             <h2 className='text-xl font-bold mb-4 text-gray-600'>
-              {currentPatient ? "Edit Patient" : "Add Patient"}
+              {currentPatient ? 'Edit Patient' : 'Add Patient'}
             </h2>
             <form onSubmit={handleSubmit} className=''>
               <div className='grid grid-cols-2 gap-5'>
@@ -472,6 +439,15 @@ export default function PatientManagement() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder='Name'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                />
+                <input
+                  type='text'
+                  name='fatherName'
+                  value={formData.fatherName}
+                  onChange={handleInputChange}
+                  placeholder='Father Name'
                   className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
                   required
                 />
@@ -492,7 +468,6 @@ export default function PatientManagement() {
                   onChange={handleInputChange}
                   placeholder='Contact'
                   className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
                 />
                 <input
                   type='text'
@@ -544,12 +519,12 @@ export default function PatientManagement() {
                   type='submit'
                   className={`inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
                     isAddButtonDisabled
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700"
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700'
                   }`}
                   disabled={isAddButtonDisabled} // Disable the button
                 >
-                  {currentPatient ? "Update" : "Add"} Patient
+                  {currentPatient ? 'Update' : 'Add'} Patient
                 </button>
               </div>
             </form>
@@ -573,7 +548,7 @@ export default function PatientManagement() {
           </div>
 
           {/* Month Selector */}
-          {summaryType === "monthly" && (
+          {summaryType === 'monthly' && (
             <div className='w-full sm:w-1/5'>
               <select
                 id='month'
@@ -591,7 +566,7 @@ export default function PatientManagement() {
           )}
 
           {/* Year Selector */}
-          {summaryType === "yearly" && (
+          {summaryType === 'yearly' && (
             <div className='w-full sm:w-1/5'>
               <input
                 id='year'
@@ -617,7 +592,7 @@ export default function PatientManagement() {
               responsive: true,
               plugins: {
                 legend: {
-                  position: "top",
+                  position: 'top',
                 },
                 title: {
                   display: true,

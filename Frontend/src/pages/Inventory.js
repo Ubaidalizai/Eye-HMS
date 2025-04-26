@@ -4,6 +4,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { Dialog, Transition } from '@headlessui/react';
 import {
+  FaDollarSign,
   FaTrash,
   FaBoxOpen,
   FaWarehouse,
@@ -213,9 +214,9 @@ function Inventory() {
         <div className='bg-white rounded'>
           <div className='flex flex-wrap justify-between items-center  mt-5'>
             <div className='flex items-center'>
-              <FaBoxOpen className='text-3xl text-blue-500 mr-3' />
+              <FaDollarSign className='text-3xl text-blue-500 mr-3' />
               <div>
-                <p className='text-sm text-gray-500'>Total Value</p>
+                <p className='text-sm text-gray-500'>Total Available Value</p>
                 <p className='text-xl font-semibold'>
                   {summary.totalSalePrice}
                 </p>

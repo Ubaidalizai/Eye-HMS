@@ -13,6 +13,7 @@ const calculatePercentage = require('../utils/calculatePercentage');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
+const operationTypeModel = require('../models/operationTypeModel');
 
 const getBedroomDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -38,7 +39,7 @@ const getBedroomDataByMonth = asyncHandler(async (req, res) => {
 
 // Create a new bedroom
 const createBedroom = asyncHandler(async (req, res, next) => {
-  const { patientId, doctor, time, date, discount } = req.body;
+  const { patientId, doctor, time, type, date, discount } = req.body;
 
   // Start a MongoDB transaction session
   const session = await mongoose.startSession();
@@ -63,24 +64,31 @@ const createBedroom = asyncHandler(async (req, res, next) => {
       throw new AppError('Doctor is not assigned to this branch', 400);
     }
 
-    const doctorPercentage = doctorAssignment.percentage;
-
     // Step 3: Calculate total amount after doctor percentage & discount
-    let totalAmount = doctorAssignment.price;
+    const typeExist = await operationTypeModel.findById(type).session(session);
+    if (!typeExist) {
+      throw new AppError('Bedroom type not found', 403);
+    }
+    // Step 4: Calculate total amount and doctor percentage
+    req.body.totalAmount = typeExist.price;
+    const doctorPercentage = doctorAssignment.percentage;
     let doctorIncome = 0;
 
     if (doctorPercentage > 0) {
       const result = await calculatePercentage(
-        doctorAssignment.price,
+        typeExist.price,
         doctorPercentage
       );
       doctorIncome = result.percentageAmount;
-      totalAmount = result.finalPrice;
+      req.body.totalAmount = result.finalPrice;
     }
 
     if (discount > 0) {
-      const discountResult = await calculatePercentage(totalAmount, discount);
-      totalAmount = discountResult.finalPrice;
+      const discountResult = await calculatePercentage(
+        req.body.totalAmount,
+        discount
+      );
+      req.body.totalAmount = discountResult.finalPrice;
     }
 
     // Step 4: Create Bedroom Record
@@ -88,11 +96,12 @@ const createBedroom = asyncHandler(async (req, res, next) => {
       patientId: patient._id,
       time,
       date,
-      rent: doctorAssignment.price,
+      rent: typeExist.price,
       doctor,
+      type,
       percentage: doctorAssignment.percentage,
       discount,
-      totalAmount,
+      totalAmount: req.body.totalAmount,
     });
     await bedroom.save({ session });
 
@@ -114,14 +123,14 @@ const createBedroom = asyncHandler(async (req, res, next) => {
     }
 
     // Step 6: Create Income Record
-    if (totalAmount > 0) {
+    if (req.body.totalAmount > 0) {
       await Income.create(
         [
           {
             saleId: bedroom._id,
             saleModel: 'bedroomModule',
             date,
-            totalNetIncome: totalAmount,
+            totalNetIncome: req.body.totalAmount,
             category: 'bedroom',
             description: 'Bedroom income',
           },
@@ -154,6 +163,10 @@ const getAllBedrooms = getAll(Bedroom, false, [
   {
     path: 'doctor',
     select: 'firstName lastName percentage',
+  },
+  {
+    path: 'type',
+    select: 'name',
   },
 ]);
 
