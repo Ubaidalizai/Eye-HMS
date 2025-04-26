@@ -72,15 +72,7 @@ const addPatient = asyncHandler(async (req, res) => {
     insuranceContact,
   } = req.body;
 
-  if (
-    !name ||
-    !fatherName ||
-    !age ||
-    !contact ||
-    !patientID ||
-    !patientGender ||
-    !date
-  ) {
+  if (!name || !fatherName || !age || !patientID || !patientGender || !date) {
     throw new AppError('All fields required!', 400);
   }
 

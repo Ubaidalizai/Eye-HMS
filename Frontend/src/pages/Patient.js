@@ -468,7 +468,6 @@ export default function PatientManagement() {
                   onChange={handleInputChange}
                   placeholder='Contact'
                   className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
                 />
                 <input
                   type='text'
