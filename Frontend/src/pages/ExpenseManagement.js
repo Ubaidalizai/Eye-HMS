@@ -366,62 +366,20 @@ const ExpenseManagement = () => {
     }
   };
 
-  const aggregateExpenses = () => {
-    const monthlyData = Array(12).fill(0);
-    const yearlyData = {};
-
-    expenses.forEach((expense) => {
-      const date = new Date(expense.date);
-      const amount = Number.parseFloat(expense.amount);
-      const month = date.getMonth(); // Zero-based index
-      const year = date.getFullYear();
-
-      // Aggregate for yearly summary
-      if (summaryType === 'yearly') {
-        if (!yearlyData[year]) {
-          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
-        }
-        yearlyData[year][month] += amount; // Sum amount for the respective month
-      }
-
-      // Aggregate for monthly summary
-      if (
-        summaryType === 'monthly' &&
-        month + 1 === selectedMonth &&
-        year === selectedYear
-      ) {
-        monthlyData[month] += amount; // Sum amount for the respective day
-      }
-    });
-
-    return summaryType === 'yearly' ? yearlyData : monthlyData;
-  };
-
-  const updateSummary = () => {
-    const newSummary = aggregateExpenses();
-    setSummary(newSummary);
-  };
-
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
-    updateSummary();
   };
 
   const handleSummaryTypeChange = (e) => {
     setSummaryType(e.target.value);
-    updateSummary();
   };
 
   const handleMonthChange = (e) => {
-    const month = Number(e.target.value);
-    setSelectedMonth(month);
-    updateSummary();
+    setSelectedMonth(Number(e.target.value));
   };
 
   const handleYearChange = (e) => {
-    const year = Number(e.target.value);
-    setSelectedYear(year);
-    updateSummary();
+    setSelectedYear(Number(e.target.value));
   };
 
   const getBarChartData = () => {
@@ -526,9 +484,7 @@ const ExpenseManagement = () => {
                         {expense.amount?.toFixed(2) ?? '0.00'}
                       </td>
                       <td className='px-6 py-4'>
-                        {expense.date
-                          ? new Date(expense.date).toLocaleDateString()
-                          : 'N/A'}
+                        {expense.date ? expense.date.split('T')[0] : 'N/A'}
                       </td>
                       <td className='px-6 py-4'>{expense.reason ?? 'N/A'}</td>
                       <td className='px-6 py-4'>{expense.category ?? 'N/A'}</td>

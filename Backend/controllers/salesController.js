@@ -7,6 +7,7 @@ const Purchase = require('../models/purchase');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+const PharmacySalesTotal = require('../models/PharmacySalesTotal');
 
 const validateMongoDBId = require('../utils/validateMongoDBId');
 const {
@@ -115,22 +116,38 @@ const sellItems = asyncHandler(async (req, res, next) => {
       drug.quantity -= quantity;
       await drug.save({ session });
 
-      // Step 5: Create an income record
-      await Income.create(
-        [
-          {
-            saleId: sale[0]._id,
-            saleModel: 'pharmacyModel',
-            date,
-            totalNetIncome: productNetIncome,
-            category,
-            description: `Sale of ${drug.name} (${category})`,
-            userID: req.user._id,
-          },
-        ],
-        { session }
-      );
+      // Step 5: Create an income record if applicable
+      if (productNetIncome > 0) {
+        await Income.create(
+          [
+            {
+              saleId: sale[0]._id,
+              saleModel: 'pharmacyModel',
+              date,
+              totalNetIncome: productNetIncome,
+              category,
+              description: `Sale of ${drug.name} (${category})`,
+              userID: req.user._id,
+            },
+          ],
+          { session }
+        );
+      }
 
+      // Step 6: Update the total sales amount in the singleton document
+      // Step 6: Update the total sales amount in the singleton document
+      let salesTotal = await PharmacySalesTotal.findById('singleton').session(
+        session
+      );
+      if (!salesTotal) {
+        // If it doesn't exist, create a new singleton document with default values
+        salesTotal = new PharmacySalesTotal({
+          _id: 'singleton',
+          totalSalesAmount: 0,
+        });
+      }
+      salesTotal.totalSalesAmount += income;
+      await salesTotal.save({ session });
       // Update response and receipt data
       sales.push(sale[0]);
       totalIncome += income;

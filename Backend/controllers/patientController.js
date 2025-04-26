@@ -63,6 +63,7 @@ const getAllPatients = getAll(Patient);
 const addPatient = asyncHandler(async (req, res) => {
   const {
     name,
+    fatherName,
     age,
     contact,
     patientID,
@@ -71,7 +72,15 @@ const addPatient = asyncHandler(async (req, res) => {
     insuranceContact,
   } = req.body;
 
-  if (!name || !age || !contact || !patientID || !patientGender || !date) {
+  if (
+    !name ||
+    !fatherName ||
+    !age ||
+    !contact ||
+    !patientID ||
+    !patientGender ||
+    !date
+  ) {
     throw new AppError('All fields required!', 400);
   }
 
@@ -86,13 +95,13 @@ const addPatient = asyncHandler(async (req, res) => {
   // Create new patient
   const patient = new Patient({
     name,
+    fatherName,
     age,
     contact,
     patientID,
     patientGender,
     date,
     insuranceContact,
-    prescriptions: [], // Start with empty prescriptions array
   });
 
   const createdPatient = await patient.save();
@@ -109,6 +118,7 @@ const updatePatient = asyncHandler(async (req, res) => {
 
   const {
     name,
+    fatherName,
     age,
     contact,
     patientID,
@@ -125,6 +135,7 @@ const updatePatient = asyncHandler(async (req, res) => {
   }
 
   patient.name = name || patient.name;
+  patient.fatherName = fatherName || patient.fatherName;
   patient.age = age || patient.age;
   patient.contact = contact || patient.contact;
   patient.patientID = patientID || patient.patientID;

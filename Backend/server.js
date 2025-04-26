@@ -3,7 +3,7 @@ const dotenv = require('dotenv').config();
 const connectDB = require('./config/db');
 
 process.on('uncaughtException', (err) => {
-  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+  console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...', err);
   console.log(err.name, err.message);
   process.exit(1);
 });

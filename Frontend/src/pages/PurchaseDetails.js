@@ -177,13 +177,13 @@ function PurchaseDetails() {
               </button>
             </div>
           </div>
-          <div>
+          <div className='overflow-x-auto'>
             {isLoading ? (
               <div className='text-center py-4'>Loading...</div>
             ) : error ? (
               <div className='text-center py-4 text-red-600'>{error}</div>
             ) : (
-              <table className='w-full text-sm text-left text-gray-500'>
+              <table className='min-w-[1000px] w-full text-sm text-left text-gray-500'>
                 <thead className='bg-gray-50'>
                   <tr>
                     <th

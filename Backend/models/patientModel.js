@@ -6,13 +6,16 @@ const patientSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    fatherName: {
+      type: String,
+      required: true,
+    },
     age: {
       type: Number,
       required: true,
     },
     contact: {
       type: String,
-      required: true,
     },
     patientID: {
       type: String,
@@ -22,6 +25,7 @@ const patientSchema = new mongoose.Schema(
     date: {
       type: Date,
       required: true,
+      default: Date.now(),
     },
     patientGender: {
       type: String,
@@ -29,12 +33,6 @@ const patientSchema = new mongoose.Schema(
       required: true,
     },
     insuranceContact: String,
-    prescriptions: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Prescription',
-      },
-    ], // Prescriptions will be added later
   },
   { timestamps: true }
 );

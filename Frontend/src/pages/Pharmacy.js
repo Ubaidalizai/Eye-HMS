@@ -1,16 +1,56 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import {
+  FaDollarSign,
   FaBoxOpen,
+  FaBoxes,
   FaExclamationTriangle,
   FaEdit,
   FaTrash,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FcSalesPerformance } from 'react-icons/fc';
 import Pagination from '../components/Pagination';
+import MoveSalesToLog from '../components/MoveSalesToLog';
+
 import { BASE_URL } from '../config';
+
+import { Bar } from 'react-chartjs-2';
+
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
+
+const monthLabels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 //Custom Modal/Dialog Component
 const Modal = ({ open, onClose, children }) => {
@@ -46,10 +86,22 @@ const Pharmacy = () => {
   const [minLevel, setMinLevel] = useState(0);
   const [expireNotifyDuration, setExpireNotifyDuration] = useState(0);
 
+  const [summaryType, setSummaryType] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState([]);
+  const [pharmacySaleTotal, setPharmacySaleTotal] = useState(0);
+
   useEffect(() => {
+    if (summaryType === 'monthly') {
+      fetchMonthlySales();
+    } else {
+      fetchYearlySales();
+    }
+    fetchPharmacySaleTotal();
     fetchData();
     fetchDrugsSummary();
-  }, [category, currentPage, limit]);
+  }, [selectedYear, selectedMonth, category, currentPage, limit, summaryType]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -83,6 +135,64 @@ const Pharmacy = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPharmacySaleTotal = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/pharmacyTotal`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      setPharmacySaleTotal(data.totalSalesAmount);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchMonthlySales = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/sales/${selectedYear}/${selectedMonth}?category=${category}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlySales = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/sales/${selectedYear}?category=${category}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -197,6 +307,43 @@ const Pharmacy = () => {
     setCurrentPage(1);
   };
 
+  const handleSummaryTypeChange = (e) => {
+    setSummaryType(e.target.value);
+  };
+
+  const handleMonthChange = (e) => {
+    setSelectedMonth(Number(e.target.value));
+  };
+
+  const handleYearChange = (e) => {
+    setSelectedYear(Number(e.target.value));
+  };
+
+  const getBarChartData = () => {
+    let labels, data;
+
+    if (summaryType === 'yearly') {
+      labels = monthLabels; // Month names for the x-axis
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
+    } else {
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Pharmacy-Sales',
+          data,
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
   if (loading) {
     return (
       <div className='flex items-center justify-center h-screen bg-gray-100'>
@@ -251,12 +398,12 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FcSalesPerformance />
+                        <FaDollarSign />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Total Price
+                            Total Available Value
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugSummary.totalSalePrice}
@@ -288,7 +435,9 @@ const Pharmacy = () => {
                 <div className='bg-green-100 overflow-hidden shadow rounded-lg'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
-                      <div className='flex-shrink-0 bg-green-500 rounded-md p-3'></div>
+                      <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
+                        <FaBoxes className='h-6 w-6 text-white' />
+                      </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
@@ -321,10 +470,30 @@ const Pharmacy = () => {
                     </div>
                   </div>
                 </div>
+                <div className='bg-yellow-100 overflow-hidden shadow rounded-lg'>
+                  <div className='px-4 py-5 sm:p-6'>
+                    <div className='flex items-center'>
+                      <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
+                        <FaDollarSign className='h-6 w-6 text-white' />
+                      </div>
+                      <div className='ml-5 w-0 flex-1'>
+                        <dl>
+                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                            Total Sale Amount
+                          </dt>
+                          <dd className='text-lg font-medium text-gray-900'>
+                            {pharmacySaleTotal}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
             <div className='overflow-x-auto rounded-lg shadow-md'>
-              <div className='flex flex-row items-center justify-center gap-3'>
+              <div className='flex flex-row items-center justify-end p-4'>
                 <label htmlFor='category' className='sr-only'>
                   Category
                 </label>
@@ -334,7 +503,7 @@ const Pharmacy = () => {
                     name='category'
                     value={category}
                     onChange={handleCategoryChange}
-                    className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                    className='block w-64 width-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
                   >
                     <option value=''>All Categories</option>
                     <option value='drug'>Drug</option>
@@ -525,6 +694,82 @@ const Pharmacy = () => {
           Update
         </button>
       </Modal>
+
+      <div className='mt-10 flex flex-col gap-6'>
+        <div className='flex gap-4'>
+          {/* Summary Type Selector */}
+          <div className='w-full sm:w-1/5'>
+            <select
+              id='summaryType'
+              className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+              onChange={handleSummaryTypeChange}
+              value={summaryType}
+            >
+              <option value='monthly'>Monthly Summary</option>
+              <option value='yearly'>Yearly Summary</option>
+            </select>
+          </div>
+
+          {/* Month Selector */}
+          {summaryType === 'monthly' && (
+            <div className='w-full sm:w-1/5'>
+              <select
+                id='month'
+                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                onChange={handleMonthChange}
+                value={selectedMonth}
+              >
+                {monthLabels.map((label, index) => (
+                  <option key={index} value={index + 1}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Year Selector */}
+          {summaryType === 'yearly' && (
+            <div className='w-full sm:w-1/5'>
+              <input
+                id='year'
+                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                type='number'
+                value={selectedYear}
+                onChange={handleYearChange}
+                min='2000'
+                max={new Date().getFullYear()}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Chart Display */}
+        <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
+          <h2 className='mb-4 text-lg font-semibold text-gray-800'>
+            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
+          </h2>
+          <Bar
+            data={getBarChartData()}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: `${
+                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+                  } Summary for ${category || 'All Categories'}`,
+                },
+              },
+            }}
+          />
+        </div>
+      </div>
+
+      <MoveSalesToLog onTransferSuccess={fetchPharmacySaleTotal} />
     </div>
   );
 };

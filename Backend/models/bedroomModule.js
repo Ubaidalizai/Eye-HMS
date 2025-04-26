@@ -10,6 +10,11 @@ const bedroomSchema = new mongoose.Schema(
     time: { type: String, required: true },
     date: { type: Date, required: true },
     rent: { type: Number, required: true, min: 0 },
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'OperationType',
+      required: true,
+    },
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
