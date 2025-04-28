@@ -19,11 +19,18 @@ const addProduct = asyncHandler(async (req, res, next) => {
   validateMongoDBId(_id);
 
   // Validate required fields
-  const { name, manufacturer, description, category } = req.body;
-  if (!name || !manufacturer || !description || !category) {
+  const { name, manufacturer, minLevel, expireNotifyDuration, category } =
+    req.body;
+  if (
+    !name ||
+    !manufacturer ||
+    !minLevel ||
+    !expireNotifyDuration ||
+    !category
+  ) {
     return next(
       new AppError(
-        'All fields (name, manufacturer, description, category) are required.',
+        'All fields (name, manufacturer, min level, expire notify duration, category) are required.',
         400
       )
     );
@@ -36,7 +43,8 @@ const addProduct = asyncHandler(async (req, res, next) => {
     stock: 0, // Default stock is 0
     purchasePrice: 0, // Default purchase price is 0
     salePrice: 0, // Default sale price is 0
-    description,
+    minLevel,
+    expireNotifyDuration,
     category,
   });
 
@@ -96,7 +104,8 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
       {
         name: req.body.name,
         manufacturer: req.body.manufacturer,
-        description: req.body.description,
+        minLevel: req.body.minLevel,
+        expireNotifyDuration: req.body.expireNotifyDuration,
         category: req.body.category,
       },
       { new: true, session } // Return the updated document and bind the session
@@ -152,40 +161,43 @@ const searchProduct = getAll(Product, true);
 const checkProductExpiry = checkExpiry(Product, 'expiryDate');
 
 // Get Inventory Summary
-const getInventorySummary = async (req, res) => {
-  try {
-    // Total Products Count
-    const totalProductsCount = await Product.countDocuments();
+const getInventorySummary = asyncHandler(async (req, res) => {
+  const { category } = req.query;
+  const matchStage = category ? { category: category } : {};
 
-    // Total Stock
-    const totalStock = await Product.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalStock: { $sum: '$stock' }, // Assuming the stock field is in each product document
-        },
+  // Total Stock
+  const result = await Product.aggregate([
+    { $match: matchStage },
+    {
+      $project: {
+        totalValue: { $multiply: ['$salePrice', '$stock'] },
+        isLowStock: { $cond: [{ $lte: ['$stock', '$minLevel'] }, 1, 0] },
+        stock: 1,
       },
-    ]);
-
-    // Low Stock Count (for example, stock less than 10)
-    const lowStockCount = await Product.countDocuments({ stock: { $lt: 10 } });
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        totalProductsCount,
-        totalStock: totalStock[0]?.totalStock || 0, // Check for empty result
-        lowStockCount,
+    },
+    {
+      $group: {
+        _id: null,
+        totalProductSalesValue: { $sum: '$totalValue' },
+        totalCount: { $sum: 1 },
+        lowStockCount: { $sum: '$isLowStock' },
+        totalStock: { $sum: '$stock' },
       },
-    });
-  } catch (err) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to get inventory summary',
-      error: err.message,
-    });
-  }
-};
+    },
+  ]);
+
+  const totalSalePrice = result[0]?.totalProductSalesValue || 0;
+  const totalCount = result[0]?.totalCount || 0;
+  const lowStockCount = result[0]?.lowStockCount || 0;
+  const totalStock = result[0]?.totalStock || 0;
+
+  res.status(200).json({
+    totalSalePrice,
+    length: totalCount,
+    lowStockCount,
+    totalStock,
+  });
+});
 
 const giveProductExpireByMonth = asyncHandler(async (req, res) => {
   const months = parseInt(req.params.months, 10);

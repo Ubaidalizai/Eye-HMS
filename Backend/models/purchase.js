@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const Product = require('../models/product');
-const User = require('../models/userModel');
 
 const PurchaseSchema = new mongoose.Schema(
   {
@@ -38,15 +36,18 @@ const PurchaseSchema = new mongoose.Schema(
       enum: ['drug', 'sunglasses', 'glass', 'frame'],
       required: true,
     },
+    expiryDate: {
+      type: Date,
+      validate: {
+        validator: function (value) {
+          return value > new Date();
+        },
+        message: 'Expiry date must be in the future',
+      },
+    },
   },
   { timestamps: true }
 );
-
-PurchaseSchema.pre('save', async function (next) {
-  // Generate the total purchase amount
-  this.TotalPurchaseAmount = this.UnitPurchaseAmount * this.QuantityPurchased;
-  next();
-});
 
 const Purchase = mongoose.model('Purchase', PurchaseSchema);
 module.exports = Purchase;

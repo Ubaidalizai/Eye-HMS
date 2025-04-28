@@ -5,7 +5,7 @@ const BASE_URL = 'http://localhost:4000/api/v1'; // Replace with actual API
 
 const OperationTypeManagement = () => {
   const [operationTypes, setOperationTypes] = useState([]);
-  const [formData, setFormData] = useState({ name: '', price: '' });
+  const [formData, setFormData] = useState({ name: '', type: '', price: '' });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +37,7 @@ const OperationTypeManagement = () => {
   //Create or Update an operation type
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.price) {
+    if (!formData.name || !formData.type || !formData.price) {
       alert('Please fill all fields');
       return;
     }
@@ -57,7 +57,7 @@ const OperationTypeManagement = () => {
 
       if (!response.ok) throw new Error('Failed to save operation type');
 
-      setFormData({ name: '', price: '' });
+      setFormData({ name: '', type: '', price: '' });
       setEditingId(null);
       fetchOperationTypes();
     } catch (error) {
@@ -86,14 +86,14 @@ const OperationTypeManagement = () => {
 
   //Set form fields for editing
   const handleEdit = (type) => {
-    setFormData({ name: type.name, price: type.price });
+    setFormData({ name: type.name, type: type.type, price: type.price });
     setEditingId(type._id);
   };
 
   return (
     <div className='p-6 bg-white rounded-lg border mb-10'>
-      <h2 className='text-2xl font-semibold mb-8 text-gray-600'>
-        Operation Types List
+      <h2 className='text-xl font-semibold mb-8 text-gray-600'>
+        Operation Biscayne OCT Price Bedroom type Management
       </h2>
 
       {/* Add / Edit Form */}
@@ -105,11 +105,27 @@ const OperationTypeManagement = () => {
           type='text'
           name='name'
           required
-          placeholder='Operation Type Name'
+          placeholder='Name'
           value={formData.name}
           onChange={handleChange}
           className='p-2 border border-gray-300 rounded'
         />
+        <select
+          type='text'
+          name='type'
+          required
+          value={formData.type}
+          onChange={handleChange}
+          className='p-2 w-52 border border-gray-300 rounded'
+        >
+          <option value='' disabled>
+            Type
+          </option>
+          <option value='operation'>Operation</option>
+          <option value='oct'>OCT</option>
+          <option value='biscayne'>Biscayne</option>
+          <option value='bedroom'>Bedroom</option>
+        </select>
         <input
           type='number'
           name='price'
@@ -136,6 +152,7 @@ const OperationTypeManagement = () => {
           <thead className='bg-gray-200'>
             <tr>
               <th className='border px-4 py-2'>Name</th>
+              <th className='border px-4 py-2'>Type</th>
               <th className='border px-4 py-2'>Price</th>
               <th className='border px-4 py-2'>Actions</th>
             </tr>
@@ -144,6 +161,7 @@ const OperationTypeManagement = () => {
             {operationTypes.map((type) => (
               <tr key={type._id} className='border-t'>
                 <td className='border px-4 py-2'>{type.name}</td>
+                <td className='border px-4 py-2'>{type.type}</td>
                 <td className='border px-4 py-2'>{type.price}</td>
                 <td className='border px-4 py-2'>
                   <button

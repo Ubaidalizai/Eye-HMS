@@ -8,14 +8,16 @@ export default function UpdateProduct({
   updateProductData,
   updateModalSetting,
   onProductUpdate,
-  setUpdatePage, // <-- This prop is passed from Inventory to update the product in the UI
+  setUpdatePage,
 }) {
-  const { _id, name, manufacturer, description, category } = updateProductData;
+  const { _id, name, manufacturer, minLevel, expireNotifyDuration, category } =
+    updateProductData;
   const [product, setProduct] = useState({
     productID: _id,
     name: name,
     manufacturer: manufacturer,
-    description: description,
+    minLevel: minLevel,
+    expireNotifyDuration: expireNotifyDuration,
     category: category, // Initialize category
   });
   const [open, setOpen] = useState(true);
@@ -108,7 +110,7 @@ export default function UpdateProduct({
                           <div>
                             <label
                               htmlFor='name'
-                              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                              className='block mb-2 text-sm font-medium text-gray-900'
                             >
                               Name
                             </label>
@@ -121,7 +123,6 @@ export default function UpdateProduct({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
-                              placeholder='Ex. Apple iMac 27'
                             />
                           </div>
                           <div>
@@ -140,7 +141,42 @@ export default function UpdateProduct({
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
-                              placeholder='Ex. Apple'
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor='minLevel'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                            >
+                              Min-Level
+                            </label>
+                            <input
+                              type='number'
+                              name='minLevel'
+                              id='minLevel'
+                              value={product.minLevel}
+                              onChange={(e) =>
+                                handleInputChange(e.target.name, e.target.value)
+                              }
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor='expireNotifyDuration'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                            >
+                              Expiration Notify Duration
+                            </label>
+                            <input
+                              type='number'
+                              name='expireNotifyDuration'
+                              id='expireNotifyDuration'
+                              value={product.expireNotifyDuration}
+                              onChange={(e) =>
+                                handleInputChange(e.target.name, e.target.value)
+                              }
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
                             />
                           </div>
                           <div>
@@ -165,25 +201,6 @@ export default function UpdateProduct({
                               <option value='frame'>Frame</option>
                               <option value='drug'>Drug</option>
                             </select>
-                          </div>
-                          <div className='sm:col-span-2'>
-                            <label
-                              htmlFor='description'
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                            >
-                              Description
-                            </label>
-                            <textarea
-                              id='description'
-                              rows='5'
-                              name='description'
-                              className='block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500'
-                              placeholder='Write a description...'
-                              value={product.description}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                            />
                           </div>
                         </div>
                       </form>

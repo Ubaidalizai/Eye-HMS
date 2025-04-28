@@ -5,6 +5,7 @@ import DoughnutChart from '../components/DoughnutChart';
 import Filters from '../components/Filters';
 import SummaryCard from '../components/SummaryCard';
 import MoveHistory from './MoveHistory';
+import PharmacyLogs from '../components/PharmacyLogs';
 import { BASE_URL } from '../config';
 
 const API_BASE_URL = `${BASE_URL}`;
@@ -163,6 +164,7 @@ function Dashboard() {
       />
 
       <MoveHistory />
+      <PharmacyLogs />
     </>
   );
 }

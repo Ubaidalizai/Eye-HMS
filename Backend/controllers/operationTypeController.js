@@ -4,25 +4,26 @@ const OperationType = require('../models/operationTypeModel');
 // @desc   Create a new operation type
 // @route  POST /api/v1/operation-types
 const createOperationType = asyncHandler(async (req, res) => {
-  const { name, price } = req.body;
+  const { name, type, price } = req.body;
 
-  if (!name || !price) {
-    throw new Error('Name and Price are required');
+  if (!name || !type || !price) {
+    throw new Error('all fields are required');
   }
 
   const existingType = await OperationType.findOne({ name });
   if (existingType) {
-    throw new Error('Operation type already exists');
+    throw new Error('Record already exists');
   }
 
   const operationType = await OperationType.create({
     name,
+    type,
     price,
   });
 
   res.status(201).json({
     success: true,
-    message: 'Operation Type created successfully',
+    message: 'Record created successfully',
     data: operationType,
   });
 });
@@ -30,7 +31,10 @@ const createOperationType = asyncHandler(async (req, res) => {
 // @desc   Get all operation types
 // @route  GET /api/v1/operation-types
 const getAllOperationTypes = asyncHandler(async (req, res) => {
-  const operationTypes = await OperationType.find({ isDeleted: false });
+  const { type } = req.query;
+  const query = type ? { type } : {}; // Filter by type if provided
+
+  const operationTypes = await OperationType.find(query).select('-__v'); // Exclude __v field
 
   res.status(200).json({
     success: true,
@@ -45,7 +49,7 @@ const getOperationTypeById = asyncHandler(async (req, res) => {
 
   if (!operationType) {
     res.status(404);
-    throw new Error('Operation Type not found');
+    throw new Error('Record not found');
   }
 
   res.status(200).json({ success: true, data: operationType });
@@ -54,22 +58,22 @@ const getOperationTypeById = asyncHandler(async (req, res) => {
 // @desc   Update an operation type
 // @route  PATCH /api/v1/operation-types/:id
 const updateOperationType = asyncHandler(async (req, res) => {
-  const { name, price } = req.body;
+  const { name, type, price } = req.body;
 
   const operationType = await OperationType.findByIdAndUpdate(
     req.params.id,
-    { name, price },
+    { name, type, price },
     { new: true, runValidators: true }
   );
 
   if (!operationType) {
     res.status(404);
-    throw new Error('Operation Type not found');
+    throw new Error('Record not found');
   }
 
   res.status(200).json({
     success: true,
-    message: 'Operation Type updated successfully',
+    message: 'Record updated successfully',
     data: operationType,
   });
 });
@@ -81,8 +85,7 @@ const deleteOperationType = asyncHandler(async (req, res) => {
   if (!operationType) {
     throw new AppError('Operation Type not found', 404);
   }
-  operationType.isDeleted = true; // Soft delete
-  await operationType.save();
+  await operationType.deleteOne(); // hard delete
   res.status(200).json({ message: 'Operation Type marked as deleted' });
 });
 

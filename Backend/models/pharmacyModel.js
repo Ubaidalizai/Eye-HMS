@@ -15,6 +15,16 @@ const pharmacySchema = new mongoose.Schema(
       required: [true, 'Pharmacy product must have a quantity'],
       min: 0,
     },
+    minLevel: {
+      type: Number,
+      required: [true, 'Pharmacy product must have a minimum level'],
+      min: 0,
+    },
+    expireNotifyDuration: {
+      type: Number,
+      required: [true, 'Pharmacy product must have an expiry notify duration'],
+      min: 0,
+    },
     salePrice: {
       type: Number,
       required: [true, 'Pharmacy product must have a sale price'],

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { useState, useEffect, useContext } from 'react';
+import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 import AddPurchaseDetails from '../components/AddPurchaseDetails';
 import AuthContext from '../AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
 import Pagination from '../components/Pagination';
 import { BASE_URL } from '../config';
+import EditPurchaseDetails from '../components/EditPurchaseDetails';
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -18,6 +19,8 @@ function PurchaseDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
 
   const authContext = useContext(AuthContext);
 
@@ -78,6 +81,13 @@ function PurchaseDetails() {
     setPurchaseModal(!showPurchaseModal);
   };
 
+  const editModalSetting = () => {
+    setShowEditModal(!showEditModal);
+    if (showEditModal) {
+      setSelectedPurchase(null);
+    }
+  };
+
   const handleDelete = async (purchaseId) => {
     if (window.confirm('Are you sure you want to delete this purchase?')) {
       try {
@@ -97,6 +107,11 @@ function PurchaseDetails() {
     }
   };
 
+  const handleEdit = (purchase) => {
+    setSelectedPurchase(purchase);
+    setShowEditModal(true);
+  };
+
   return (
     <div className='min-h-screen'>
       <div className='max-w-7xl mx-auto'>
@@ -109,6 +124,14 @@ function PurchaseDetails() {
             products={products}
             handlePageUpdate={fetchPurchaseData}
             authContext={authContext}
+          />
+        )}
+
+        {showEditModal && selectedPurchase && (
+          <EditPurchaseDetails
+            editModalSetting={editModalSetting}
+            purchase={selectedPurchase}
+            handlePageUpdate={fetchPurchaseData}
           />
         )}
 
@@ -143,9 +166,6 @@ function PurchaseDetails() {
                     <option value='glass'>Glass</option>
                     <option value='frame'>Frame</option>
                   </select>
-                  {/* <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
-                    <FaFilter className='h-4 w-4' aria-hidden='true' />
-                  </div> */}
                 </div>
               </div>
               <button
@@ -157,13 +177,13 @@ function PurchaseDetails() {
               </button>
             </div>
           </div>
-          <div>
+          <div className='overflow-x-auto'>
             {isLoading ? (
               <div className='text-center py-4'>Loading...</div>
             ) : error ? (
               <div className='text-center py-4 text-red-600'>{error}</div>
             ) : (
-              <table className='w-full text-sm text-left text-gray-500'>
+              <table className='min-w-[1000px] w-full text-sm text-left text-gray-500'>
                 <thead className='bg-gray-50'>
                   <tr>
                     <th
@@ -182,13 +202,31 @@ function PurchaseDetails() {
                       scope='col'
                       className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
+                      Purchased Category
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                    >
                       Purchase Date
                     </th>
                     <th
                       scope='col'
                       className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
+                      Expiry Date
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                    >
                       Unit Purchase
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                    >
+                      Unit Sale
                     </th>
                     <th
                       scope='col'
@@ -214,6 +252,9 @@ function PurchaseDetails() {
                         {element.QuantityPurchased || 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {element.category || 'N/A'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.date
                           ? new Date(element.date).toLocaleDateString() ===
                             new Date().toLocaleDateString()
@@ -222,8 +263,23 @@ function PurchaseDetails() {
                           : 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {element.expiryDate
+                          ? new Date(
+                              element.expiryDate
+                            ).toLocaleDateString() ===
+                            new Date().toLocaleDateString()
+                            ? 'Today'
+                            : element.expiryDate.split('T')[0]
+                          : 'N/A'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.UnitPurchaseAmount !== undefined
                           ? `${element.UnitPurchaseAmount.toFixed(2)}`
+                          : 'N/A'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {element.salePrice !== undefined
+                          ? `${element.salePrice.toFixed(2)}`
                           : 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
@@ -231,7 +287,14 @@ function PurchaseDetails() {
                           ? `${element.TotalPurchaseAmount.toFixed(2)}`
                           : 'N/A'}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center space-x-2'>
+                        <button
+                          onClick={() => handleEdit(element)}
+                          className='font-medium text-blue-600 hover:text-blue-700'
+                        >
+                          <FaEdit className='w-4 h-4' />
+                        </button>
                         <button
                           onClick={() => handleDelete(element._id)}
                           className='font-medium text-red-600 hover:text-red-700'

@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Select from 'react-select';
 import { Dialog, Transition } from '@headlessui/react';
 import { BillPrintModal } from './BillPrintModal';
 import { BASE_URL } from '../config';
 
-export default function AddSale({
-  addSaleModalSetting,
-  products,
-  handlePageUpdate,
-}) {
+export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
   const [sales, setSales] = useState([
     {
       productRefId: '',
@@ -20,12 +17,39 @@ export default function AddSale({
   const [showBill, setShowBill] = useState(false);
   const [openAddSale, setOpenAddSale] = useState(true); // Controls AddSaleModal
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+  const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
+  const [category, setCatagory] = useState('');
+  const [products, setProducts] = useState([]);
 
   const [soldItems, setSoldItems] = useState({
     date: '',
     totalIncome: 0,
     soldItems: [],
   });
+
+  useEffect(() => {
+    fetchProductsData();
+  }, [category]);
+
+  const fetchProductsData = async () => {
+    try {
+      let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true&category=${category}`;
+
+      const response = await fetch(baseUrl, {
+        credentials: 'include',
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setProducts(data.data.results);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    }
+  };
 
   const handleInputChange = (index, name, value) => {
     setSales((prevSales) =>
@@ -136,27 +160,62 @@ export default function AddSale({
                         className='grid gap-4 mb-4 sm:grid-cols-2'
                       >
                         <div>
+                          <div className='flex items-start flex-col'>
+                            <label
+                              htmlFor='category'
+                              className='block mb-2 text-sm font-medium text-gray-900'
+                            >
+                              Category
+                            </label>
+                            <select
+                              id='category'
+                              name='category'
+                              onChange={(e) => {
+                                setCatagory(e.target.value);
+                              }}
+                              value={category}
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
+                            >
+                              <option value=''>Select a category</option>
+                              <option value='drug'>Drug</option>
+                              <option value='sunglasses'>sunglasses</option>
+                              <option value='glass'>Glass</option>
+                              <option value='frame'>frame</option>
+                            </select>
+                          </div>
                           <label className='block text-sm font-medium'>
                             Product Name
                           </label>
-                          <select
-                            className='bg-gray-50 border rounded-lg text-sm'
-                            value={sale.productRefId}
-                            onChange={(e) =>
+                          <Select
+                            className='basic-single'
+                            classNamePrefix='select'
+                            value={
+                              products.find(
+                                (product) => product._id === sale.productRefId
+                              )
+                                ? {
+                                    value: sale.productRefId,
+                                    label: products.find(
+                                      (product) =>
+                                        product._id === sale.productRefId
+                                    ).name,
+                                  }
+                                : null
+                            }
+                            onChange={(selectedOption) => {
                               handleInputChange(
                                 index,
                                 'productRefId',
-                                e.target.value
-                              )
-                            }
-                          >
-                            <option>Select Product</option>
-                            {products.map((product) => (
-                              <option key={product._id} value={product._id}>
-                                {product.name}
-                              </option>
-                            ))}
-                          </select>
+                                selectedOption ? selectedOption.value : ''
+                              );
+                            }}
+                            options={products.map((product) => ({
+                              value: product._id,
+                              label: product.name,
+                            }))}
+                            placeholder='Search or select product'
+                            isClearable
+                          />
                         </div>
                         <div>
                           <label className='block text-sm font-medium'>
@@ -170,7 +229,7 @@ export default function AddSale({
                               handleInputChange(
                                 index,
                                 'quantity',
-                                parseInt(e.target.value, 10)
+                                Number.parseInt(e.target.value, 10)
                               )
                             }
                             min='1'

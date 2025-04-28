@@ -1,22 +1,79 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import {
-  FaPills,
-  FaGlasses,
+  FaDollarSign,
   FaBoxOpen,
+  FaBoxes,
   FaExclamationTriangle,
+  FaEdit,
   FaTrash,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FcSalesPerformance } from 'react-icons/fc';
 import Pagination from '../components/Pagination';
+import MoveSalesToLog from '../components/MoveSalesToLog';
+
 import { BASE_URL } from '../config';
+
+import { Bar } from 'react-chartjs-2';
+
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
+
+const monthLabels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+//Custom Modal/Dialog Component
+const Modal = ({ open, onClose, children }) => {
+  if (!open) return null;
+  return (
+    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+      <div className='bg-white p-6 rounded shadow-md'>
+        {children}
+        <button
+          onClick={onClose}
+          className='mt-4 bg-red-500 text-white px-3 py-1 rounded '
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
   const [drugs, setDrugs] = useState([]);
-  const [totalSalePrice, setTotalSalePrice] = useState([]);
+  const [drugSummary, setDrugSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
@@ -24,12 +81,27 @@ const Pharmacy = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState(10);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState(null);
+  const [minLevel, setMinLevel] = useState(0);
+  const [expireNotifyDuration, setExpireNotifyDuration] = useState(0);
+
+  const [summaryType, setSummaryType] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState([]);
+  const [pharmacySaleTotal, setPharmacySaleTotal] = useState(0);
 
   useEffect(() => {
+    if (summaryType === 'monthly') {
+      fetchMonthlySales();
+    } else {
+      fetchYearlySales();
+    }
+    fetchPharmacySaleTotal();
     fetchData();
     fetchDrugsSummary();
-  }, [category, currentPage, limit]);
+  }, [selectedYear, selectedMonth, category, currentPage, limit, summaryType]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -66,27 +138,130 @@ const Pharmacy = () => {
     }
   };
 
+  const fetchPharmacySaleTotal = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/pharmacyTotal`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      setPharmacySaleTotal(data.totalSalesAmount);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchMonthlySales = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/sales/${selectedYear}/${selectedMonth}?category=${category}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlySales = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/sales/${selectedYear}?category=${category}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const fetchDrugsSummary = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/pharmacy/drugs-summary`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies for authentication if required
-      });
+      const response = await fetch(
+        `${BASE_URL}/pharmacy/drugs-summary?category=${category}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch drugs summary');
       }
 
       const data = await response.json();
-      setTotalSalePrice(data.totalSalePrice);
+      setDrugSummary(data);
     } catch (err) {
       console.error('Error fetching drugs summary:', err);
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (record) => {
+    setEditingAssignment(record._id);
+    setMinLevel(record.minLevel);
+    setExpireNotifyDuration(record.expireNotifyDuration);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/pharmacy/${editingAssignment}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            minLevel,
+            expireNotifyDuration,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to update doctor assignment';
+        try {
+          const errorResponse = await response.json();
+          errorMessage = errorResponse.message || errorMessage;
+        } catch {
+          errorMessage = await response.text();
+        }
+        throw new Error(errorMessage);
+      }
+
+      fetchData();
+      fetchDrugsSummary();
+      setShowEditModal(false);
+    } catch (err) {
+      console.error('Error assigning doctor:', err);
+      setError(err.message);
     }
   };
 
@@ -100,7 +275,8 @@ const Pharmacy = () => {
 
         if (response.ok) {
           // Refresh the page or fetch updated data
-          setUpdatePage(!updatePage);
+          fetchData();
+          fetchDrugsSummary();
           toast.success('Product deleted successfully');
         } else {
           let errorMessage = 'Failed to delete the drug.';
@@ -129,6 +305,43 @@ const Pharmacy = () => {
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
     setCurrentPage(1);
+  };
+
+  const handleSummaryTypeChange = (e) => {
+    setSummaryType(e.target.value);
+  };
+
+  const handleMonthChange = (e) => {
+    setSelectedMonth(Number(e.target.value));
+  };
+
+  const handleYearChange = (e) => {
+    setSelectedYear(Number(e.target.value));
+  };
+
+  const getBarChartData = () => {
+    let labels, data;
+
+    if (summaryType === 'yearly') {
+      labels = monthLabels; // Month names for the x-axis
+      data = summary || Array(12).fill(0); // Use data from the API or zeros
+    } else {
+      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
+      data = summary || Array(30).fill(0); // Use data from the API or zeros
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Pharmacy-Sales',
+          data,
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
+          borderWidth: 1,
+        },
+      ],
+    };
   };
 
   if (loading) {
@@ -185,15 +398,15 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FcSalesPerformance />
+                        <FaDollarSign />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            sales Price
+                            Total Available Value
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {totalSalePrice}
+                            {drugSummary.totalSalePrice}
                           </dd>
                         </dl>
                       </div>
@@ -209,13 +422,10 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Items
+                            Total Quantity
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {drugs.reduce(
-                              (sum, drug) => sum + drug.quantity,
-                              0
-                            )}
+                            {drugSummary.length}
                           </dd>
                         </dl>
                       </div>
@@ -225,16 +435,16 @@ const Pharmacy = () => {
                 <div className='bg-green-100 overflow-hidden shadow rounded-lg'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
-                      <div className='flex-shrink-0 bg-green-500 rounded-md p-3'></div>
+                      <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
+                        <FaBoxes className='h-6 w-6 text-white' />
+                      </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            {user.role === 'receptionist'
-                              ? 'Products'
-                              : 'Drugs'}
+                            Total Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {drugs.length}
+                            {drugSummary.totalQuantity}
                           </dd>
                         </dl>
                       </div>
@@ -253,7 +463,26 @@ const Pharmacy = () => {
                             Low Stock Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
-                            {drugs.filter((drug) => drug.quantity < 10).length}
+                            {drugSummary.lowQuantityCount}
+                          </dd>
+                        </dl>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className='bg-yellow-100 overflow-hidden shadow rounded-lg'>
+                  <div className='px-4 py-5 sm:p-6'>
+                    <div className='flex items-center'>
+                      <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
+                        <FaDollarSign className='h-6 w-6 text-white' />
+                      </div>
+                      <div className='ml-5 w-0 flex-1'>
+                        <dl>
+                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                            Total Sale Amount
+                          </dt>
+                          <dd className='text-lg font-medium text-gray-900'>
+                            {pharmacySaleTotal}
                           </dd>
                         </dl>
                       </div>
@@ -262,8 +491,9 @@ const Pharmacy = () => {
                 </div>
               </div>
             </div>
+
             <div className='overflow-x-auto rounded-lg shadow-md'>
-              <div className='flex flex-row items-center justify-center gap-3'>
+              <div className='flex flex-row items-center justify-end p-4'>
                 <label htmlFor='category' className='sr-only'>
                   Category
                 </label>
@@ -273,7 +503,7 @@ const Pharmacy = () => {
                     name='category'
                     value={category}
                     onChange={handleCategoryChange}
-                    className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                    className='block w-64 width-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
                   >
                     <option value=''>All Categories</option>
                     <option value='drug'>Drug</option>
@@ -290,13 +520,7 @@ const Pharmacy = () => {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Icon
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Drug Name
+                      Name
                     </th>
                     <th
                       scope='col'
@@ -308,19 +532,31 @@ const Pharmacy = () => {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
+                      Min-Level
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
+                      Expire-Duration
+                    </th>
+                    <th
+                      scope='col'
+                      className='px-5 py-3 font-bold tracking-wider'
+                    >
                       Category
                     </th>
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Expiry Date
+                      Expiry-Date
                     </th>
                     <th
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Sale price
+                      Sale-price
                     </th>
                     <th
                       scope='col'
@@ -356,13 +592,15 @@ const Pharmacy = () => {
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.manufacturer}
                       </td>
-
-                      {drug.category !== 'drug' ? (
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                          {drug.category}
-                        </td>
-                      ) : null}
-
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.minLevel}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.expireNotifyDuration}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                        {drug.category}
+                      </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {drug.expiryDate?.split('T')[0]}
                       </td>
@@ -396,6 +634,12 @@ const Pharmacy = () => {
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap'>
                         <button
+                          onClick={() => handleEdit(drug)}
+                          className='font-medium text-blue-600 hover:text-blue-700'
+                        >
+                          <FaEdit className='w-4 h-4' />
+                        </button>
+                        <button
                           onClick={() => handleDelete(drug._id)}
                           className='font-medium text-red-600 hover:text-red-700'
                         >
@@ -418,6 +662,114 @@ const Pharmacy = () => {
           onLimitChange={(limit) => setLimit(limit)}
         />
       </div>
+
+      {/* Edit Assignment Modal */}
+      <Modal
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          // resetForm();
+        }}
+      >
+        <h3 className='text-lg font-bold text-center'>Edit Record</h3>
+        <label className='block mt-2'>Min-Level</label>
+        <input
+          type='number'
+          className='border px-3 py-1 rounded w-full'
+          value={minLevel}
+          min={0}
+          max={100}
+          onChange={(e) => setMinLevel(e.target.value)}
+        />
+        <label className='block mt-2'>Expire-Duration-Days</label>
+        <input
+          type='number'
+          className='border px-3 py-1 rounded w-full'
+          value={expireNotifyDuration}
+          min={0}
+          onChange={(e) => setExpireNotifyDuration(e.target.value)}
+        />
+        {error && <p className='text-red-600'>{error}</p>}
+        <button onClick={handleUpdate} className='mt-4 w-full'>
+          Update
+        </button>
+      </Modal>
+
+      <div className='mt-10 flex flex-col gap-6'>
+        <div className='flex gap-4'>
+          {/* Summary Type Selector */}
+          <div className='w-full sm:w-1/5'>
+            <select
+              id='summaryType'
+              className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+              onChange={handleSummaryTypeChange}
+              value={summaryType}
+            >
+              <option value='monthly'>Monthly Summary</option>
+              <option value='yearly'>Yearly Summary</option>
+            </select>
+          </div>
+
+          {/* Month Selector */}
+          {summaryType === 'monthly' && (
+            <div className='w-full sm:w-1/5'>
+              <select
+                id='month'
+                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                onChange={handleMonthChange}
+                value={selectedMonth}
+              >
+                {monthLabels.map((label, index) => (
+                  <option key={index} value={index + 1}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Year Selector */}
+          {summaryType === 'yearly' && (
+            <div className='w-full sm:w-1/5'>
+              <input
+                id='year'
+                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                type='number'
+                value={selectedYear}
+                onChange={handleYearChange}
+                min='2000'
+                max={new Date().getFullYear()}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Chart Display */}
+        <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
+          <h2 className='mb-4 text-lg font-semibold text-gray-800'>
+            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
+          </h2>
+          <Bar
+            data={getBarChartData()}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                title: {
+                  display: true,
+                  text: `${
+                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
+                  } Summary for ${category || 'All Categories'}`,
+                },
+              },
+            }}
+          />
+        </div>
+      </div>
+
+      <MoveSalesToLog onTransferSuccess={fetchPharmacySaleTotal} />
     </div>
   );
 };

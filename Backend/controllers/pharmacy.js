@@ -12,26 +12,39 @@ exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
 // Get summary of drug sales
 exports.getDrugsSummary = asyncHandler(async (req, res) => {
-  const total = await Pharmacy.aggregate([
-    {
-      $match: { category: 'drug' }, // Filter for only the drug category
-    },
+  const { category } = req.query;
+  const matchStage = category ? { category: category } : {};
+
+  const result = await Pharmacy.aggregate([
+    { $match: matchStage },
     {
       $project: {
-        totalValue: { $multiply: ['$salePrice', '$quantity'] }, // Calculate total value (salePrice * quantity)
+        totalValue: { $multiply: ['$salePrice', '$quantity'] },
+        isLowQuantity: { $cond: [{ $lte: ['$quantity', '$minLevel'] }, 1, 0] },
+        quantity: 1,
       },
     },
     {
       $group: {
-        _id: null, // No specific group, calculate a single total
-        totalDrugSalesValue: { $sum: '$totalValue' }, // Sum up the total values
+        _id: null,
+        totalDrugSalesValue: { $sum: '$totalValue' },
+        totalCount: { $sum: 1 },
+        lowQuantityCount: { $sum: '$isLowQuantity' },
+        totalQuantity: { $sum: '$quantity' },
       },
     },
   ]);
-  const totalSalePrice = total.length > 0 ? total[0].totalDrugSalesValue : 0;
+
+  const totalSalePrice = result[0]?.totalDrugSalesValue || 0;
+  const totalCount = result[0]?.totalCount || 0;
+  const lowQuantityCount = result[0]?.lowQuantityCount || 0;
+  const totalQuantity = result[0]?.totalQuantity || 0;
 
   res.status(200).json({
     totalSalePrice,
+    length: totalCount,
+    lowQuantityCount,
+    totalQuantity,
   });
 });
 
@@ -58,17 +71,22 @@ exports.getDrug = asyncHandler(async (req, res) => {
 
 // Update a specific drug
 exports.updateDrug = asyncHandler(async (req, res) => {
-  const { id } = req.params;
+  console.log(req.params);
 
   // Validate MongoDB ID
-  if (!validateMongoDBId(id)) {
-    throw new AppError('Invalid Drug ID', 400);
-  }
+  validateMongoDBId(id);
 
-  const drug = await Pharmacy.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const drug = await Pharmacy.findByIdAndUpdate(
+    id,
+    {
+      minLevel: req.body.minLevel,
+      expireNotifyDuration: req.body.expireNotifyDuration,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!drug) {
     throw new AppError('Drug not found', 404);

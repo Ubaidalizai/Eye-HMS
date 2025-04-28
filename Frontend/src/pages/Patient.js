@@ -54,6 +54,7 @@ export default function PatientManagement() {
 
   const [formData, setFormData] = useState({
     name: '',
+    fatherName: '',
     age: '',
     contact: '',
     patientID: '',
@@ -258,57 +259,16 @@ export default function PatientManagement() {
     setCurrentPage(newPage);
   };
 
-  const aggregatePatients = () => {
-    const monthlyData = Array(12).fill(0);
-    const yearlyData = {};
-
-    patients.forEach((patient) => {
-      const date = new Date(patient.date);
-      const amount = parseFloat(patient.amount);
-      const month = date.getMonth(); // Zero-based index
-      const year = date.getFullYear();
-
-      // Aggregate for yearly summary
-      if (summaryType === 'yearly') {
-        if (!yearlyData[year]) {
-          yearlyData[year] = Array(12).fill(0); // Initialize months for the year
-        }
-        yearlyData[year][month] += amount; // Sum amount for the respective month
-      }
-
-      // Aggregate for monthly summary
-      if (
-        summaryType === 'monthly' &&
-        month + 1 === selectedMonth &&
-        year === selectedYear
-      ) {
-        monthlyData[month] += amount; // Sum amount for the respective day
-      }
-    });
-
-    return summaryType === 'yearly' ? yearlyData : monthlyData;
-  };
-
-  const updateSummary = () => {
-    const newSummary = aggregatePatients();
-    setSummary(newSummary);
-  };
-
   const handleSummaryTypeChange = (e) => {
     setSummaryType(e.target.value);
-    updateSummary();
   };
 
   const handleMonthChange = (e) => {
-    const month = Number(e.target.value);
-    setSelectedMonth(month);
-    updateSummary();
+    setSelectedMonth(Number(e.target.value));
   };
 
   const handleYearChange = (e) => {
-    const year = Number(e.target.value);
-    setSelectedYear(year);
-    updateSummary();
+    setSelectedYear(Number(e.target.value));
   };
 
   const getBarChartData = () => {
@@ -359,6 +319,7 @@ export default function PatientManagement() {
               setCurrentPatient(null);
               setFormData({
                 name: '',
+                fatherName: '',
                 age: '',
                 contact: '',
                 patientID: '',
@@ -379,6 +340,9 @@ export default function PatientManagement() {
               <tr>
                 <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Name
+                </th>
+                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
+                  Father Name
                 </th>
                 <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
                   Age
@@ -407,25 +371,28 @@ export default function PatientManagement() {
               {patients.map((patient) => (
                 <tr key={patient._id} className='hover:bg-gray-50'>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
-                    {patient.name}
+                    {patient?.name}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
+                    {patient?.fatherName}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.age}
+                    {patient?.age}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.contact}
+                    {patient?.contact}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.patientID}
+                    {patient?.patientID}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.patientGender}
+                    {patient?.patientGender}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.date?.split('T')[0]}
+                    {patient?.date?.split('T')[0]}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient.insuranceContact}
+                    {patient?.insuranceContact}
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
                     <div className='flex space-x-2'>
@@ -476,6 +443,15 @@ export default function PatientManagement() {
                   required
                 />
                 <input
+                  type='text'
+                  name='fatherName'
+                  value={formData.fatherName}
+                  onChange={handleInputChange}
+                  placeholder='Father Name'
+                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  required
+                />
+                <input
                   type='number'
                   name='age'
                   value={formData.age}
@@ -492,7 +468,6 @@ export default function PatientManagement() {
                   onChange={handleInputChange}
                   placeholder='Contact'
                   className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
                 />
                 <input
                   type='text'
