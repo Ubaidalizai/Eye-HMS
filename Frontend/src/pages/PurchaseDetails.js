@@ -96,13 +96,21 @@ function PurchaseDetails() {
           credentials: 'include',
         });
         if (!response.ok) {
-          console.log(response);
-          throw new Error(`Error: ${response.status}`);
+          let errorMessage = 'Failed to delete the purchase.';
+
+          // Attempt to extract the error message from the server response
+          try {
+            const errorResponse = await response.json();
+            errorMessage = errorResponse.message || errorMessage;
+          } catch (jsonError) {
+            errorMessage = (await response.text()) || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
         fetchPurchaseData(); // Refresh the purchase list
       } catch (err) {
-        setError('Failed to delete purchase. Please try again.');
-        toast.error('Error deleting purchase:', err.message);
+        setError(err.message || 'Failed to delete purchase. Please try again.');
+        toast.error(err.message || 'Error deleting purchase:');
       }
     }
   };

@@ -161,7 +161,9 @@ const createOperation = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to create operation record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 
@@ -201,9 +203,7 @@ const deleteOperation = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   // Validate MongoDB ID
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError('Invalid ID provided', 400);
-  }
+  validateMongoDBId(id);
 
   // Start a transaction session
   const session = await mongoose.startSession();
@@ -266,7 +266,9 @@ const deleteOperation = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Field to delete operation record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

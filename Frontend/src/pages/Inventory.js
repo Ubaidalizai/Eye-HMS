@@ -11,7 +11,6 @@ import {
   FaExchangeAlt,
   FaPlus,
   FaSearch,
-  FaFilter,
   FaRegEdit,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
@@ -599,6 +598,8 @@ function Inventory() {
                           placeholder='Quantity'
                           value={quantity}
                           onChange={(e) => setQuantity(e.target.value)}
+                          min={1}
+                          required
                         />
                       </div>
                       <div className='mt-4'>
