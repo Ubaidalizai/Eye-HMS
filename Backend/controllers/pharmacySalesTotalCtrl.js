@@ -54,7 +54,9 @@ exports.moveSalesTotalLog = asyncHandler(async (req, res, next) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    res.status(500).json({ message: error.message });
+    
+    const errorMessage = error.message || 'Failed to transfer sales total';
+    throw new appError(errorMessage, error.statusCode || 500);
   }
 });
 

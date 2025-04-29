@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 
 const saleSchema = new mongoose.Schema(
   {
+    purchaseRefId: {
+      type: mongoose.Schema.ObjectId,
+      required: [true, 'Each sale must reference a purchase'],
+      ref: 'Purchase',
+    },
     productRefId: {
       type: mongoose.Schema.ObjectId,
       required: [true, 'Each sold item must reference a sunglasses or drug'],

@@ -135,7 +135,9 @@ const addRecord = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to add ultrasound record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 
@@ -227,7 +229,9 @@ const deleteRecord = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to delete record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

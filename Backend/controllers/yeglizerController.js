@@ -174,7 +174,9 @@ const createYeglizer = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to create Yeglizer record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 
@@ -271,7 +273,9 @@ const deleteYeglizerById = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to delete Yeglizer record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

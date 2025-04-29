@@ -10,11 +10,6 @@ const createOperationType = asyncHandler(async (req, res) => {
     throw new Error('all fields are required');
   }
 
-  const existingType = await OperationType.findOne({ name });
-  if (existingType) {
-    throw new Error('Record already exists');
-  }
-
   const operationType = await OperationType.create({
     name,
     type,

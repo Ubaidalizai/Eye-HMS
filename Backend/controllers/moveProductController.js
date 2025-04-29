@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../models/product');
 const Pharmacy = require('../models/pharmacyModel');
+const Purchase = require('../models/purchase');
 const DrugMovement = require('../models/drugMovmentModel');
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDBId');
@@ -31,79 +32,108 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
     category,
     expiryDate,
   } = req.body;
+
   if (!name || !manufacturer || !quantity || !salePrice || !category) {
     throw new AppError('All fields are required', 400);
   }
 
-  // Start a transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Step 1: Find the product in inventory
+    // Step 1: Find product in inventory
     const product = await Product.findOne({ name, manufacturer }).session(
       session
     );
     if (!product) {
-      throw new AppError('Drug not found in inventory', 404);
+      throw new AppError('Product not found in inventory', 404);
     }
 
-    // Step 2: Update inventory stock
     if (product.stock < quantity) {
-      throw new AppError('Insufficient stock in inventory', 400);
+      throw new AppError(
+        `Insufficient inventory stock. Available: ${product.stock}`,
+        400
+      );
     }
 
-    product.stock -= quantity;
-    await product.save({ session });
-
-    // Step 3: Add or update drug in pharmacy
-    let pharmacyDrug = await Pharmacy.findOne({ name, manufacturer }).session(
+    // Step 2: Find or create pharmacy item
+    let pharmacyItem = await Pharmacy.findOne({ name, manufacturer }).session(
       session
     );
-
-    if (pharmacyDrug) {
-      pharmacyDrug.quantity += quantity;
-      pharmacyDrug.salePrice = salePrice; // Update sale price if needed
-      await pharmacyDrug.save({ session });
-    } else {
-      pharmacyDrug = new Pharmacy({
+    if (!pharmacyItem) {
+      pharmacyItem = new Pharmacy({
         name,
         manufacturer,
-        quantity,
+        quantity: 0, // Start with 0, we'll add after moving batches
         salePrice,
         minLevel,
         expireNotifyDuration,
         category,
         expiryDate,
       });
-      await pharmacyDrug.save({ session });
     }
 
-    // Step 4: Create a drug movement record
-    await DrugMovement.create(
-      [
-        {
-          inventory_id: product._id,
-          quantity_moved: quantity,
-          moved_by: req.user._id,
-          category,
-          expiryDate,
-        },
-      ],
-      { session }
-    );
+    let remainingQty = quantity;
 
-    // Commit the transaction
+    // Step 3: Move from Purchase batches FIFO
+    while (remainingQty > 0) {
+      const batch = await Purchase.findOne({
+        ProductID: product._id,
+        QuantityPurchased: { $gt: 0 },
+      })
+        .sort({ date: 1 })
+        .session(session);
+
+      if (!batch) {
+        throw new AppError('No available Purchase batch to move from', 400);
+      }
+
+      const moveQty = Math.min(batch.QuantityPurchased, remainingQty);
+
+      // Decrease batch quantity
+      batch.QuantityPurchased -= moveQty;
+      await batch.save({ session });
+
+      // Increase pharmacy stock
+      pharmacyItem.quantity += moveQty;
+
+      // Create Drug Movement record
+      await DrugMovement.create(
+        [
+          {
+            inventory_id: product._id,
+            purchase_id: batch._id, // Optional: track from which purchase batch
+            quantity_moved: moveQty,
+            moved_by: req.user._id,
+            category,
+            expiryDate: batch.expiryDate || expiryDate,
+          },
+        ],
+        { session }
+      );
+
+      remainingQty -= moveQty;
+    }
+
+    // Step 4: Save updated pharmacy item
+    await pharmacyItem.save({ session });
+
+    // Step 5: Decrease inventory stock
+    product.stock -= quantity;
+    await product.save({ session });
+
+    // Step 6: Commit transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Respond with success
-    res.status(200).json({ message: 'Drugs moved to pharmacy successfully!' });
+    res
+      .status(200)
+      .json({ message: 'Products moved to pharmacy successfully!' });
   } catch (error) {
-    // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+    const errorMessage = error.message || 'Failed to move products to pharmacy';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

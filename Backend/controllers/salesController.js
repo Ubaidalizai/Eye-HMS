@@ -55,12 +55,6 @@ const calculateNetIncome = async (drug, { quantity }) => {
   return purchaseCost; // Return the purchase cost for net income calculation
 };
 
-// Helper function to update drug quantity in the pharmacy
-const updateDrugStock = asyncHandler(async (drug, quantity) => {
-  drug.quantity -= quantity;
-  await drug.save();
-});
-
 // Main sellItems function
 const sellItems = asyncHandler(async (req, res, next) => {
   const { soldItems } = req.body;
@@ -135,7 +129,6 @@ const sellItems = asyncHandler(async (req, res, next) => {
       }
 
       // Step 6: Update the total sales amount in the singleton document
-      // Step 6: Update the total sales amount in the singleton document
       let salesTotal = await PharmacySalesTotal.findById('singleton').session(
         session
       );
@@ -182,8 +175,9 @@ const sellItems = asyncHandler(async (req, res, next) => {
     // Rollback the transaction
     await session.abortTransaction();
     session.endSession();
-    console.error('Transaction failed, rolling back:', error);
-    next(error);
+
+    const errorMessage = error.message || 'Failed to process sale.';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 
@@ -394,7 +388,9 @@ const deleteSale = asyncHandler(async (req, res) => {
 
     // Restore product quantity
     const product = await Pharmacy.findById(sale.productRefId).session(session);
+    console.log(product);
     if (product) {
+      console.log('Product found:', product);
       product.quantity += sale.quantity; // Restore stock
       await product.save({ session });
     }
@@ -418,8 +414,9 @@ const deleteSale = asyncHandler(async (req, res) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    console.error('Transaction failed, rolling back:', error);
-    throw new AppError('Failed to delete sale. Transaction rolled back.', 500);
+
+    const errorMessage = error.message || 'Failed to delete sale.';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

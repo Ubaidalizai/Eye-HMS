@@ -43,7 +43,6 @@ const resizeUserPhoto = asyncHandler(async (req, res, next) => {
     try {
       fs.mkdirSync(dir, { recursive: true });
     } catch (error) {
-      console.error('Error creating image directory:', error);
       throw new AppError('Failed to create image directory', 500);
     }
   }
