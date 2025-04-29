@@ -7,7 +7,11 @@ const mongoose = require('mongoose');
 const assignDoctorToBranch = asyncHandler(async (req, res) => {
   const { doctorId, branchModel, percentage, price } = req.body;
 
-  if (percentage < 0 || percentage > 100) {
+  if (!doctorId || !branchModel) {
+    throw new AppError('Doctor and branch model are required', 400);
+  }
+
+  if (percentage <= 0 || percentage > 100) {
     throw new AppError('Percentage must be between 0 and 100', 400);
   }
 
@@ -76,48 +80,44 @@ const deleteDoctorAssignment = asyncHandler(async (req, res) => {
 });
 
 const getAllBranchesWithDoctors = asyncHandler(async (req, res, next) => {
-  try {
-    const { doctorId } = req.query; // Extract doctorId from query params
-    const matchStage = doctorId
-      ? { $match: { doctorId: new mongoose.Types.ObjectId(doctorId) } }
-      : {}; // Add filter only if doctorId is provided
+  const { doctorId } = req.query; // Extract doctorId from query params
+  const matchStage = doctorId
+    ? { $match: { doctorId: new mongoose.Types.ObjectId(doctorId) } }
+    : {}; // Add filter only if doctorId is provided
 
-    const pipeline = [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'doctorId',
-          foreignField: '_id',
-          as: 'doctor',
-        },
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'doctorId',
+        foreignField: '_id',
+        as: 'doctor',
       },
-      { $unwind: '$doctor' },
-      {
-        $project: {
-          doctorId: '$doctor._id',
-          doctorName: {
-            $concat: ['$doctor.firstName', ' ', '$doctor.lastName'],
-          },
-          email: '$doctor.email',
-          image: '$doctor.image',
-          branch: '$branchModel',
-          percentage: 1,
-          price: 1,
+    },
+    { $unwind: '$doctor' },
+    {
+      $project: {
+        doctorId: '$doctor._id',
+        doctorName: {
+          $concat: ['$doctor.firstName', ' ', '$doctor.lastName'],
         },
+        email: '$doctor.email',
+        image: '$doctor.image',
+        branch: '$branchModel',
+        percentage: 1,
+        price: 1,
       },
-    ];
+    },
+  ];
 
-    if (doctorId) pipeline.unshift(matchStage); // Add filter stage dynamically
+  if (doctorId) pipeline.unshift(matchStage); // Add filter stage dynamically
 
-    const assignments = await DoctorBranchAssignment.aggregate(pipeline);
+  const assignments = await DoctorBranchAssignment.aggregate(pipeline);
 
-    res.status(200).json({
-      success: true,
-      data: assignments,
-    });
-  } catch (error) {
-    next(error);
-  }
+  res.status(200).json({
+    success: true,
+    data: assignments,
+  });
 });
 
 module.exports = {

@@ -28,11 +28,9 @@ const addProduct = asyncHandler(async (req, res, next) => {
     !expireNotifyDuration ||
     !category
   ) {
-    return next(
-      new AppError(
-        'All fields (name, manufacturer, min level, expire notify duration, category) are required.',
-        400
-      )
+    throw new AppError(
+      'All fields (name, manufacturer, min level, expire notify duration, category) are required.',
+      400
     );
   }
 
@@ -67,7 +65,7 @@ const deleteSelectedProduct = asyncHandler(async (req, res, next) => {
   // Check if product exists
   const productExist = await Product.findById(productId);
   if (!productExist) {
-    return next(new AppError('Product not found.', 404));
+    throw new AppError('Product not found.', 404);
   }
 
   // Delete the product
@@ -146,12 +144,9 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(
-      new AppError(
-        'Failed to update product and related pharmacy records.',
-        500
-      )
-    );
+
+    const errorMessage = error.message || 'Failed to update product.';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

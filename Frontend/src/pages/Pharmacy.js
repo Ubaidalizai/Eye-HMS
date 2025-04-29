@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
   FaDollarSign,
@@ -53,17 +53,24 @@ const monthLabels = [
 ];
 
 //Custom Modal/Dialog Component
-const Modal = ({ open, onClose, children }) => {
+const Modal = ({ open, onClose, handleUpdate, children }) => {
   if (!open) return null;
   return (
     <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
       <div className='bg-white p-6 rounded shadow-md'>
         {children}
+
         <button
           onClick={onClose}
-          className='mt-4 bg-red-500 text-white px-3 py-1 rounded '
+          className='mt-4 mr-2 bg-red-500 text-white px-3 py-1 rounded'
         >
           Close
+        </button>
+        <button
+          onClick={handleUpdate}
+          className='mt-4 bg-blue-600 text-white px-3 py-1 rounded '
+        >
+          Update
         </button>
       </div>
     </div>
@@ -422,7 +429,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Total Quantity
+                            Total Items
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugSummary.length}
@@ -441,7 +448,7 @@ const Pharmacy = () => {
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
                           <dt className='text-sm font-medium text-gray-500 truncate'>
-                            Total Items
+                            Total Quantity
                           </dt>
                           <dd className='text-lg font-medium text-gray-900'>
                             {drugSummary.totalQuantity}
@@ -670,6 +677,7 @@ const Pharmacy = () => {
           setShowEditModal(false);
           // resetForm();
         }}
+        handleUpdate={handleUpdate}
       >
         <h3 className='text-lg font-bold text-center'>Edit Record</h3>
         <label className='block mt-2'>Min-Level</label>
@@ -690,9 +698,6 @@ const Pharmacy = () => {
           onChange={(e) => setExpireNotifyDuration(e.target.value)}
         />
         {error && <p className='text-red-600'>{error}</p>}
-        <button onClick={handleUpdate} className='mt-4 w-full'>
-          Update
-        </button>
       </Modal>
 
       <div className='mt-10 flex flex-col gap-6'>

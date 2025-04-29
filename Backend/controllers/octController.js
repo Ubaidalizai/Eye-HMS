@@ -14,6 +14,7 @@ const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
 const operationTypeModel = require('../models/operationTypeModel');
+const validateMongoDBId = require('../utils/validateMongoDBId');
 
 const getOctDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -118,7 +119,9 @@ const createOCTRecord = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to create OCT record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 
@@ -163,9 +166,7 @@ const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   // Validate MongoDB ID
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError('Invalid ID provided', 400);
-  }
+  validateMongoDBId(id);
 
   // Start a transaction session
   const session = await mongoose.startSession();
@@ -233,7 +234,9 @@ const deleteOCTRecordById = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(error);
+
+    const errorMessage = error.message || 'Failed to delete OCT record';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 

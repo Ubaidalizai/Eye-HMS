@@ -8,6 +8,7 @@ const OperationTypeManagement = () => {
   const [formData, setFormData] = useState({ name: '', type: '', price: '' });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
 
   useEffect(() => {
     fetchOperationTypes();
@@ -37,6 +38,9 @@ const OperationTypeManagement = () => {
   //Create or Update an operation type
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setIsAddButtonDisabled(true);
+
     if (!formData.name || !formData.type || !formData.price) {
       alert('Please fill all fields');
       return;
@@ -62,6 +66,8 @@ const OperationTypeManagement = () => {
       fetchOperationTypes();
     } catch (error) {
       console.error('Error saving operation type:', error);
+    } finally {
+      setIsAddButtonDisabled(false);
     }
   };
 
@@ -138,9 +144,12 @@ const OperationTypeManagement = () => {
         />
         <button
           type='submit'
-          className='bg-blue-600 text-white py-2 px-4 rounded'
+          className={`bg-blue-600 text-white py-2 px-4 rounded ${
+            isAddButtonDisabled ? 'bg-gray-400 cursor-not-allowed' : ''
+          }`}
+          disabled={isAddButtonDisabled}
         >
-          {editingId ? 'Update' : 'Add'} Operation Type
+          {editingId ? 'Update' : 'Add'}
         </button>
       </form>
 

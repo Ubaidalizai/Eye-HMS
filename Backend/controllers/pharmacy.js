@@ -53,9 +53,7 @@ exports.getDrug = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // Validate MongoDB ID
-  if (!validateMongoDBId(id)) {
-    throw new AppError('Invalid Drug ID', 400);
-  }
+  validateMongoDBId(id);
 
   const drug = await Pharmacy.findById(id);
 
@@ -71,8 +69,7 @@ exports.getDrug = asyncHandler(async (req, res) => {
 
 // Update a specific drug
 exports.updateDrug = asyncHandler(async (req, res) => {
-  console.log(req.params);
-
+  const { id } = req.params;
   // Validate MongoDB ID
   validateMongoDBId(id);
 
@@ -118,13 +115,21 @@ exports.deleteDrug = asyncHandler(async (req, res, next) => {
 
     // Step 2: Check if the product exists in the inventory
     const product = await Product.findOne({ name: drug.name }).session(session);
-    if (!product) {
-      throw new AppError('Product not found in inventory', 404);
+    if (product) {
+      product.stock += drug.quantity;
+      await product.save({ session });
     }
 
-    // Step 3: Update stock in the inventory
-    product.stock += drug.quantity;
-    await product.save({ session });
+    // Step 3: Update purchased quantity in the pharmacy
+    const purchase = await Purchase.findOne({
+      ProductID: product._id,
+    }).session(session);
+
+    if (purchase) {
+      purchase.QuantityPurchased += drug.quantity;
+      purchase.originalQuantity += drug.quantity;
+      await purchase.save({ session });
+    }
 
     // Step 4: Delete the drug from the pharmacy
     const drugDeleted = await Pharmacy.findByIdAndDelete(id, { session });
@@ -145,7 +150,10 @@ exports.deleteDrug = asyncHandler(async (req, res, next) => {
     // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-    next(new AppError('Failed to delete drug and update stock', 500));
+
+    const errorMessage =
+      error.message || 'Failed to delete drug and update stock';
+    throw new AppError(errorMessage, error.statusCode || 500);
   }
 });
 
