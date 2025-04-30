@@ -33,43 +33,88 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
 
 exports.getDocKhataSummary = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  const result = await DoctorKhata.aggregate([
+  const doctorObjectId = new mongoose.Types.ObjectId(id);
+
+  const now = new Date();
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday as start of week
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+  const summary = await DoctorKhata.aggregate([
+    { $match: { doctorId: doctorObjectId } },
     {
-      $match: { doctorId: new mongoose.Types.ObjectId(id) }, // Filter by doctorId
-    },
-    {
-      $group: {
-        _id: '$amountType', // Group by 'amountType' (income or outcome)
-        totalAmount: { $sum: '$amount' }, // Sum 'amount' for each type
+      $facet: {
+        total: [
+          {
+            $group: {
+              _id: '$amountType',
+              totalAmount: { $sum: '$amount' },
+            },
+          },
+        ],
+        monthly: [
+          { $match: { date: { $gte: startOfMonth } } },
+          {
+            $group: {
+              _id: '$amountType',
+              totalAmount: { $sum: '$amount' },
+            },
+          },
+        ],
+        weekly: [
+          { $match: { date: { $gte: startOfWeek } } },
+          {
+            $group: {
+              _id: '$amountType',
+              totalAmount: { $sum: '$amount' },
+            },
+          },
+        ],
+        yearly: [
+          { $match: { date: { $gte: startOfYear } } },
+          {
+            $group: {
+              _id: '$amountType',
+              totalAmount: { $sum: '$amount' },
+            },
+          },
+        ],
       },
     },
   ]);
-  // Format the result as an object for clarity
-  const summary = {
-    income: 0,
-    outcome: 0,
+
+  const formatResult = (arr) => {
+    const formatted = { income: 0, outcome: 0 };
+    arr.forEach((item) => {
+      formatted[item._id] = item.totalAmount;
+    });
+    return formatted;
   };
 
-  result.forEach((item) => {
-    summary[item._id] = item.totalAmount; // Populate income and outcome
-  });
+  const total = formatResult(summary[0].total);
+  const monthly = formatResult(summary[0].monthly);
+  const weekly = formatResult(summary[0].weekly);
+  const yearly = formatResult(summary[0].yearly);
 
-  let youWillGet, youWillGive;
-  let greater = summary.income - summary.outcome;
-  if (greater > 0) {
-    youWillGive = greater;
-    youWillGet = 0;
-  } else {
-    youWillGet = Math.abs(greater);
-    youWillGive = 0;
-  }
+  // Compute who owes what based on total income and outcome
+  let youWillGet = 0;
+  let youWillGive = 0;
+  const balance = total.income - total.outcome;
 
-  // Send the response
+  if (balance < 0) youWillGet = Math.abs(balance);
+  else youWillGive = balance;
+
   res.status(200).json({
     status: 'success',
     data: {
-      youWillGive,
+      total,
+      monthly,
+      weekly,
+      yearly,
       youWillGet,
+      youWillGive,
     },
   });
 });
@@ -78,7 +123,7 @@ exports.getDoctorKhataById = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const amountType = req.query.amountType;
 
-  // Check if doctor exists in User model and has percentage
+  // Check if doctor exists
   const doctor = await User.findById(id);
   if (!doctor) {
     throw new AppError('Doctor not found.', 404);
@@ -86,13 +131,13 @@ exports.getDoctorKhataById = asyncHandler(async (req, res) => {
 
   let doctorKhata;
   if (amountType) {
-    doctorKhata = await DoctorKhata.find({ doctorId: id, amountType }).select(
-      'amount date'
-    );
+    doctorKhata = await DoctorKhata.find({ doctorId: id, amountType })
+      .select('amount date branchNameId branchModel')
+      .populate('branchNameId'); // Dynamic population based on branchModel
   } else {
-    doctorKhata = await DoctorKhata.find({ doctorId: id }).select(
-      'amount date'
-    );
+    doctorKhata = await DoctorKhata.find({ doctorId: id })
+      .select('amount date branchNameId branchModel')
+      .populate('branchNameId');
   }
 
   res.status(200).json(doctorKhata);

@@ -38,6 +38,12 @@ function PersonInfoDropdown() {
         Header: viewType === 'outcome' ? 'Outcome ($)' : 'Income ($)',
         accessor: 'amount',
       },
+      {
+        Header: 'Branch',
+        accessor: 'branchModel',
+        Cell: ({ value }) => value || 'N/A',
+      }
+      
     ],
     [viewType]
   );
