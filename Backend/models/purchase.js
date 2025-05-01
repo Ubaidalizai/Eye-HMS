@@ -29,11 +29,6 @@ const PurchaseSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    salePrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
     TotalPurchaseAmount: Number,
     category: {
       type: String,

@@ -102,7 +102,7 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   });
 });
 
-// Get sum of all Sales for a specific category (e.g., 'drug')
+// Get sum of all Purchases for a specific category (e.g., 'drug')
 const getPurchesCategoryTotal = asyncHandler(async (req, res) => {
   const category = req.query.category || 'drug'; // Default to 'drug'
 
@@ -137,14 +137,8 @@ const addPurchase = asyncHandler(async (req, res) => {
   const { _id: userID } = req.user;
   validateMongoDBId(userID);
 
-  const {
-    productID,
-    QuantityPurchased,
-    date,
-    unitPurchaseAmount,
-    salePrice,
-    expiryDate,
-  } = req.body;
+  const { productID, QuantityPurchased, date, unitPurchaseAmount, expiryDate } =
+    req.body;
 
   // Validate required fields
   if (
@@ -152,13 +146,12 @@ const addPurchase = asyncHandler(async (req, res) => {
     !QuantityPurchased ||
     !date ||
     !unitPurchaseAmount ||
-    !salePrice ||
     !expiryDate
   ) {
     throw new AppError('All fields are required.', 400);
   }
 
-  if (QuantityPurchased <= 0 || unitPurchaseAmount < 0 || salePrice < 0) {
+  if (QuantityPurchased <= 0 || unitPurchaseAmount < 0) {
     throw new AppError('Invalid purchase data values.', 400);
   }
 
@@ -177,7 +170,6 @@ const addPurchase = asyncHandler(async (req, res) => {
     // Update product values
     product.stock += Number(QuantityPurchased);
     product.purchasePrice = Number(unitPurchaseAmount);
-    product.salePrice = Number(salePrice);
     product.expiryDate = expiryDate;
 
     await product.save({ session });
@@ -192,7 +184,6 @@ const addPurchase = asyncHandler(async (req, res) => {
           ProductID: productID,
           QuantityPurchased,
           originalQuantity: QuantityPurchased,
-          salePrice,
           date,
           UnitPurchaseAmount: unitPurchaseAmount,
           category: product.category,
@@ -259,12 +250,10 @@ const editPurchase = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDBId(id);
 
-  const { QuantityPurchased, UnitPurchaseAmount, salePrice, date, expiryDate } =
-    req.body;
+  const { QuantityPurchased, UnitPurchaseAmount, date, expiryDate } = req.body;
   if (
     QuantityPurchased === undefined ||
     UnitPurchaseAmount === undefined ||
-    salePrice === undefined ||
     !date ||
     !expiryDate
   ) {
@@ -302,7 +291,6 @@ const editPurchase = asyncHandler(async (req, res) => {
     // Apply only the difference
     product.stock += delta;
     product.purchasePrice = UnitPurchaseAmount;
-    product.salePrice = salePrice;
     product.expiryDate = expiryDate;
     await product.save({ session });
 
@@ -310,7 +298,6 @@ const editPurchase = asyncHandler(async (req, res) => {
     existingPurchase.QuantityPurchased = QuantityPurchased;
     existingPurchase.originalQuantity = QuantityPurchased;
     existingPurchase.UnitPurchaseAmount = UnitPurchaseAmount;
-    existingPurchase.salePrice = salePrice;
     existingPurchase.date = date;
     existingPurchase.expiryDate = expiryDate;
     existingPurchase.TotalPurchaseAmount =

@@ -626,14 +626,14 @@ const Pharmacy = () => {
                             className={`text-xs font-medium ${
                               drug.quantity === 0
                                 ? 'text-red-500'
-                                : drug.quantity <= 10
+                                : drug.quantity <= drug.minLevel
                                 ? 'text-yellow-500'
                                 : 'text-green-500'
                             }`}
                           >
                             {drug.quantity === 0
                               ? 'Out of quantity'
-                              : drug.quantity <= 10
+                              : drug.quantity <= drug.minLevel
                               ? 'Low'
                               : 'Available'}
                           </span>

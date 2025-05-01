@@ -234,12 +234,6 @@ function PurchaseDetails() {
                       scope='col'
                       className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
                     >
-                      Unit Sale
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
                       Total Purchase
                     </th>
                     <th
@@ -257,7 +251,7 @@ function PurchaseDetails() {
                         {element.ProductID?.name || 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.QuantityPurchased || 'N/A'}
+                        {element.originalQuantity || 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.category || 'N/A'}
@@ -283,11 +277,6 @@ function PurchaseDetails() {
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.UnitPurchaseAmount !== undefined
                           ? `${element.UnitPurchaseAmount.toFixed(2)}`
-                          : 'N/A'}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.salePrice !== undefined
-                          ? `${element.salePrice.toFixed(2)}`
                           : 'N/A'}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>

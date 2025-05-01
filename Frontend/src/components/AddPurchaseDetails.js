@@ -16,7 +16,6 @@ export default function AddPurchaseDetails({
     QuantityPurchased: '',
     date: '',
     unitPurchaseAmount: '',
-    salePrice: '',
     expiryDate: '',
   });
   const [errors, setErrors] = useState({});
@@ -65,9 +64,6 @@ export default function AddPurchaseDetails({
       parseFloat(purchase.unitPurchaseAmount) <= 0
     )
       formErrors.unitPurchaseAmount = 'Unit purchase amount must be positive';
-    if (!purchase.salePrice) formErrors.salePrice = 'Sale price is required';
-    if (purchase.salePrice && parseFloat(purchase.salePrice) <= 0)
-      formErrors.salePrice = 'Sale price must be positive';
     if (!purchase.date) formErrors.date = 'Purchase date is required';
     if (!purchase.expiryDate) formErrors.expiryDate = 'Expiry date is required';
     setErrors(formErrors);
@@ -275,32 +271,6 @@ export default function AddPurchaseDetails({
                             {errors.unitPurchaseAmount && (
                               <p className='text-red-500 text-xs mt-1'>
                                 {errors.unitPurchaseAmount}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className='flex items-start flex-col'>
-                            <label
-                              htmlFor='salePrice'
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                            >
-                              Unit Sale Price
-                            </label>
-                            <input
-                              type='number'
-                              name='salePrice'
-                              id='salePrice'
-                              value={purchase.salePrice}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              placeholder='20'
-                              min='1'
-                            />
-                            {errors.salePrice && (
-                              <p className='text-red-500 text-xs mt-1'>
-                                {errors.salePrice}
                               </p>
                             )}
                           </div>
