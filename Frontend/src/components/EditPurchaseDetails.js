@@ -8,7 +8,6 @@ function EditPurchaseDetails({ editModalSetting, purchase, handlePageUpdate }) {
     date: purchase.date ? purchase.date.split('T')[0] : '',
     expiryDate: purchase?.expiryDate ? purchase.expiryDate.split('T')[0] : '',
     UnitPurchaseAmount: purchase?.UnitPurchaseAmount || 0,
-    salePrice: purchase?.salePrice || 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,7 +21,6 @@ function EditPurchaseDetails({ editModalSetting, purchase, handlePageUpdate }) {
           ? purchase.expiryDate.split('T')[0]
           : '',
         UnitPurchaseAmount: purchase.UnitPurchaseAmount || 0,
-        salePrice: purchase.salePrice || 0,
       });
     }
   }, [purchase]);
@@ -142,21 +140,6 @@ function EditPurchaseDetails({ editModalSetting, purchase, handlePageUpdate }) {
               type='number'
               name='UnitPurchaseAmount'
               value={formData.UnitPurchaseAmount}
-              onChange={handleChange}
-              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-              required
-              min='1'
-              step='1'
-            />
-          </div>
-          <div className='mb-4'>
-            <label className='block text-gray-700 text-sm font-bold mb-2'>
-              Unit Sale Amount
-            </label>
-            <input
-              type='number'
-              name='salePrice'
-              value={formData.salePrice}
               onChange={handleChange}
               className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
               required

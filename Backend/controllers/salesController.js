@@ -19,44 +19,8 @@ const {
   populateDataArray,
 } = require('../utils/aggregationUtils');
 
-// Helper function to validate stock and calculate income
-const validateDrugAndCalculateIncome = (drug, { quantity }) => {
-  // Check for sufficient stock
-  if (drug.quantity < quantity) {
-    throw new AppError(`Insufficient stock for drug: ${drug.name}`, 400);
-  }
-
-  // Validate sale price and quantity
-  if (isNaN(drug.salePrice) || isNaN(quantity)) {
-    throw new AppError(
-      `Invalid sale price or quantity for drug: ${drug.name}`,
-      400
-    );
-  }
-
-  const income = drug.salePrice * quantity; // Calculate income
-  return income; // Return the income
-};
-
-// Helper function to calculate net income
-const calculateNetIncome = async (drug, { quantity }) => {
-  // Find the product in inventory by name
-  const productInInventory = await Product.findOne({ name: drug.name });
-
-  if (!productInInventory) {
-    throw new AppError(
-      `Product with name ${drug.name} not found in inventory`,
-      404
-    );
-  }
-
-  // Calculate the purchase cost
-  const purchaseCost = productInInventory.purchasePrice * quantity;
-  return purchaseCost; // Return the purchase cost for net income calculation
-};
-
 // Main sellItems function
-const sellItems = asyncHandler(async (req, res, next) => {
+const sellItems = asyncHandler(async (req, res) => {
   const { soldItems } = req.body;
 
   if (!Array.isArray(soldItems) || !soldItems.length) {
@@ -67,117 +31,162 @@ const sellItems = asyncHandler(async (req, res, next) => {
   session.startTransaction();
 
   try {
-    const sales = [];
     const receipt = [];
     let totalIncome = 0;
 
     for (const soldItem of soldItems) {
-      const { productRefId, quantity, category, date } = soldItem;
+      const { productRefId, quantity, category, date = new Date() } = soldItem;
 
-      // Step 1: Validate and find the drug
-      const drug = await Pharmacy.findById(productRefId).session(session);
-      if (!drug) {
-        throw new AppError(`Drug with ID ${productRefId} not found.`, 404);
+      // Step 1: Find the Pharmacy product
+      const pharmacyItem = await Pharmacy.findById(productRefId).session(
+        session
+      );
+      if (!pharmacyItem) {
+        throw new AppError(
+          `Product not found in pharmacy: ${productRefId}`,
+          404
+        );
       }
 
-      // Step 2: Calculate income and net income
-      const income = await validateDrugAndCalculateIncome(drug, { quantity });
-      const purchaseCost = await calculateNetIncome(drug, { quantity });
-      const productNetIncome = income - purchaseCost;
-
-      // Step 3: Create a sale record
-      const sale = await Sale.create(
-        [
-          {
-            productRefId: drug._id,
-            quantity,
-            income,
-            date,
-            category,
-            userID: req.user._id,
-          },
-        ],
-        { session }
-      );
-
-      // Step 4: Update product stock
-      if (drug.quantity < quantity) {
+      if (pharmacyItem.quantity < quantity) {
         throw new AppError(
-          `Insufficient stock for drug: ${drug.name}. Available: ${drug.quantity}, Requested: ${quantity}`,
+          `Insufficient pharmacy stock for ${pharmacyItem.name}`,
           400
         );
       }
-      drug.quantity -= quantity;
-      await drug.save({ session });
 
-      // Step 5: Create an income record if applicable
-      if (productNetIncome > 0) {
-        await Income.create(
+      // Find product in inventory for retrieving purchase
+      const product = await Product.findOne({
+        name: pharmacyItem.name,
+      }).session(session);
+      if (!product) {
+        throw new AppError(
+          `Product with name ${pharmacyItem.name} not found in inventory`,
+          404
+        );
+      }
+
+      let remainingQty = quantity;
+
+      // Step 2: Sell across Purchase batches FIFO
+      while (remainingQty > 0) {
+        const batch = await Purchase.findOne({
+          ProductID: product._id,
+          QuantityPurchased: { $gt: 0 },
+        })
+          .sort({ date: 1 })
+          .session(session);
+
+        if (!batch) {
+          throw new AppError(
+            `No available Purchase batch for ${pharmacyItem.name}`,
+            400
+          );
+        }
+
+        const sellQty = Math.min(batch.QuantityPurchased, remainingQty);
+        const saleIncome = pharmacyItem.salePrice * sellQty;
+        const purchaseCost = batch.UnitPurchaseAmount * sellQty;
+        const netIncome = saleIncome - purchaseCost;
+
+        // Step 3: Create Sale record
+        const [sale] = await Sale.create(
           [
             {
-              saleId: sale[0]._id,
-              saleModel: 'pharmacyModel',
+              purchaseRefId: batch._id,
+              productRefId: pharmacyItem._id,
+              quantity: sellQty,
+              income: saleIncome,
               date,
-              totalNetIncome: productNetIncome,
               category,
-              description: `Sale of ${drug.name} (${category})`,
               userID: req.user._id,
             },
           ],
           { session }
         );
-      }
 
-      // Step 6: Update the total sales amount in the singleton document
-      let salesTotal = await PharmacySalesTotal.findById('singleton').session(
-        session
-      );
-      if (!salesTotal) {
-        // If it doesn't exist, create a new singleton document with default values
-        salesTotal = new PharmacySalesTotal({
-          _id: 'singleton',
-          totalSalesAmount: 0,
-        });
+        // Step 4: Decrease stock from batch and pharmacy
+        batch.QuantityPurchased -= sellQty;
+        await batch.save({ session });
+
+        pharmacyItem.quantity -= sellQty;
+        await pharmacyItem.save({ session });
+
+        // Step 5: Create Income record
+        if (netIncome > 0) {
+          await Income.create(
+            [
+              {
+                saleId: sale._id,
+                saleModel: 'pharmacyModel',
+                date,
+                totalNetIncome: netIncome,
+                category,
+                description: `Sale of ${pharmacyItem.name} (${category})`,
+                userID: req.user._id,
+              },
+            ],
+            { session }
+          );
+        }
+
+        // Step 6: Update Sales Ledger (singleton)
+        let ledger = await PharmacySalesTotal.findById('singleton').session(
+          session
+        );
+        if (!ledger) {
+          ledger = new PharmacySalesTotal({
+            _id: 'singleton',
+            totalSalesAmount: 0,
+          });
+        }
+        ledger.totalSalesAmount += saleIncome;
+        await ledger.save({ session });
+
+        // Step 7: Build receipt line
+        const existingLine = receipt.find(
+          (line) => line.productName === pharmacyItem.name
+        );
+
+        if (existingLine) {
+          existingLine.quantity += sellQty;
+          existingLine.income += saleIncome;
+        } else {
+          receipt.push({
+            productName: pharmacyItem.name,
+            quantity: sellQty,
+            income: saleIncome,
+            category,
+            date,
+          });
+        }
+
+        totalIncome += saleIncome;
+        remainingQty -= sellQty;
       }
-      salesTotal.totalSalesAmount += income;
-      await salesTotal.save({ session });
-      // Update response and receipt data
-      sales.push(sale[0]);
-      totalIncome += income;
-      receipt.push({
-        productName: drug.name,
-        quantity,
-        income,
-        category,
-        date,
-      });
     }
 
-    // Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Generate the receipt object
+    // Final receipt
     const generatedReceipt = {
       date: new Date().toISOString(),
       soldItems: receipt,
       totalIncome,
     };
 
-    // Respond with the generated receipt
     res.status(201).json({
       status: 'success',
-      data: {
-        receipt: generatedReceipt,
-      },
+      data: { receipt: generatedReceipt },
     });
   } catch (error) {
-    // Rollback the transaction
     await session.abortTransaction();
     session.endSession();
-
-    const errorMessage = error.message || 'Failed to process sale.';
-    throw new AppError(errorMessage, error.statusCode || 500);
+    throw new AppError(
+      error.message || 'Failed to complete sale',
+      error.statusCode || 500
+    );
   }
 });
 
@@ -375,48 +384,54 @@ const deleteSale = asyncHandler(async (req, res) => {
   // Validate MongoDB ID
   validateMongoDBId(saleId);
 
-  // Start a transaction session
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    // Fetch the sale record
+    // Step 1: Find the sale record
     const sale = await Sale.findById(saleId).session(session);
     if (!sale) {
       throw new AppError('Sale not found.', 404);
     }
 
-    // Restore product quantity
-    const product = await Pharmacy.findById(sale.productRefId).session(session);
-    console.log(product);
+    const { productRefId, purchaseRefId, quantity } = sale;
+
+    // Step 2: Restore pharmacy product quantity
+    const product = await Pharmacy.findById(productRefId).session(session);
     if (product) {
-      console.log('Product found:', product);
-      product.quantity += sale.quantity; // Restore stock
+      product.quantity += quantity;
       await product.save({ session });
     }
 
-    // Delete the income record associated with the sale
+    // Step 3: Restore batch quantity
+    const purchaseBatch = await Purchase.findById(purchaseRefId).session(
+      session
+    );
+    if (purchaseBatch) {
+      purchaseBatch.QuantityPurchased += quantity;
+      await purchaseBatch.save({ session });
+    }
+
+    // Step 4: Delete related income record
     await Income.deleteOne({ saleId }).session(session);
 
-    // Delete the sale record
-    await Sale.findByIdAndDelete(saleId, { session });
+    // Step 5: Delete the sale
+    await Sale.findByIdAndDelete(saleId).session(session);
 
-    // Commit the transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Send success response
     res.status(200).json({
       status: 'success',
-      message: 'Sale deleted successfully.',
+      message: 'Sale deleted and stock restored.',
     });
   } catch (error) {
-    // Rollback the transaction on error
     await session.abortTransaction();
     session.endSession();
-
-    const errorMessage = error.message || 'Failed to delete sale.';
-    throw new AppError(errorMessage, error.statusCode || 500);
+    throw new AppError(
+      error.message || 'Failed to delete sale.',
+      error.statusCode || 500
+    );
   }
 });
 
