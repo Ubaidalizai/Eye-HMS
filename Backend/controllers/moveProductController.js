@@ -64,62 +64,40 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
       pharmacyItem = new Pharmacy({
         name,
         manufacturer,
-        quantity: 0, // Start with 0, we'll add after moving batches
+        quantity,
         salePrice,
         minLevel,
         expireNotifyDuration,
         category,
         expiryDate,
       });
+    } else {
+      // Step 3: Update pharmacy item
+      pharmacyItem.quantity += Number(quantity);
+      pharmacyItem.salePrice = Number(salePrice);
+      pharmacyItem.expiryDate = expiryDate;
     }
 
-    let remainingQty = quantity;
-
-    // Step 3: Move from Purchase batches FIFO
-    while (remainingQty > 0) {
-      const batch = await Purchase.findOne({
-        ProductID: product._id,
-        QuantityPurchased: { $gt: 0 },
-      })
-        .sort({ date: 1 })
-        .session(session);
-
-      if (!batch) {
-        throw new AppError('No available Purchase batch to move from', 400);
-      }
-
-      const moveQty = Math.min(batch.QuantityPurchased, remainingQty);
-
-      // Decrease batch quantity
-      batch.QuantityPurchased -= moveQty;
-      await batch.save({ session });
-
-      // Increase pharmacy stock
-      pharmacyItem.quantity += moveQty;
-
-      // Create Drug Movement record
-      await DrugMovement.create(
-        [
-          {
-            inventory_id: product._id,
-            purchase_id: batch._id, // Optional: track from which purchase batch
-            quantity_moved: moveQty,
-            moved_by: req.user._id,
-            category,
-            expiryDate: batch.expiryDate || expiryDate,
-          },
-        ],
-        { session }
-      );
-
-      remainingQty -= moveQty;
-    }
+    // Create Drug Movement record
+    await DrugMovement.create(
+      [
+        {
+          inventory_id: product._id,
+          quantity_moved: Number(quantity),
+          moved_by: req.user._id,
+          category,
+          expiryDate,
+        },
+      ],
+      { session }
+    );
 
     // Step 4: Save updated pharmacy item
     await pharmacyItem.save({ session });
 
-    // Step 5: Decrease inventory stock
+    // Step 5: Decrease inventory stock and update sale price
     product.stock -= quantity;
+    product.salePrice = Number(salePrice) || product.salePrice;
     await product.save({ session });
 
     // Step 6: Commit transaction

@@ -31,7 +31,6 @@ function OCT() {
         credentials: 'include',
       });
       const data = await response.json();
-      console.log(data.data);
       setOctTypes(data.data);
     } catch (error) {
       console.error('Error fetching biscayne types:', error);

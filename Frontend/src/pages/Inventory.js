@@ -35,8 +35,8 @@ function Inventory() {
   const [category, setCategory] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const [salePrice, setSalePrice] = useState('');
+  const [quantity, setQuantity] = useState(0);
+  const [salePrice, setSalePrice] = useState(0);
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
@@ -48,7 +48,6 @@ function Inventory() {
     category: '',
   });
   const dispatch = useDispatch();
-  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchInventorySummary();
@@ -93,12 +92,13 @@ function Inventory() {
 
   const openMoveModal = (item) => {
     setSelectedItem(item);
-    setQuantity(1);
     setSalePrice(item.salePrice || '');
     setIsOpen(true);
   };
 
   const closeMoveModal = () => {
+    setQuantity(0);
+    setSalePrice(0);
     setIsOpen(false);
   };
 
@@ -598,19 +598,20 @@ function Inventory() {
                           placeholder='Quantity'
                           value={quantity}
                           onChange={(e) => setQuantity(e.target.value)}
-                          min={1}
+                          min={0}
                           required
                         />
                       </div>
                       <div className='mt-4'>
                         <label htmlFor='quality'>Sale Price</label>
                         <input
-                          type='text'
+                          type='number'
                           className='border border-gray-300 p-2 rounded w-full'
                           placeholder='Sale Price'
                           value={salePrice}
                           onChange={(e) => setSalePrice(e.target.value)}
-                          disabled
+                          min={0}
+                          required
                         />
                       </div>
                     </div>
