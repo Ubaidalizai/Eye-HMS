@@ -22,6 +22,7 @@ import Operation from './components/Operation';
 import IncomeReport from './pages/IncomeReport';
 import ExpenseManagement from './pages/ExpenseManagement';
 import Pharmacy from './pages/Pharmacy';
+import Glasses from './pages/Glasses';
 import ExpiredProduct from './pages/ExpiredProduct';
 import AdminPanel from './pages/Admin-panel';
 import Laboratory from './components/Laboratory';
@@ -31,6 +32,7 @@ import Yeglizer from './components/Yeglizer';
 import MoveHistory from './pages/MoveHistory';
 import ForgotPassword from './pages/ForgotPassword ';
 import ResetPassword from './pages/ResetPassword ';
+
 import { Roles } from './roles';
 // Import styles
 import './index.css';
@@ -94,9 +96,21 @@ const App = () => {
                 }
               />
               <Route
+                path='/glasses'
+                element={
+                  <ProtectedWrapper
+                    allowedRoles={[Roles.ADMIN, Roles.RECEPTIONIST]}
+                  >
+                    <Glasses />
+                  </ProtectedWrapper>
+                }
+              />
+              <Route
                 path='/purchase-details'
                 element={
-                  <ProtectedWrapper allowedRoles={[Roles.ADMIN]}>
+                  <ProtectedWrapper
+                    allowedRoles={[Roles.ADMIN, Roles.RECEPTIONIST]}
+                  >
                     <PurchaseDetails />
                   </ProtectedWrapper>
                 }

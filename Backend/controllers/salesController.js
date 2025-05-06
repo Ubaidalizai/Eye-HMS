@@ -211,7 +211,15 @@ const getDataByYear = asyncHandler(async (req, res, Model) => {
   const matchCriteria = {
     date: { $gte: startDate, $lte: endDate },
   };
-  if (category) matchCriteria.category = category;
+  if (category === 'drug') {
+    matchCriteria.category = category;
+  } else if (category) {
+    // Must be one of the non-drug categories
+    matchCriteria.category = category;
+  } else {
+    // No category provided — fetch all NON-drug stats
+    matchCriteria.category = { $in: ['glass', 'frame', 'sunglasses'] };
+  }
 
   const groupBy = {
     _id: { month: { $month: '$date' } }, // Group by month
@@ -266,7 +274,15 @@ const getDataByMonth = asyncHandler(async (req, res, Model) => {
   const matchCriteria = {
     date: { $gte: startDate, $lte: endDate },
   };
-  if (category) matchCriteria.category = category;
+  if (category === 'drug') {
+    matchCriteria.category = category;
+  } else if (category) {
+    // Must be one of the non-drug categories
+    matchCriteria.category = category;
+  } else {
+    // No category provided — fetch all NON-drug stats
+    matchCriteria.category = { $in: ['glass', 'frame', 'sunglasses'] };
+  }
 
   const groupBy = {
     _id: { day: { $dayOfMonth: '$date' } }, // Group by day

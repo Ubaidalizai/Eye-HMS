@@ -1,5 +1,6 @@
 const Purchase = require('../models/purchase');
 const Product = require('../models/product');
+const Glass = require('../models/glassesModel');
 const purchaseStock = require('./purchaseStock');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError'); // Custom error handler
@@ -137,8 +138,14 @@ const addPurchase = asyncHandler(async (req, res) => {
   const { _id: userID } = req.user;
   validateMongoDBId(userID);
 
-  const { productID, QuantityPurchased, date, unitPurchaseAmount, expiryDate } =
-    req.body;
+  const {
+    productID,
+    QuantityPurchased,
+    date,
+    unitPurchaseAmount,
+    expiryDate,
+    category,
+  } = req.body;
 
   // Validate required fields
   if (
@@ -146,7 +153,7 @@ const addPurchase = asyncHandler(async (req, res) => {
     !QuantityPurchased ||
     !date ||
     !unitPurchaseAmount ||
-    !expiryDate
+    !category
   ) {
     throw new AppError('All fields are required.', 400);
   }
@@ -161,20 +168,28 @@ const addPurchase = asyncHandler(async (req, res) => {
   session.startTransaction();
 
   try {
-    // Step 1: Check and update the product
-    const product = await Product.findById(productID).session(session);
-    if (!product) {
-      throw new AppError('Product not found', 404);
+    // Step 1: Find product/glass based on category
+    let item;
+    if (category === 'drug') {
+      item = await Product.findById(productID).session(session);
+    } else {
+      item = await Glass.findById(productID).session(session);
     }
 
-    // Update product values
-    product.stock += Number(QuantityPurchased);
-    product.purchasePrice = Number(unitPurchaseAmount);
-    product.expiryDate = expiryDate;
+    if (!item) {
+      throw new AppError('Item not found', 404);
+    }
 
-    await product.save({ session });
+    // Step 2: Update stock and price
+    item.stock += Number(QuantityPurchased);
+    item.purchasePrice = Number(unitPurchaseAmount);
+    if (category === 'drug' && expiryDate) {
+      item.expiryDate = expiryDate;
+    }
 
-    // Step 2: Create purchase with calculated total
+    await item.save({ session });
+
+    // Step 3: Create purchase
     const TotalPurchaseAmount = unitPurchaseAmount * QuantityPurchased;
 
     const purchaseDetails = await Purchase.create(
@@ -182,13 +197,14 @@ const addPurchase = asyncHandler(async (req, res) => {
         {
           userID,
           ProductID: productID,
+          productModel: category === 'drug' ? 'Product' : 'Glass',
           QuantityPurchased,
           originalQuantity: QuantityPurchased,
           date,
           UnitPurchaseAmount: unitPurchaseAmount,
-          category: product.category,
+          category,
           TotalPurchaseAmount,
-          expiryDate,
+          expiryDate: category === 'drug' ? expiryDate : undefined,
         },
       ],
       { session }
@@ -334,7 +350,12 @@ const deletePurchase = asyncHandler(async (req, res, next) => {
       throw new AppError('Purchase not found.', 404);
     }
 
-    const product = await Product.findById(purchase.ProductID).session(session);
+    // Dynamically get the correct model ('Product' or 'Glass')
+    const ProductModel = mongoose.model(purchase.productModel);
+
+    const product = await ProductModel.findById(purchase.ProductID).session(
+      session
+    );
 
     if (product) {
       const stockDifference = -purchase.QuantityPurchased;
@@ -346,7 +367,6 @@ const deletePurchase = asyncHandler(async (req, res, next) => {
 
       await product.save({ session });
     }
-    // If no product, continue to delete purchase anyway
 
     await Purchase.deleteOne({ _id: id }, { session });
 

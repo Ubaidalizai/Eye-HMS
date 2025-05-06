@@ -191,29 +191,14 @@ export default function PatientManagement() {
 
       const result = await response.json(); // Parse the response if needed
       toast.success(
-        `Patient ${currentPatient ? 'updated' : 'added'} successfully!`,
-        {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
+        `Patient ${currentPatient ? 'updated' : 'added'} successfully!`
       );
 
       setIsModalOpen(false); // Close the modal
       fetchPatients(); // Refresh the patients list
     } catch (error) {
       console.error('Error saving patient:', error.message);
-      toast.error(error.message, {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error(error.message);
     } finally {
       setIsAddButtonDisabled(false); // Re-enable the button
     }

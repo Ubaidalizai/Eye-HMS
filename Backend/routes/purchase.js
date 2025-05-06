@@ -4,9 +4,10 @@ const purchase = require('../controllers/purchase');
 const {
   authenticate,
   authorizeAdmin,
+  authorizeAdminOrReceptionist,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin);
+router.use(authenticate, authorizeAdminOrReceptionist);
 
 router.get('/totalPurchesbycategory', purchase.getPurchesCategoryTotal);
 router.get('/totalPurchaseAmount', purchase.getTotalPurchaseAmount);
