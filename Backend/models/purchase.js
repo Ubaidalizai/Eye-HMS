@@ -9,8 +9,13 @@ const PurchaseSchema = new mongoose.Schema(
     },
     ProductID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
       required: true,
+      refPath: 'productModel', // dynamically resolved
+    },
+    productModel: {
+      type: String,
+      required: true,
+      enum: ['Product', 'Glass'], // model names
     },
     QuantityPurchased: {
       type: Number,
@@ -39,9 +44,10 @@ const PurchaseSchema = new mongoose.Schema(
       type: Date,
       validate: {
         validator: function (value) {
-          return value > new Date();
+          if (this.category !== 'drug') return true; // skip validation
+          return value instanceof Date && value > new Date(); // only validate for drugs
         },
-        message: 'Expiry date must be in the future',
+        message: 'Expiry date must be a future date for drugs only',
       },
     },
   },

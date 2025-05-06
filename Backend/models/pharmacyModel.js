@@ -30,23 +30,9 @@ const pharmacySchema = new mongoose.Schema(
       required: [true, 'Pharmacy product must have a sale price'],
       min: 0,
     },
-    category: {
-      type: String,
-      enum: ['drug', 'sunglasses', 'glass', 'frame'],
-      required: [
-        true,
-        'Pharmacy product must have a category (either drug, sunglasses or frame)',
-      ],
-    },
     expiryDate: {
       type: Date,
-      validate: {
-        validator: function (value) {
-          // Make expiryDate required only for drugs
-          return this.category === 'drug' ? !!value : true;
-        },
-        message: 'Expiry date is required for drugs.',
-      },
+      required: [true, 'Pharmacy product must have an expiry date'],
     },
   },
   { timestamps: true }

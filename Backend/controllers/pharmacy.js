@@ -12,11 +12,8 @@ exports.getAllDrugsInPharmacy = getAll(Pharmacy);
 
 // Get summary of drug sales
 exports.getDrugsSummary = asyncHandler(async (req, res) => {
-  const { category } = req.query;
-  const matchStage = category ? { category: category } : {};
-
   const result = await Pharmacy.aggregate([
-    { $match: matchStage },
+    { $match: {} },
     {
       $project: {
         totalValue: { $multiply: ['$salePrice', '$quantity'] },

@@ -1,6 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Dialog, Transition } from '@headlessui/react';
 import {
@@ -15,7 +13,6 @@ import {
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import AuthContext from '../AuthContext';
 import { moveItemAPI } from '../redux/inventorySlice';
 import UpdateProduct from '.././components/UpdateProduct';
 import Pagination from '../components/Pagination';

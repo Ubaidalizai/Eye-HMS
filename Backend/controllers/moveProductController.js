@@ -29,11 +29,10 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
     salePrice,
     minLevel,
     expireNotifyDuration,
-    category,
     expiryDate,
   } = req.body;
 
-  if (!name || !manufacturer || !quantity || !salePrice || !category) {
+  if (!name || !manufacturer || !quantity || !salePrice) {
     throw new AppError('All fields are required', 400);
   }
 
@@ -68,7 +67,6 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
         salePrice,
         minLevel,
         expireNotifyDuration,
-        category,
         expiryDate,
       });
     } else {
@@ -85,7 +83,6 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
           inventory_id: product._id,
           quantity_moved: Number(quantity),
           moved_by: req.user._id,
-          category,
           expiryDate,
         },
       ],

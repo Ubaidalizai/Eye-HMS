@@ -40,17 +40,34 @@ function PurchaseDetails() {
   const fetchPurchaseData = async () => {
     setIsLoading(true);
     setError(null);
-    try {
-      const baseUrl = `${BASE_URL}/purchase?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`;
-      const finalUrl = category ? `${baseUrl}&category=${category}` : baseUrl;
 
-      const response = await fetch(finalUrl, {
+    try {
+      // Determine the allowed categories based on the user's role
+      const allowedCategories =
+        authContext.user.role === 'receptionist'
+          ? ['frame', 'glass', 'sunglasses']
+          : null; // Admin can see all categories
+
+      // Build the base URL
+      let baseUrl = `${BASE_URL}/purchase?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`;
+
+      // Add category filtering for receptionist
+      if (authContext.user.role === 'receptionist') {
+        const categoriesQuery = allowedCategories.join(',');
+        baseUrl += `&category=${categoriesQuery}`;
+      } else if (category) {
+        baseUrl += `&category=${category}`;
+      }
+
+      const response = await fetch(baseUrl, {
         method: 'GET',
         credentials: 'include',
       });
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
+
       const data = await response.json();
       setAllPurchasesData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
@@ -62,8 +79,20 @@ function PurchaseDetails() {
   };
 
   const fetchProductsData = async () => {
+    // Determine the URL based on the user's role
+    const url =
+      authContext.user.role === 'admin'
+        ? `${BASE_URL}/inventory/product`
+        : authContext.user.role === 'receptionist'
+        ? `${BASE_URL}/glasses`
+        : null;
+
+    if (!url) {
+      throw new Error('Invalid user role. Cannot fetch products.');
+    }
+
     try {
-      const response = await fetch(`${BASE_URL}/inventory/product`, {
+      const response = await fetch(url, {
         method: 'GET',
         credentials: 'include',
       });
@@ -129,7 +158,6 @@ function PurchaseDetails() {
         {showPurchaseModal && (
           <AddPurchaseDetails
             addSaleModalSetting={addSaleModalSetting}
-            products={products}
             handlePageUpdate={fetchPurchaseData}
             authContext={authContext}
           />
@@ -218,12 +246,14 @@ function PurchaseDetails() {
                     >
                       Purchase Date
                     </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Expiry Date
-                    </th>
+                    {purchases?.expiryDate && (
+                      <th
+                        scope='col'
+                        className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                      >
+                        Expiry Date
+                      </th>
+                    )}
                     <th
                       scope='col'
                       className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
@@ -264,16 +294,18 @@ function PurchaseDetails() {
                             : element.date.split('T')[0]
                           : 'N/A'}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.expiryDate
-                          ? new Date(
-                              element.expiryDate
-                            ).toLocaleDateString() ===
-                            new Date().toLocaleDateString()
-                            ? 'Today'
-                            : element.expiryDate.split('T')[0]
-                          : 'N/A'}
-                      </td>
+                      {purchases?.expiryDate && (
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                          {element.expiryDate
+                            ? new Date(
+                                element.expiryDate
+                              ).toLocaleDateString() ===
+                              new Date().toLocaleDateString()
+                              ? 'Today'
+                              : element.expiryDate.split('T')[0]
+                            : 'N/A'}
+                        </td>
+                      )}
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                         {element.UnitPurchaseAmount !== undefined
                           ? `${element.UnitPurchaseAmount.toFixed(2)}`

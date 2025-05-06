@@ -6,6 +6,7 @@ import { BASE_URL } from '../config';
 export default function AddPurchaseDetails({
   addSaleModalSetting,
   handlePageUpdate,
+  authContext,
 }) {
   const [products, setAllProducts] = useState([]);
   const [productCatagory, setProductCatagory] = useState('');
@@ -17,13 +18,24 @@ export default function AddPurchaseDetails({
     date: '',
     unitPurchaseAmount: '',
     expiryDate: '',
+    category: '',
   });
   const [errors, setErrors] = useState({});
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
   const fetchProductsData = (productCatagory) => {
-    let url = `${BASE_URL}/inventory/product`;
+    // Determine the URL based on the user's role
+    let url =
+      authContext.user.role === 'admin'
+        ? `${BASE_URL}/inventory/product`
+        : authContext.user.role === 'receptionist'
+        ? `${BASE_URL}/glasses`
+        : null;
+
+    if (!url) {
+      throw new Error('Invalid user role. Cannot fetch products.');
+    }
     if (productCatagory) {
       url += `?category=${productCatagory}`;
     }
@@ -65,53 +77,59 @@ export default function AddPurchaseDetails({
     )
       formErrors.unitPurchaseAmount = 'Unit purchase amount must be positive';
     if (!purchase.date) formErrors.date = 'Purchase date is required';
-    if (!purchase.expiryDate) formErrors.expiryDate = 'Expiry date is required';
+    if (authContext.user.role === 'admin') {
+      if (!purchase.expiryDate)
+        formErrors.expiryDate = 'Expiry date is required';
+    }
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
 
-  const addSale = () => {
-    if (validateForm()) {
-      setIsAddButtonDisabled(true); // Disable the button
-
-      fetch(`${BASE_URL}/purchase`, {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-        },
-        body: JSON.stringify(purchase),
-      })
-        .then(async (result) => {
-          if (!result.ok) {
-            // Attempt to parse error from backend response
-            let errorMessage = 'Failed to add purchase.';
-            try {
-              const errorResponse = await result.json();
-              errorMessage = errorResponse.message || errorMessage;
-            } catch {
-              errorMessage = await result.text(); // Fallback to plain text
-            }
-            throw new Error(errorMessage);
-          }
-
-          return result.json(); // Parse success response
-        })
-        .then((data) => {
-          alert('Purchase added successfully!');
-          handlePageUpdate(); // Refresh the list or page data
-          addSaleModalSetting(); // Close the modal
-        })
-        .catch((err) => {
-          console.error('Error adding purchase:', err.message);
-          alert(
-            err.message || 'Something went wrong while adding the purchase.'
-          );
-        })
-        .finally(() => {
-          setIsAddButtonDisabled(false); // Re-enable the button after operation
-        });
+  const addSale = async () => {
+    if (!validateForm()) {
+      alert('Please fill in all required fields correctly.');
+      return;
     }
+    setIsAddButtonDisabled(true); // Disable the button
+
+    const selectedProduct = products.find((p) => p._id === purchase.productID);
+    const category = selectedProduct?.category || 'unknown';
+
+    fetch(`${BASE_URL}/purchase`, {
+      credentials: 'include',
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+      },
+      body: JSON.stringify({ ...purchase, category }),
+    })
+      .then(async (result) => {
+        if (!result.ok) {
+          // Attempt to parse error from backend response
+          let errorMessage = 'Failed to add purchase.';
+          try {
+            const errorResponse = await result.json();
+            errorMessage = errorResponse.message || errorMessage;
+          } catch {
+            errorMessage = await result.text(); // Fallback to plain text
+          }
+          throw new Error(errorMessage);
+        }
+
+        return result.json(); // Parse success response
+      })
+      .then((data) => {
+        alert('Purchase added successfully!');
+        handlePageUpdate(); // Refresh the list or page data
+        addSaleModalSetting(); // Close the modal
+      })
+      .catch((err) => {
+        console.error('Error adding purchase:', err.message);
+        alert(err.message || 'Something went wrong while adding the purchase.');
+      })
+      .finally(() => {
+        setIsAddButtonDisabled(false); // Re-enable the button after operation
+      });
   };
 
   // Convert product list to react-select options

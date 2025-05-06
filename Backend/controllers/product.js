@@ -34,7 +34,11 @@ const addProduct = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Create a new product
+  const productExist = await Product.findOne({ name, manufacturer });
+  if (productExist) {
+    throw new AppError('Product already exists.', 400);
+  }
+
   const newProduct = await Product.create({
     name,
     manufacturer,
@@ -94,6 +98,18 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
     const originalProduct = await Product.findById(productID).session(session);
     if (!originalProduct) {
       throw new AppError('Product not found.', 404);
+    }
+
+    const productExist = await Product.findOne({
+      name: req.body.name || originalProduct.name,
+      manufacturer: req.body.manufacturer || originalProduct.manufacturer,
+      _id: { $ne: id }, // Exclude the current product
+    }).session(session);
+    if (productExist) {
+      throw new AppError(
+        'Product with the same name and manufacturer already exists.',
+        400
+      );
     }
 
     // Step 2: Update the product details in the Product collection

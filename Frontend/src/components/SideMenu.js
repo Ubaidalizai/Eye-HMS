@@ -59,6 +59,12 @@ const menuItems = [
     icon: <FaCapsules />,
     label: 'Pharmacy',
   },
+  {
+    id: 'glasses',
+    path: '/glasses',
+    icon: <FaCapsules />,
+    label: 'Glasses',
+  },
   { id: 'branches', path: '', icon: null, label: 'Branches' }, // Placeholder for branches menu
 ];
 

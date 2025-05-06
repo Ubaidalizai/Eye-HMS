@@ -16,8 +16,16 @@ export const RoleMenus = {
     'expenses',
     'income',
     'pharmacy',
+    'glasses',
     'branches',
   ],
   [Roles.PHARMACIST]: ['pharmacy', 'sales'],
-  [Roles.RECEPTIONIST]: ['branches', 'patient', 'sales', 'pharmacy'],
+  [Roles.RECEPTIONIST]: [
+    'branches',
+    'patient',
+    'sales',
+    'pharmacy',
+    'glasses',
+    'purchase-details',
+  ],
 };
