@@ -210,6 +210,45 @@ const getInventorySummary = asyncHandler(async (req, res) => {
   });
 });
 
+const giveProductExpireByMonth = asyncHandler(async (req, res) => {
+  const months = parseInt(req.params.months, 10);
+
+  if (isNaN(months) || months < 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Invalid months value in URL',
+    });
+  }
+
+  const now = new Date();
+  const futureDate = new Date();
+  futureDate.setMonth(now.getMonth() + months); // Future date after specified months
+  
+  // Set the future date to include the end of the month (e.g., until the end of that month)
+  futureDate.setHours(23, 59, 59, 999); 
+
+  const pastDate = new Date();
+  pastDate.setMonth(now.getMonth() - months); // Past date based on months ago
+  
+  // Ensure to include the start of the past date as the range start
+  pastDate.setHours(0, 0, 0, 0); 
+
+  // Find expired items that match the exact expiration date or fall within the range
+  const expiringProducts = await Product.find({
+    expiryDate: { $gte: pastDate, $lte: futureDate },
+    stock: { $gt: 0 }, // Only products with stock available
+  });
+
+  res.status(200).json({
+    status: 'success',
+    length: expiringProducts.length,
+    data: { expiringProducts },
+  });
+});
+
+
+
+
 module.exports = {
   addProduct,
   getAllProducts,
@@ -218,4 +257,5 @@ module.exports = {
   searchProduct,
   checkProductExpiry,
   getInventorySummary,
+  giveProductExpireByMonth
 };
