@@ -9,7 +9,7 @@ const glassSchema = new mongoose.Schema(
     manufacturer: {
       type: String,
     },
-    stock: {
+    quantity: {
       type: Number,
       required: true,
       min: 0,

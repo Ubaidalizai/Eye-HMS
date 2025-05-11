@@ -10,7 +10,7 @@ export default function UpdateProduct({
   onProductUpdate,
   setUpdatePage,
 }) {
-  const { _id, name, manufacturer, minLevel, expireNotifyDuration, category } =
+  const { _id, name, manufacturer, minLevel, expireNotifyDuration, salePrice } =
     updateProductData;
   const [product, setProduct] = useState({
     productID: _id,
@@ -18,7 +18,7 @@ export default function UpdateProduct({
     manufacturer: manufacturer,
     minLevel: minLevel,
     expireNotifyDuration: expireNotifyDuration,
-    category: category, // Initialize category
+    salePrice,
   });
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
@@ -179,28 +179,24 @@ export default function UpdateProduct({
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
                             />
                           </div>
+
                           <div>
                             <label
-                              htmlFor='category'
+                              htmlFor='expireNotifyDuration'
                               className='block mb-2 text-sm font-medium text-gray-900'
                             >
-                              Category
+                              Sale Price
                             </label>
-                            <select
-                              id='category'
-                              name='category'
-                              value={product.category}
+                            <input
+                              type='number'
+                              name='salePrice'
+                              id='salePrice'
+                              value={product.salePrice}
                               onChange={(e) =>
                                 handleInputChange(e.target.name, e.target.value)
                               }
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5'
-                            >
-                              <option value=''>Select a category</option>
-                              <option value='sunglasses'>sunglasses</option>
-                              <option value='glass'>Glass</option>
-                              <option value='frame'>Frame</option>
-                              <option value='drug'>Drug</option>
-                            </select>
+                            />
                           </div>
                         </div>
                       </form>

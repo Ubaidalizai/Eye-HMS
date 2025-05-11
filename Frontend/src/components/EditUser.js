@@ -229,6 +229,28 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
               )}
             </div>
 
+            {editingUser.role === 'receptionist' && (
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  Percentage
+                </label>
+                <input
+                  type='number'
+                  name='percentage'
+                  placeholder='Percentage %'
+                  value={editingUser.percentage}
+                  onChange={handleChange}
+                  className='border p-2 rounded w-full mb-1'
+                  required
+                  min={0}
+                />
+                {validationErrors.percentage && (
+                  <p className='text-red-500 text-xs'>
+                    {validationErrors.percentage}
+                  </p>
+                )}
+              </div>
+            )}
             <div className='col-span-2'>
               <label className='block text-sm font-medium text-gray-700 mb-1'>
                 Profile Image

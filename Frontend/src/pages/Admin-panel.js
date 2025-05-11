@@ -19,7 +19,6 @@ const UserList = () => {
     password: '',
     phoneNumber: '',
     image: null,
-    percentage: '',
   });
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -105,7 +104,6 @@ const UserList = () => {
         password: '',
         phoneNumber: '',
         image: null,
-        percentage: '',
       });
       setIsAddModalOpen(false);
       setValidationErrors({});

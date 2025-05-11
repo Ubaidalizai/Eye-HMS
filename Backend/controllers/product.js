@@ -19,15 +19,8 @@ const addProduct = asyncHandler(async (req, res, next) => {
   validateMongoDBId(_id);
 
   // Validate required fields
-  const { name, manufacturer, minLevel, expireNotifyDuration, category } =
-    req.body;
-  if (
-    !name ||
-    !manufacturer ||
-    !minLevel ||
-    !expireNotifyDuration ||
-    !category
-  ) {
+  const { name, manufacturer, minLevel, expireNotifyDuration } = req.body;
+  if (!name || !manufacturer || !minLevel || !expireNotifyDuration) {
     throw new AppError(
       'All fields (name, manufacturer, min level, expire notify duration, category) are required.',
       400
@@ -47,7 +40,7 @@ const addProduct = asyncHandler(async (req, res, next) => {
     salePrice: 0, // Default sale price is 0
     minLevel,
     expireNotifyDuration,
-    category,
+    category: 'drug',
   });
 
   // Send success response
@@ -60,7 +53,7 @@ const addProduct = asyncHandler(async (req, res, next) => {
 const getAllProducts = getAll(Product);
 
 // Delete Selected Product
-const deleteSelectedProduct = asyncHandler(async (req, res, next) => {
+const deleteSelectedProduct = asyncHandler(async (req, res) => {
   const productId = req.params.id;
 
   // Validate MongoDB ID
@@ -85,6 +78,7 @@ const deleteSelectedProduct = asyncHandler(async (req, res, next) => {
 // Update Selected Product
 const updateSelectedProduct = asyncHandler(async (req, res, next) => {
   const productID = req.params.id;
+  console.log(req.params.id);
 
   // Validate MongoDB ID
   validateMongoDBId(productID);
@@ -103,7 +97,7 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
     const productExist = await Product.findOne({
       name: req.body.name || originalProduct.name,
       manufacturer: req.body.manufacturer || originalProduct.manufacturer,
-      _id: { $ne: id }, // Exclude the current product
+      _id: { $ne: productID }, // Exclude the current product
     }).session(session);
     if (productExist) {
       throw new AppError(
@@ -120,7 +114,7 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
         manufacturer: req.body.manufacturer,
         minLevel: req.body.minLevel,
         expireNotifyDuration: req.body.expireNotifyDuration,
-        category: req.body.category,
+        salePrice: req.body.salePrice,
       },
       { new: true, session } // Return the updated document and bind the session
     );
@@ -139,6 +133,7 @@ const updateSelectedProduct = asyncHandler(async (req, res, next) => {
         $set: {
           name: updatedResult.name,
           manufacturer: updatedResult.manufacturer,
+          salePrice: updatedResult.salePrice,
         },
       },
       { session } // Bind the session to the operation
@@ -173,12 +168,9 @@ const checkProductExpiry = checkExpiry(Product, 'expiryDate');
 
 // Get Inventory Summary
 const getInventorySummary = asyncHandler(async (req, res) => {
-  const { category } = req.query;
-  const matchStage = category ? { category: category } : {};
-
   // Total Stock
   const result = await Product.aggregate([
-    { $match: matchStage },
+    { $match: {} },
     {
       $project: {
         totalValue: { $multiply: ['$salePrice', '$stock'] },

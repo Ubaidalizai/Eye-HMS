@@ -30,7 +30,7 @@ const addGlass = asyncHandler(async (req, res, next) => {
   const newGlass = await Glass.create({
     name,
     manufacturer,
-    stock: 0,
+    quantity: 0,
     purchasePrice: 0,
     salePrice: 0,
     minLevel,
@@ -132,14 +132,14 @@ const getGlassesSummary = asyncHandler(async (req, res) => {
   const { category } = req.query;
   const matchStage = category ? { category: category } : {};
 
-  // Total Stock
+  // Total quantity
   const result = await Glass.aggregate([
     { $match: matchStage },
     {
       $project: {
-        totalValue: { $multiply: ['$salePrice', '$stock'] },
-        isLowStock: { $cond: [{ $lte: ['$stock', '$minLevel'] }, 1, 0] },
-        stock: 1,
+        totalValue: { $multiply: ['$salePrice', '$quantity'] },
+        isLowStock: { $cond: [{ $lte: ['$quantity', '$minLevel'] }, 1, 0] },
+        quantity: 1,
       },
     },
     {
@@ -148,7 +148,7 @@ const getGlassesSummary = asyncHandler(async (req, res) => {
         totalProductSalesValue: { $sum: '$totalValue' },
         totalCount: { $sum: 1 },
         lowStockCount: { $sum: '$isLowStock' },
-        totalStock: { $sum: '$stock' },
+        totalStock: { $sum: '$quantity' },
       },
     },
   ]);

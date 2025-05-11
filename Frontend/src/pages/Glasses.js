@@ -7,6 +7,7 @@ import {
   FaExclamationTriangle,
   FaEdit,
   FaTrash,
+  FaPlus,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -97,7 +98,7 @@ const Glasses = () => {
     name: '',
     manufacturer: '',
     minLevel: '',
-    salePrice: 0,
+    salePrice: '',
     category: '',
   });
 
@@ -465,16 +466,6 @@ const Glasses = () => {
               </div>
             </div>
 
-            {/* Add Glasses Button */}
-            <div className='flex justify-end p-4'>
-              <button
-                onClick={() => setShowItemModal(true)}
-                className='mt-4 bg-blue-600 text-white px-3 py-1 rounded '
-              >
-                Add Item
-              </button>
-            </div>
-
             {showItemModal && (
               <AddGlasses
                 handleUpdatePage={fetchData}
@@ -483,23 +474,34 @@ const Glasses = () => {
             )}
 
             <div className='overflow-x-auto rounded-lg shadow-md'>
-              <div className='flex flex-row items-center justify-end p-4'>
-                <label htmlFor='category' className='sr-only'>
-                  Category
-                </label>
-                <div>
-                  <select
-                    id='category'
-                    name='category'
-                    value={category}
-                    onChange={handleCategoryChange}
-                    className='block w-64 width-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+              <div className='flex justify-end'>
+                <div className='flex flex-row items-center justify-end p-4'>
+                  <label htmlFor='category' className='sr-only'>
+                    Category
+                  </label>
+                  <div>
+                    <select
+                      id='category'
+                      name='category'
+                      value={category}
+                      onChange={handleCategoryChange}
+                      className='block w-64 width-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                    >
+                      <option value=''>All Categories</option>
+                      <option value='sunglasses'>sunglasses</option>
+                      <option value='glass'>Glass</option>
+                      <option value='frame'>Frame</option>
+                    </select>
+                  </div>
+                </div>
+                <div className='flex justify-end p-4'>
+                  <button
+                    onClick={() => setShowItemModal(true)}
+                    className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                   >
-                    <option value=''>All Categories</option>
-                    <option value='sunglasses'>sunglasses</option>
-                    <option value='glass'>Glass</option>
-                    <option value='frame'>Frame</option>
-                  </select>
+                    <FaPlus className='mr-2' />
+                    Add Product
+                  </button>
                 </div>
               </div>
               <table className='w-full text-sm text-left text-gray-500'>
@@ -599,23 +601,23 @@ const Glasses = () => {
                       </td>
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.stock}
+                        {glass.quantity}
                       </td>
 
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
                         {
                           <span
                             className={`text-xs font-medium ${
-                              glass.stock === 0
+                              glass.quantity === 0
                                 ? 'text-red-500'
-                                : glass.stock <= glass.minLevel
+                                : glass.quantity <= glass.minLevel
                                 ? 'text-yellow-500'
                                 : 'text-green-500'
                             }`}
                           >
-                            {glass.stock === 0
+                            {glass.quantity === 0
                               ? 'Out of stock'
-                              : glass.stock <= glass.minLevel
+                              : glass.quantity <= glass.minLevel
                               ? 'Low'
                               : 'Available'}
                           </span>
@@ -768,7 +770,8 @@ const Glasses = () => {
         {/* Chart Display */}
         <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
           <h2 className='mb-4 text-lg font-semibold text-gray-800'>
-            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
+            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Sales
+            Summary
           </h2>
           <Bar
             data={getBarChartData()}

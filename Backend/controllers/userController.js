@@ -270,7 +270,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res, next) => {
         phoneNumber: user.phoneNumber,
         image: user.image,
         role: user.role,
-        percentage: user.percentage,
+        percentage: user?.percentage,
       },
     });
   } else {

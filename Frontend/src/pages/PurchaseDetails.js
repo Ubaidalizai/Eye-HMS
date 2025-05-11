@@ -149,6 +149,11 @@ function PurchaseDetails() {
     setShowEditModal(true);
   };
 
+  const handlePurchaseSuccess = () => {
+    toast.success('Purchase added successfully!');
+    fetchPurchaseData(); // refresh list
+  };
+
   return (
     <div className='min-h-screen'>
       <div className='max-w-7xl mx-auto'>
@@ -158,7 +163,7 @@ function PurchaseDetails() {
         {showPurchaseModal && (
           <AddPurchaseDetails
             addSaleModalSetting={addSaleModalSetting}
-            handlePageUpdate={fetchPurchaseData}
+            handlePageUpdate={handlePurchaseSuccess}
             authContext={authContext}
           />
         )}

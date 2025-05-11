@@ -8,10 +8,10 @@ const AddGlasses = ({ handleUpdatePage, onClose }) => {
     name: '',
     manufacturer: '',
     minLevel: '',
-    stock: 0,
+    quantity: '',
     category: '',
-    purchasePrice: 0,
-    salePrice: 0,
+    purchasePrice: '',
+    salePrice: '',
   });
 
   const handleAddProduct = async (e) => {
@@ -43,10 +43,10 @@ const AddGlasses = ({ handleUpdatePage, onClose }) => {
         name: '',
         manufacturer: '',
         minLevel: '',
-        stock: 0,
+        quantity: '',
         category: '',
-        purchasePrice: 0,
-        salePrice: 0,
+        purchasePrice: '',
+        salePrice: '',
       });
 
       handleUpdatePage();
