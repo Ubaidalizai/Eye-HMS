@@ -180,12 +180,17 @@ const addPurchase = asyncHandler(async (req, res) => {
       throw new AppError('Item not found', 404);
     }
 
-    // Step 2: Update stock and price
-    item.stock += Number(QuantityPurchased);
-    item.purchasePrice = Number(unitPurchaseAmount);
-    if (category === 'drug' && expiryDate) {
-      item.expiryDate = expiryDate;
+    // Step 2: Update quantity/stock and price
+    if (category === 'drug') {
+      item.stock += Number(QuantityPurchased);
+      if (expiryDate) {
+        item.expiryDate = expiryDate;
+      }
+    } else {
+      item.quantity += Number(QuantityPurchased);
     }
+
+    item.purchasePrice = Number(unitPurchaseAmount);
 
     await item.save({ session });
 
@@ -267,11 +272,11 @@ const editPurchase = asyncHandler(async (req, res) => {
   validateMongoDBId(id);
 
   const { QuantityPurchased, UnitPurchaseAmount, date, expiryDate } = req.body;
+
   if (
     QuantityPurchased === undefined ||
     UnitPurchaseAmount === undefined ||
-    !date ||
-    !expiryDate
+    !date
   ) {
     throw new AppError('All fields are required for update.', 400);
   }
@@ -280,44 +285,70 @@ const editPurchase = asyncHandler(async (req, res) => {
   session.startTransaction();
 
   try {
-    // Find the purchase to be edited
+    // 1. Find the existing purchase
     const existingPurchase = await Purchase.findById(id).session(session);
     if (!existingPurchase) {
       throw new AppError('Purchase not found', 404);
     }
 
-    const product = await Product.findById(existingPurchase.ProductID).session(
-      session
-    );
-    if (!product) throw new AppError('Product not found', 404);
+    const { ProductID, category } = existingPurchase;
 
-    // Calculate net change
-    const delta = QuantityPurchased - existingPurchase.QuantityPurchased;
-
-    // Prevent negative stock
-    if (product.stock + delta < 0) {
-      throw new AppError(
-        `Insufficient stock. Current stock is ${
-          product.stock
-        }, cannot reduce by ${-delta}.`,
-        400
-      );
+    // 2. Get item from correct model
+    let item;
+    if (category === 'drug') {
+      item = await Product.findById(ProductID).session(session);
+    } else {
+      item = await Glass.findById(ProductID).session(session);
     }
 
-    // Apply only the difference
-    product.stock += delta;
-    product.purchasePrice = UnitPurchaseAmount;
-    product.expiryDate = expiryDate;
-    await product.save({ session });
+    if (!item) {
+      throw new AppError('Item not found', 404);
+    }
 
-    // Update purchase
+    // 3. Calculate the difference
+    const delta = QuantityPurchased - existingPurchase.QuantityPurchased;
+
+    // 4. Validate and update quantity/stock
+    if (category === 'drug') {
+      if (item.stock + delta < 0) {
+        throw new AppError(
+          `Insufficient stock. Current stock is ${
+            item.stock
+          }, cannot reduce by ${-delta}.`,
+          400
+        );
+      }
+      item.stock += delta;
+      if (expiryDate) {
+        item.expiryDate = expiryDate;
+      }
+    } else {
+      console.log(item.quantity, delta);
+      if (item.quantity + delta < 0) {
+        throw new AppError(
+          `Insufficient quantity. Current quantity is ${
+            item.quantity
+          }, cannot reduce by ${-delta}.`,
+          400
+        );
+      }
+      item.quantity += delta;
+    }
+
+    item.purchasePrice = UnitPurchaseAmount;
+    await item.save({ session });
+
+    // 5. Update the purchase
     existingPurchase.QuantityPurchased = QuantityPurchased;
     existingPurchase.originalQuantity = QuantityPurchased;
     existingPurchase.UnitPurchaseAmount = UnitPurchaseAmount;
     existingPurchase.date = date;
-    existingPurchase.expiryDate = expiryDate;
+    if (category === 'drug') {
+      existingPurchase.expiryDate = expiryDate;
+    }
     existingPurchase.TotalPurchaseAmount =
       QuantityPurchased * UnitPurchaseAmount;
+
     await existingPurchase.save({ session });
 
     await session.commitTransaction();
@@ -345,29 +376,34 @@ const deletePurchase = asyncHandler(async (req, res, next) => {
   session.startTransaction();
 
   try {
+    // Step 1: Fetch purchase document
     const purchase = await Purchase.findById(id).session(session);
     if (!purchase) {
       throw new AppError('Purchase not found.', 404);
     }
 
-    // Dynamically get the correct model ('Product' or 'Glass')
-    const ProductModel = mongoose.model(purchase.productModel);
+    const { ProductID, originalQuantity, productModel } = purchase;
 
-    const product = await ProductModel.findById(purchase.ProductID).session(
-      session
-    );
+    // Step 2: Get correct model instance (Product or Glass)
+    const Model = mongoose.model(productModel);
+    const product = await Model.findById(ProductID).session(session);
 
     if (product) {
-      const stockDifference = -purchase.QuantityPurchased;
-      product.stock += stockDifference;
+      // Step 3: Restore stock
+      if (productModel === 'Product') {
+        product.stock += originalQuantity;
+      } else if (productModel === 'Glass') {
+        product.quantity += originalQuantity;
+      }
 
-      if (product.stock < 0) {
-        throw new AppError('Insufficient stock quantity.', 400);
+      if (product.stock < 0 || product.quantity < 0) {
+        throw new AppError('Insufficient stock quantity after restore.', 400);
       }
 
       await product.save({ session });
     }
 
+    // Step 4: Delete purchase
     await Purchase.deleteOne({ _id: id }, { session });
 
     await session.commitTransaction();
@@ -375,10 +411,10 @@ const deletePurchase = asyncHandler(async (req, res, next) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Purchase deleted successfully.',
+      message: 'Purchase deleted and stock restored successfully.',
       data: {
         deletedPurchase: purchase,
-        updatedProductStock: product ? product.stock : null,
+        updatedStock: product?.stock ?? product?.quantity ?? null,
       },
     });
   } catch (error) {

@@ -119,7 +119,6 @@ export default function AddPurchaseDetails({
         return result.json(); // Parse success response
       })
       .then((data) => {
-        alert('Purchase added successfully!');
         handlePageUpdate(); // Refresh the list or page data
         addSaleModalSetting(); // Close the modal
       })
@@ -234,7 +233,6 @@ export default function AddPurchaseDetails({
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
                             >
                               <option value=''>Filter by Category</option>
-                              <option value='drug'>Drug</option>
                               <option value='sunglasses'>sunglasses</option>
                               <option value='glass'>Glass</option>
                               <option value='frame'>frame</option>
@@ -335,7 +333,7 @@ export default function AddPurchaseDetails({
                             />
                           </div>
                         </div>
-                        <div className='flex  justify-end gap-2 pb-5'>
+                        <div className='flex  justify-end gap-2 pb-5 mt-8'>
                           <button
                             type='button'
                             className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'

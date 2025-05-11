@@ -19,6 +19,7 @@ const doctorKhataSchema = new mongoose.Schema(
         'ultraSoundModule',
         'operationModule',
         'yeglizerModel',
+        'glassModel',
       ], // Allowed models
     },
     doctorId: {

@@ -29,7 +29,6 @@ function Inventory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [category, setCategory] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(0);
@@ -42,25 +41,21 @@ function Inventory() {
     minLevel: '',
     expireNotifyDuration: '',
     stock: 0,
-    category: '',
   });
   const dispatch = useDispatch();
 
   useEffect(() => {
     fetchInventorySummary();
     fetchProductsData();
-  }, [updatePage, currentPage, category, searchTerm, limit]);
+  }, [updatePage, currentPage, searchTerm, limit]);
 
   // Fetch the inventory summary from the backend
   const fetchInventorySummary = async () => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/inventory/product/summary?category=${category}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/inventory/product/summary`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       const data = await response.json();
       setSummary(data);
     } catch (err) {
@@ -72,7 +67,7 @@ function Inventory() {
   const fetchProductsData = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/inventory/product?page=${currentPage}&limit=${limit}&fieldName=name&searchTerm=${searchTerm}&category=${category}`,
+        `${BASE_URL}/inventory/product?page=${currentPage}&limit=${limit}&fieldName=name&searchTerm=${searchTerm}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -188,7 +183,7 @@ function Inventory() {
 
       if (response.ok) {
         setShowProductModal(false);
-        setNewProduct({ name: '', manufacturer: '', stock: 0, category: '' });
+        setNewProduct({ name: '', manufacturer: '', stock: 0 });
         setUpdatePage(!updatePage);
         toast.success('Product added successfully');
       } else {
@@ -303,23 +298,6 @@ function Inventory() {
                       className='mt-2 p-2 w-full border rounded'
                       required
                     />
-                    <select
-                      value={newProduct.category}
-                      onChange={(e) =>
-                        setNewProduct({
-                          ...newProduct,
-                          category: e.target.value,
-                        })
-                      }
-                      className='mt-2 p-2 w-full border rounded'
-                      required
-                    >
-                      <option value=''>Select a category</option>
-                      <option value='drug'>Drug</option>
-                      <option value='sunglasses'>sunglasses</option>
-                      <option value='glass'>glass</option>
-                      <option value='frame'>Frame</option>
-                    </select>
                   </div>
                   <div className='flex items-center justify-end gap-2 mt-10'>
                     <button
@@ -376,21 +354,6 @@ function Inventory() {
                 Category
               </label>
 
-              <div>
-                <select
-                  id='category'
-                  name='category'
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
-                >
-                  <option value=''>All Categories</option>
-                  <option value='drug'>Drug</option>
-                  <option value='sunglasses'>sunglasses</option>
-                  <option value='glass'>Glass</option>
-                  <option value='frame'>Frame</option>
-                </select>
-              </div>
               <button
                 className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                 onClick={() => setShowProductModal(true)}
@@ -451,12 +414,6 @@ function Inventory() {
                       scope='col'
                       className='px-5 py-3 font-bold tracking-wider'
                     >
-                      Category
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
                       Stock
                     </th>
                     <th
@@ -496,9 +453,6 @@ function Inventory() {
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                         {item.salePrice}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                        {item.category}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
                         {item.stock}

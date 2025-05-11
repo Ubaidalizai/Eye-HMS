@@ -5,13 +5,17 @@ const saleSchema = new mongoose.Schema(
   {
     purchaseRefId: {
       type: mongoose.Schema.ObjectId,
-      required: [true, 'Each sale must reference a purchase'],
       ref: 'Purchase',
     },
     productRefId: {
       type: mongoose.Schema.ObjectId,
-      required: [true, 'Each sold item must reference a sunglasses or drug'],
-      ref: 'Pharmacy',
+      required: [true, 'Each sold item must reference a product or glass'],
+      refPath: 'productModel',
+    },
+    productModel: {
+      type: String,
+      required: true,
+      enum: ['Pharmacy', 'Glass'], // Models you are referencing
     },
     quantity: {
       type: Number,
@@ -30,10 +34,7 @@ const saleSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: ['drug', 'sunglasses', 'glass', 'frame'],
-      required: [
-        true,
-        'A sale must have a category (either drug or sunglasses)',
-      ],
+      required: [true, 'A sale must have a valid category'],
     },
     userID: {
       type: mongoose.Schema.ObjectId,

@@ -33,25 +33,46 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
 
   const fetchProductsData = async () => {
     try {
-      let baseUrl = `${BASE_URL}/pharmacy?checkQuantity=true&category=${category}`;
+      let results = [];
+      // Fetch from pharmacy if category is drug or no specific category
+      if (!category || category === 'drug') {
+        const pharmacyUrl = `${BASE_URL}/pharmacy?checkQuantity=true`;
+        const pharmacyRes = await fetch(pharmacyUrl, {
+          credentials: 'include',
+          method: 'GET',
+        });
 
-      const response = await fetch(baseUrl, {
-        credentials: 'include',
-        method: 'GET',
-      });
+        if (!pharmacyRes.ok)
+          throw new Error(`Pharmacy error: ${pharmacyRes.status}`);
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        const pharmacyData = await pharmacyRes.json();
+        results = results.concat(pharmacyData.data.results);
       }
 
-      const data = await response.json();
-      setProducts(data.data.results);
+      // Fetch from glasses if category is not drug or no specific category
+      if (!category || ['sunglasses', 'glass', 'frame'].includes(category)) {
+        const glassesUrl = `${BASE_URL}/glasses?checkQuantity=true&category=${category}`;
+
+        const glassesRes = await fetch(glassesUrl, {
+          credentials: 'include',
+          method: 'GET',
+        });
+
+        if (!glassesRes.ok)
+          throw new Error(`Glasses error: ${glassesRes.status}`);
+
+        const glassesData = await glassesRes.json();
+        results = results.concat(glassesData.data.results);
+      }
+      setProducts(results);
     } catch (err) {
       console.error('Error fetching products:', err);
     }
   };
 
   const handleInputChange = (index, name, value) => {
+    console.log('Input changed:', { index, name, value });
+    console.log('Products:', products);
     setSales((prevSales) =>
       prevSales.map((sale, i) =>
         i === index
@@ -61,7 +82,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
               category:
                 name === 'productRefId'
                   ? products.find((product) => product._id === value)
-                      ?.category || ''
+                      ?.category || 'drug'
                   : sale.category,
             }
           : sale
@@ -109,10 +130,19 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
       return;
     }
 
-    setIsAddButtonDisabled(true); // Disable the button
+    setIsAddButtonDisabled(true);
 
     try {
-      const data = await sendSalesToBackend(sales);
+      // Inject category into each sale item
+      const salesWithCategory = sales.map((sale) => {
+        const product = products.find((p) => p._id === sale.productRefId);
+        return {
+          ...sale,
+          category: product?.category || sale.category || '',
+        };
+      });
+
+      const data = await sendSalesToBackend(salesWithCategory);
 
       setSoldItems({
         date: new Date().toISOString().split('T')[0],
@@ -120,14 +150,14 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
         soldItems: data.data.receipt.soldItems || [],
       });
 
-      setOpenAddSale(false); // Close AddSale modal
-      setTimeout(() => setShowBill(true), 300); // Open BillPrintModal after delay
+      setOpenAddSale(false);
+      setTimeout(() => setShowBill(true), 300);
       handlePageUpdate();
     } catch (err) {
       console.error('Error adding sales:', err.message);
       alert(err.message || 'Something went wrong while adding sales.');
     } finally {
-      setIsAddButtonDisabled(false); // Re-enable the button
+      setIsAddButtonDisabled(false);
     }
   };
 
@@ -159,35 +189,54 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                         key={index}
                         className='grid gap-4 mb-4 sm:grid-cols-2'
                       >
+                        <div className='flex items-start flex-col'>
+                          <label
+                            htmlFor='category'
+                            className='block text-sm font-medium text-gray-900'
+                          >
+                            Category
+                          </label>
+                          <select
+                            id='category'
+                            name='category'
+                            onChange={(e) => {
+                              setCatagory(e.target.value);
+                            }}
+                            value={category}
+                            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
+                          >
+                            <option value=''>Select a category</option>
+                            <option value='drug'>Drug</option>
+                            <option value='sunglasses'>sunglasses</option>
+                            <option value='glass'>Glass</option>
+                            <option value='frame'>frame</option>
+                          </select>
+                        </div>
+
                         <div>
-                          <div className='flex items-start flex-col'>
-                            <label
-                              htmlFor='category'
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                            >
-                              Category
-                            </label>
-                            <select
-                              id='category'
-                              name='category'
-                              onChange={(e) => {
-                                setCatagory(e.target.value);
-                              }}
-                              value={category}
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
-                            >
-                              <option value=''>Select a category</option>
-                              <option value='drug'>Drug</option>
-                              <option value='sunglasses'>sunglasses</option>
-                              <option value='glass'>Glass</option>
-                              <option value='frame'>frame</option>
-                            </select>
-                          </div>
+                          <label className='block text-sm font-medium'>
+                            Quantity
+                          </label>
+                          <input
+                            type='number'
+                            className='bg-gray-50 border rounded-lg text-sm'
+                            value={sale.quantity}
+                            onChange={(e) =>
+                              handleInputChange(
+                                index,
+                                'quantity',
+                                Number.parseInt(e.target.value, 10)
+                              )
+                            }
+                            min='1'
+                          />
+                        </div>
+                        <div className='flex items-start flex-col col-span-2'>
                           <label className='block text-sm font-medium'>
                             Product Name
                           </label>
                           <Select
-                            className='basic-single'
+                            className='basic-single w-full'
                             classNamePrefix='select'
                             value={
                               products.find(
@@ -215,24 +264,6 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                             }))}
                             placeholder='Search or select product'
                             isClearable
-                          />
-                        </div>
-                        <div>
-                          <label className='block text-sm font-medium'>
-                            Quantity
-                          </label>
-                          <input
-                            type='number'
-                            className='bg-gray-50 border rounded-lg text-sm'
-                            value={sale.quantity}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index,
-                                'quantity',
-                                Number.parseInt(e.target.value, 10)
-                              )
-                            }
-                            min='1'
                           />
                         </div>
                       </div>

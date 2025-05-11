@@ -12,10 +12,12 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
     throw new AppError('All fields are required', 400);
   }
 
-  // Check if doctor exists in User model and has percentage
-  const doctor = await DoctorBranchAssignment.findOne({ doctorId });
-  if (!doctor) {
-    throw new AppError('Doctor not assigned to a branch', 400);
+  // If user is not a receptionist, then they must be a doctor assigned to a branch
+  if (req.user.role !== 'receptionist') {
+    const doctor = await DoctorBranchAssignment.findOne({ doctorId });
+    if (!doctor) {
+      throw new AppError('Doctor not assigned to a branch', 400);
+    }
   }
 
   const doctorKhata = new DoctorKhata({
