@@ -8,17 +8,14 @@ const {
 
 router.use(authenticate, authorizeAdmin);
 
-router.get(
-  '/doctor-khata/:id/summary',
-  doctorKhataController.getDocKhataSummary
-);
+router.get('/doctor-khata/summary', doctorKhataController.getDocKhataSummary);
 
 router.get(
-  '/doctor-khata/:year/:id',
+  '/doctor-khata/:year',
   doctorKhataController.getDoctorYearlyKhataStats
 );
 router.get(
-  '/doctor-khata/:year/:month/:id',
+  '/doctor-khata/:year/:month',
   doctorKhataController.getDoctorMonthlyKhataStats
 );
 

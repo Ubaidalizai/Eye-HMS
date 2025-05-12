@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Bar, Line } from 'react-chartjs-2';
+import { BASE_URL } from '../config';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,33 +29,39 @@ ChartJS.register(
 );
 
 function DoctorFinance() {
-  const [activeTab, setActiveTab] = useState('weekly');
+  const [activeTab, setActiveTab] = useState('monthly');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [summaryType, setSummaryType] = useState('monthly');
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState({ data: { stats: [] } });
 
-  // Fetch data from API
   useEffect(() => {
-    fetchData();
-  }, []);
+    // Update summaryType when activeTab changes
+    setSummaryType(activeTab);
+  }, [activeTab]);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (summaryType === 'monthly') {
+      fetchMonthlyKhataSummary();
+    } else {
+      fetchYearlyKhataSummary();
+    }
+    fetchDrKhataSummary();
+  }, [summaryType, selectedMonth, selectedYear]);
+
+  const fetchDrKhataSummary = async () => {
     try {
       setLoading(true);
       // Include credentials to send cookies with the request
-      const response = await fetch(
-        'http://localhost:4000/api/v1/khata/doctor-khata/680f6c2fe72fe25f18510586/summary',
-        {
-          credentials: 'include', // This ensures cookies are sent with the request
-          headers: {
-            'Content-Type': 'application/json',
-            // You can add additional headers if needed
-          },
-        }
-      );
+      const response = await fetch(`${BASE_URL}/khata/doctor-khata/summary`, {
+        credentials: 'include', // This ensures cookies are sent with the request
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (response.status === 401) {
         setLoading(false);
@@ -63,10 +73,61 @@ function DoctorFinance() {
       }
 
       const result = await response.json();
+      console.log('Summary data:', result);
       setData(result);
       setLoading(false);
     } catch (err) {
       setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  const fetchMonthlyKhataSummary = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${BASE_URL}/khata/doctor-khata/${selectedYear}/${selectedMonth}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Monthly data:', data);
+      setSummary(data); // Assuming the backend returns a "summary" field
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
+    }
+  };
+
+  const fetchYearlyKhataSummary = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${BASE_URL}/khata/doctor-khata/${selectedYear}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Yearly data:', data);
+      setSummary(data); // Assuming the backend returns a "summary" field
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
       setLoading(false);
     }
   };
@@ -143,21 +204,25 @@ function DoctorFinance() {
     'Nov',
     'Dec',
   ];
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // Check if summary.data and summary.data.stats exist
+  const stats = summary?.data?.stats || [];
 
   const yearlyChartData = {
-    labels: data.data.yearly.map((item) => monthNames[item.month - 1]),
+    labels: stats.map(
+      (item) => monthNames[item.month - 1] || `Month ${item.month}`
+    ),
     datasets: [
       {
         label: 'Income',
-        data: data.data.yearly.map((item) => item.income),
+        data: stats.map((item) => item.income),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
       },
       {
         label: 'Outcome',
-        data: data.data.yearly.map((item) => item.outcome),
+        data: stats.map((item) => item.outcome),
         backgroundColor: 'rgba(255, 99, 132, 0.6)',
         borderColor: 'rgba(255, 99, 132, 1)',
         borderWidth: 1,
@@ -166,11 +231,11 @@ function DoctorFinance() {
   };
 
   const monthlyChartData = {
-    labels: data.data.monthly.map((item) => `Day ${item.day}`),
+    labels: stats.map((item) => `Day ${item.day}`),
     datasets: [
       {
         label: 'Income',
-        data: data.data.monthly.map((item) => item.income),
+        data: stats.map((item) => item.income),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
@@ -178,31 +243,11 @@ function DoctorFinance() {
       },
       {
         label: 'Outcome',
-        data: data.data.monthly.map((item) => item.outcome),
+        data: stats.map((item) => item.outcome),
         backgroundColor: 'rgba(255, 99, 132, 0.6)',
         borderColor: 'rgba(255, 99, 132, 1)',
         borderWidth: 1,
         tension: 0.3,
-      },
-    ],
-  };
-
-  const weeklyChartData = {
-    labels: weekDays,
-    datasets: [
-      {
-        label: 'Income',
-        data: data.data.weekly.map((item) => item.income),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Outcome',
-        data: data.data.weekly.map((item) => item.outcome),
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
       },
     ],
   };
@@ -216,7 +261,7 @@ function DoctorFinance() {
       },
       tooltip: {
         callbacks: {
-          label: function (context) {
+          label: (context) => {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
@@ -236,9 +281,7 @@ function DoctorFinance() {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value) {
-            return '$' + value;
-          },
+          callback: (value) => '$' + value,
         },
       },
     },
@@ -246,20 +289,26 @@ function DoctorFinance() {
 
   // Find transactions with non-zero values
   const transactions = [];
-  data.data.monthly.forEach((day) => {
-    if (day.income > 0) {
+  stats.forEach((item) => {
+    if (item.income > 0) {
       transactions.push({
-        date: `Apr ${day.day}`,
+        date:
+          summaryType === 'monthly'
+            ? `${monthNames[selectedMonth - 1]} ${item.day}`
+            : `${monthNames[item.month - 1]}`,
         name: 'Income Deposit',
-        amount: day.income,
+        amount: item.income,
         type: 'income',
       });
     }
-    if (day.outcome > 0) {
+    if (item.outcome > 0) {
       transactions.push({
-        date: `Apr ${day.day}`,
+        date:
+          summaryType === 'monthly'
+            ? `${monthNames[selectedMonth - 1]} ${item.day}`
+            : `${monthNames[item.month - 1]}`,
         name: 'Expense Payment',
-        amount: day.outcome,
+        amount: item.outcome,
         type: 'outcome',
       });
     }
@@ -277,22 +326,21 @@ function DoctorFinance() {
         <h1 className='text-2xl font-bold text-gray-800 mb-4 sm:mb-0'>
           Financial Dashboard
         </h1>
-        <div className='bg-white px-4 py-2 rounded-lg shadow-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors'>
+        <div className='bg-white px-4 py-2 rounded-lg shadow-sm font-medium text-gray-700'>
           <span>
             {currentMonth} {currentYear}
           </span>
         </div>
       </header>
-
       {/* Summary Cards */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12'>
         {/* Income Card */}
         <div className='bg-white rounded-xl shadow-sm p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1'>
           <h3 className='text-sm font-medium text-gray-500 mb-2 relative z-10'>
             Total Income
           </h3>
           <p className='text-2xl font-bold text-emerald-600 relative z-10'>
-            ${data.data.total.income}
+            {data?.data?.totalIncome || 0}
           </p>
           <div className='absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-emerald-100 text-emerald-500 opacity-20'>
             <svg
@@ -317,7 +365,7 @@ function DoctorFinance() {
             Total Outcome
           </h3>
           <p className='text-2xl font-bold text-red-600 relative z-10'>
-            ${data.data.total.outcome}
+            {data?.data?.totalOutcome || 0}
           </p>
           <div className='absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-red-100 text-red-500 opacity-20'>
             <svg
@@ -339,10 +387,10 @@ function DoctorFinance() {
         {/* Balance Card */}
         <div className='bg-white rounded-xl shadow-sm p-6 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1'>
           <h3 className='text-sm font-medium text-gray-500 mb-2 relative z-10'>
-            Balance
+            You Will Get
           </h3>
           <p className='text-2xl font-bold text-blue-600 relative z-10'>
-            ${data.data.total.income - data.data.total.outcome}
+            {data?.data?.youWillGet || 0}
           </p>
           <div className='absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-500 opacity-20'>
             <svg
@@ -367,7 +415,7 @@ function DoctorFinance() {
             You Will Give
           </h3>
           <p className='text-2xl font-bold text-orange-600 relative z-10'>
-            ${data.data.youWillGive}
+            {data?.data?.youWillGive || 0}
           </p>
           <div className='absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-orange-100 text-orange-500 opacity-20'>
             <svg
@@ -387,6 +435,38 @@ function DoctorFinance() {
         </div>
       </div>
 
+      {/* Date Filter Controls */}
+      <div className='flex flex-wrap gap-4 mb-6 mt-8'>
+        {activeTab === 'monthly' && (
+          <select
+            className='p-2 border rounded w-20'
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number.parseInt(e.target.value))}
+          >
+            {[...Array(12)].map((_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {monthNames[i]}
+              </option>
+            ))}
+          </select>
+        )}
+
+        <select
+          className='p-2 border rounded w-20'
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(Number.parseInt(e.target.value))}
+        >
+          {Array.from({ length: 5 }, (_, i) => {
+            const year = new Date().getFullYear() - i;
+            return (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+
       {/* Chart Section */}
       <div className='bg-white rounded-xl shadow-sm p-6 mb-8'>
         <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6'>
@@ -396,21 +476,14 @@ function DoctorFinance() {
           <div className='flex border-b border-gray-200 w-full sm:w-auto'>
             <button
               className={`px-4 py-2 text-sm font-medium ${
-                activeTab === 'weekly'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-blue-600'
-              }`}
-              onClick={() => setActiveTab('weekly')}
-            >
-              Weekly
-            </button>
-            <button
-              className={`px-4 py-2 text-sm font-medium ${
                 activeTab === 'monthly'
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500 hover:text-blue-600'
               }`}
-              onClick={() => setActiveTab('monthly')}
+              onClick={() => {
+                setActiveTab('monthly');
+                setSummaryType('monthly');
+              }}
             >
               Monthly
             </button>
@@ -420,7 +493,10 @@ function DoctorFinance() {
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-500 hover:text-blue-600'
               }`}
-              onClick={() => setActiveTab('yearly')}
+              onClick={() => {
+                setActiveTab('yearly');
+                setSummaryType('yearly');
+              }}
             >
               Yearly
             </button>
@@ -428,14 +504,29 @@ function DoctorFinance() {
         </div>
 
         <div className='h-[300px]'>
-          {activeTab === 'weekly' && (
-            <Bar data={weeklyChartData} options={chartOptions} height={300} />
-          )}
-          {activeTab === 'monthly' && (
-            <Line data={monthlyChartData} options={chartOptions} height={300} />
-          )}
-          {activeTab === 'yearly' && (
-            <Bar data={yearlyChartData} options={chartOptions} height={300} />
+          {stats.length > 0 ? (
+            <>
+              {activeTab === 'monthly' && (
+                <Line
+                  data={monthlyChartData}
+                  options={chartOptions}
+                  height={300}
+                />
+              )}
+              {activeTab === 'yearly' && (
+                <Bar
+                  data={yearlyChartData}
+                  options={chartOptions}
+                  height={300}
+                />
+              )}
+            </>
+          ) : (
+            <div className='flex items-center justify-center h-full'>
+              <p className='text-gray-500'>
+                No data available for the selected period
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -466,7 +557,7 @@ function DoctorFinance() {
                       : 'text-red-600'
                   }`}
                 >
-                  {transaction.type === 'income' ? '+' : '-'}$
+                  {transaction.type === 'income' ? '+' : '-'}
                   {transaction.amount}
                 </span>
               </div>
