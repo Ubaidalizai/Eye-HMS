@@ -1,41 +1,41 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import store from './redux/store';
-import { AuthProvider } from './AuthContext';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Provider } from "react-redux";
+import store from "./redux/store";
+import { AuthProvider } from "./AuthContext";
 
 // Import components
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Layout from './components/Layout';
-import Inventory from './pages/Inventory';
-import NoPageFound from './pages/NoPageFound';
-import ProtectedWrapper from './ProtectedWrapper';
-import Sales from './pages/Sales';
-import Patient from './pages/Patient';
-import PurchaseDetails from './pages/PurchaseDetails';
-import Move from './pages/Move';
-import Bedroom from './components/Bedroom';
-import Ultrasound from './components/Altrasound';
-import Operation from './components/Operation';
-import IncomeReport from './pages/IncomeReport';
-import ExpenseManagement from './pages/ExpenseManagement';
-import Pharmacy from './pages/Pharmacy';
-import Glasses from './pages/Glasses';
-import ExpiredProduct from './pages/ExpiredProduct';
-import AdminPanel from './pages/Admin-panel';
-import Laboratory from './components/Laboratory';
-import OCT from './components/OCT';
-import OPD from './components/OPD';
-import Yeglizer from './components/Yeglizer';
-import MoveHistory from './pages/MoveHistory';
-import ForgotPassword from './pages/ForgotPassword ';
-import ResetPassword from './pages/ResetPassword ';
-import DoctorFinance from './pages/DoctorFinance';
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Layout from "./components/Layout";
+import Inventory from "./pages/Inventory";
+import NoPageFound from "./pages/NoPageFound";
+import ProtectedWrapper from "./ProtectedWrapper";
+import Sales from "./pages/Sales";
+import Patient from "./pages/Patient";
+import PurchaseDetails from "./pages/PurchaseDetails";
+import Move from "./pages/Move";
+import Bedroom from "./components/Bedroom";
+import Ultrasound from "./components/Altrasound";
+import Operation from "./components/Operation";
+import IncomeReport from "./pages/IncomeReport";
+import ExpenseManagement from "./pages/ExpenseManagement";
+import Pharmacy from "./pages/Pharmacy";
+import Glasses from "./pages/Glasses";
+import ExpiredProduct from "./pages/ExpiredProduct";
+import AdminPanel from "./pages/Admin-panel";
+import Laboratory from "./components/Laboratory";
+import OCT from "./components/OCT";
+import OPD from "./components/OPD";
+import Yeglizer from "./components/Yeglizer";
+import MoveHistory from "./pages/MoveHistory";
+import ForgotPassword from "./pages/ForgotPassword ";
+import ResetPassword from "./pages/ResetPassword ";
+import DoctorFinance from "./pages/DoctorFinance";
 
-import { Roles } from './roles';
-import './index.css';
+import { Roles } from "./roles";
+import "./index.css";
 
 const App = () => {
   return (
@@ -115,6 +115,7 @@ const App = () => {
                   </ProtectedWrapper>
                 }
               />
+
               <Route
                 path='/doctor-finance'
                 element={
@@ -123,6 +124,7 @@ const App = () => {
                   </ProtectedWrapper>
                 }
               />
+
               <Route
                 path='/expenseManagement'
                 element={
