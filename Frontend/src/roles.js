@@ -1,6 +1,7 @@
 export const Roles = {
   ADMIN: 'admin',
   PHARMACIST: 'pharmacist',
+  DOCTOR: 'doctor',
   RECEPTIONIST: 'receptionist',
 };
 
@@ -18,8 +19,18 @@ export const RoleMenus = {
     'pharmacy',
     'glasses',
     'branches',
+    'doctor-finance',
   ],
   [Roles.PHARMACIST]: ['pharmacy', 'sales'],
+  [Roles.DOCTOR]: [
+    'branches',
+    'patient',
+    'sales',
+    'pharmacy',
+    'glasses',
+    'purchase-details',
+    'doctor-finance',
+  ],
   [Roles.RECEPTIONIST]: [
     'branches',
     'patient',

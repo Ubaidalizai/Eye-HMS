@@ -17,6 +17,7 @@ function ProtectedWrapper({ children, allowedRoles }) {
 
   // Check if user has a required role
   if (!allowedRoles.includes(user.role)) {
+    console.log(allowedRoles, user.role);
     return <UnauthorizedPage />;
   }
 

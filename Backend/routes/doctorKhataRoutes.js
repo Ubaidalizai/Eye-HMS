@@ -13,6 +13,15 @@ router.get(
   doctorKhataController.getDocKhataSummary
 );
 
+router.get(
+  '/doctor-khata/:year/:id',
+  doctorKhataController.getDoctorYearlyKhataStats
+);
+router.get(
+  '/doctor-khata/:year/:month/:id',
+  doctorKhataController.getDoctorMonthlyKhataStats
+);
+
 router.post('/doctor-khata', doctorKhataController.createDoctorKhata);
 router.get('/doctor-khata/:id', doctorKhataController.getDoctorKhataById);
 router.patch('/doctor-khata/:id', doctorKhataController.updateDoctorKhata);
