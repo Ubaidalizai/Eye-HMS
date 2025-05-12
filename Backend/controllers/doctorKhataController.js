@@ -93,7 +93,7 @@ exports.deleteDoctorKhata = async (req, res) => {
 };
 
 exports.getDocKhataSummary = asyncHandler(async (req, res) => {
-  const doctorId = new mongoose.Types.ObjectId(req.params.id);
+  const doctorId = new mongoose.Types.ObjectId(req.user.id);
 
   // Aggregate only total income/outcome
   const summary = await DoctorKhata.aggregate([
@@ -130,8 +130,8 @@ exports.getDocKhataSummary = asyncHandler(async (req, res) => {
 });
 
 exports.getDoctorYearlyKhataStats = asyncHandler(async (req, res) => {
-  const { id, year } = req.params;
-  const doctorObjectId = new mongoose.Types.ObjectId(id);
+  const { year } = req.params;
+  const doctorObjectId = new mongoose.Types.ObjectId(req.user.id);
   const numericYear = parseInt(year, 10);
 
   const startOfYear = new Date(numericYear, 0, 1);
@@ -177,8 +177,8 @@ exports.getDoctorYearlyKhataStats = asyncHandler(async (req, res) => {
 });
 
 exports.getDoctorMonthlyKhataStats = asyncHandler(async (req, res) => {
-  const { id, year, month } = req.params;
-  const doctorObjectId = new mongoose.Types.ObjectId(id);
+  const { year, month } = req.params;
+  const doctorObjectId = new mongoose.Types.ObjectId(req.user.id);
   const y = parseInt(year, 10);
   const m = parseInt(month, 10) - 1; // JS months are 0-indexed
 
