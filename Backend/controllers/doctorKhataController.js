@@ -1,9 +1,10 @@
+const mongoose = require('mongoose');
 const DoctorKhata = require('../models/doctorKhataModel');
 const User = require('../models/userModel');
 const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
-const mongoose = require('mongoose');
+const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 
 exports.createDoctorKhata = asyncHandler(async (req, res) => {
   const { doctorId, amount, amountType, date } = req.body;
@@ -32,119 +33,6 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
 
   res.status(201).json({ message: 'Record created successfully' });
 });
-
-exports.getDocKhataSummary = asyncHandler(async (req, res) => {
-  const id = req.params.id;
-  const doctorObjectId = new mongoose.Types.ObjectId(id);
-
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-
-  const summary = await DoctorKhata.aggregate([
-    { $match: { doctorId: doctorObjectId } },
-    {
-      $facet: {
-        total: [
-          {
-            $group: {
-              _id: '$amountType',
-              totalAmount: { $sum: '$amount' },
-            },
-          },
-        ],
-        yearly: [
-          { $match: { date: { $gte: startOfYear } } },
-          {
-            $group: {
-              _id: {
-                month: { $month: '$date' },
-                amountType: '$amountType',
-              },
-              totalAmount: { $sum: '$amount' },
-            },
-          },
-        ],
-        monthly: [
-          { $match: { date: { $gte: startOfMonth } } },
-          {
-            $group: {
-              _id: {
-                day: { $dayOfMonth: '$date' },
-                amountType: '$amountType',
-              },
-              totalAmount: { $sum: '$amount' },
-            },
-          },
-        ],
-        weekly: [
-          { $match: { date: { $gte: startOfWeek } } },
-          {
-            $group: {
-              _id: {
-                day: { $dayOfWeek: '$date' }, // 1 = Sunday, 7 = Saturday
-                amountType: '$amountType',
-              },
-              totalAmount: { $sum: '$amount' },
-            },
-          },
-        ],
-      },
-    },
-  ]);
-
-  const formatResult = (arr) => {
-    const formatted = { income: 0, outcome: 0 };
-    arr.forEach((item) => {
-      formatted[item._id] = item.totalAmount;
-    });
-    return formatted;
-  };
-
-  const formatPeriodArray = (entries, count, keyName, label) => {
-    const result = Array.from({ length: count }, (_, i) => ({
-      [label]: i + 1,
-      income: 0,
-      outcome: 0,
-    }));
-
-    entries.forEach((item) => {
-      const index = item._id[keyName] - 1;
-      if (item._id.amountType === 'income') {
-        result[index].income = item.totalAmount;
-      } else if (item._id.amountType === 'outcome') {
-        result[index].outcome = item.totalAmount;
-      }
-    });
-
-    return result;
-  };
-
-  const total = formatResult(summary[0].total);
-  const yearly = formatPeriodArray(summary[0].yearly, 12, 'month', 'month');
-  const monthly = formatPeriodArray(summary[0].monthly, 30, 'day', 'day');
-  const weekly = formatPeriodArray(summary[0].weekly, 7, 'day', 'day');
-
-  const balance = total.income - total.outcome;
-  const youWillGet = balance < 0 ? Math.abs(balance) : 0;
-  const youWillGive = balance >= 0 ? balance : 0;
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      total,
-      yearly,
-      monthly,
-      weekly,
-      youWillGet,
-      youWillGive,
-    },
-  });
-});
-
-
 
 exports.getDoctorKhataById = asyncHandler(async (req, res) => {
   const id = req.params.id;
@@ -203,3 +91,136 @@ exports.deleteDoctorKhata = async (req, res) => {
       .json({ message: 'Error deleting record', error: err.message });
   }
 };
+
+exports.getDocKhataSummary = asyncHandler(async (req, res) => {
+  const doctorId = new mongoose.Types.ObjectId(req.params.id);
+
+  // Aggregate only total income/outcome
+  const summary = await DoctorKhata.aggregate([
+    { $match: { doctorId } },
+    {
+      $group: {
+        _id: '$amountType',
+        totalAmount: { $sum: '$amount' },
+      },
+    },
+  ]);
+
+  // Extract income/outcome totals
+  const totals = { income: 0, outcome: 0 };
+  summary.forEach((entry) => {
+    if (entry._id === 'income') totals.income = entry.totalAmount;
+    if (entry._id === 'outcome') totals.outcome = entry.totalAmount;
+  });
+
+  const balance = totals.income - totals.outcome;
+  const youWillGet = balance > 0 ? balance : 0;
+  const youWillGive = balance < 0 ? Math.abs(balance) : 0;
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      totalIncome: totals.income,
+      totalOutcome: totals.outcome,
+      balance,
+      youWillGet,
+      youWillGive,
+    },
+  });
+});
+
+exports.getDoctorYearlyKhataStats = asyncHandler(async (req, res) => {
+  const { id, year } = req.params;
+  const doctorObjectId = new mongoose.Types.ObjectId(id);
+  const numericYear = parseInt(year, 10);
+
+  const startOfYear = new Date(numericYear, 0, 1);
+  const endOfYear = new Date(numericYear + 1, 0, 1);
+
+  const yearlyStats = await DoctorKhata.aggregate([
+    {
+      $match: {
+        doctorId: doctorObjectId,
+        date: { $gte: startOfYear, $lt: endOfYear },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: '$date' },
+          amountType: '$amountType',
+        },
+        totalAmount: { $sum: '$amount' },
+      },
+    },
+  ]);
+
+  const monthly = Array.from({ length: 12 }, (_, i) => ({
+    month: i + 1,
+    income: 0,
+    outcome: 0,
+  }));
+
+  yearlyStats.forEach((entry) => {
+    const index = entry._id.month - 1;
+    if (entry._id.amountType === 'income') {
+      monthly[index].income = entry.totalAmount;
+    } else {
+      monthly[index].outcome = entry.totalAmount;
+    }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { year: numericYear, stats: monthly },
+  });
+});
+
+exports.getDoctorMonthlyKhataStats = asyncHandler(async (req, res) => {
+  const { id, year, month } = req.params;
+  const doctorObjectId = new mongoose.Types.ObjectId(id);
+  const y = parseInt(year, 10);
+  const m = parseInt(month, 10) - 1; // JS months are 0-indexed
+
+  const startOfMonth = new Date(y, m, 1);
+  const endOfMonth = new Date(y, m + 1, 1);
+
+  const monthlyStats = await DoctorKhata.aggregate([
+    {
+      $match: {
+        doctorId: doctorObjectId,
+        date: { $gte: startOfMonth, $lt: endOfMonth },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          day: { $dayOfMonth: '$date' },
+          amountType: '$amountType',
+        },
+        totalAmount: { $sum: '$amount' },
+      },
+    },
+  ]);
+
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => ({
+    day: i + 1,
+    income: 0,
+    outcome: 0,
+  }));
+
+  monthlyStats.forEach((entry) => {
+    const index = entry._id.day - 1;
+    if (entry._id.amountType === 'income') {
+      days[index].income = entry.totalAmount;
+    } else {
+      days[index].outcome = entry.totalAmount;
+    }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { year: y, month: m + 1, stats: days },
+  });
+});

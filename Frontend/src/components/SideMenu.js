@@ -60,9 +60,15 @@ const menuItems = [
     label: 'Pharmacy',
   },
   {
+    id: 'doctor-finance',
+    path: '/doctor-finance',
+    icon: <FaFileInvoice />,
+    label: 'Finance',
+  },
+  {
     id: 'glasses',
     path: '/glasses',
-    icon: <FaCapsules />,
+    icon: <FaFileInvoice />,
     label: 'Glasses',
   },
   { id: 'branches', path: '', icon: null, label: 'Branches' }, // Placeholder for branches menu
@@ -91,6 +97,7 @@ function SideMenu() {
 
   // Filter menu items based on the user's role
   const allowedMenus = RoleMenus[userInfo.role] || [];
+  console.log(allowedMenus);
 
   return (
     <div className='h-full flex-col justify-between bg-white hidden lg:flex'>

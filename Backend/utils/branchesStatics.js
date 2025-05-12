@@ -47,7 +47,6 @@ const getDataByMonth = async (year, month, Model) => {
   ) {
     throw new AppError('Invalid year or month provided.', 400);
   }
-  console.log(year, month);
   // Get the date range for the given month
   const { startDate, endDate } = getDateRangeForMonth(year, month);
 

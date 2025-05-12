@@ -32,9 +32,9 @@ import Yeglizer from './components/Yeglizer';
 import MoveHistory from './pages/MoveHistory';
 import ForgotPassword from './pages/ForgotPassword ';
 import ResetPassword from './pages/ResetPassword ';
+import DoctorFinance from './pages/DoctorFinance';
 
 import { Roles } from './roles';
-// Import styles
 import './index.css';
 
 const App = () => {
@@ -112,6 +112,14 @@ const App = () => {
                     allowedRoles={[Roles.ADMIN, Roles.RECEPTIONIST]}
                   >
                     <PurchaseDetails />
+                  </ProtectedWrapper>
+                }
+              />
+              <Route
+                path='/doctor-finance'
+                element={
+                  <ProtectedWrapper allowedRoles={[Roles.DOCTOR, Roles.ADMIN]}>
+                    <DoctorFinance />
                   </ProtectedWrapper>
                 }
               />
