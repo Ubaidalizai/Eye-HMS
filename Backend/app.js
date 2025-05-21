@@ -37,6 +37,7 @@ const operationTypeRoute = require('./routes/operationTypeRoutes');
 const pharmacyTotalSalesRoute = require('./routes/pharmacySalesTotalRoutes');
 const pharmacyLogRoute = require('./routes/pharmacyLogRoutes');
 const glassesRoutes = require('./routes/glassesRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 const app = express();
 
@@ -118,6 +119,7 @@ app.use('/api/v1/operation-types', operationTypeRoute);
 app.use('/api/v1/pharmacyTotal', pharmacyTotalSalesRoute);
 app.use('/api/v1/pharmacy-logs', pharmacyLogRoute);
 app.use('/api/v1/glasses', glassesRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 
 app.all('*', (req, res) => {
   throw new AppError(`Can't find ${req.originalUrl} on this server!`, 404);

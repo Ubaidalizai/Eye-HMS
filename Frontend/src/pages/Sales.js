@@ -1,12 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { FaPlus, FaTrash, FaSearch, FaPrint } from 'react-icons/fa';
 import AddSale from '../components/AddSale';
 import { toast, ToastContainer } from 'react-toastify';
 import Pagination from '../components/Pagination';
 import { BASE_URL } from '../config';
 import { BillPrintModal } from '../components/BillPrintModal';
+import AuthContext from '../AuthContext';
 
 export default function Sales() {
   const [showSaleModal, setShowSaleModal] = useState(false);
@@ -23,7 +22,7 @@ export default function Sales() {
   const [showBillModal, setShowBillModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem('user'));
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchSales();
@@ -122,190 +121,227 @@ export default function Sales() {
   };
 
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen px-4 sm:px-6 py-6'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
 
-        <h2 className='font-semibold text-xl mb-10'>Sales List</h2>
+        <h2 className='text-xl sm:text-2xl font-semibold text-gray-800 mb-6'>
+          Sales List
+        </h2>
 
-        <div className='overflow-x-auto rounded-lg bg-white border '>
-          <div className='flex flex-row justify-between items-end  px-5 pb-3'>
-            <div>
-              <FaSearch className=' translate-x-3 translate-y-7 text-gray-400' />
-              <input
-                type='date'
-                placeholder='Search by date'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
-              />
+        <div className='bg-white overflow-hidden border rounded-lg shadow-sm'>
+          {/* Filters and Actions Section */}
+          <div className='p-4 sm:p-6 flex flex-col sm:flex-row justify-between gap-4'>
+            <div className='w-full sm:w-auto'>
+              <label
+                htmlFor='date-search'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
+                Search by Date
+              </label>
+              <div className='relative'>
+                <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                  <FaSearch className='text-gray-400' />
+                </div>
+                <input
+                  id='date-search'
+                  type='date'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className='pl-10 pr-4 py-2 h-10 border border-gray-300 rounded-md w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
+              </div>
             </div>
 
-            <div className='flex flex-row items-center justify-center gap-3'>
-              <label htmlFor='category' className='sr-only'>
-                Category
-              </label>
-              <div>
+            <div className='flex flex-col sm:flex-row items-start sm:items-end gap-4'>
+              <div className='w-full sm:w-auto'>
+                <label
+                  htmlFor='category'
+                  className='block text-sm font-medium text-gray-700 mb-1'
+                >
+                  Filter by Category
+                </label>
                 <select
                   id='category'
                   name='category'
                   value={category}
                   onChange={handleCategoryChange}
-                  className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                  className='block w-full sm:w-48 h-10 pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                 >
                   <option value=''>All Categories</option>
-                  <option value='drug'>Drug</option>
-                  <option value='sunglasses'>sunglasses</option>
+                  {authContext.user.role === 'admin' && (
+                    <option value='drug'>Drug</option>
+                  )}
+                  <option value='sunglasses'>Sunglasses</option>
                   <option value='glass'>Glass</option>
                   <option value='frame'>Frame</option>
                 </select>
               </div>
 
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 h-10 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
                 onClick={() => addSaleModalSetting()}
               >
                 <FaPlus className='mr-2' />
                 Add Sale
               </button>
-
-              {showSaleModal && (
-                <AddSale
-                  addSaleModalSetting={addSaleModalSetting}
-                  handlePageUpdate={fetchSales}
-                />
-              )}
             </div>
           </div>
 
+          {/* Table Section with Horizontal Scrolling */}
           <div className='border-t border-gray-200'>
             {isLoading ? (
-              <div className='text-center py-4'>Loading...</div>
+              <div className='flex justify-center items-center py-10'>
+                <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500'></div>
+                <p className='ml-3 text-gray-600'>Loading...</p>
+              </div>
             ) : error ? (
-              <div className='text-center py-4 text-red-600'>{error}</div>
+              <div className='text-center py-6 text-red-600'>{error}</div>
             ) : (
-              <table className=' w-full text-sm text-left text-gray-500'>
-                <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
-                  <tr>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Stock Sold
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Sale Price
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Category
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Sales Date
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Sales By
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Total Sale
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sales.length > 0 ? (
-                    sales.map((sale) => (
-                      <tr
-                        key={`${sale._id}`}
-                        className='bg-white border-b hover:bg-gray-50'
-                      >
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          {sale.productRefId?.name}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          {sale.quantity}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          {sale.productRefId?.salePrice}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          {sale.category}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          {sale.date.split('T')[0]}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap'>{`${sale.userID?.firstName} ${sale.userID?.lastName}`}</td>
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          {sale.income}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap'>
-                          <div className='flex gap-2'>
-                            <button
-                              onClick={() => handlePrintSale(sale)}
-                              className='font-medium text-blue-600 hover:text-blue-800'
-                            >
-                              <FaPrint className='w-4 h-4' />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(sale._id)}
-                              className='font-medium text-red-600 hover:text-red-700'
-                            >
-                              <FaTrash className='w-4 h-4' />
-                            </button>
-                          </div>
-                        </td>
+              <div className='overflow-x-auto'>
+                <div className='inline-block min-w-full align-middle'>
+                  <table className='min-w-full divide-y divide-gray-200'>
+                    <thead className='bg-gray-50'>
+                      <tr>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Name
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Stock Sold
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Sale Price
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Category
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Sales Date
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Sales By
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Total Sale
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-center'
+                        >
+                          Actions
+                        </th>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan='7'
-                        className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center'
-                      >
-                        No sales available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className='bg-white divide-y divide-gray-200'>
+                      {sales.length > 0 ? (
+                        sales.map((sale) => (
+                          <tr
+                            key={`${sale._id}`}
+                            className='hover:bg-gray-50 transition-colors'
+                          >
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                              {sale.productRefId?.name}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {sale.quantity}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {sale.productRefId?.salePrice}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {sale.category}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {sale.date.split('T')[0]}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {`${sale.userID?.firstName} ${sale.userID?.lastName}`}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {sale.income}
+                            </td>
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
+                              <div className='flex justify-center space-x-3'>
+                                <button
+                                  onClick={() => handlePrintSale(sale)}
+                                  className='text-blue-600 hover:bg-blue-50 p-1.5 rounded transition-colors'
+                                  aria-label='Print sale receipt'
+                                >
+                                  <FaPrint className='w-4 h-4' />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(sale._id)}
+                                  className='text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors'
+                                  aria-label='Delete sale'
+                                >
+                                  <FaTrash className='w-4 h-4' />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan='8'
+                            className='px-4 sm:px-6 py-4 text-center text-sm text-gray-500'
+                          >
+                            No sales available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Responsive indicator - only visible on small screens */}
+                <div className='block sm:hidden text-center text-xs text-gray-500 mt-2 px-4 pb-2'>
+                  <p>Swipe horizontally to see more data</p>
+                </div>
+              </div>
             )}
           </div>
         </div>
 
-        <Pagination
-          totalItems={sales.length}
-          totalPagesCount={totalPages}
-          itemsPerPage={limit}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(limit) => setLimit(limit)}
-        />
+        <div className='mt-4'>
+          <Pagination
+            totalItems={sales.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
+        </div>
       </div>
+
+      {showSaleModal && (
+        <AddSale
+          addSaleModalSetting={addSaleModalSetting}
+          handlePageUpdate={fetchSales}
+        />
+      )}
 
       <BillPrintModal
         showBill={showBillModal}

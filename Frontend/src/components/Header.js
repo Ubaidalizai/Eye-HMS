@@ -1,8 +1,10 @@
-import { Fragment, useContext, useState, useEffect } from 'react';
+'use client';
+
+import { Fragment, useState, useEffect } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { MdOutlineCloudDownload } from 'react-icons/md';
 import { TbLogout } from 'react-icons/tb';
-import AuthContext from '../AuthContext';
+import { useAuth } from '../AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Bell } from 'lucide-react'; // Use the Bell icon from lucide-react
@@ -18,14 +20,21 @@ export default function Header() {
   const [userInfo, setUserInfo] = useState('');
   const [exProductsCount, setExProductsCount] = useState(0);
   const [exDrugsCount, setExDrugsCount] = useState(0);
-  const authContext = useContext(AuthContext);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user, logout, authStatus } = useAuth();
 
   useEffect(() => {
-    fetchData();
-    expiredProduct();
-    expiredDrugs();
-  }, []);
+    // Only fetch data if authenticated
+    if (authStatus === 'authenticated') {
+      fetchData();
+      expiredProduct();
+      expiredDrugs();
+    }
+  }, [authStatus]);
+
+  const handleLogout = () => {
+    // Simple logout with redirect
+    logout(true);
+  };
 
   const fetchData = async () => {
     try {
@@ -110,99 +119,98 @@ export default function Header() {
   const totalExpiredCount = exProductsCount + exDrugsCount; // Calculate total
   return (
     <>
-      <div className='min-h-full'>
-        <Disclosure as='nav' className='fixed top-0 w-4/5 bg-white'>
+      <div className='min-h-full z-30'>
+        <Disclosure
+          as='nav'
+          className='fixed top-0 left-0 right-0 lg:left-[16.666667%] z-30'
+        >
           {({ open }) => (
             <>
-              <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-                <div className='flex h-16 items-center justify-end'>
-                  <div className='flex items-center gap-2'>
+              <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-0'>
+                <div className='flex h-16 items-center justify-end gap-4 sm:mr-10'>
+                  <div className='flex items-center gap-4 mr-4'>
+                    {/* Backup Button - Visible on all screens */}
                     <button
                       onClick={handleBackup}
-                      className='text-gray-300 active:scale-95 transition transform duration-150v rounded-full hover:bg-gray-200 p-2'
+                      className='relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 transition transform duration-150'
+                      aria-label='Backup data'
                     >
-                      <MdOutlineCloudDownload className='inline-block  font-bold text-gray-600 mr-2n text-2xl' />
+                      <MdOutlineCloudDownload className='text-xl' />
                     </button>
-                    <div className='hidden md:block'>
-                      <div className='ml-4 flex items-center md:ml-6 gap-5'>
-                        <Link to='/ExpiredProduct'>
-                          <button
-                            type='button'
-                            className='relative rounded-full text-gray-500 p-2  font-bold hover:bg-gray-200 focus:outline-none'
-                            aria-label='View notifications'
+
+                    {/* Notifications Button - Visible on all screens */}
+                    <Link to='/ExpiredProduct'>
+                      <button
+                        type='button'
+                        className='relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 transition'
+                        aria-label='View notifications'
+                      >
+                        <Bell className='text-lg' aria-hidden='true' />
+
+                        {/* Notification Badge - Admin */}
+                        {user?.role === 'admin' && totalExpiredCount > 0 && (
+                          <span
+                            className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                            aria-label={`You have ${totalExpiredCount} expired items`}
                           >
-                            <Bell
-                              className='font-bold text-gray-600'
-                              aria-hidden='true'
-                            />
+                            {totalExpiredCount > 99 ? '99+' : totalExpiredCount}
+                          </span>
+                        )}
 
-                            {/* Conditional Rendering Based on Role */}
-                            {user?.role === 'admin' &&
-                              totalExpiredCount > 0 && (
-                                <span
-                                  className='absolute top-0 right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
-                                  aria-label={`You have ${totalExpiredCount} expired items`}
-                                >
-                                  {totalExpiredCount > 99
-                                    ? '99+'
-                                    : totalExpiredCount}
-                                </span>
-                              )}
-
-                            {user?.role === 'pharmacist' &&
-                              exDrugsCount > 0 && (
-                                <span
-                                  className='absolute top-0 right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
-                                  aria-label={`You have ${exDrugsCount} expired drugs`}
-                                >
-                                  {exDrugsCount > 99 ? '99+' : exDrugsCount}
-                                </span>
-                              )}
-                          </button>
-                        </Link>
-
-                        {/* Profile dropdown */}
-                        <Menu as='div' className='relative ml-3'>
-                          <div>
-                            <Menu.Button className='flex max-w-xs items-center text-2xl rounded-full focus:outline-none font-bold text-gray-600 hover:bg-gray-200 p-2'>
-                              <span className='sr-only'>Open user menu</span>
-                              <TbLogout />
-                            </Menu.Button>
-                          </div>
-                          <Transition
-                            as={Fragment}
-                            enter='transition ease-out duration-100'
-                            enterFrom='transform opacity-0 scale-95'
-                            enterTo='transform opacity-100 scale-100'
-                            leave='transition ease-in duration-75'
-                            leaveFrom='transform opacity-100 scale-100'
-                            leaveTo='transform opacity-0 scale-95'
+                        {/* Notification Badge - Pharmacist */}
+                        {user?.role === 'pharmacist' && exDrugsCount > 0 && (
+                          <span
+                            className='absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full'
+                            aria-label={`You have ${exDrugsCount} expired drugs`}
                           >
-                            <Menu.Items className='absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
-                              {userNavigation.map((item) => (
-                                <Menu.Item key={item.name}>
-                                  {({ active }) => (
-                                    <Link
-                                      to={item.href}
-                                      className={classNames(
-                                        active ? 'bg-gray-100' : '',
-                                        'block px-4 py-2 text-sm text-gray-700'
-                                      )}
-                                    >
-                                      <span
-                                        onClick={() => authContext.logout()}
-                                      >
-                                        {item.name}{' '}
-                                      </span>
-                                    </Link>
-                                  )}
-                                </Menu.Item>
-                              ))}
-                            </Menu.Items>
-                          </Transition>
-                        </Menu>
+                            {exDrugsCount > 99 ? '99+' : exDrugsCount}
+                          </span>
+                        )}
+                      </button>
+                    </Link>
+
+                    {/* Logout Button - Visible on all screens */}
+                    <Menu as='div' className='relative'>
+                      <div>
+                        <Menu.Button
+                          className='relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 transition'
+                          aria-label='Logout menu'
+                        >
+                          <TbLogout className='text-xl' />
+                        </Menu.Button>
                       </div>
-                    </div>
+                      <Transition
+                        as={Fragment}
+                        enter='transition ease-out duration-100'
+                        enterFrom='transform opacity-0 scale-95'
+                        enterTo='transform opacity-100 scale-100'
+                        leave='transition ease-in duration-75'
+                        leaveFrom='transform opacity-100 scale-100'
+                        leaveTo='transform opacity-0 scale-95'
+                      >
+                        <Menu.Items className='absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none'>
+                          {userNavigation.map((item) => (
+                            <Menu.Item key={item.name}>
+                              {({ active }) => (
+                                <Link
+                                  to={item.href}
+                                  className={classNames(
+                                    active ? 'bg-gray-100' : '',
+                                    'block px-4 py-2 text-sm text-gray-700'
+                                  )}
+                                  onClick={(e) => {
+                                    e.preventDefault(); // Prevent default navigation
+                                    handleLogout();
+                                  }}
+                                >
+                                  {item.name}
+                                </Link>
+                              )}
+                            </Menu.Item>
+                          ))}
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
                   </div>
                 </div>
               </div>

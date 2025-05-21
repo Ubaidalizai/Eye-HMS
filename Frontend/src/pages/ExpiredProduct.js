@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuth } from '../AuthContext';
 import { BASE_URL } from '../config';
 
 const ExpiredProduct = () => {
   const [expiredProducts, setExpiredProducts] = useState([]);
   const [expiredDrugs, setExpiredDrugs] = useState([]);
-  const user = JSON.parse(localStorage.getItem('user')); // Get user role
+  const { user } = useAuth();
 
   useEffect(() => {
     // Fetch data based on the user's role
     if (user.role === 'admin') {
       expiredProduct(); // Admin can see both tables
       fetchExpiredDrugs();
-    } else if (user.role === 'pharmacist') {
+    } else if (user.role === 'pharmacist' || user.role === 'receptionist') {
       fetchExpiredDrugs(); // Pharmacist can only see the drugs table
     }
   }, [user.role]);
@@ -48,7 +49,7 @@ const ExpiredProduct = () => {
 
   return (
     <div className='container mx-auto p-4'>
-      <h3 className='text-2xl font-medium mb-8'>Expired Products</h3>
+      <h3 className='text-2xl font-medium mb-8'>Expired Items</h3>
       {user.role === 'admin' && (
         <>
           <h2 className='text-lg font-medium mb-4'>Inventory Expiry</h2>
@@ -101,7 +102,9 @@ const ExpiredProduct = () => {
         </>
       )}
 
-      {(user.role === 'admin' || user.role === 'pharmacist') && (
+      {(user.role === 'admin' ||
+        user.role === 'pharmacist' ||
+        user.role === 'receptionist') && (
         <>
           <h2 className='text-lg font-medium mb-4'>Pharmacy Expiry</h2>
           {expiredDrugs.length === 0 ? (

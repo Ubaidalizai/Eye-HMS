@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
-const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
+const validateMongodbId = require('../utils/validateMongoDbId');
 
 exports.createDoctorKhata = asyncHandler(async (req, res) => {
   const { doctorId, amount, amountType, date } = req.body;
@@ -34,28 +34,101 @@ exports.createDoctorKhata = asyncHandler(async (req, res) => {
   res.status(201).json({ message: 'Record created successfully' });
 });
 
+const branchNameMap = {
+  opdModule: 'OPD',
+  glassModel: 'Glasses',
+  labratoryModule: 'Laboratory',
+  operationModule: 'Operation',
+  ultraSoundModule: 'Ultrasound',
+  yeglizerModel: 'Yeglezer',
+  bedroomModule: 'Bedroom',
+  octModule: 'OCT',
+  DoctorKhata: 'Doctor',
+};
+
+exports.getDoctorKhataRecords = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, date } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const query = {
+      doctorId: req.user.id,
+    };
+
+    // Filter by date
+    if (date) {
+      query.date = new Date(date);
+    }
+
+    // Fetch total count for pagination
+    const total = await DoctorKhata.countDocuments(query);
+
+    // Fetch data with dynamic population
+    const records = await DoctorKhata.find(query)
+      .populate('doctorId', 'firstName lastName')
+      .sort({ date: -1 }) // latest first
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Format results
+    const results = records.map((record) => ({
+      doctorName: `${record.doctorId?.firstName || 'N/A'} ${
+        record.doctorId?.lastName || 'N/A'
+      }`,
+      branchName: branchNameMap[record.branchModel] || record.branchModel,
+      amountType: record.amountType,
+      amount: record.amount,
+      date: record.date,
+    }));
+
+    res.status(200).json({
+      success: true,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit),
+      results,
+    });
+  } catch (error) {
+    console.error('Error fetching doctor khata records:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
 exports.getDoctorKhataById = asyncHandler(async (req, res) => {
-  const id = req.params.id;
+  const doctorId = req.params.id;
   const amountType = req.query.amountType;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
   // Check if doctor exists
-  const doctor = await User.findById(id);
+  const doctor = await User.findById(doctorId);
   if (!doctor) {
     throw new AppError('Doctor not found.', 404);
   }
 
-  let doctorKhata;
+  const filter = { doctorId };
   if (amountType) {
-    doctorKhata = await DoctorKhata.find({ doctorId: id, amountType })
-      .select('amount date branchNameId branchModel')
-      .populate('branchNameId'); // Dynamic population based on branchModel
-  } else {
-    doctorKhata = await DoctorKhata.find({ doctorId: id })
-      .select('amount date branchNameId branchModel')
-      .populate('branchNameId');
+    filter.amountType = amountType;
   }
 
-  res.status(200).json(doctorKhata);
+  const [records, total] = await Promise.all([
+    DoctorKhata.find(filter)
+      .select('amount date branchNameId branchModel amountType')
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('branchNameId'),
+    DoctorKhata.countDocuments(filter),
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    currentPage: page,
+    totalPages: Math.ceil(total / limit),
+    totalResults: total,
+    results: records,
+  });
 });
 
 exports.updateDoctorKhata = async (req, res) => {
@@ -93,7 +166,8 @@ exports.deleteDoctorKhata = async (req, res) => {
 };
 
 exports.getDocKhataSummary = asyncHandler(async (req, res) => {
-  const doctorId = new mongoose.Types.ObjectId(req.user.id);
+  const doctorId = new mongoose.Types.ObjectId(req.query.id || req.user.id);
+  validateMongodbId(doctorId);
 
   // Aggregate only total income/outcome
   const summary = await DoctorKhata.aggregate([

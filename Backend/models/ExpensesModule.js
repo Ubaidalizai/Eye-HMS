@@ -13,17 +13,16 @@ const expenseSchema = new mongoose.Schema(
     },
     date: {
       type: Date,
-      default: Date.now, // Defaults to current date/time if not provided
+      default: Date.now,
       required: true,
     },
     category: {
       type: String,
-      enum: ['food', 'salary', 'furniture', 'other'], // Define allowed categories here
-      required: true, // Set to true if category is mandatory, otherwise false
+      required: true,
     },
   },
   {
-    timestamps: true, // Automatically manages createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 

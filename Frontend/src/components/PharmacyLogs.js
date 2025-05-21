@@ -71,83 +71,148 @@ const PharmacyLogs = () => {
   };
 
   return (
-    <div className='p-4'>
-      <h2 className='text-xl font-bold mb-4'>Pharmacy Sales Logs</h2>
+    <div className='p-4 sm:p-6 mt-4 rounded-lg border shadow-sm bg-white'>
+      <h2 className='text-lg sm:text-xl font-semibold text-gray-700 mb-6'>
+        Pharmacy Sales Logs
+      </h2>
 
-      <input
-        type='date'
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className='mb-4 p-2 border border-gray-300 rounded w-full max-w-md'
-      />
-      <div className='overflow-x-auto'>
-        <table className='w-full table-auto border border-collapse text-left'>
-          <thead>
-            <tr className='bg-gray-100'>
-              <th className='p-2 border'>Amount</th>
-              <th className='p-2 border'>Transferred By</th>
-              <th className='p-2 border'>Date</th>
-              <th className='p-2 border'>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs?.map((log) => (
-              <tr key={log._id}>
-                <td className='p-2 border'>{log.amount}</td>
-                <td className='p-2 border'>
-                  {log.transferredBy?.firstName || 'N/A'}
-                </td>
-                <td className='p-2 border'>{log.date.split('T')[0]}</td>
-                <td className='p-2 border space-x-2'>
-                  <button
-                    onClick={() => handleEdit(log)}
-                    className='text-blue-600'
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(log._id)}
-                    className='text-red-600'
-                  >
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className='mb-6'>
+        <label
+          htmlFor='date-filter'
+          className='block text-sm font-medium text-gray-700 mb-1'
+        >
+          Filter by Date
+        </label>
+        <input
+          id='date-filter'
+          type='date'
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className='p-2 border border-gray-300 rounded-md w-full sm:max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10'
+        />
       </div>
-      <Pagination
-        totalItems={logs.length}
-        totalPagesCount={totalPages}
-        itemsPerPage={limit}
-        currentPage={currentPage}
-        onPageChange={(page) => setCurrentPage(page)}
-        onLimitChange={(limit) => setLimit(limit)}
-      />
 
+      {/* Table with horizontal scrolling */}
+      <div className='overflow-x-auto shadow-sm rounded-lg'>
+        <div className='inline-block min-w-full align-middle'>
+          <table className='min-w-full divide-y divide-gray-200'>
+            <thead className='bg-gray-100'>
+              <tr>
+                <th className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'>
+                  Amount
+                </th>
+                <th className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'>
+                  Transferred By
+                </th>
+                <th className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'>
+                  Date
+                </th>
+                <th className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-center'>
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className='bg-white divide-y divide-gray-200'>
+              {logs?.length > 0 ? (
+                logs.map((log) => (
+                  <tr
+                    key={log._id}
+                    className='hover:bg-gray-50 transition-colors'
+                  >
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {log.amount}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {log.transferredBy?.firstName || 'N/A'}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {log.date.split('T')[0]}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
+                      <div className='flex justify-center space-x-3'>
+                        <button
+                          onClick={() => handleEdit(log)}
+                          className='text-blue-600 hover:bg-blue-50 p-1.5 rounded transition-colors'
+                          aria-label='Edit log'
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(log._id)}
+                          className='text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors'
+                          aria-label='Delete log'
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className='px-4 sm:px-6 py-4 text-center text-sm text-gray-500'
+                  >
+                    No logs found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Responsive indicator - only visible on small screens */}
+        <div className='block sm:hidden text-center text-xs text-gray-500 mt-2 px-4'>
+          <p>Swipe horizontally to see more data</p>
+        </div>
+      </div>
+
+      <div className='mt-4'>
+        <Pagination
+          totalItems={logs.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+      </div>
+
+      {/* Edit Modal */}
       {editingLog && (
-        <div className='mt-4 p-4 border rounded bg-gray-50'>
-          <h3 className='font-semibold mb-2'>Edit Log Amount</h3>
-          <input
-            type='number'
-            value={editAmount}
-            onChange={(e) => setEditAmount(e.target.value)}
-            className='p-2 border border-gray-300 rounded w-full max-w-xs mb-2'
-          />
-          <div className='space-x-2'>
-            <button
-              onClick={handleUpdate}
-              className='bg-blue-500 text-white px-3 py-1 rounded'
+        <div className='mt-6 p-4 sm:p-6 border rounded-lg bg-gray-50 shadow-sm'>
+          <h3 className='text-lg font-medium text-gray-700 mb-4'>
+            Edit Log Amount
+          </h3>
+          <div className='max-w-md'>
+            <label
+              htmlFor='edit-amount'
+              className='block text-sm font-medium text-gray-700 mb-1'
             >
-              Update
-            </button>
-            <button
-              onClick={() => setEditingLog(null)}
-              className='bg-gray-300 px-3 py-1 rounded'
-            >
-              Cancel
-            </button>
+              Amount
+            </label>
+            <input
+              id='edit-amount'
+              type='number'
+              value={editAmount}
+              onChange={(e) => setEditAmount(e.target.value)}
+              className='p-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500 h-10 mb-4'
+            />
+            <div className='flex space-x-3'>
+              <button
+                onClick={handleUpdate}
+                className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
+              >
+                Update
+              </button>
+              <button
+                onClick={() => setEditingLog(null)}
+                className='px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors'
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

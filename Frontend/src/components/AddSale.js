@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Select from 'react-select';
 import { Dialog, Transition } from '@headlessui/react';
 import { BillPrintModal } from './BillPrintModal';
 import { BASE_URL } from '../config';
+import AuthContext from '../AuthContext';
 
 export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
   const [sales, setSales] = useState([
@@ -26,6 +27,8 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
     totalIncome: 0,
     soldItems: [],
   });
+
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     fetchProductsData();
@@ -71,8 +74,6 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
   };
 
   const handleInputChange = (index, name, value) => {
-    console.log('Input changed:', { index, name, value });
-    console.log('Products:', products);
     setSales((prevSales) =>
       prevSales.map((sale, i) =>
         i === index
@@ -178,122 +179,185 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
       {/* Add Sale Modal */}
       <Transition.Root show={openAddSale} as='div'>
         <Dialog as='div' className='relative z-10' onClose={setOpenAddSale}>
-          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
-          <div className='fixed inset-0 z-10 overflow-y-auto'>
-            <div className='flex min-h-full items-center justify-center p-4'>
-              <Dialog.Panel className='relative bg-white rounded-lg shadow-xl sm:max-w-lg sm:w-full'>
-                <div className='px-4 py-5 sm:p-6'>
-                  <form>
-                    {sales.map((sale, index) => (
-                      <div
-                        key={index}
-                        className='grid gap-4 mb-4 sm:grid-cols-2'
-                      >
-                        <div className='flex items-start flex-col'>
-                          <label
-                            htmlFor='category'
-                            className='block text-sm font-medium text-gray-900'
-                          >
-                            Category
-                          </label>
-                          <select
-                            id='category'
-                            name='category'
-                            onChange={(e) => {
-                              setCatagory(e.target.value);
-                            }}
-                            value={category}
-                            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
-                          >
-                            <option value=''>Select a category</option>
-                            <option value='drug'>Drug</option>
-                            <option value='sunglasses'>sunglasses</option>
-                            <option value='glass'>Glass</option>
-                            <option value='frame'>frame</option>
-                          </select>
-                        </div>
+          <Transition.Child
+            as='div'
+            enter='ease-out duration-300'
+            enterFrom='opacity-0'
+            enterTo='opacity-100'
+            leave='ease-in duration-200'
+            leaveFrom='opacity-100'
+            leaveTo='opacity-0'
+          >
+            <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
+          </Transition.Child>
 
-                        <div>
-                          <label className='block text-sm font-medium'>
-                            Quantity
-                          </label>
-                          <input
-                            type='number'
-                            className='bg-gray-50 border rounded-lg text-sm'
-                            value={sale.quantity}
-                            onChange={(e) =>
-                              handleInputChange(
-                                index,
-                                'quantity',
-                                Number.parseInt(e.target.value, 10)
-                              )
-                            }
-                            min='1'
-                          />
+          <div className='fixed inset-0 z-10 overflow-y-auto'>
+            <div className='flex min-h-full items-center justify-center p-4 sm:p-6'>
+              <Transition.Child
+                as='div'
+                enter='ease-out duration-300'
+                enterFrom='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
+                enterTo='opacity-100 translate-y-0 sm:scale-100'
+                leave='ease-in duration-200'
+                leaveFrom='opacity-100 translate-y-0 sm:scale-100'
+                leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
+              >
+                <Dialog.Panel className='relative bg-white rounded-lg shadow-xl w-full max-w-md sm:max-w-lg'>
+                  <div className='px-4 py-5 sm:p-6'>
+                    <Dialog.Title
+                      as='h3'
+                      className='text-lg sm:text-xl font-semibold text-gray-900 mb-4'
+                    >
+                      Add New Sale
+                    </Dialog.Title>
+
+                    <form>
+                      {sales.map((sale, index) => (
+                        <div
+                          key={index}
+                          className='mb-6 border-b pb-4 last:border-b-0 last:pb-0'
+                        >
+                          {index > 0 && (
+                            <div className='text-sm font-medium text-gray-700 mb-3'>
+                              Product {index + 1}
+                            </div>
+                          )}
+
+                          <div className='grid gap-4 mb-4 grid-cols-1 sm:grid-cols-2'>
+                            <div>
+                              <label
+                                htmlFor={`category-${index}`}
+                                className='block text-sm font-medium text-gray-700 mb-1'
+                              >
+                                Category
+                              </label>
+                              <select
+                                id={`category-${index}`}
+                                name='category'
+                                onChange={(e) => {
+                                  setCatagory(e.target.value);
+                                }}
+                                value={category}
+                                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 h-10 focus:ring-blue-500 focus:border-blue-500'
+                              >
+                                <option value=''>Select a category</option>
+                                {authContext.user.role === 'admin' && (
+                                  <option value='drug'>Drug</option>
+                                )}
+                                <option value='sunglasses'>Sunglasses</option>
+                                <option value='glass'>Glass</option>
+                                <option value='frame'>Frame</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor={`quantity-${index}`}
+                                className='block text-sm font-medium text-gray-700 mb-1'
+                              >
+                                Quantity
+                              </label>
+                              <input
+                                id={`quantity-${index}`}
+                                type='number'
+                                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 h-10 focus:ring-blue-500 focus:border-blue-500'
+                                value={sale.quantity}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    index,
+                                    'quantity',
+                                    Number.parseInt(e.target.value, 10)
+                                  )
+                                }
+                                min='1'
+                              />
+                            </div>
+
+                            <div className='col-span-1 sm:col-span-2'>
+                              <label
+                                htmlFor={`product-${index}`}
+                                className='block text-sm font-medium text-gray-700 mb-1'
+                              >
+                                Product Name
+                              </label>
+                              <Select
+                                inputId={`product-${index}`}
+                                className='basic-single'
+                                classNamePrefix='select'
+                                styles={{
+                                  control: (base) => ({
+                                    ...base,
+                                    minHeight: '40px',
+                                  }),
+                                }}
+                                value={
+                                  products.find(
+                                    (product) =>
+                                      product._id === sale.productRefId
+                                  )
+                                    ? {
+                                        value: sale.productRefId,
+                                        label: products.find(
+                                          (product) =>
+                                            product._id === sale.productRefId
+                                        ).name,
+                                      }
+                                    : null
+                                }
+                                onChange={(selectedOption) => {
+                                  handleInputChange(
+                                    index,
+                                    'productRefId',
+                                    selectedOption ? selectedOption.value : ''
+                                  );
+                                }}
+                                options={products.map((product) => ({
+                                  value: product._id,
+                                  label: product.name,
+                                }))}
+                                placeholder='Search or select product'
+                                isClearable
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className='flex items-start flex-col col-span-2'>
-                          <label className='block text-sm font-medium'>
-                            Product Name
-                          </label>
-                          <Select
-                            className='basic-single w-full'
-                            classNamePrefix='select'
-                            value={
-                              products.find(
-                                (product) => product._id === sale.productRefId
-                              )
-                                ? {
-                                    value: sale.productRefId,
-                                    label: products.find(
-                                      (product) =>
-                                        product._id === sale.productRefId
-                                    ).name,
-                                  }
-                                : null
-                            }
-                            onChange={(selectedOption) => {
-                              handleInputChange(
-                                index,
-                                'productRefId',
-                                selectedOption ? selectedOption.value : ''
-                              );
-                            }}
-                            options={products.map((product) => ({
-                              value: product._id,
-                              label: product.name,
-                            }))}
-                            placeholder='Search or select product'
-                            isClearable
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+
+                      <button
+                        type='button'
+                        className='mt-3 inline-flex items-center justify-center px-4 py-2 h-10 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
+                        onClick={addNewProduct}
+                      >
+                        Add Another Product
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className='px-4 py-3 bg-gray-50 sm:px-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 rounded-b-lg'>
                     <button
                       type='button'
-                      className='mt-3 bg-blue-600 text-white px-3 py-2 rounded-md'
-                      onClick={addNewProduct}
+                      className='mt-3 sm:mt-0 inline-flex justify-center px-4 py-2 h-10 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
+                      onClick={() => addSaleModalSetting()}
                     >
-                      Add Another Product
+                      Cancel
                     </button>
-                  </form>
-                </div>
-                <div className='px-4 py-3 bg-gray-50 sm:flex sm:flex-row-reverse'>
-                  <button
-                    type='button'
-                    className={`inline-flex justify-center px-4 py-2 text-white rounded-md ${
-                      isAddButtonDisabled
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : isSaleValid()
-                        ? 'bg-blue-600 hover:bg-blue-500'
-                        : 'bg-gray-300'
-                    }`}
-                    disabled={isAddButtonDisabled || !isSaleValid()} // Disable if already disabled or invalid form
-                    onClick={addSales}
-                  >
-                    Add Sale
-                  </button>
-                </div>
-              </Dialog.Panel>
+                    <button
+                      type='button'
+                      className={`inline-flex justify-center px-4 py-2 h-10 border border-transparent text-sm font-medium rounded-md text-white shadow-sm ${
+                        isAddButtonDisabled
+                          ? 'bg-gray-400 cursor-not-allowed'
+                          : isSaleValid()
+                          ? 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                          : 'bg-gray-300 cursor-not-allowed'
+                      } transition-colors`}
+                      disabled={isAddButtonDisabled || !isSaleValid()}
+                      onClick={addSales}
+                    >
+                      {isAddButtonDisabled ? 'Processing...' : 'Add Sale'}
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
             </div>
           </div>
         </Dialog>

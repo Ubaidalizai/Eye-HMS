@@ -174,11 +174,24 @@ const logoutCurrentUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     expires: new Date(0),
   });
-
+  console.log('Logged out successfully');
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
 const getAllUsers = getAll(User);
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  const currentUserId = req.user.id;
+  validateMongoDBId(currentUserId);
+
+  const currentUser = await User.findById(currentUserId).select('-password');
+
+  if (!currentUser) {
+    throw new AppError('Current user not found', 404);
+  }
+
+  res.status(200).json(currentUser);
+});
 
 // Find User By Id (only admin can)
 const findUserByID = asyncHandler(async (req, res, next) => {
@@ -418,6 +431,7 @@ module.exports = {
   getCurrentUserProfile,
   updateCurrentUserProfile,
   getAllUsers,
+  getCurrentUser,
   findUserByID,
   updateUserById,
   deleteUserByID,

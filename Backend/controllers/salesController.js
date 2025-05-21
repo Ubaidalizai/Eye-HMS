@@ -201,19 +201,22 @@ const sellItems = asyncHandler(async (req, res) => {
           const percentage = receptionist?.percentage || 0;
           const commission = (netIncome * percentage) / 100;
 
-          await DoctorKhata.create(
-            [
-              {
-                branchNameId: glass._id, // or another unique identifier if needed
-                branchModel: 'glassModel', // or the relevant source model
-                doctorId: receptionist._id,
-                amount: commission,
-                date,
-                amountType: 'income',
-              },
-            ],
-            { session }
-          );
+          // Only create a DoctorKhata record if the commission is greater than 0
+          if (commission > 0) {
+            await DoctorKhata.create(
+              [
+                {
+                  branchNameId: glass._id, // or another unique identifier if needed
+                  branchModel: 'glassModel', // or the relevant source model
+                  doctorId: receptionist._id,
+                  amount: commission,
+                  date,
+                  amountType: 'income',
+                },
+              ],
+              { session }
+            );
+          }
         }
 
         addToReceipt(

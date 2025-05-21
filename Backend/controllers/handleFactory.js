@@ -15,7 +15,6 @@ const getAll = (Model, userID = false, popOptions = null) =>
     if (!Model) {
       throw new AppError('Model is required', 500);
     }
-
     const query = buildQuery(
       req,
       userID,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddGlasses from '../components/AddGlasses';
 import {
   FaDollarSign,
@@ -54,22 +54,24 @@ const monthLabels = [
 const Modal = ({ open, onClose, handleUpdate, children }) => {
   if (!open) return null;
   return (
-    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-      <div className='bg-white p-6 rounded shadow-md'>
+    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4'>
+      <div className='bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-md'>
         {children}
 
-        <button
-          onClick={onClose}
-          className='mt-4 mr-2 bg-red-500 text-white px-3 py-1 rounded'
-        >
-          Close
-        </button>
-        <button
-          onClick={handleUpdate}
-          className='mt-4 bg-blue-600 text-white px-3 py-1 rounded '
-        >
-          Update
-        </button>
+        <div className='flex flex-col sm:flex-row sm:justify-end gap-2 mt-4'>
+          <button
+            onClick={onClose}
+            className='w-full sm:w-auto bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600'
+          >
+            Close
+          </button>
+          <button
+            onClick={handleUpdate}
+            className='w-full sm:w-auto bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700'
+          >
+            Update
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -83,6 +85,7 @@ const Glasses = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState('');
+  const [tableCategory, setTableCategory] = useState('');
   const [limit, setLimit] = useState(10);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState(null);
@@ -110,7 +113,15 @@ const Glasses = () => {
     }
     fetchData();
     fetchGlassesSummary();
-  }, [selectedYear, selectedMonth, category, currentPage, limit, summaryType]);
+  }, [
+    selectedYear,
+    selectedMonth,
+    category,
+    tableCategory,
+    currentPage,
+    limit,
+    summaryType,
+  ]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -118,13 +129,8 @@ const Glasses = () => {
 
     let baseUrl = `${BASE_URL}/glasses?page=${currentPage}&limit=${limit}`;
 
-    // if (user.role === 'receptionist') {
-    //   baseUrl += '&category=sunglasses,frame, glass';
-    // } else if (user.role === 'pharmacist' || user.role === 'admin') {
-    //   baseUrl += '&category=drug';
-    // }
-    if (category) {
-      baseUrl += `&category=${category}`;
+    if (tableCategory) {
+      baseUrl += `&category=${tableCategory}`;
     }
 
     try {
@@ -296,7 +302,7 @@ const Glasses = () => {
   };
 
   const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
+    setTableCategory(e.target.value);
     setCurrentPage(1);
   };
 
@@ -379,19 +385,20 @@ const Glasses = () => {
   }
 
   return (
-    <div className='min-h-screen '>
+    <div className='min-h-screen p-4 sm:p-6'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
-        <h2 className='font-semibold text-xl'>Glasses</h2>
-        <div className='mt-10'>
-          <div className='bg-white shadow overflow-hidden sm:rounded-md'>
+        <h2 className='font-semibold text-xl mb-4'>Glasses</h2>
+        <div className='mt-4 sm:mt-6'>
+          <div className='bg-white border overflow-hidden sm:rounded-md'>
             <div className='px-4 py-5 sm:p-6'>
-              <div className='grid grid-cols-1 gap-5 sm:grid-cols-3'>
+              {/* Responsive grid for summary cards */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
                 <div className='bg-blue-100 overflow-hidden shadow rounded-lg'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FaDollarSign />
+                        <FaDollarSign className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -410,7 +417,7 @@ const Glasses = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FaBoxOpen className='h-6 w-6 text-white' />
+                        <FaBoxOpen className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -429,7 +436,7 @@ const Glasses = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
-                        <FaBoxes className='h-6 w-6 text-white' />
+                        <FaBoxes className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -448,7 +455,7 @@ const Glasses = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-yellow-500 rounded-md p-3'>
-                        <FaExclamationTriangle className='h-6 w-6 text-white' />
+                        <FaExclamationTriangle className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -474,184 +481,185 @@ const Glasses = () => {
             )}
 
             <div className='overflow-x-auto rounded-lg shadow-md'>
-              <div className='flex justify-end'>
-                <div className='flex flex-row items-center justify-end p-4'>
-                  <label htmlFor='category' className='sr-only'>
-                    Category
-                  </label>
-                  <div>
-                    <select
-                      id='category'
-                      name='category'
-                      value={category}
-                      onChange={handleCategoryChange}
-                      className='block w-64 width-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
-                    >
-                      <option value=''>All Categories</option>
-                      <option value='sunglasses'>sunglasses</option>
-                      <option value='glass'>Glass</option>
-                      <option value='frame'>Frame</option>
-                    </select>
-                  </div>
+              {/* Responsive filter and add button */}
+              <div className='flex flex-col sm:flex-row justify-between p-4 gap-4'>
+                <div className='w-full sm:w-auto'>
+                  <select
+                    id='category'
+                    name='category'
+                    value={tableCategory}
+                    onChange={handleCategoryChange}
+                    className='block w-full text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+                  >
+                    <option value=''>All Categories</option>
+                    <option value='sunglasses'>sunglasses</option>
+                    <option value='glass'>Glass</option>
+                    <option value='frame'>Frame</option>
+                  </select>
                 </div>
-                <div className='flex justify-end p-4'>
+                <div className='w-full sm:w-auto'>
                   <button
                     onClick={() => setShowItemModal(true)}
-                    className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                    className='inline-flex items-center justify-center w-full px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
                   >
                     <FaPlus className='mr-2' />
                     Add Product
                   </button>
                 </div>
               </div>
-              <table className='w-full text-sm text-left text-gray-500'>
-                <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                  <tr>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Manufacturer
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Min-Level
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Category
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Date
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Purchase-price
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Sale-price
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Quantity
-                    </th>
 
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className='divide-y divide-gray-200'>
-                  {glasses.map((glass, index) => (
-                    <tr
-                      key={index}
-                      className='hover:bg-gray-50 transition duration-150 ease-in-out'
-                    >
-                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                        {glass.name}
-                      </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.manufacturer}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.minLevel}
-                      </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.category}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.createdAt.split('T')[0]}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.purchasePrice}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.salePrice}
-                      </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {glass.quantity}
-                      </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
-                        {
-                          <span
-                            className={`text-xs font-medium ${
-                              glass.quantity === 0
-                                ? 'text-red-500'
-                                : glass.quantity <= glass.minLevel
-                                ? 'text-yellow-500'
-                                : 'text-green-500'
-                            }`}
-                          >
-                            {glass.quantity === 0
-                              ? 'Out of stock'
-                              : glass.quantity <= glass.minLevel
-                              ? 'Low'
-                              : 'Available'}
-                          </span>
-                        }
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <button
-                          onClick={() => handleEdit(glass)}
-                          className='font-medium text-blue-600 hover:text-blue-700'
-                        >
-                          <FaEdit className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(glass._id)}
-                          className='font-medium text-red-600 hover:text-red-700'
-                        >
-                          <FaTrash className='w-4 h-4' />
-                        </button>
-                      </td>
+              {/* Responsive table with horizontal scroll */}
+              <div className='overflow-x-auto'>
+                <table className='w-full text-sm text-left text-gray-500'>
+                  <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+                    <tr>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Name
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Manufacturer
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Min-Level
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Category
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Date
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Purchase-price
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Sale-price
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Quantity
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Status
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 py-3 font-bold tracking-wider'
+                      >
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className='divide-y divide-gray-200'>
+                    {glasses.map((glass, index) => (
+                      <tr
+                        key={index}
+                        className='hover:bg-gray-50 transition duration-150 ease-in-out'
+                      >
+                        <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900'>
+                          {glass.name}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.manufacturer}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.minLevel}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.category}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.createdAt.split('T')[0]}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.purchasePrice}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.salePrice}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {glass.quantity}
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                          {
+                            <span
+                              className={`text-xs font-medium ${
+                                glass.quantity === 0
+                                  ? 'text-red-500'
+                                  : glass.quantity <= glass.minLevel
+                                  ? 'text-yellow-500'
+                                  : 'text-green-500'
+                              }`}
+                            >
+                              {glass.quantity === 0
+                                ? 'Out of stock'
+                                : glass.quantity <= glass.minLevel
+                                ? 'Low'
+                                : 'Available'}
+                            </span>
+                          }
+                        </td>
+                        <td className='px-4 py-3 whitespace-nowrap'>
+                          <div className='flex space-x-2'>
+                            <button
+                              onClick={() => handleEdit(glass)}
+                              className='font-medium text-blue-600 hover:text-blue-700'
+                            >
+                              <FaEdit className='w-4 h-4' />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(glass._id)}
+                              className='font-medium text-red-600 hover:text-red-700'
+                            >
+                              <FaTrash className='w-4 h-4' />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-        <Pagination
-          totalItems={glasses.length}
-          totalPagesCount={totalPages}
-          itemsPerPage={limit}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(limit) => setLimit(limit)}
-        />
+
+        {/* Responsive pagination */}
+        <div className='mt-4'>
+          <Pagination
+            totalItems={glasses.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
+        </div>
       </div>
 
       {/* Edit Assignment Modal */}
@@ -659,104 +667,157 @@ const Glasses = () => {
         open={showEditModal}
         onClose={() => {
           setShowEditModal(false);
-          // resetForm();
         }}
         handleUpdate={handleUpdate}
       >
-        <h3 className='text-lg font-bold text-center'>Edit Record</h3>
-        <label className='block mt-2'>Name</label>
-        <input
-          type='text'
-          className='border px-3 py-1 rounded w-full'
-          value={newProduct.name}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, name: e.target.value })
-          }
-        />
-        <label className='block mt-2'>Manufacturer</label>
-        <input
-          type='text'
-          className='border px-3 py-1 rounded w-full'
-          value={newProduct.manufacturer}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, manufacturer: e.target.value })
-          }
-        />
-        <label className='block mt-2'>Sale Price</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={newProduct.salePrice}
-          min={0}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, salePrice: e.target.value })
-          }
-        />
-        <label className='block mt-2'>Min-Level</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={newProduct.minLevel}
-          min={1}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, minLevel: e.target.value })
-          }
-        />
-        <select
-          name='category'
-          id=''
-          className='border px-3 py-1 rounded w-full'
-          value={newProduct.category}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, category: e.target.value })
-          }
-        >
-          <option value='sunglasses'>Sunglasses</option>
-          <option value='glass'>Glass</option>
-          <option value='frame'>Frame</option>
-        </select>
-        {error && <p className='text-red-600'>{error}</p>}
-      </Modal>
-
-      <div className='mt-10 flex flex-col gap-6'>
-        <div className='flex gap-4'>
-          {/* Summary Type Selector */}
-          <div className='w-full sm:w-1/5'>
-            <select
-              id='summaryType'
-              className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-              onChange={handleSummaryTypeChange}
-              value={summaryType}
-            >
-              <option value='monthly'>Monthly Summary</option>
-              <option value='yearly'>Yearly Summary</option>
-            </select>
+        <h3 className='text-lg font-bold text-center mb-4'>Edit Record</h3>
+        <div className='space-y-3'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Name
+            </label>
+            <input
+              type='text'
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={newProduct.name}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, name: e.target.value })
+              }
+            />
           </div>
 
-          {/* Month Selector */}
-          {summaryType === 'monthly' && (
-            <div className='w-full sm:w-1/5'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Manufacturer
+            </label>
+            <input
+              type='text'
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={newProduct.manufacturer}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, manufacturer: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Sale Price
+            </label>
+            <input
+              type='number'
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={newProduct.salePrice}
+              min={0}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, salePrice: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Min-Level
+            </label>
+            <input
+              type='number'
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={newProduct.minLevel}
+              min={1}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, minLevel: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Category
+            </label>
+            <select
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={newProduct.category}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, category: e.target.value })
+              }
+            >
+              <option value='sunglasses'>Sunglasses</option>
+              <option value='glass'>Glass</option>
+              <option value='frame'>Frame</option>
+            </select>
+          </div>
+        </div>
+
+        {error && <p className='text-red-600 mt-2'>{error}</p>}
+      </Modal>
+
+      {/* Responsive chart section */}
+      <div className='mt-6 sm:mt-10'>
+        <div className='bg-white rounded-lg border p-4 sm:p-6'>
+          <div className='flex flex-col sm:flex-row gap-4 mb-4'>
+            {/* Filter Selector */}
+            <div className='w-full sm:w-1/4'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Category
+              </label>
               <select
-                id='month'
-                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                onChange={handleMonthChange}
-                value={selectedMonth}
+                id='filter'
+                className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                onChange={(e) => setCategory(e.target.value)}
+                value={category}
               >
-                {monthLabels.map((label, index) => (
-                  <option key={index} value={index + 1}>
-                    {label}
-                  </option>
-                ))}
+                <option value=''>All</option>
+                <option value='sunglasses'>Sunglasses</option>
+                <option value='glass'>Glass</option>
+                <option value='frame'>Frame</option>
               </select>
             </div>
-          )}
 
-          {/* Year Selector */}
-          {summaryType === 'yearly' && (
-            <div className='w-full sm:w-1/5'>
+            {/* Summary Type Selector */}
+            <div className='w-full sm:w-1/4'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Summary Type
+              </label>
+              <select
+                id='summaryType'
+                className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                onChange={handleSummaryTypeChange}
+                value={summaryType}
+              >
+                <option value='monthly'>Monthly Summary</option>
+                <option value='yearly'>Yearly Summary</option>
+              </select>
+            </div>
+
+            {/* Month Selector */}
+            {summaryType === 'monthly' && (
+              <div className='w-full sm:w-1/4'>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  Month
+                </label>
+                <select
+                  id='month'
+                  className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                  onChange={handleMonthChange}
+                  value={selectedMonth}
+                >
+                  {monthLabels.map((label, index) => (
+                    <option key={index} value={index + 1}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Year Selector */}
+            <div className='w-full sm:w-1/4'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Year
+              </label>
               <input
                 id='year'
-                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
                 type='number'
                 value={selectedYear}
                 onChange={handleYearChange}
@@ -764,32 +825,36 @@ const Glasses = () => {
                 max={new Date().getFullYear()}
               />
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Chart Display */}
-        <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
-          <h2 className='mb-4 text-lg font-semibold text-gray-800'>
-            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Sales
-            Summary
-          </h2>
-          <Bar
-            data={getBarChartData()}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: 'top',
-                },
-                title: {
-                  display: true,
-                  text: `${
-                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
-                  } Summary for ${category || 'All Categories'}`,
-                },
-              },
-            }}
-          />
+          {/* Chart Display */}
+          <div className='mt-4 p-2 sm:p-4 bg-white rounded-md border border-gray-200'>
+            <h2 className='mb-4 text-lg font-semibold text-gray-800'>
+              {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Sales
+              Summary
+            </h2>
+            <div className='h-64 sm:h-96'>
+              <Bar
+                data={getBarChartData()}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: true,
+                      text: `${
+                        summaryType.charAt(0).toUpperCase() +
+                        summaryType.slice(1)
+                      } Summary for ${category || 'All Categories'}`,
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -314,24 +314,29 @@ export default function AddPurchaseDetails({
                               </p>
                             )}
                           </div>
-                          <div className='flex items-start flex-col'>
-                            <label
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                              htmlFor='expiryDate'
-                            >
-                              Product Expiry Date
-                            </label>
-                            <input
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              type='date'
-                              id='expiryDate'
-                              name='expiryDate'
-                              value={purchase.expiryDate}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                            />
-                          </div>
+                          {authContext.user.role === 'admin' && (
+                            <div className='flex items-start flex-col'>
+                              <label
+                                className='block mb-2 text-sm font-medium text-gray-900'
+                                htmlFor='expiryDate'
+                              >
+                                Product Expiry Date
+                              </label>
+                              <input
+                                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                                type='date'
+                                id='expiryDate'
+                                name='expiryDate'
+                                value={purchase.expiryDate}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e.target.name,
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </div>
+                          )}
                         </div>
                         <div className='flex  justify-end gap-2 pb-5 mt-8'>
                           <button

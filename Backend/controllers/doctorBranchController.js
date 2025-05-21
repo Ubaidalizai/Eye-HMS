@@ -11,7 +11,7 @@ const assignDoctorToBranch = asyncHandler(async (req, res) => {
     throw new AppError('Doctor and branch model are required', 400);
   }
 
-  if (percentage <= 0 || percentage > 100) {
+  if (percentage < 0 || percentage > 100 || percentage === '') {
     throw new AppError('Percentage must be between 0 and 100', 400);
   }
 

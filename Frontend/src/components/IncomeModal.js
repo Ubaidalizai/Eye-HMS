@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import Select from 'react-select';
 
 const IncomeModal = ({
   isOpen,
@@ -21,7 +22,7 @@ const IncomeModal = ({
     setFormData({ ...formData, [name]: value });
     // Clear the error when the user starts typing
     if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
@@ -29,32 +30,32 @@ const IncomeModal = ({
     let newErrors = {};
 
     if (!formData.totalNetIncome) {
-      newErrors.totalNetIncome = "Total Net Income is required";
+      newErrors.totalNetIncome = 'Total Net Income is required';
     } else if (
       isNaN(formData.totalNetIncome) ||
       Number(formData.totalNetIncome) <= 0
     ) {
-      newErrors.totalNetIncome = "Total Net Income must be a positive number";
+      newErrors.totalNetIncome = 'Total Net Income must be a positive number';
     }
 
     if (!formData.date) {
-      newErrors.date = "Date is required";
+      newErrors.date = 'Date is required';
     } else {
       const selectedDate = new Date(formData.date);
       const currentDate = new Date();
       if (selectedDate > currentDate) {
-        newErrors.date = "Date cannot be in the future";
+        newErrors.date = 'Date cannot be in the future';
       }
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
+      newErrors.description = 'Description is required';
     } else if (formData.description.length > 100) {
-      newErrors.description = "Description must be 100 characters or less";
+      newErrors.description = 'Description must be 100 characters or less';
     }
 
     if (!formData.category) {
-      newErrors.category = "Category is required";
+      newErrors.category = 'Category is required';
     }
 
     setErrors(newErrors);
@@ -70,6 +71,12 @@ const IncomeModal = ({
 
   if (!isOpen) return null;
 
+  // Convert to react-select format
+  const categoryOptions = categories.map((cat) => ({
+    label: cat,
+    value: cat,
+  }));
+
   return (
     <div className='fixed inset-0 flex items-center justify-center z-50'>
       <div
@@ -78,7 +85,7 @@ const IncomeModal = ({
       ></div>
       <div className='relative bg-white rounded-lg shadow-xl w-full max-w-lg z-60 p-6'>
         <h3 className='text-lg font-semibold mb-4'>
-          {formData._id ? "Edit Income" : "Add Income"}
+          {formData._id ? 'Edit Income' : 'Add Income'}
         </h3>
         <form onSubmit={handleSubmit}>
           <div className='grid gap-4 mb-4 sm:grid-cols-2'>
@@ -94,8 +101,10 @@ const IncomeModal = ({
                 min='1'
                 name='totalNetIncome'
                 id='totalNetIncome'
+                placeholder='Enter Total Net Income'
+                required
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 ${
-                  errors.totalNetIncome ? "border-red-500" : "border-gray-300"
+                  errors.totalNetIncome ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.totalNetIncome}
                 onChange={handleChange}
@@ -118,7 +127,7 @@ const IncomeModal = ({
                 name='date'
                 id='date'
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 ${
-                  errors.date ? "border-red-500" : "border-gray-300"
+                  errors.date ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.date}
                 onChange={handleChange}
@@ -138,8 +147,10 @@ const IncomeModal = ({
                 type='text'
                 name='description'
                 id='description'
+                placeholder='Enter Description'
+                required
                 className={`bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 ${
-                  errors.description ? "border-red-500" : "border-gray-300"
+                  errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 value={formData.description}
                 onChange={handleChange}
@@ -157,22 +168,27 @@ const IncomeModal = ({
               >
                 Category
               </label>
-              <select
-                name='category'
+              <Select
                 id='category'
-                className={`bg-gray-50 border text-gray-900 text-sm rounded-lg w-full p-2.5 ${
-                  errors.category ? "border-red-500" : "border-gray-300"
-                }`}
-                value={formData.category}
-                onChange={handleChange}
-              >
-                <option value=''>Select Category</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+                name='category'
+                options={categoryOptions}
+                value={
+                  categoryOptions.find(
+                    (option) => option.value === formData.category
+                  ) || null
+                }
+                onChange={(option) => {
+                  setFormData({
+                    ...formData,
+                    category: option ? option.value : '',
+                  });
+                }}
+                placeholder='Select Category'
+                isClearable
+                className='basic-single'
+                classNamePrefix='select'
+                required
+              />
               {errors.category && (
                 <p className='mt-1 text-sm text-red-500'>{errors.category}</p>
               )}
@@ -191,7 +207,7 @@ const IncomeModal = ({
               className='inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
               disabled={isSubmitting} // Disable the button when submitting
             >
-              {isSubmitting ? "Submitting..." : formData._id ? "Update" : "Add"}{" "}
+              {isSubmitting ? 'Submitting...' : formData._id ? 'Update' : 'Add'}{' '}
               Income
             </button>
           </div>

@@ -89,10 +89,27 @@ const authorize3Users = (req, res, next) => {
   }
 };
 
+const authorizeAdminOrDoctor = (req, res, next) => {
+  if (
+    req.user &&
+    (req.user.role === 'admin' ||
+      req.user.role === 'doctor' ||
+      req.user.role === 'receptionist')
+  ) {
+    next(); // Proceed if user is admin, doctor, or receptionist
+  } else {
+    throw new AppError(
+      'Access denied: Admin, doctor, or receptionist authorization required.',
+      403
+    );
+  }
+};
+
 module.exports = {
   authenticate,
   authorizeAdmin,
   authorizeAdminOrPharmacist,
   authorize3Users,
   authorizeAdminOrReceptionist,
+  authorizeAdminOrDoctor,
 };
