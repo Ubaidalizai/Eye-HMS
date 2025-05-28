@@ -1,6 +1,6 @@
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 const getAll = (Model, userID = false, popOptions = null) =>
   asyncHandler(async (req, res) => {
@@ -15,7 +15,6 @@ const getAll = (Model, userID = false, popOptions = null) =>
     if (!Model) {
       throw new AppError('Model is required', 500);
     }
-
     const query = buildQuery(
       req,
       userID,

@@ -1,4 +1,3 @@
-// controllers/expenseController.js
 const Expense = require('../models/ExpensesModule');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError'); // Custom error handler

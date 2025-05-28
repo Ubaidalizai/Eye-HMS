@@ -1,7 +1,7 @@
-import { useContext, useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { BASE_URL } from '../config';
+import { navigateByRole } from '../utils/roleNavigation';
 
 function Login() {
   const [form, setForm] = useState({
@@ -32,12 +32,7 @@ function Login() {
 
     try {
       await signin(form, (user) => {
-        // Redirect based on role
-        if (user.role === 'receptionist') {
-          navigate('/pharmacy');
-        } else {
-          navigate('/');
-        }
+        navigateByRole(user, navigate); // Delegated role navigation
       });
     } catch (err) {
       console.log('Login Error:', err);

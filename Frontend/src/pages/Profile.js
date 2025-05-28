@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { BASE_URL } from '../config';
+import { BASE_URL, IMAGE_BASE_URL } from '../config';
 
 const Profile = () => {
   const [user, setUser] = useState({
@@ -31,7 +31,7 @@ const Profile = () => {
           lastName,
           email,
           profilePic: imageUrl
-            ? `http://localhost:4000/public/img/users/${imageUrl}`
+            ? `${IMAGE_BASE_URL}/users/${imageUrl}`
             : prevUser.profilePic,
         }));
       } else {

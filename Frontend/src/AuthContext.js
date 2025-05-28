@@ -1,5 +1,10 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+'use client';
+
+import { createContext, useState, useEffect, useContext } from 'react';
 import { BASE_URL } from './config';
+
+// Create a key for localStorage
+const AUTH_STATUS_KEY = 'auth_status';
 
 const AuthContext = createContext();
 
@@ -16,6 +21,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [perDoctors, setPerDoctors] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [authStatus, setAuthStatus] = useState('checking'); // "checking", "authenticated", "unauthenticated"
 
   function isTokenValid() {
     const lastLoginTime = localStorage.getItem('lastLoginTime');
@@ -29,15 +36,42 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
+    // Only run the auth check once when the component mounts
     const initializeAuth = async () => {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser && isTokenValid()) {
-        setUser(JSON.parse(storedUser));
-        await fetchDoctors();
-      } else {
-        logout();
+      try {
+        const storedStatus = localStorage.getItem(AUTH_STATUS_KEY);
+
+        if (storedStatus === 'logged_out') {
+          setAuthStatus('unauthenticated');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(`${BASE_URL}/user/me`, {
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to authenticate user');
+        }
+
+        const currentUser = await res.json();
+        setUser(currentUser);
+        setAuthStatus('authenticated');
+        localStorage.setItem(AUTH_STATUS_KEY, 'authenticated');
+
+        // Only fetch if user is admin
+        if (currentUser.role === 'admin') {
+          await fetchDoctors();
+          await fetchCategories();
+        }
+      } catch (err) {
+        console.error('Auth init error:', err.message);
+        setAuthStatus('unauthenticated');
+        localStorage.setItem(AUTH_STATUS_KEY, 'unauthenticated');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initializeAuth();
@@ -70,9 +104,9 @@ export const AuthProvider = ({ children }) => {
 
       const data = await response.json();
       setUser(data);
-      localStorage.setItem('user', JSON.stringify(data));
+      setAuthStatus('authenticated');
+      localStorage.setItem(AUTH_STATUS_KEY, 'authenticated');
       localStorage.setItem('lastLoginTime', Date.now().toString());
-      await fetchDoctors();
       callback(data); // Pass the user object here
     } catch (err) {
       console.error('Error during login:', err);
@@ -83,11 +117,46 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setPerDoctors([]);
-    localStorage.removeItem('user');
-    localStorage.removeItem('lastLoginTime');
+  const logout = async (redirect = false) => {
+    // Prevent multiple logout calls
+    if (authStatus === 'unauthenticated' || loading) {
+      return;
+    }
+
+    console.log('Logging out...');
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Update state first
+      setUser(null);
+      setPerDoctors([]);
+      setAuthStatus('unauthenticated');
+
+      // Update localStorage
+      localStorage.setItem(AUTH_STATUS_KEY, 'logged_out');
+
+      // Then call the backend to invalidate the session
+      await fetch(`${BASE_URL}/user/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      // Redirect if needed
+      if (redirect) {
+        window.location.href = '/login';
+      }
+    } catch (err) {
+      console.error('Error during logout:', err);
+      setError(err.message || 'An unknown error occurred');
+
+      // Still redirect on error
+      if (redirect) {
+        window.location.href = '/login';
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchDoctors = async () => {
@@ -119,6 +188,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${BASE_URL}/categories`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Failed to fetch Categories: ${response.status} ${
+            response.statusText
+          } - ${errorData?.message || 'Unknown error'}`
+        );
+      }
+
+      const data = await response.json();
+      setCategories(data.data);
+    } catch (err) {
+      console.error('Fetch Error:', err);
+      setError(err.message || 'An unknown error occurred');
+      setPerDoctors([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     signin,
@@ -126,6 +224,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     perDoctors,
+    categories,
+    authStatus,
     isTokenValid,
   };
 

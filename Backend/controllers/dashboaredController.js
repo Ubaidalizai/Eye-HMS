@@ -1,10 +1,9 @@
-const Sale = require('../models/salesModel'); // Sale model
-const Purchase = require('../models/purchase'); // Purchase model
-const Expense = require('../models/ExpensesModule'); // Expense model
-const Product = require('../models/product'); // Product model
-const Income = require('../models/incomeModule'); // Product model
-const asyncHandler = require('../middlewares/asyncHandler'); // asyncHandler to wrap async functions
-const AppError = require('../utils/appError'); // Custom error handler
+const Sale = require('../models/salesModel');
+const Purchase = require('../models/purchase');
+const Expense = require('../models/ExpensesModule');
+const Product = require('../models/product');
+const Income = require('../models/incomeModule');
+const asyncHandler = require('../middlewares/asyncHandler');
 
 // Get Dashboard Summary
 exports.getDashboardSummary = asyncHandler(async (req, res) => {

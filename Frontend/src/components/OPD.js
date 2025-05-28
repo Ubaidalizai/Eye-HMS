@@ -126,7 +126,7 @@ function OPD() {
   };
 
   const fields = [
-    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
@@ -167,23 +167,23 @@ function OPD() {
   };
 
   return (
-    <div className='p-6 min-h-screen'>
-      <h2 className='font-semibold text-xl mb-16'>OPD</h2>
-      <div className='flex justify-end mb-[-4.3rem]'>
-        {' '}
+    <div className='p-4 sm:p-6 min-h-screen w-full'>
+      {/* Responsive header with title and add button */}
+      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6'>
+        <h2 className='font-semibold text-xl mb-4 sm:mb-0'>OPD</h2>
         <button
           onClick={() => {
             clearForm();
             setIsOpen(true);
           }}
-          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 mr-5 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto'
         >
           <FaPlus className='mr-2' /> Add Record
         </button>
       </div>
 
       <FormModal
-        title={editMode ? 'Edit OCT Record' : 'OPD Record'}
+        title={editMode ? 'Edit OPD Record' : 'OPD Record'}
         isOpen={isOpen}
         handleCancel={handleCancel}
         fields={fields}
@@ -195,29 +195,38 @@ function OPD() {
         fetchData={fetchData}
       />
 
-      <input
-        type='text'
-        placeholder='Search ...'
-        onChange={(e) => handleSearchChange(e.target.value)}
-        className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
-      />
+      {/* Responsive search input */}
+      <div className='mb-4'>
+        <input
+          type='text'
+          placeholder='Search by Patient ID...'
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className='border border-gray-300 rounded w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-10 px-3'
+        />
+      </div>
 
-      <DataTable
-        title={'OPD'}
-        submittedData={submittedData}
-        fields={AllFields}
-        handleEdit={handleEdit}
-        handleRemove={handleRemove}
-      />
+      {/* DataTable with horizontal scrolling */}
+      <div className='overflow-x-auto'>
+        <DataTable
+          title={'OPD'}
+          submittedData={submittedData}
+          fields={AllFields}
+          handleEdit={handleEdit}
+          handleRemove={handleRemove}
+        />
+      </div>
 
-      <Pagination
-        totalItems={submittedData.length}
-        totalPagesCount={totalPages}
-        itemsPerPage={limit}
-        currentPage={currentPage}
-        onPageChange={(page) => setCurrentPage(page)}
-        onLimitChange={(limit) => setLimit(limit)}
-      />
+      {/* Responsive pagination */}
+      <div className='mt-4'>
+        <Pagination
+          totalItems={submittedData.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+      </div>
     </div>
   );
 }

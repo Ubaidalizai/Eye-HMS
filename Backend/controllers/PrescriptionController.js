@@ -1,5 +1,3 @@
-// controllers/PrescriptionController.js
-
 const Prescription = require('../models/PrescriptionModule');
 const Patient = require('../models/patientModel');
 const asyncHandler = require('../middlewares/asyncHandler');

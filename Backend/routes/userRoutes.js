@@ -36,6 +36,8 @@ router
   .get(userController.getCurrentUserProfile)
   .patch(userController.updateCurrentUserProfile);
 
+router.route('/me').get(userController.getCurrentUser);
+
 router
   .route('/doctorsHave-percentage')
   .get(userController.getAllDoctorsWithPercentage);

@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../models/product');
-const Sales = require('../models/salesModel');
-const Purchase = require('../models/purchase');
 const Pharmacy = require('../models/pharmacyModel');
-const DrugMovement = require('../models/drugMovmentModel');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const checkExpiry = require('../utils/checkExpiry');
@@ -215,15 +212,15 @@ const giveProductExpireByMonth = asyncHandler(async (req, res) => {
   const now = new Date();
   const futureDate = new Date();
   futureDate.setMonth(now.getMonth() + months); // Future date after specified months
-  
+
   // Set the future date to include the end of the month (e.g., until the end of that month)
-  futureDate.setHours(23, 59, 59, 999); 
+  futureDate.setHours(23, 59, 59, 999);
 
   const pastDate = new Date();
   pastDate.setMonth(now.getMonth() - months); // Past date based on months ago
-  
+
   // Ensure to include the start of the past date as the range start
-  pastDate.setHours(0, 0, 0, 0); 
+  pastDate.setHours(0, 0, 0, 0);
 
   // Find expired items that match the exact expiration date or fall within the range
   const expiringProducts = await Product.find({
@@ -238,8 +235,20 @@ const giveProductExpireByMonth = asyncHandler(async (req, res) => {
   });
 });
 
+// Get low stock products
+const getLowStockProducts = asyncHandler(async (req, res) => {
+  // Find products where stock is less than or equal to minLevel
+  const lowStockProducts = await Product.find({
+    $expr: { $lte: ['$stock', '$minLevel'] },
+    stock: { $gt: 0 }, // Only include products that have some stock (not zero)
+  }).sort({ name: 1 });
 
-
+  res.status(200).json({
+    status: 'success',
+    length: lowStockProducts.length,
+    data: { lowStockProducts },
+  });
+});
 
 module.exports = {
   addProduct,
@@ -249,5 +258,6 @@ module.exports = {
   searchProduct,
   checkProductExpiry,
   getInventorySummary,
-  giveProductExpireByMonth
+  giveProductExpireByMonth,
+  getLowStockProducts,
 };

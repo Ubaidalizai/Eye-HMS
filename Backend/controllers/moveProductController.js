@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 const Product = require('../models/product');
 const Pharmacy = require('../models/pharmacyModel');
-const Purchase = require('../models/purchase');
 const DrugMovement = require('../models/drugMovmentModel');
 const getAll = require('./handleFactory');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');

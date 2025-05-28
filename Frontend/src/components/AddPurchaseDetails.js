@@ -141,7 +141,7 @@ export default function AddPurchaseDetails({
     <Transition.Root show={open} as={Fragment}>
       <Dialog
         as='div'
-        className='relative z-10'
+        className='relative z-[9999]'
         initialFocus={cancelButtonRef}
         onClose={setOpen}
       >
@@ -154,10 +154,10 @@ export default function AddPurchaseDetails({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
+          <div className='fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity' />
         </Transition.Child>
 
-        <div className='fixed inset-0 z-10 overflow-y-auto'>
+        <div className='fixed inset-0 z-[9999] overflow-y-auto'>
           <div className='flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0 '>
             <Transition.Child
               as={Fragment}
@@ -168,7 +168,7 @@ export default function AddPurchaseDetails({
               leaveFrom='opacity-100 translate-y-0 sm:scale-100'
               leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
             >
-              <Dialog.Panel className='relative transform rounded-md pt-5 bg-white shadow-xl transition-all px-10 '>
+              <Dialog.Panel className='relative transform rounded-lg pt-5 bg-white shadow-2xl border border-gray-200 transition-all px-10'>
                 <div className='flex flex-col justify-center items-center'>
                   <div className=''>
                     <div className='  '>
@@ -314,24 +314,29 @@ export default function AddPurchaseDetails({
                               </p>
                             )}
                           </div>
-                          <div className='flex items-start flex-col'>
-                            <label
-                              className='block mb-2 text-sm font-medium text-gray-900'
-                              htmlFor='expiryDate'
-                            >
-                              Product Expiry Date
-                            </label>
-                            <input
-                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
-                              type='date'
-                              id='expiryDate'
-                              name='expiryDate'
-                              value={purchase.expiryDate}
-                              onChange={(e) =>
-                                handleInputChange(e.target.name, e.target.value)
-                              }
-                            />
-                          </div>
+                          {authContext.user.role === 'admin' && (
+                            <div className='flex items-start flex-col'>
+                              <label
+                                className='block mb-2 text-sm font-medium text-gray-900'
+                                htmlFor='expiryDate'
+                              >
+                                Product Expiry Date
+                              </label>
+                              <input
+                                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-[12rem] p-2.5   dark:focus:ring-primary-500 dark:focus:border-primary-500'
+                                type='date'
+                                id='expiryDate'
+                                name='expiryDate'
+                                value={purchase.expiryDate}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    e.target.name,
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </div>
+                          )}
                         </div>
                         <div className='flex  justify-end gap-2 pb-5 mt-8'>
                           <button

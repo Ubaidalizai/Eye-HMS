@@ -1,8 +1,7 @@
 const User = require('../models/userModel');
 const asyncHandler = require('../middlewares/asyncHandler.js');
-const validMongoDBId = require('../utils/validateMongoDBId.js');
+const validateMongoDBId = require('../utils/validateMongoDbId.js');
 const generateToken = require('../utils/generateToken.js');
-const validateMongoDBId = require('../utils/validateMongoDBId.js');
 const Email = require('../utils/email.js');
 const getAll = require('./handleFactory.js');
 
@@ -174,11 +173,24 @@ const logoutCurrentUser = asyncHandler(async (req, res) => {
     httpOnly: true,
     expires: new Date(0),
   });
-
+  console.log('Logged out successfully');
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
 const getAllUsers = getAll(User);
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  const currentUserId = req.user.id;
+  validateMongoDBId(currentUserId);
+
+  const currentUser = await User.findById(currentUserId).select('-password');
+
+  if (!currentUser) {
+    throw new AppError('Current user not found', 404);
+  }
+
+  res.status(200).json(currentUser);
+});
 
 // Find User By Id (only admin can)
 const findUserByID = asyncHandler(async (req, res, next) => {
@@ -280,7 +292,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res, next) => {
 
 const updateCurrentUserProfile = asyncHandler(async (req, res, next) => {
   const { _id } = req.user;
-  validMongoDBId(_id);
+  validateMongoDBId(_id);
   const { firstName, lastName, email, phoneNumber } = req.body;
 
   const user = await User.findById(_id);
@@ -319,7 +331,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   // 3) Send it to user's email
   try {
     // Use frontend URL for the reset link
-    const resetURL = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetURL = `https://ehms.luilala.com/reset-password/${resetToken}`;
 
     // Send the reset URL to the user
     await new Email(user, resetURL).sendPasswordReset();
@@ -418,6 +430,7 @@ module.exports = {
   getCurrentUserProfile,
   updateCurrentUserProfile,
   getAllUsers,
+  getCurrentUser,
   findUserByID,
   updateUserById,
   deleteUserByID,

@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import PersonInfoDropdown from './PersonInfoDropdown';
-import { BASE_URL } from '../config';
+import { BASE_URL, IMAGE_BASE_URL } from '../config';
 import { toast } from 'react-toastify';
 import DoctorBranchAssignment from '../components/DoctorAssigenment';
 import OperationTypeManagement from '../components/OperationTypeManagement';
 import EditUser from '../components/EditUser';
+import CategoryManagement from '../components/category-management';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -20,6 +21,7 @@ const UserList = () => {
     phoneNumber: '',
     image: null,
   });
+
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
@@ -151,114 +153,178 @@ const UserList = () => {
   };
 
   return (
-    <div className='container mx-auto'>
-      <h2 className='font-semibold text-xl'>Admin Panel</h2>
+    <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
+      <h2 className='font-semibold text-xl md:text-2xl mt-4'>Admin Panel</h2>
 
-      <div className='border pt-5 rounded-lg mt-10'>
-        <div className='flex justify-end items-center mb-4'>
+      <div className='border pt-5 rounded-lg mt-6 md:mt-10 shadow-sm'>
+        <div className='flex justify-between items-center mb-4 px-4 sm:px-6'>
+          <h3 className='text-lg font-medium text-gray-700 hidden sm:block'>
+            User Management
+          </h3>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+            className='inline-flex items-center px-3 py-2 sm:px-5 sm:py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-2 sm:mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
           >
             <FaPlus className='mr-2' /> Add User
           </button>
         </div>
 
-        {/* User Table */}
-        <div className='overflow-x-auto'>
-          <table className='w-full text-sm text-left text-gray-500'>
-            <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
-              <tr>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Profile
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Name
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Email
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Role
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Phone
-                </th>
-                <th scope='col' className='px-6 py-3 font-bold tracking-wider'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr
-                  key={user?._id}
-                  className='bg-white border-b hover:bg-gray-50'
-                >
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <img
-                      src={`http://localhost:4000/public/img/users/${user?.image}`}
-                      alt={`${user?.firstName} ${user?.lastName}`}
-                      className='h-10 w-10 rounded-full object-cover'
-                    />
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap font-medium text-gray-900'>
-                    {`${user?.firstName} ${user?.lastName}`}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>{user?.email}</td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user?.role === 'admin' ? (
-                      <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
-                        {user?.role}
-                      </span>
-                    ) : (
-                      user?.role
-                    )}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {user?.phoneNumber}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='flex space-x-2'>
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className='font-medium text-indigo-600 hover:text-indigo-900'
-                      >
-                        <FaRegEdit className='w-5 h-5' />
-                      </button>
-                      <button
-                        onClick={() => deleteUser(user?._id)}
-                        className='font-medium text-red-600 hover:text-red-700'
-                      >
-                        <FaTrash className='w-4 h-4' />
-                      </button>
-                    </div>
-                  </td>
+        {/* Table with horizontal scrolling for all screen sizes */}
+        <div className='overflow-x-auto shadow-sm rounded-lg'>
+          <div className='inline-block min-w-full align-middle'>
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead className='bg-gray-100'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                  >
+                    Profile
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                  >
+                    Email
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                  >
+                    Role
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                  >
+                    Phone
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-center'
+                  >
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {users.map((user) => (
+                  <tr
+                    key={user?._id}
+                    className='hover:bg-gray-50 transition-colors'
+                  >
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap'>
+                      <img
+                        src={`${IMAGE_BASE_URL}/users/${user?.image}`}
+                        alt={`${user?.firstName} ${user?.lastName}`}
+                        className='h-10 w-10 rounded-full object-cover'
+                      />
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap font-medium text-gray-900'>
+                      {`${user?.firstName} ${user?.lastName}`}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {user?.email}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm'>
+                      {user?.role === 'admin' ? (
+                        <span className='inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800'>
+                          {user?.role}
+                        </span>
+                      ) : (
+                        <span className='text-gray-500'>{user?.role}</span>
+                      )}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {user?.phoneNumber}
+                    </td>
+                    <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
+                      <div className='flex justify-center space-x-2'>
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className='text-indigo-600 hover:text-indigo-900 p-1.5 rounded hover:bg-indigo-50 transition-colors'
+                          aria-label='Edit user'
+                        >
+                          <FaRegEdit className='w-5 h-5' />
+                        </button>
+                        <button
+                          onClick={() => deleteUser(user?._id)}
+                          className='text-red-600 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors'
+                          aria-label='Delete user'
+                        >
+                          <FaTrash className='w-4 h-4' />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Responsive indicator - only visible on small screens */}
+        <div className='block sm:hidden text-center text-xs text-gray-500 mt-2 px-4'>
+          <p>Swipe horizontally to see more data</p>
         </div>
       </div>
 
       {/* Add User Modal */}
       {isAddModalOpen && (
-        <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center'>
-          <div className='relative p-5 border w-96 shadow-lg rounded-md bg-white'>
-            <h3 className='text-lg font-medium leading-6 text-gray-900 mb-4'>
-              Add New User
-            </h3>
+        <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50'>
+          <div className='relative p-4 sm:p-5 border w-full max-w-md shadow-lg rounded-md bg-white'>
+            <div className='flex justify-between items-center mb-4'>
+              <h3 className='text-lg font-medium leading-6 text-gray-900'>
+                Add New User
+              </h3>
+              <button
+                type='button'
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setValidationErrors({});
+                }}
+                className='text-gray-400 hover:text-gray-500 focus:outline-none'
+              >
+                <svg
+                  className='h-6 w-6'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+
             <form onSubmit={addUser}>
-              <div className='grid grid-cols-2 gap-2'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                 <div>
+                  <label
+                    htmlFor='firstName'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    First Name
+                  </label>
                   <input
+                    id='firstName'
                     type='text'
                     placeholder='First Name'
                     value={newUser.firstName}
                     onChange={(e) =>
                       setNewUser({ ...newUser, firstName: e.target.value })
                     }
-                    className='border p-2 rounded w-full mb-2'
+                    className='border p-2 rounded w-full mb-1'
                     required
                     minLength={2}
                   />
@@ -269,14 +335,21 @@ const UserList = () => {
                   )}
                 </div>
                 <div>
+                  <label
+                    htmlFor='lastName'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Last Name
+                  </label>
                   <input
+                    id='lastName'
                     type='text'
                     placeholder='Last Name'
                     value={newUser.lastName}
                     onChange={(e) =>
                       setNewUser({ ...newUser, lastName: e.target.value })
                     }
-                    className='border p-2 rounded w-full mb-2'
+                    className='border p-2 rounded w-full mb-1'
                     required
                     minLength={2}
                   />
@@ -287,14 +360,21 @@ const UserList = () => {
                   )}
                 </div>
                 <div>
+                  <label
+                    htmlFor='phoneNumber'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Phone Number
+                  </label>
                   <input
+                    id='phoneNumber'
                     type='tel'
                     placeholder='Phone Number'
                     value={newUser.phoneNumber}
                     onChange={(e) =>
                       setNewUser({ ...newUser, phoneNumber: e.target.value })
                     }
-                    className='border p-2 rounded w-full mb-2'
+                    className='border p-2 rounded w-full mb-1'
                     required
                     pattern='\d{10}'
                   />
@@ -305,14 +385,21 @@ const UserList = () => {
                   )}
                 </div>
                 <div>
+                  <label
+                    htmlFor='email'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Email
+                  </label>
                   <input
+                    id='email'
                     type='email'
                     placeholder='Email'
                     value={newUser.email}
                     onChange={(e) =>
                       setNewUser({ ...newUser, email: e.target.value })
                     }
-                    className='border p-2 rounded w-full mb-2'
+                    className='border p-2 rounded w-full mb-1'
                     required
                   />
                   {validationErrors.email && (
@@ -322,14 +409,21 @@ const UserList = () => {
                   )}
                 </div>
                 <div>
+                  <label
+                    htmlFor='password'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Password
+                  </label>
                   <input
+                    id='password'
                     type='password'
                     placeholder='Password'
                     value={newUser.password}
                     onChange={(e) =>
                       setNewUser({ ...newUser, password: e.target.value })
                     }
-                    className='border p-2 rounded w-full mb-2'
+                    className='border p-2 rounded w-full mb-1'
                     required
                     minLength={6}
                   />
@@ -340,12 +434,19 @@ const UserList = () => {
                   )}
                 </div>
                 <div>
+                  <label
+                    htmlFor='role'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Role
+                  </label>
                   <select
+                    id='role'
                     value={newUser.role}
                     onChange={(e) =>
                       setNewUser({ ...newUser, role: e.target.value })
                     }
-                    className='border p-2 rounded w-full mb-2'
+                    className='border p-2 rounded w-full mb-1'
                     required
                   >
                     <option value=''>Select Role</option>
@@ -360,36 +461,43 @@ const UserList = () => {
                     </p>
                   )}
                 </div>
-                <div>
+                <div className='sm:col-span-2'>
+                  <label
+                    htmlFor='image'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Profile Image
+                  </label>
                   <input
+                    id='image'
                     type='file'
                     accept='image/*'
                     onChange={handleImageUpload}
-                    className='border p-2 rounded w-full mb-4'
+                    className='border p-2 rounded w-full mb-1'
                   />
                 </div>
               </div>
-              <div className='flex items-center justify-end gap-2'>
+              <div className='flex items-center justify-end gap-2 mt-5 border-t pt-4'>
                 <button
                   type='button'
                   onClick={() => {
                     setIsAddModalOpen(false);
                     setValidationErrors({});
                   }}
-                  className='inline-flex items-center px-3 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                  className='inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className={`inline-flex items-center px-2 py-1 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white shadow-sm ${
                     isButtonDisabled
                       ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-700'
-                  }`}
+                      : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  } transition-colors`}
                   disabled={isButtonDisabled}
                 >
-                  Add User
+                  {isButtonDisabled ? 'Adding...' : 'Add User'}
                 </button>
               </div>
             </form>
@@ -409,6 +517,7 @@ const UserList = () => {
       <PersonInfoDropdown />
       <DoctorBranchAssignment />
       <OperationTypeManagement />
+      <CategoryManagement />
     </div>
   );
 };

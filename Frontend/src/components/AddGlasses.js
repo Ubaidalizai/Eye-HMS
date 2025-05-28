@@ -11,7 +11,6 @@ const AddGlasses = ({ handleUpdatePage, onClose }) => {
     quantity: '',
     category: '',
     purchasePrice: '',
-    salePrice: '',
   });
 
   const handleAddProduct = async (e) => {
@@ -46,7 +45,6 @@ const AddGlasses = ({ handleUpdatePage, onClose }) => {
         quantity: '',
         category: '',
         purchasePrice: '',
-        salePrice: '',
       });
 
       handleUpdatePage();
@@ -91,16 +89,6 @@ const AddGlasses = ({ handleUpdatePage, onClose }) => {
               value={newProduct.minLevel}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, minLevel: e.target.value })
-              }
-              className='mt-2 p-2 w-full border rounded'
-              min={1}
-            />
-            <input
-              type='number'
-              placeholder='Sale Price'
-              value={newProduct.salePrice}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, salePrice: e.target.value })
               }
               className='mt-2 p-2 w-full border rounded'
               min={1}

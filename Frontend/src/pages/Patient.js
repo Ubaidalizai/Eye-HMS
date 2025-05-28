@@ -282,237 +282,425 @@ export default function PatientManagement() {
   };
 
   return (
-    <div className='max-w-6xl z-1 mx-auto bg-gradient-to-r to-indigo-50 rounded-lg'>
+    <div className='max-w-6xl mx-auto px-4 sm:px-6 py-6'>
       <ToastContainer />
 
-      <h2 className='font-semibold text-xl '> Patient List</h2>
+      <h2 className='text-xl sm:text-2xl font-semibold text-gray-800 mb-6'>
+        Patient List
+      </h2>
 
-      <div className='border sm:rounded-lg mt-10'>
-        <div className='mb-6 pt-6 flex justify-between items-center'>
-          <div className='flex items-center justify-center z-0'>
-            <HiSearch className=' translate-x-7 text-gray-400' size={20} />
-            <input
-              type='text'
-              placeholder='Search patients...'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
-            />
+      <div className='bg-white border rounded-lg shadow-sm mb-6'>
+        {/* Search and Add Patient Section */}
+        <div className='p-4 sm:p-6 flex flex-col sm:flex-row justify-between gap-4'>
+          <div className='w-full sm:w-auto'>
+            <label
+              htmlFor='patient-search'
+              className='block text-sm font-medium text-gray-700 mb-1'
+            >
+              Search Patients
+            </label>
+            <div className='relative'>
+              <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                <HiSearch className='text-gray-400' size={20} />
+              </div>
+              <input
+                id='patient-search'
+                type='text'
+                placeholder='Search by name...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='pl-10 pr-4 py-2 h-10 border border-gray-300 rounded-md w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500'
+              />
+            </div>
           </div>
-          <button
-            onClick={() => {
-              setCurrentPatient(null);
-              setFormData({
-                name: '',
-                fatherName: '',
-                age: '',
-                contact: '',
-                patientID: '',
-                patientGender: '',
-                insuranceContact: '',
-              });
-              setIsModalOpen(true);
-            }}
-            className='inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2  focus:ring-indigo-500'
-          >
-            <FaPlus className='mr-2' /> Add Patient
-          </button>
+
+          <div className='flex items-end'>
+            <button
+              onClick={() => {
+                setCurrentPatient(null);
+                setFormData({
+                  name: '',
+                  fatherName: '',
+                  age: '',
+                  contact: '',
+                  patientID: '',
+                  patientGender: '',
+                  insuranceContact: '',
+                  date: '',
+                });
+                setIsModalOpen(true);
+              }}
+              className='w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 h-10 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
+            >
+              <FaPlus className='mr-2' /> Add Patient
+            </button>
+          </div>
         </div>
 
-        <div className='overflow-x-auto bg-white'>
-          <table className='w-full text-sm text-left text-gray-500'>
-            <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-              <tr>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Name
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Father Name
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Age
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Contact
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Patient ID
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Gender
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Date
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Insurance
-                </th>
-                <th scope='col' className='px-5 py-3 font-bold tracking-wider'>
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {patients.map((patient) => (
-                <tr key={patient._id} className='hover:bg-gray-50'>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
-                    {patient?.name}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-900'>
-                    {patient?.fatherName}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient?.age}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient?.contact}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient?.patientID}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient?.patientGender}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient?.date?.split('T')[0]}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-gray-700'>
-                    {patient?.insuranceContact}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
-                    <div className='flex space-x-2'>
-                      <button
-                        onClick={() => handleEdit(patient)}
-                        className='text-indigo-600 hover:text-indigo-900'
+        {/* Table Section with Horizontal Scrolling */}
+        <div className='border-t border-gray-200'>
+          {isLoading ? (
+            <div className='flex justify-center items-center py-10'>
+              <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500'></div>
+              <p className='ml-3 text-gray-600'>Loading...</p>
+            </div>
+          ) : (
+            <div className='overflow-x-auto'>
+              <div className='inline-block min-w-full align-middle'>
+                <table className='min-w-full divide-y divide-gray-200'>
+                  <thead className='bg-gray-50'>
+                    <tr>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
                       >
-                        <FaRegEdit className='w-5 h-5' />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(patient._id)}
-                        className='text-red-500 hover:text-red-700'
+                        Name
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
                       >
-                        <FaTrash className='w-4 h-4' />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        Father Name
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Age
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Contact
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Patient ID
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Gender
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Date
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Insurance
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-center'
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className='bg-white divide-y divide-gray-200'>
+                    {patients.length > 0 ? (
+                      patients.map((patient) => (
+                        <tr
+                          key={patient._id}
+                          className='hover:bg-gray-50 transition-colors'
+                        >
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                            {patient?.name}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.fatherName}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.age}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.contact}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.patientID}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.patientGender}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.date?.split('T')[0]}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {patient?.insuranceContact}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
+                            <div className='flex justify-center space-x-3'>
+                              <button
+                                onClick={() => handleEdit(patient)}
+                                className='text-indigo-600 hover:bg-indigo-50 p-1.5 rounded transition-colors'
+                                aria-label='Edit patient'
+                              >
+                                <FaRegEdit className='w-4 h-4' />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(patient._id)}
+                                className='text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors'
+                                aria-label='Delete patient'
+                              >
+                                <FaTrash className='w-4 h-4' />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          className='px-4 sm:px-6 py-4 text-center text-sm text-gray-500'
+                        >
+                          No patients found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Responsive indicator - only visible on small screens */}
+              <div className='block sm:hidden text-center text-xs text-gray-500 mt-2 px-4 pb-2'>
+                <p>Swipe horizontally to see more data</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      <Pagination
-        totalItems={patients.length}
-        totalPagesCount={totalPages}
-        itemsPerPage={limit}
-        currentPage={currentPage}
-        onPageChange={(page) => setCurrentPage(page)}
-        onLimitChange={(limit) => setLimit(limit)}
-      />
+
+      <div className='mb-6'>
+        <Pagination
+          totalItems={patients.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+      </div>
 
       {isModalOpen && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-900'>
-          <div className='bg-white p-6 rounded-lg w-96 max-w-md z-60'>
-            <h2 className='text-xl font-bold mb-4 text-gray-600'>
-              {currentPatient ? 'Edit Patient' : 'Add Patient'}
-            </h2>
-            <form onSubmit={handleSubmit} className=''>
-              <div className='grid grid-cols-2 gap-5'>
-                <input
-                  type='text'
-                  name='name'
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder='Name'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
-                />
-                <input
-                  type='text'
-                  name='fatherName'
-                  value={formData.fatherName}
-                  onChange={handleInputChange}
-                  placeholder='Father Name'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
-                />
-                <input
-                  type='number'
-                  name='age'
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  placeholder='Age'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
-                  min='0'
-                />
-                <input
-                  type='tel'
-                  name='contact'
-                  value={formData.contact}
-                  onChange={handleInputChange}
-                  placeholder='Contact'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                />
-                <input
-                  type='text'
-                  name='patientID'
-                  value={formData.patientID}
-                  onChange={handleInputChange}
-                  placeholder='Patient ID'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
-                />
-                <select
-                  name='patientGender'
-                  value={formData.patientGender}
-                  onChange={handleInputChange}
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                  required
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4 sm:p-0'>
+          <div className='bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden'>
+            <div className='flex justify-between items-center border-b px-6 py-4'>
+              <h2 className='text-lg sm:text-xl font-semibold text-gray-800'>
+                {currentPatient ? 'Edit Patient' : 'Add Patient'}
+              </h2>
+              <button
+                type='button'
+                onClick={() => setIsModalOpen(false)}
+                className='text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md'
+              >
+                <span className='sr-only'>Close</span>
+                <svg
+                  className='h-6 w-6'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
                 >
-                  <option value=''>Select Gender</option>
-                  <option value='Male'>Male</option>
-                  <option value='Female'>Female</option>
-                  <option value='Other'>Other</option>
-                </select>
-                <input
-                  type='date'
-                  name='date'
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  placeholder='Insurance Contact'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                />
-                <input
-                  type='text'
-                  name='insuranceContact'
-                  value={formData.insuranceContact}
-                  onChange={handleInputChange}
-                  placeholder='Insurance Contact'
-                  className='w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                />
-              </div>
-              <div className='flex justify-end space-x-2 mt-5'>
-                <button
-                  type='button'
-                  onClick={() => setIsModalOpen(false)}
-                  className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
-                >
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  className={`inline-flex items-center px-5 py-2 border border-transparent text-sm mr-0 font-medium rounded-md text-white ${
-                    isAddButtonDisabled
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-700'
-                  }`}
-                  disabled={isAddButtonDisabled} // Disable the button
-                >
-                  {currentPatient ? 'Update' : 'Add'} Patient
-                </button>
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className='px-6 py-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    htmlFor='name'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Name
+                  </label>
+                  <input
+                    id='name'
+                    type='text'
+                    name='name'
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder='Enter patient name'
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='fatherName'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Father Name
+                  </label>
+                  <input
+                    id='fatherName'
+                    type='text'
+                    name='fatherName'
+                    value={formData.fatherName}
+                    onChange={handleInputChange}
+                    placeholder='Enter father name'
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='age'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Age
+                  </label>
+                  <input
+                    id='age'
+                    type='number'
+                    name='age'
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    placeholder='Enter age'
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                    required
+                    min='0'
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='contact'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Contact
+                  </label>
+                  <input
+                    id='contact'
+                    type='tel'
+                    name='contact'
+                    value={formData.contact}
+                    onChange={handleInputChange}
+                    placeholder='Enter contact number'
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='patientID'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Patient ID
+                  </label>
+                  <input
+                    id='patientID'
+                    type='text'
+                    name='patientID'
+                    value={formData.patientID}
+                    onChange={handleInputChange}
+                    placeholder='Enter patient ID'
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='patientGender'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Gender
+                  </label>
+                  <select
+                    id='patientGender'
+                    name='patientGender'
+                    value={formData.patientGender}
+                    onChange={handleInputChange}
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                    required
+                  >
+                    <option value=''>Select Gender</option>
+                    <option value='Male'>Male</option>
+                    <option value='Female'>Female</option>
+                    <option value='Other'>Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='date'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Date
+                  </label>
+                  <input
+                    id='date'
+                    type='date'
+                    name='date'
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor='insuranceContact'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Insurance Contact
+                  </label>
+                  <input
+                    id='insuranceContact'
+                    type='text'
+                    name='insuranceContact'
+                    value={formData.insuranceContact}
+                    onChange={handleInputChange}
+                    placeholder='Enter insurance contact'
+                    className='w-full h-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
+                  />
+                </div>
               </div>
             </form>
+
+            <div className='px-6 py-4 bg-gray-50 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 border-t'>
+              <button
+                type='button'
+                onClick={() => setIsModalOpen(false)}
+                className='mt-3 sm:mt-0 inline-flex justify-center items-center px-4 py-2 h-10 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                onClick={handleSubmit}
+                className={`inline-flex justify-center items-center px-4 py-2 h-10 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                  isAddButtonDisabled
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
+                }`}
+                disabled={isAddButtonDisabled}
+              >
+                {isAddButtonDisabled
+                  ? 'Processing...'
+                  : currentPatient
+                  ? 'Update Patient'
+                  : 'Add Patient'}
+              </button>
+            </div>
           </div>
         </div>
       )}

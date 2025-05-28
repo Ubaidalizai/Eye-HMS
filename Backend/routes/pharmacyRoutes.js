@@ -15,6 +15,9 @@ router.route('/drugs-summary').get(pharmacy.getDrugsSummary);
 // Check for expired drugs
 router.get('/expire', pharmacy.checkDrugExpiry);
 
+// Check for low stock drugs
+router.get('/low-stock', pharmacy.getLowStockDrugs);
+
 router.get('/', pharmacy.getAllDrugsInPharmacy);
 router
   .route('/:id')

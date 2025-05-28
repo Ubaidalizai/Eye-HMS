@@ -9,10 +9,19 @@ const getPatientRecordsByPatientID = async (patientID, Model) => {
         records: [],
       };
     }
-    // Step 2: Find records in the specified model associated with the patient
-    const records = await Model.find({ patientId: patient._id })
-      .populate('patientId', 'name')
-      .populate('doctor', 'firstName lastName');
+
+    let records;
+    // Only populate for models other than Ultrasound and Oct
+    if (Model.modelName !== 'Ultrasound' && Model.modelName !== 'OCT') {
+      records = await Model.find({ patientId: patient._id })
+        .populate('patientId', 'name')
+        .populate('doctor', 'firstName lastName');
+    } else {
+      records = await Model.find({ patientId: patient._id }).populate(
+        'patientId',
+        'name'
+      );
+    }
 
     return {
       records,

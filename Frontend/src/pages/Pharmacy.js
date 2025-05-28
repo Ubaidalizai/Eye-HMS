@@ -52,26 +52,41 @@ const monthLabels = [
   'December',
 ];
 
+// Generate year options from 2022 to current year
+const generateYearOptions = () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = 2022; // Starting year for the application
+  const years = [];
+
+  for (let year = currentYear; year >= startYear; year--) {
+    years.push(year);
+  }
+
+  return years;
+};
+
 //Custom Modal/Dialog Component
 const Modal = ({ open, onClose, handleUpdate, children }) => {
   if (!open) return null;
   return (
-    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-      <div className='bg-white p-6 rounded shadow-md'>
+    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4'>
+      <div className='bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-md'>
         {children}
 
-        <button
-          onClick={onClose}
-          className='mt-4 mr-2 bg-red-500 text-white px-3 py-1 rounded'
-        >
-          Close
-        </button>
-        <button
-          onClick={handleUpdate}
-          className='mt-4 bg-blue-600 text-white px-3 py-1 rounded '
-        >
-          Update
-        </button>
+        <div className='flex flex-col sm:flex-row sm:justify-end gap-2 mt-4'>
+          <button
+            onClick={onClose}
+            className='w-full sm:w-auto bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600'
+          >
+            Close
+          </button>
+          <button
+            onClick={handleUpdate}
+            className='w-full sm:w-auto bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700'
+          >
+            Update
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -115,11 +130,6 @@ const Pharmacy = () => {
 
     let baseUrl = `${BASE_URL}/pharmacy?page=${currentPage}&limit=${limit}`;
 
-    // if (user.role === 'receptionist') {
-    //   baseUrl += '&category=sunglasses,frame, glass';
-    // } else if (user.role === 'pharmacist' || user.role === 'admin') {
-    //   baseUrl += '&category=drug';
-    // }
     if (category) {
       baseUrl += `&category=${category}`;
     }
@@ -311,21 +321,51 @@ const Pharmacy = () => {
 
   const handleMonthChange = (e) => {
     setSelectedMonth(Number(e.target.value));
+    // Refetch data when month changes
+    fetchMonthlySales();
   };
 
   const handleYearChange = (e) => {
     setSelectedYear(Number(e.target.value));
+    // Refetch data when year changes
+    if (summaryType === 'monthly') {
+      fetchMonthlySales();
+    } else {
+      fetchYearlySales();
+    }
+  };
+
+  // Function to get the number of days in a month
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
   };
 
   const getBarChartData = () => {
     let labels, data;
 
     if (summaryType === 'yearly') {
-      labels = monthLabels; // Month names for the x-axis
-      data = summary || Array(12).fill(0); // Use data from the API or zeros
+      // For yearly summary, use month labels
+      labels = monthLabels;
+      data = summary || Array(12).fill(0);
     } else {
-      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary || Array(30).fill(0); // Use data from the API or zeros
+      // For monthly summary, dynamically calculate the number of days
+      const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+
+      // If we have data, use it; otherwise create an array of zeros with the correct length
+      data = summary || Array(daysInMonth).fill(0);
+
+      // Ensure data length matches the days in month (in case the API returns a fixed array)
+      if (data.length !== daysInMonth) {
+        // If API returns more data than needed, truncate it
+        if (data.length > daysInMonth) {
+          data = data.slice(0, daysInMonth);
+        }
+        // If API returns less data than needed, pad with zeros
+        else if (data.length < daysInMonth) {
+          data = [...data, ...Array(daysInMonth - data.length).fill(0)];
+        }
+      }
     }
 
     return {
@@ -384,19 +424,20 @@ const Pharmacy = () => {
   }
 
   return (
-    <div className='min-h-screen '>
+    <div className='min-h-screen p-4 sm:p-6'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
-        <h2 className='font-semibold text-xl'>Pharmacy</h2>
-        <div className='mt-10'>
-          <div className='bg-white shadow overflow-hidden sm:rounded-md'>
+        <h2 className='font-semibold text-xl mb-4'>Pharmacy</h2>
+        <div className='mt-4 sm:mt-6'>
+          <div className='bg-white border overflow-hidden sm:rounded-md'>
             <div className='px-4 py-5 sm:p-6'>
-              <div className='grid grid-cols-1 gap-5 sm:grid-cols-3'>
+              {/* Responsive grid for summary cards */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4'>
                 <div className='bg-blue-100 overflow-hidden shadow rounded-lg'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FaDollarSign />
+                        <FaDollarSign className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -415,7 +456,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FaBoxOpen className='h-6 w-6 text-white' />
+                        <FaBoxOpen className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -434,7 +475,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
-                        <FaBoxes className='h-6 w-6 text-white' />
+                        <FaBoxes className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -453,7 +494,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-yellow-500 rounded-md p-3'>
-                        <FaExclamationTriangle className='h-6 w-6 text-white' />
+                        <FaExclamationTriangle className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -472,7 +513,7 @@ const Pharmacy = () => {
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
-                        <FaDollarSign className='h-6 w-6 text-white' />
+                        <FaDollarSign className='h-5 w-5 text-white' />
                       </div>
                       <div className='ml-5 w-0 flex-1'>
                         <dl>
@@ -490,62 +531,62 @@ const Pharmacy = () => {
               </div>
             </div>
 
+            {/* Responsive table with horizontal scroll */}
             <div className='overflow-x-auto rounded-lg shadow-md'>
               <table className='w-full text-sm text-left text-gray-500'>
                 <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                   <tr>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Name
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Manufacturer
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Min-Level
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Expire-Duration
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Expiry-Date
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Sale-price
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Quantity
                     </th>
-
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Status
                     </th>
                     <th
                       scope='col'
-                      className='px-5 py-3 font-bold tracking-wider'
+                      className='px-4 py-3 font-bold tracking-wider'
                     >
                       Actions
                     </th>
@@ -557,32 +598,28 @@ const Pharmacy = () => {
                       key={index}
                       className='hover:bg-gray-50 transition duration-150 ease-in-out'
                     >
-                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900'>
                         {drug.name}
                       </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {drug.manufacturer}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {drug.minLevel}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {drug.expireNotifyDuration}
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {drug.expiryDate?.split('T')[0]}
                       </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {drug.salePrice}
                       </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {drug.quantity}
                       </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-600'>
+                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
                         {
                           <span
                             className={`text-xs font-medium ${
@@ -601,19 +638,21 @@ const Pharmacy = () => {
                           </span>
                         }
                       </td>
-                      <td className='px-6 py-4 whitespace-nowrap'>
-                        <button
-                          onClick={() => handleEdit(drug)}
-                          className='font-medium text-blue-600 hover:text-blue-700'
-                        >
-                          <FaEdit className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(drug._id)}
-                          className='font-medium text-red-600 hover:text-red-700'
-                        >
-                          <FaTrash className='w-4 h-4' />
-                        </button>
+                      <td className='px-4 py-3 whitespace-nowrap'>
+                        <div className='flex space-x-2'>
+                          <button
+                            onClick={() => handleEdit(drug)}
+                            className='font-medium text-blue-600 hover:text-blue-700'
+                          >
+                            <FaEdit className='w-4 h-4' />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(drug._id)}
+                            className='font-medium text-red-600 hover:text-red-700'
+                          >
+                            <FaTrash className='w-4 h-4' />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -622,14 +661,18 @@ const Pharmacy = () => {
             </div>
           </div>
         </div>
-        <Pagination
-          totalItems={drugs.length}
-          totalPagesCount={totalPages}
-          itemsPerPage={limit}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(limit) => setLimit(limit)}
-        />
+
+        {/* Responsive pagination */}
+        <div className='mt-4'>
+          <Pagination
+            totalItems={drugs.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
+        </div>
       </div>
 
       {/* Edit Assignment Modal */}
@@ -637,106 +680,144 @@ const Pharmacy = () => {
         open={showEditModal}
         onClose={() => {
           setShowEditModal(false);
-          // resetForm();
         }}
         handleUpdate={handleUpdate}
       >
-        <h3 className='text-lg font-bold text-center'>Edit Record</h3>
-        <label className='block mt-2'>Min-Level</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={minLevel}
-          min={0}
-          max={100}
-          onChange={(e) => setMinLevel(e.target.value)}
-        />
-        <label className='block mt-2'>Expire-Duration-Days</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={expireNotifyDuration}
-          min={0}
-          onChange={(e) => setExpireNotifyDuration(e.target.value)}
-        />
-        {error && <p className='text-red-600'>{error}</p>}
-      </Modal>
-
-      <div className='mt-10 flex flex-col gap-6'>
-        <div className='flex gap-4'>
-          {/* Summary Type Selector */}
-          <div className='w-full sm:w-1/5'>
-            <select
-              id='summaryType'
-              className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-              onChange={handleSummaryTypeChange}
-              value={summaryType}
-            >
-              <option value='monthly'>Monthly Summary</option>
-              <option value='yearly'>Yearly Summary</option>
-            </select>
+        <h3 className='text-lg font-bold text-center mb-4'>Edit Record</h3>
+        <div className='space-y-3'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Min-Level
+            </label>
+            <input
+              type='number'
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={minLevel}
+              min={0}
+              max={100}
+              onChange={(e) => setMinLevel(e.target.value)}
+            />
           </div>
 
-          {/* Month Selector */}
-          {summaryType === 'monthly' && (
-            <div className='w-full sm:w-1/5'>
+          <div>
+            <label className='block text-sm font-medium text-gray-700'>
+              Expire-Duration-Days
+            </label>
+            <input
+              type='number'
+              className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+              value={expireNotifyDuration}
+              min={0}
+              onChange={(e) => setExpireNotifyDuration(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {error && <p className='text-red-600 mt-2'>{error}</p>}
+      </Modal>
+
+      {/* Responsive chart section */}
+      <div className='mt-6 sm:mt-10'>
+        <div className='bg-white rounded-lg border p-4 sm:p-6'>
+          <div className='flex flex-col sm:flex-row gap-4 mb-4'>
+            {/* Summary Type Selector */}
+            <div className='w-full sm:w-1/3'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Summary Type
+              </label>
               <select
-                id='month'
-                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                onChange={handleMonthChange}
-                value={selectedMonth}
+                id='summaryType'
+                className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                onChange={handleSummaryTypeChange}
+                value={summaryType}
               >
-                {monthLabels.map((label, index) => (
-                  <option key={index} value={index + 1}>
-                    {label}
+                <option value='monthly'>Monthly Summary</option>
+                <option value='yearly'>Yearly Summary</option>
+              </select>
+            </div>
+
+            {/* Month Selector */}
+            {summaryType === 'monthly' && (
+              <div className='w-full sm:w-1/3'>
+                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                  Month
+                </label>
+                <select
+                  id='month'
+                  className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                  onChange={handleMonthChange}
+                  value={selectedMonth}
+                >
+                  {monthLabels.map((label, index) => (
+                    <option key={index} value={index + 1}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Year Selector - Always visible */}
+            <div className='w-full sm:w-1/3'>
+              <label className='block text-sm font-medium text-gray-700 mb-1'>
+                Year
+              </label>
+              <select
+                id='year'
+                className='w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                value={selectedYear}
+                onChange={handleYearChange}
+              >
+                {generateYearOptions().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
                   </option>
                 ))}
               </select>
             </div>
-          )}
+          </div>
 
-          {/* Year Selector */}
-          {summaryType === 'yearly' && (
-            <div className='w-full sm:w-1/5'>
-              <input
-                id='year'
-                className='w-full rounded-sm border border-gray-300 bg-white py-2 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                type='number'
-                value={selectedYear}
-                onChange={handleYearChange}
-                min='2000'
-                max={new Date().getFullYear()}
+          {/* Chart Display */}
+          <div className='mt-4 p-2 sm:p-4 bg-white rounded-md border border-gray-200'>
+            <h2 className='mb-4 text-lg font-semibold text-gray-800'>
+              {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)}{' '}
+              Summary
+            </h2>
+            <div className='h-64 sm:h-96'>
+              <Bar
+                data={getBarChartData()}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: true,
+                      text:
+                        summaryType === 'yearly'
+                          ? `Yearly Summary for ${
+                              category || 'All Categories'
+                            } (${selectedYear})`
+                          : `Monthly Summary for ${
+                              category || 'All Categories'
+                            } (${
+                              monthLabels[selectedMonth - 1]
+                            } ${selectedYear})`,
+                    },
+                  },
+                }}
               />
             </div>
-          )}
-        </div>
-
-        {/* Chart Display */}
-        <div className='mt-6 p-6 bg-white rounded-sm border border-gray-200'>
-          <h2 className='mb-4 text-lg font-semibold text-gray-800'>
-            {summaryType.charAt(0).toUpperCase() + summaryType.slice(1)} Summary
-          </h2>
-          <Bar
-            data={getBarChartData()}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: 'top',
-                },
-                title: {
-                  display: true,
-                  text: `${
-                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
-                  } Summary for ${category || 'All Categories'}`,
-                },
-              },
-            }}
-          />
+          </div>
         </div>
       </div>
 
-      <MoveSalesToLog onTransferSuccess={fetchPharmacySaleTotal} />
+      {/* Responsive MoveSalesToLog component */}
+      <div className='mt-6'>
+        <MoveSalesToLog onTransferSuccess={fetchPharmacySaleTotal} />
+      </div>
     </div>
   );
 };

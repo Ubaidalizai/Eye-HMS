@@ -125,7 +125,7 @@ function Laboratory() {
   };
 
   const fields = [
-    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {
@@ -199,7 +199,7 @@ function Laboratory() {
 
       <input
         type='text'
-        placeholder='Search ...'
+        placeholder='Search by Patient ID...'
         onChange={(e) => handleSearchChange(e.target.value)}
         className='border border-gray-300 mt-8 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9 mb-5'
       />

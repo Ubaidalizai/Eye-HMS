@@ -73,66 +73,109 @@ export default function MoveHistory() {
   });
 
   return (
-    <div className='p-4 mt-4 rounded-lg border min-h-screen'>
-      <h2 className='font-semibold text-xl mb-10'>Move History</h2>
+    <div className='p-4 sm:p-6 mt-4 mb-5 rounded-lg border shadow-sm bg-white'>
+      <h2 className='font-semibold text-lg sm:text-xl text-gray-700 mb-6'>
+        Move History
+      </h2>
+
       {/* Filter Input */}
-      <div className='mb-4'>
-        <input
-          type='text'
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder='Search...'
-          className='p-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
-        />
+      <div className='mb-6'>
+        <label
+          htmlFor='move-history-search'
+          className='block text-sm font-medium text-gray-700 mb-1'
+        >
+          Search Move History
+        </label>
+        <div className='relative'>
+          <input
+            id='move-history-search'
+            type='text'
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder='Search by product name, category...'
+            className='p-2 pl-3 border border-gray-300 rounded-md w-full sm:max-w-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-10'
+          />
+        </div>
       </div>
-      <div className='overflow-x-auto shadow rounded-lg bg-white'>
+
+      {/* Table with horizontal scrolling */}
+      <div className='overflow-x-auto shadow-sm rounded-lg'>
         {isLoading ? (
-          <div className='text-center py-4'>Loading...</div>
+          <div className='flex justify-center items-center py-10'>
+            <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500'></div>
+            <p className='ml-3 text-gray-600'>Loading...</p>
+          </div>
         ) : (
-          <table className='w-full text-sm text-left text-gray-500'>
-            <thead className='text-xs text-gray-700 uppercase bg-gray-100'>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      scope='col'
-                      className='px-6 py-3 font-bold tracking-wider'
+          <div className='inline-block min-w-full align-middle'>
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead className='bg-gray-100'>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {table.getRowModel().rows.length > 0 ? (
+                  table.getRowModel().rows.map((row) => (
+                    <tr
+                      key={row.id}
+                      className='hover:bg-gray-50 transition-colors'
                     >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className='bg-white border-b hover:bg-gray-50'>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className='px-6 py-4 whitespace-nowrap'>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={columns.length}
+                      className='px-4 sm:px-6 py-4 text-center text-sm text-gray-500'
+                    >
+                      No records found
                     </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
 
-        <Pagination
-          totalItems={data.length}
-          totalPagesCount={totalPages}
-          itemsPerPage={limit}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(limit) => setLimit(limit)}
-        />
+        {/* Responsive indicator - only visible on small screens */}
+        <div className='block sm:hidden text-center text-xs text-gray-500 mt-2 px-4'>
+          <p>Swipe horizontally to see more data</p>
+        </div>
+
+        <div className='mt-4'>
+          <Pagination
+            totalItems={data.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
+        </div>
       </div>
     </div>
   );

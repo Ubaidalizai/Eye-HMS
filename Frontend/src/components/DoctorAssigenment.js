@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
-import { BASE_URL } from '../config';
+import { BASE_URL, IMAGE_BASE_URL } from '../config';
 import { useAuth } from '../AuthContext';
 
 // Custom Button Component
@@ -8,7 +8,7 @@ const Button = ({ children, onClick, className, disabled }) => (
   <button
     onClick={onClick}
     disabled={disabled}
-    className={`inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${className}`}
+    className={`inline-flex items-center px-3 py-2 sm:px-5 sm:py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none mr-2 sm:mr-6 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${className}`}
   >
     {children}
   </button>
@@ -18,64 +18,150 @@ const Button = ({ children, onClick, className, disabled }) => (
 const Modal = ({ open, onClose, children }) => {
   if (!open) return null;
   return (
-    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-      <div className='bg-white p-6 rounded shadow-md'>
-        {children}
-        <button
-          onClick={onClose}
-          className='mt-4 bg-red-500 text-white px-3 py-1 rounded '
-        >
-          Close
-        </button>
+    <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4 z-50'>
+      <div className='bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full max-w-md'>
+        <div className='flex justify-between items-center mb-4'>
+          <div className='text-lg font-medium text-gray-900'>
+            {children[0]} {/* Assuming first child is the title */}
+          </div>
+          <button
+            onClick={onClose}
+            className='text-gray-400 hover:text-gray-500 focus:outline-none'
+          >
+            <svg
+              className='h-6 w-6'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M6 18L18 6M6 6l12 12'
+              />
+            </svg>
+          </button>
+        </div>
+        <div className='space-y-4'>
+          {children.slice(1)} {/* All children except the first one (title) */}
+        </div>
       </div>
     </div>
   );
 };
 
-//Custom Table Component
+//Custom Table Component with horizontal scrolling
 const Table = ({ headers, data, onDelete, onEdit }) => (
-  <table className='min-w-full border-collapse border border-gray-300 mt-4 text-center'>
-    <thead className='bg-gray-100 text-gray-600'>
-      <tr>
-        {headers?.map((header) => (
-          <th key={header} className='border px-4 py-2'>
-            {header}
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {data?.map((row, index) => (
-        <tr key={index} className='border-t'>
-          <td className='border px-4 py-2'>
-            <img
-              src={`http://localhost:4000/public/img/users/${row?.image}`}
-              alt='doctor'
-              className='w-12 h-12 rounded-full object-cover'
-            />
-          </td>
-          <td className='border px-4 py-2'>{row?.doctorName}</td>
-          <td className='border px-4 py-2'>{row?.branch}</td>
-          <td className='border px-4 py-2'>{row?.percentage}%</td>
-          <td className='border px-4 py-2'>{row?.price}</td>
-          <td className='border px-4 py-2'>
-            <button
-              onClick={() => onEdit(row)}
-              className='text-blue-500 px-2 py-1 rounded'
-            >
-              <FaEdit />
-            </button>
-            <button
-              onClick={() => onDelete(row?.id)}
-              className='text-red-500 px-2 py-1 rounded'
-            >
-              <FaTrash />
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
+  <div className='overflow-x-auto shadow-sm rounded-lg'>
+    <div className='inline-block min-w-full align-middle'>
+      <table className='min-w-full divide-y divide-gray-200 mt-4'>
+        <thead className='bg-gray-100'>
+          <tr>
+            {headers?.map((header) => (
+              <th
+                key={header}
+                className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className='bg-white divide-y divide-gray-200'>
+          {data?.map((row, index) => (
+            <tr key={index} className='hover:bg-gray-50 transition-colors'>
+              <td className='px-4 sm:px-6 py-4 whitespace-nowrap'>
+                <img
+                  src={`${IMAGE_BASE_URL}/users/${row?.image}`}
+                  alt='doctor'
+                  className='w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover'
+                />
+              </td>
+              <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                {row?.doctorName}
+              </td>
+              <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                {row?.branch}
+              </td>
+              <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                {row?.percentage}%
+              </td>
+              <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                {row?.price}
+              </td>
+              <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
+                <div className='flex justify-center space-x-2'>
+                  <button
+                    onClick={() => onEdit(row)}
+                    className='text-blue-500 hover:bg-blue-50 p-1.5 rounded transition-colors'
+                    aria-label='Edit assignment'
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    onClick={() => onDelete(row?.id)}
+                    className='text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors'
+                    aria-label='Delete assignment'
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+// Mobile Card View Component
+const MobileCardView = ({ data, onDelete, onEdit }) => (
+  <div className='space-y-4 mt-4 md:hidden'>
+    {data?.map((row, index) => (
+      <div
+        key={index}
+        className='bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden'
+      >
+        <div className='flex items-center p-4 border-b'>
+          <img
+            src={`${IMAGE_BASE_URL}/users/${row?.image}`}
+            alt='doctor'
+            className='w-12 h-12 rounded-full object-cover mr-3'
+          />
+          <div>
+            <h3 className='font-medium text-gray-900'>{row?.doctorName}</h3>
+            <p className='text-sm text-gray-500'>{row?.branch}</p>
+          </div>
+        </div>
+        <div className='grid grid-cols-2 gap-2 p-4 text-sm'>
+          <div>
+            <span className='text-gray-500'>Percentage: </span>
+            <span className='font-medium'>{row?.percentage}%</span>
+          </div>
+          <div>
+            <span className='text-gray-500'>Price: </span>
+            <span className='font-medium'>{row?.price}</span>
+          </div>
+        </div>
+        <div className='flex justify-end border-t p-3 bg-gray-50'>
+          <button
+            onClick={() => onEdit(row)}
+            className='flex items-center justify-center px-3 py-1.5 text-blue-600 bg-blue-50 rounded-md mr-2'
+          >
+            <FaEdit className='mr-1' /> Edit
+          </button>
+          <button
+            onClick={() => onDelete(row?.id)}
+            className='flex items-center justify-center px-3 py-1.5 text-red-600 bg-red-50 rounded-md'
+          >
+            <FaTrash className='mr-1' /> Delete
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
 );
 
 const DoctorBranchAssignment = () => {
@@ -93,21 +179,26 @@ const DoctorBranchAssignment = () => {
 
   const { perDoctors } = useAuth();
 
-  useEffect(() => {
-    fetchAssignments();
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/doctor-branch?doctorId=${category}`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
+      const data = await response.json();
+      setAssignments(data.data);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      setError('Failed to fetch assignments');
+    }
   }, [category]);
 
-  const fetchAssignments = async () => {
-    const response = await fetch(
-      `${BASE_URL}/doctor-branch?doctorId=${category}`,
-      {
-        method: 'GET',
-        credentials: 'include',
-      }
-    );
-    const data = await response.json();
-    setAssignments(data.data);
-  };
+  useEffect(() => {
+    fetchAssignments();
+  }, [fetchAssignments]);
 
   const handleAssign = async () => {
     setIsAssignButtonDisabled(true);
@@ -208,21 +299,25 @@ const DoctorBranchAssignment = () => {
   };
 
   return (
-    <div className='border pt-5 rounded-lg mt-20 mb-20'>
-      <h2 className='text-2xl text-gray-600 font-semibold ml-3 mb-10'>
+    <div className='border pt-5 rounded-lg mt-10 md:mt-20 mb-10 md:mb-20 shadow-sm'>
+      <h2 className='text-xl md:text-2xl text-gray-600 font-semibold px-4 sm:px-6 mb-6 md:mb-10'>
         Assigned Doctors List
       </h2>
-      <div className='flex flex-row items-center justify-end gap-3'>
-        <label htmlFor='category' className='sr-only'>
-          Category
-        </label>
-        <div>
+
+      <div className='px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4'>
+        <div className='w-full sm:w-auto mb-3 sm:mb-0'>
+          <label
+            htmlFor='category'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Filter by Doctor
+          </label>
           <select
             id='category'
             name='category'
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
+            className='block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md'
           >
             <option value=''>All Doctors</option>
             {perDoctors?.map((doctor) => (
@@ -232,34 +327,42 @@ const DoctorBranchAssignment = () => {
             ))}
           </select>
         </div>
-        <div>
-          <Button onClick={() => setShowAssignModal(true)}>
-            + Assign Doctor
-          </Button>
+        <Button onClick={() => setShowAssignModal(true)}>
+          + Assign Doctor
+        </Button>
+      </div>
+
+      {/* Table with horizontal scrolling for all screen sizes */}
+      <div className='px-4 sm:px-6'>
+        <Table
+          headers={[
+            'Profile',
+            'Doctor',
+            'Branch',
+            'Percentage',
+            'Price',
+            'Actions',
+          ]}
+          data={assignments?.map((ass) => ({
+            image: ass.image,
+            id: ass._id,
+            doctorId: ass.doctorId,
+            doctorName: `${ass.doctorName}`,
+            branch: ass.branch,
+            percentage: ass.percentage,
+            price: ass.price,
+          }))}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+
+        {/* Responsive indicator - only visible on small screens */}
+        <div className='block sm:hidden text-center text-xs text-gray-500 mt-2'>
+          <p>Swipe horizontally to see more data</p>
         </div>
       </div>
 
-      <Table
-        headers={[
-          'Profile',
-          'Doctor',
-          'Branch',
-          'Percentage',
-          'Price',
-          'Actions',
-        ]}
-        data={assignments?.map((ass) => ({
-          image: ass.image,
-          id: ass._id,
-          doctorId: ass.doctorId,
-          doctorName: `${ass.doctorName}`,
-          branch: ass.branch,
-          percentage: ass.percentage,
-          price: ass.price,
-        }))}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {/* Mobile Card View - Removed in favor of horizontal scrolling */}
 
       {/* Assign Doctor Modal */}
       <Modal
@@ -269,62 +372,112 @@ const DoctorBranchAssignment = () => {
           resetForm();
         }}
       >
-        <h3 className='text-lg font-bold text-center'>
-          Assign Doctor to Branch
-        </h3>
-        <label className='block mt-2'>Doctor</label>
-        <select
-          className='border px-3 py-1 rounded w-full'
-          value={selectedDoctor}
-          onChange={(e) => setSelectedDoctor(e.target.value)}
-        >
-          <option value=''>Select Doctor</option>
-          {perDoctors.map((doctor) => (
-            <option key={doctor._id} value={doctor._id}>
-              {doctor.firstName} {doctor.lastName}
-            </option>
-          ))}
-        </select>
-        <label className='block mt-2'>Branch</label>
-        <select
-          className='border px-3 py-1 rounded w-full'
-          value={selectedBranch}
-          onChange={(e) => setSelectedBranch(e.target.value)}
-        >
-          <option value=''>Select Branch</option>
-          <option value='operationModule'>Operation</option>
-          <option value='opdModule'>OPD</option>
-          <option value='octModule'>OCT</option>
-          <option value='ultraSoundModule'>Biscayne</option>
-          <option value='yeglizerModel'>Yeglizer</option>
-          <option value='labratoryModule'>Laboratory</option>
-          <option value='bedroomModule'>Bedroom</option>
-        </select>
-        <label className='block mt-2'>Percentage %</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={percentage}
-          min={0}
-          max={100}
-          onChange={(e) => setPercentage(e.target.value)}
-        />
-        <label className='block mt-2'>Price</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={price}
-          min={0}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        {error && <p className='text-red-600'>{error}</p>}
-        <Button
-          onClick={handleAssign}
-          className='mt-4 w-full'
-          disabled={isAssignButtonDisabled}
-        >
-          {isAssignButtonDisabled ? 'Assigning...' : 'Assign'}
-        </Button>
+        <h3 className='text-lg font-bold'>Assign Doctor to Branch</h3>
+
+        <div>
+          <label
+            htmlFor='doctor'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Doctor
+          </label>
+          <select
+            id='doctor'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            value={selectedDoctor}
+            onChange={(e) => setSelectedDoctor(e.target.value)}
+          >
+            <option value=''>Select Doctor</option>
+            {perDoctors.map((doctor) => (
+              <option key={doctor._id} value={doctor._id}>
+                {doctor.firstName} {doctor.lastName}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor='branch'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Branch
+          </label>
+          <select
+            id='branch'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+          >
+            <option value=''>Select Branch</option>
+            <option value='operationModule'>Operation</option>
+            <option value='opdModule'>OPD</option>
+            <option value='yeglizerModel'>Yeglizer</option>
+            <option value='laboratoryModule'>Laboratory</option>
+            <option value='bedroomModule'>Bedroom</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor='percentage'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Percentage %
+          </label>
+          <input
+            id='percentage'
+            type='number'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            value={percentage}
+            min={0}
+            max={100}
+            onChange={(e) => setPercentage(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor='price'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Price
+          </label>
+          <input
+            id='price'
+            type='number'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            value={price}
+            min={0}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+        </div>
+
+        {error && <p className='text-red-600 mt-2 text-sm'>{error}</p>}
+
+        <div className='mt-5 flex justify-end space-x-3'>
+          <button
+            type='button'
+            onClick={() => {
+              setShowAssignModal(false);
+              resetForm();
+            }}
+            className='px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAssign}
+            disabled={isAssignButtonDisabled}
+            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+              isAssignButtonDisabled
+                ? 'bg-indigo-400 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+            } transition-colors`}
+          >
+            {isAssignButtonDisabled ? 'Assigning...' : 'Assign'}
+          </button>
+        </div>
       </Modal>
 
       {/* Edit Assignment Modal */}
@@ -335,28 +488,63 @@ const DoctorBranchAssignment = () => {
           resetForm();
         }}
       >
-        <h3 className='text-lg font-bold text-center'>Edit Assignment</h3>
-        <label className='block mt-2'>Percentage %</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={percentage}
-          min={0}
-          max={100}
-          onChange={(e) => setPercentage(e.target.value)}
-        />
-        <label className='block mt-2'>Price</label>
-        <input
-          type='number'
-          className='border px-3 py-1 rounded w-full'
-          value={price}
-          min={0}
-          onChange={(e) => setPrice(e.target.value)}
-        />
-        {error && <p className='text-red-600'>{error}</p>}
-        <Button onClick={handleUpdate} className='mt-4 w-full'>
-          Update
-        </Button>
+        <h3 className='text-lg font-bold'>Edit Assignment</h3>
+
+        <div>
+          <label
+            htmlFor='edit-percentage'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Percentage %
+          </label>
+          <input
+            id='edit-percentage'
+            type='number'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            value={percentage}
+            min={0}
+            max={100}
+            onChange={(e) => setPercentage(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor='edit-price'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Price
+          </label>
+          <input
+            id='edit-price'
+            type='number'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            value={price}
+            min={0}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+        </div>
+
+        {error && <p className='text-red-600 mt-2 text-sm'>{error}</p>}
+
+        <div className='mt-5 flex justify-end space-x-3'>
+          <button
+            type='button'
+            onClick={() => {
+              setShowEditModal(false);
+              resetForm();
+            }}
+            className='px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleUpdate}
+            className='px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
+          >
+            Update
+          </button>
+        </div>
       </Modal>
     </div>
   );

@@ -4,24 +4,52 @@ const doctorKhataController = require('../controllers/doctorKhataController');
 const {
   authenticate,
   authorizeAdmin,
+  authorizeAdminOrDoctor,
 } = require('../middlewares/authMiddleware');
 
-router.use(authenticate, authorizeAdmin);
-
-router.get('/doctor-khata/summary', doctorKhataController.getDocKhataSummary);
+router.use(authenticate);
 
 router.get(
-  '/doctor-khata/:year',
+  '/doctor-khata/summary',
+  authorizeAdminOrDoctor,
+  doctorKhataController.getDocKhataSummary
+);
+
+router.get(
+  '/doctor-khata/yearly/:year',
+  authorizeAdminOrDoctor,
   doctorKhataController.getDoctorYearlyKhataStats
 );
 router.get(
-  '/doctor-khata/:year/:month',
+  '/doctor-khata/monthly/:year/:month',
+  authorizeAdminOrDoctor,
   doctorKhataController.getDoctorMonthlyKhataStats
 );
 
-router.post('/doctor-khata', doctorKhataController.createDoctorKhata);
-router.get('/doctor-khata/:id', doctorKhataController.getDoctorKhataById);
-router.patch('/doctor-khata/:id', doctorKhataController.updateDoctorKhata);
-router.delete('/doctor-khata/:id', doctorKhataController.deleteDoctorKhata);
+router.post(
+  '/doctor-khata',
+  authorizeAdmin,
+  doctorKhataController.createDoctorKhata
+);
+router.get(
+  '/doctor-khata/:id',
+  authorizeAdmin,
+  doctorKhataController.getDoctorKhataById
+);
+router.get(
+  '/doctor-khata',
+  authorizeAdminOrDoctor,
+  doctorKhataController.getDoctorKhataRecords
+);
+router.patch(
+  '/doctor-khata/:id',
+  authorizeAdmin,
+  doctorKhataController.updateDoctorKhata
+);
+router.delete(
+  '/doctor-khata/:id',
+  authorizeAdmin,
+  doctorKhataController.deleteDoctorKhata
+);
 
 module.exports = router;

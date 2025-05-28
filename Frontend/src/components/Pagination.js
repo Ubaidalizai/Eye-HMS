@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
+
 const Pagination = ({
   totalItems,
   totalPagesCount,
@@ -38,10 +38,10 @@ const Pagination = ({
   };
 
   return (
-    <div className='flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6'>
-      <div className='hidden sm:flex sm:flex-1 sm:items-center sm:justify-between'>
-        <div>
-          <p className='text-sm text-gray-700'>
+    <div className='flex flex-col sm:flex-row items-center justify-between px-2 sm:px-4 py-3 bg-white border-t border-gray-200'>
+      <div className='flex flex-col sm:flex-row sm:items-center w-full justify-between'>
+        <div className='text-center sm:text-left mb-4 sm:mb-0'>
+          <p className='text-xs sm:text-sm text-gray-700'>
             Showing{' '}
             <span className='font-medium'>
               {(currentPage - 1) * itemsPerPage + 1}
@@ -53,11 +53,11 @@ const Pagination = ({
             of <span className='font-medium'>{totalItems}</span> results
           </p>
         </div>
-        <div className='flex items-center space-x-4'>
+        <div className='flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4'>
           <select
             value={itemsPerPage}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className='flex items-center justify-center w-full  bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            className='flex items-center justify-center w-full sm:w-auto bg-white border border-gray-300 rounded-md px-4 py-1 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm'
           >
             {[10, 20, 50, 100].map((value) => (
               <option key={value} value={value}>
@@ -67,16 +67,16 @@ const Pagination = ({
           </select>
 
           <div
-            className='inline-flex justify-center items-center rounded-md shadow-sm -space-x-px'
+            className='flex justify-center items-center rounded-md shadow-sm'
             aria-label='Pagination'
           >
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className='inline-flex justify-center items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 mr-3'
+              className='inline-flex justify-center items-center h-8 w-8 sm:w-10 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
             >
               <svg
-                className='w-6 h-6'
+                className='w-4 h-4 sm:w-5 sm:h-5'
                 xmlns='http://www.w3.org/2000/svg'
                 viewBox='0 0 20 20'
                 fill='currentColor'
@@ -91,7 +91,7 @@ const Pagination = ({
             </button>
             <form
               onSubmit={handlePageInputSubmit}
-              className='flex flex-row items-center justify-center'
+              className='flex flex-row items-center justify-center mx-1 sm:mx-2'
             >
               <input
                 type='number'
@@ -99,20 +99,19 @@ const Pagination = ({
                 max={totalPages}
                 value={pageInput}
                 onChange={handlePageInputChange}
-                className=' h-8 w-16 text-center bg-white border border-gray-300  sm:text-sm'
+                className='h-8 w-12 sm:w-16 text-center text-xs sm:text-sm bg-white border border-gray-300'
               />
-              <span className='mx-2'>of</span>
-              <span className='mr-2'>{totalPages}</span>
+              <span className='mx-1 sm:mx-2 text-xs sm:text-sm'>of</span>
+              <span className='text-xs sm:text-sm'>{totalPages}</span>
             </form>
 
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className='inline-flex justify-center font-bold items-center h-8 w-10 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50'
+              className='inline-flex justify-center font-bold items-center h-8 w-8 sm:w-10 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'
             >
-              {/* <span className='sr-only'>Next</span> */}
               <svg
-                className='w-6 h-6'
+                className='w-4 h-4 sm:w-5 sm:h-5'
                 xmlns='http://www.w3.org/2000/svg'
                 viewBox='0 0 20 20'
                 fill='currentColor'

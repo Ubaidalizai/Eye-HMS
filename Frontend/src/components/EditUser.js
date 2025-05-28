@@ -118,25 +118,50 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
   };
 
   return (
-    <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50'>
-      <div className='relative p-5 border w-full max-w-md shadow-lg rounded-md bg-white'>
-        <h3 className='text-lg font-medium leading-6 text-gray-900 mb-4'>
-          Edit User
-        </h3>
+    <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50'>
+      <div className='relative p-4 sm:p-5 border w-full max-w-md shadow-lg rounded-md bg-white'>
+        <div className='flex justify-between items-center mb-4'>
+          <h3 className='text-lg font-medium leading-6 text-gray-900'>
+            Edit User
+          </h3>
+          <button
+            type='button'
+            onClick={onClose}
+            className='text-gray-400 hover:text-gray-500 focus:outline-none'
+          >
+            <svg
+              className='h-6 w-6'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M6 18L18 6M6 6l12 12'
+              />
+            </svg>
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit}>
-          <div className='grid grid-cols-2 gap-3'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <label
+                htmlFor='edit-firstName'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
                 First Name
               </label>
               <input
+                id='edit-firstName'
                 type='text'
                 name='firstName'
                 placeholder='First Name'
                 value={editingUser.firstName}
                 onChange={handleChange}
-                className='border p-2 rounded w-full mb-1'
+                className='border p-2 rounded w-full mb-1 focus:ring-indigo-500 focus:border-indigo-500'
                 required
                 minLength={2}
               />
@@ -148,16 +173,20 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <label
+                htmlFor='edit-lastName'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
                 Last Name
               </label>
               <input
+                id='edit-lastName'
                 type='text'
                 name='lastName'
                 placeholder='Last Name'
                 value={editingUser.lastName}
                 onChange={handleChange}
-                className='border p-2 rounded w-full mb-1'
+                className='border p-2 rounded w-full mb-1 focus:ring-indigo-500 focus:border-indigo-500'
                 required
                 minLength={2}
               />
@@ -169,16 +198,20 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <label
+                htmlFor='edit-email'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
                 Email
               </label>
               <input
+                id='edit-email'
                 type='email'
                 name='email'
                 placeholder='Email'
                 value={editingUser.email}
                 onChange={handleChange}
-                className='border p-2 rounded w-full mb-1'
+                className='border p-2 rounded w-full mb-1 focus:ring-indigo-500 focus:border-indigo-500'
                 required
               />
               {validationErrors.email && (
@@ -187,16 +220,20 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <label
+                htmlFor='edit-phoneNumber'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
                 Phone Number
               </label>
               <input
+                id='edit-phoneNumber'
                 type='tel'
                 name='phoneNumber'
                 placeholder='Phone Number'
                 value={editingUser.phoneNumber}
                 onChange={handleChange}
-                className='border p-2 rounded w-full mb-1'
+                className='border p-2 rounded w-full mb-1 focus:ring-indigo-500 focus:border-indigo-500'
                 required
                 pattern='\d{10}'
               />
@@ -208,14 +245,18 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
+              <label
+                htmlFor='edit-role'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
                 Role
               </label>
               <select
+                id='edit-role'
                 name='role'
                 value={editingUser.role}
                 onChange={handleChange}
-                className='border p-2 rounded w-full mb-1'
+                className='border p-2 rounded w-full mb-1 focus:ring-indigo-500 focus:border-indigo-500'
                 required
               >
                 <option value=''>Select Role</option>
@@ -231,16 +272,20 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
 
             {editingUser.role === 'receptionist' && (
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1'>
+                <label
+                  htmlFor='edit-percentage'
+                  className='block text-sm font-medium text-gray-700 mb-1'
+                >
                   Percentage
                 </label>
                 <input
+                  id='edit-percentage'
                   type='number'
                   name='percentage'
                   placeholder='Percentage %'
                   value={editingUser.percentage}
                   onChange={handleChange}
-                  className='border p-2 rounded w-full mb-1'
+                  className='border p-2 rounded w-full mb-1 focus:ring-indigo-500 focus:border-indigo-500'
                   required
                   min={0}
                 />
@@ -251,11 +296,15 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
                 )}
               </div>
             )}
-            <div className='col-span-2'>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
+
+            <div className='col-span-1 sm:col-span-2'>
+              <label
+                htmlFor='edit-image'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
                 Profile Image
               </label>
-              <div className='flex items-center space-x-4'>
+              <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3'>
                 {previewImage && (
                   <div className='relative'>
                     <img
@@ -266,30 +315,31 @@ const EditUser = ({ user, onClose, onUserUpdated }) => {
                   </div>
                 )}
                 <input
+                  id='edit-image'
                   type='file'
                   accept='image/*'
                   onChange={handleImageChange}
-                  className='border p-2 rounded flex-1'
+                  className='border p-2 rounded w-full'
                 />
               </div>
             </div>
           </div>
 
-          <div className='flex items-center justify-end gap-2 mt-4'>
+          <div className='flex items-center justify-end gap-2 mt-5 pt-4 border-t border-gray-200'>
             <button
               type='button'
               onClick={onClose}
-              className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500'
+              className='inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
             >
               Cancel
             </button>
             <button
               type='submit'
-              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white ${
+              className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white shadow-sm ${
                 isSubmitting
                   ? 'bg-indigo-400 cursor-not-allowed'
                   : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-              }`}
+              } transition-colors`}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Updating...' : 'Update User'}

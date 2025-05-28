@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Bar, Line } from 'react-chartjs-2';
 import { BASE_URL } from '../config';
+import { Search } from 'lucide-react';
+import Pagination from '../components/Pagination';
 
 import {
   Chart as ChartJS,
@@ -37,6 +39,11 @@ function DoctorFinance() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState({ data: { stats: [] } });
+  const [drKhataRecords, setDrKhataRecords] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     // Update summaryType when activeTab changes
@@ -50,12 +57,49 @@ function DoctorFinance() {
       fetchYearlyKhataSummary();
     }
     fetchDrKhataSummary();
-  }, [summaryType, selectedMonth, selectedYear]);
+    fetchDrKhataRecords();
+  }, [
+    summaryType,
+    selectedMonth,
+    selectedYear,
+    searchTerm,
+    currentPage,
+    limit,
+  ]);
+
+  const fetchDrKhataRecords = async () => {
+    try {
+      setLoading(true);
+      // Include credentials to send cookies with the request
+      const response = await fetch(
+        `${BASE_URL}/khata/doctor-khata?limit=${limit}&page=${currentPage}&date=${searchTerm}`,
+        {
+          credentials: 'include',
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setDrKhataRecords(result || []);
+      setTotalPages(result.pages || Math.ceil(result.results.length / limit));
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
   const fetchDrKhataSummary = async () => {
     try {
       setLoading(true);
-      // Include credentials to send cookies with the request
+
       const response = await fetch(`${BASE_URL}/khata/doctor-khata/summary`, {
         credentials: 'include', // This ensures cookies are sent with the request
         headers: {
@@ -73,7 +117,6 @@ function DoctorFinance() {
       }
 
       const result = await response.json();
-      console.log('Summary data:', result);
       setData(result);
       setLoading(false);
     } catch (err) {
@@ -86,7 +129,7 @@ function DoctorFinance() {
     try {
       setLoading(true);
       const response = await fetch(
-        `${BASE_URL}/khata/doctor-khata/${selectedYear}/${selectedMonth}`,
+        `${BASE_URL}/khata/doctor-khata/monthly/${selectedYear}/${selectedMonth}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -98,7 +141,6 @@ function DoctorFinance() {
       }
 
       const data = await response.json();
-      console.log('Monthly data:', data);
       setSummary(data); // Assuming the backend returns a "summary" field
       setLoading(false);
     } catch (err) {
@@ -111,7 +153,7 @@ function DoctorFinance() {
     try {
       setLoading(true);
       const response = await fetch(
-        `${BASE_URL}/khata/doctor-khata/${selectedYear}`,
+        `${BASE_URL}/khata/doctor-khata/yearly/${selectedYear}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -123,13 +165,19 @@ function DoctorFinance() {
       }
 
       const data = await response.json();
-      console.log('Yearly data:', data);
       setSummary(data); // Assuming the backend returns a "summary" field
       setLoading(false);
     } catch (err) {
       console.log(err);
       setLoading(false);
     }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   // If loading, show loading state
@@ -281,41 +329,15 @@ function DoctorFinance() {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: (value) => '$' + value,
+          callback: (value) => '' + value,
         },
       },
     },
   };
 
-  // Find transactions with non-zero values
-  const transactions = [];
-  stats.forEach((item) => {
-    if (item.income > 0) {
-      transactions.push({
-        date:
-          summaryType === 'monthly'
-            ? `${monthNames[selectedMonth - 1]} ${item.day}`
-            : `${monthNames[item.month - 1]}`,
-        name: 'Income Deposit',
-        amount: item.income,
-        type: 'income',
-      });
-    }
-    if (item.outcome > 0) {
-      transactions.push({
-        date:
-          summaryType === 'monthly'
-            ? `${monthNames[selectedMonth - 1]} ${item.day}`
-            : `${monthNames[item.month - 1]}`,
-        name: 'Expense Payment',
-        amount: item.outcome,
-        type: 'outcome',
-      });
-    }
-  });
-
   // Get current date for the header
   const currentDate = new Date();
+  const currentDay = currentDate.getDate();
   const currentMonth = monthNames[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
@@ -328,7 +350,7 @@ function DoctorFinance() {
         </h1>
         <div className='bg-white px-4 py-2 rounded-lg shadow-sm font-medium text-gray-700'>
           <span>
-            {currentMonth} {currentYear}
+            {currentDay} {currentMonth} {currentYear}
           </span>
         </div>
       </header>
@@ -531,80 +553,129 @@ function DoctorFinance() {
         </div>
       </div>
 
-      {/* Transactions Section */}
+      {/* Transactions Table Section */}
       <div className='bg-white rounded-xl shadow-sm p-6 mb-8'>
-        <h2 className='text-lg font-semibold text-gray-800 mb-6'>
-          Recent Activity
-        </h2>
-
-        {transactions.length > 0 ? (
-          <div className='space-y-4'>
-            {transactions.map((transaction, index) => (
-              <div
-                key={index}
-                className='flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors'
-              >
-                <div className='flex flex-col'>
-                  <span className='text-xs text-gray-500 mb-1'>
-                    {transaction.date}
-                  </span>
-                  <span className='font-medium'>{transaction.name}</span>
-                </div>
-                <span
-                  className={`font-semibold ${
-                    transaction.type === 'income'
-                      ? 'text-emerald-600'
-                      : 'text-red-600'
-                  }`}
-                >
-                  {transaction.type === 'income' ? '+' : '-'}
-                  {transaction.amount}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className='text-center py-8 text-gray-500'>
-            <p>No recent transactions to display</p>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className='bg-white rounded-xl shadow-sm p-6 flex flex-col sm:flex-row justify-between items-center'>
-        <div className='flex space-x-8 mb-4 sm:mb-0'>
-          <div className='flex flex-col'>
-            <span className='text-xs text-gray-500 mb-1'>
-              Total Transactions
-            </span>
-            <span className='font-semibold text-gray-800'>
-              {transactions.length}
-            </span>
-          </div>
-          <div className='flex flex-col'>
-            <span className='text-xs text-gray-500 mb-1'>Last Updated</span>
-            <span className='font-semibold text-gray-800'>
-              {currentDate.toLocaleDateString()}
-            </span>
+        <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6'>
+          <h2 className='text-lg font-semibold text-gray-800 mb-4 sm:mb-0'>
+            Transaction Records
+          </h2>
+          <div className='relative w-full sm:w-64'>
+            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
+              <Search className='h-4 w-4 text-gray-400' />
+            </div>
+            <input
+              type='date'
+              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5'
+              placeholder='Search transactions...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </div>
-        <button className='flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='w-4 h-4'
-          >
-            <path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'></path>
-            <polyline points='7 10 12 15 17 10'></polyline>
-            <line x1='12' y1='15' x2='12' y2='3'></line>
-          </svg>
-          <span>Export Data</span>
-        </button>
+
+        <div className='overflow-x-auto'>
+          {drKhataRecords.results?.length > 0 ? (
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Name
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Branch
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Amount
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Type
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {drKhataRecords.results.length > 0 ? (
+                  drKhataRecords.results.map((record, index) => (
+                    <tr key={index} className='hover:bg-gray-50'>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {record.doctorName || 'N/A'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {record.branchName || 'N/A'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                        <span
+                          className={`${
+                            record.amountType === 'income'
+                              ? 'text-emerald-600'
+                              : 'text-red-600'
+                          } font-semibold`}
+                        >
+                          {record.amountType === 'income' ? '+' : '-'}
+                          {record.amount}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            record.amountType === 'income'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {record.amountType === 'income'
+                            ? 'Income'
+                            : 'Outcome'}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {formatDate(record.date)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className='px-6 py-4 text-center text-sm text-gray-500'
+                    >
+                      No matching records found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <div className='text-center py-8 text-gray-500'>
+              <p>No transaction records available</p>
+            </div>
+          )}
+          <Pagination
+            totalItems={drKhataRecords?.results?.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
+        </div>
       </div>
     </div>
   );

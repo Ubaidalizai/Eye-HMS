@@ -42,21 +42,26 @@ function PurchaseDetails() {
     setError(null);
 
     try {
-      // Determine the allowed categories based on the user's role
-      const allowedCategories =
-        authContext.user.role === 'receptionist'
-          ? ['frame', 'glass', 'sunglasses']
-          : null; // Admin can see all categories
+      const userRole = authContext.user.role;
+      const allowedCategories = ['frame', 'glass', 'sunglasses'];
 
-      // Build the base URL
+      // Start building the base URL for the purchase data
       let baseUrl = `${BASE_URL}/purchase?page=${currentPage}&limit=${limit}&fieldName=date&searchTerm=${searchTerm}`;
 
-      // Add category filtering for receptionist
-      if (authContext.user.role === 'receptionist') {
-        const categoriesQuery = allowedCategories.join(',');
-        baseUrl += `&category=${categoriesQuery}`;
-      } else if (category) {
-        baseUrl += `&category=${category}`;
+      if (userRole === 'receptionist') {
+        // If category is selected and allowed, add it
+        if (category && allowedCategories.includes(category)) {
+          baseUrl += `&category=${category}`;
+        } else {
+          // If no specific valid category selected, include all allowed categories
+          const categoryFilter = allowedCategories.join(','); // Join the allowed categories into a comma-separated string
+          baseUrl += `&category=${categoryFilter}`;
+        }
+      } else if (userRole === 'admin') {
+        // Admin can add any category or skip to see all
+        if (category) {
+          baseUrl += `&category=${category}`;
+        }
       }
 
       const response = await fetch(baseUrl, {
@@ -155,10 +160,12 @@ function PurchaseDetails() {
   };
 
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen px-4 sm:px-6 py-6'>
       <div className='max-w-7xl mx-auto'>
         <ToastContainer />
-        <h2 className='font-semibold text-xl'>Purchase List</h2>
+        <h2 className='text-xl sm:text-2xl font-semibold text-gray-800 mb-6'>
+          Purchase List
+        </h2>
 
         {showPurchaseModal && (
           <AddPurchaseDetails
@@ -176,41 +183,57 @@ function PurchaseDetails() {
           />
         )}
 
-        <div className='mt-10 bg-white overflow-hidden border rounded-lg'>
-          <div className=' py-5 flex justify-between items-center'>
-            <div className='flex items-center justify-center z-0'>
-              <HiSearch className=' translate-x-7 text-gray-400' size={20} />
-              <input
-                type='date'
-                placeholder='Search by date '
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-9'
-              />
-            </div>
-            <div className='flex  items-center gap-3 mr-5'>
-              <div className='flex items-center'>
-                <label htmlFor='category' className='sr-only'>
-                  Category
-                </label>
-                <div className=''>
-                  <select
-                    id='category'
-                    name='category'
-                    value={category}
-                    onChange={handleCategoryChange}
-                    className='block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md'
-                  >
-                    <option value=''>All Categories</option>
-                    <option value='drug'>Drug</option>
-                    <option value='sunglasses'>sunglasses</option>
-                    <option value='glass'>Glass</option>
-                    <option value='frame'>Frame</option>
-                  </select>
+        <div className='bg-white overflow-hidden border rounded-lg shadow-sm'>
+          {/* Filters and Actions Section */}
+          <div className='p-4 sm:p-6 flex flex-col sm:flex-row justify-between gap-4'>
+            <div className='w-full sm:w-auto'>
+              <label
+                htmlFor='date-search'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
+                Search by Date
+              </label>
+              <div className='relative'>
+                <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                  <HiSearch className='text-gray-400' size={20} />
                 </div>
+                <input
+                  id='date-search'
+                  type='date'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className='pl-10 pr-4 py-2 h-10 border border-gray-300 rounded-md w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
               </div>
+            </div>
+
+            <div className='flex flex-col sm:flex-row items-start sm:items-end gap-4'>
+              <div className='w-full sm:w-auto'>
+                <label
+                  htmlFor='category'
+                  className='block text-sm font-medium text-gray-700 mb-1'
+                >
+                  Filter by Category
+                </label>
+                <select
+                  id='category'
+                  name='category'
+                  value={category}
+                  onChange={handleCategoryChange}
+                  className='block w-full sm:w-48 h-10 pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+                >
+                  <option value=''>All Categories</option>
+                  {authContext.user.role === 'admin' && (
+                    <option value='drug'>Drug</option>
+                  )}
+                  <option value='sunglasses'>Sunglasses</option>
+                  <option value='glass'>Glass</option>
+                  <option value='frame'>Frame</option>
+                </select>
+              </div>
+
               <button
-                className='inline-flex items-center px-5 py-2 border border-transparent text-sm mr-1  font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none  focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                className='w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 h-10 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors'
                 onClick={addSaleModalSetting}
               >
                 <FaPlus className='mr-2' />
@@ -218,140 +241,172 @@ function PurchaseDetails() {
               </button>
             </div>
           </div>
+
+          {/* Table Section with Horizontal Scrolling */}
           <div className='overflow-x-auto'>
             {isLoading ? (
-              <div className='text-center py-4'>Loading...</div>
+              <div className='flex justify-center items-center py-10'>
+                <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500'></div>
+                <p className='ml-3 text-gray-600'>Loading...</p>
+              </div>
             ) : error ? (
-              <div className='text-center py-4 text-red-600'>{error}</div>
+              <div className='text-center py-6 text-red-600'>{error}</div>
             ) : (
-              <table className='min-w-[1000px] w-full text-sm text-left text-gray-500'>
-                <thead className='bg-gray-50'>
-                  <tr>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Quantity Purchased
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Purchased Category
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Purchase Date
-                    </th>
-                    {purchases?.expiryDate && (
+              <div className='inline-block min-w-full align-middle'>
+                <table className='min-w-full divide-y divide-gray-200'>
+                  <thead className='bg-gray-50'>
+                    <tr>
                       <th
                         scope='col'
-                        className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
                       >
-                        Expiry Date
+                        Name
                       </th>
-                    )}
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Unit Purchase
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Total Purchase
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-6 py-3  text-xs font-bold text-gray-500 uppercase tracking-wider'
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className='bg-white divide-y divide-gray-200'>
-                  {purchases.map((element) => (
-                    <tr key={element._id}>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                        {element.ProductID?.name || 'N/A'}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.originalQuantity || 'N/A'}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.category || 'N/A'}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.date
-                          ? new Date(element.date).toLocaleDateString() ===
-                            new Date().toLocaleDateString()
-                            ? 'Today'
-                            : element.date.split('T')[0]
-                          : 'N/A'}
-                      </td>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Quantity
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Category
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Purchase Date
+                      </th>
                       {purchases?.expiryDate && (
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                          {element.expiryDate
-                            ? new Date(
-                                element.expiryDate
-                              ).toLocaleDateString() ===
-                              new Date().toLocaleDateString()
-                              ? 'Today'
-                              : element.expiryDate.split('T')[0]
-                            : 'N/A'}
-                        </td>
+                        <th
+                          scope='col'
+                          className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                        >
+                          Expiry Date
+                        </th>
                       )}
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.UnitPurchaseAmount !== undefined
-                          ? `${element.UnitPurchaseAmount.toFixed(2)}`
-                          : 'N/A'}
-                      </td>
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {element.TotalPurchaseAmount !== undefined
-                          ? `${element.TotalPurchaseAmount.toFixed(2)}`
-                          : 'N/A'}
-                      </td>
-
-                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center space-x-2'>
-                        <button
-                          onClick={() => handleEdit(element)}
-                          className='font-medium text-blue-600 hover:text-blue-700'
-                        >
-                          <FaEdit className='w-4 h-4' />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(element._id)}
-                          className='font-medium text-red-600 hover:text-red-700'
-                        >
-                          <FaTrash className='w-4 h-4' />
-                        </button>
-                      </td>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Unit Price
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'
+                      >
+                        Total Price
+                      </th>
+                      <th
+                        scope='col'
+                        className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-center'
+                      >
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className='bg-white divide-y divide-gray-200'>
+                    {purchases.length > 0 ? (
+                      purchases.map((element) => (
+                        <tr
+                          key={element._id}
+                          className='hover:bg-gray-50 transition-colors'
+                        >
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                            {element.ProductID?.name || 'N/A'}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {element.originalQuantity || 'N/A'}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {element.category || 'N/A'}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {element.date
+                              ? new Date(element.date).toLocaleDateString() ===
+                                new Date().toLocaleDateString()
+                                ? 'Today'
+                                : element.date.split('T')[0]
+                              : 'N/A'}
+                          </td>
+                          {purchases?.expiryDate && (
+                            <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                              {element.expiryDate
+                                ? new Date(
+                                    element.expiryDate
+                                  ).toLocaleDateString() ===
+                                  new Date().toLocaleDateString()
+                                  ? 'Today'
+                                  : element.expiryDate.split('T')[0]
+                                : 'N/A'}
+                            </td>
+                          )}
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {element.UnitPurchaseAmount !== undefined
+                              ? `${element.UnitPurchaseAmount.toFixed(2)}`
+                              : 'N/A'}
+                          </td>
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {element.TotalPurchaseAmount !== undefined
+                              ? `${element.TotalPurchaseAmount.toFixed(2)}`
+                              : 'N/A'}
+                          </td>
+
+                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
+                            <div className='flex justify-center space-x-3'>
+                              <button
+                                onClick={() => handleEdit(element)}
+                                className='text-blue-600 hover:bg-blue-50 p-1.5 rounded transition-colors'
+                                aria-label='Edit purchase'
+                              >
+                                <FaEdit className='w-4 h-4' />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(element._id)}
+                                className='text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors'
+                                aria-label='Delete purchase'
+                              >
+                                <FaTrash className='w-4 h-4' />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={8}
+                          className='px-4 sm:px-6 py-4 text-center text-sm text-gray-500'
+                        >
+                          No purchase records found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
+
+            {/* Responsive indicator - only visible on small screens */}
+            <div className='block sm:hidden text-center text-xs text-gray-500 mt-2 px-4 pb-2'>
+              <p>Swipe horizontally to see more data</p>
+            </div>
           </div>
         </div>
 
-        <Pagination
-          totalItems={purchases.length}
-          totalPagesCount={totalPages}
-          itemsPerPage={limit}
-          currentPage={currentPage}
-          onPageChange={(page) => setCurrentPage(page)}
-          onLimitChange={(limit) => setLimit(limit)}
-        />
+        <div className='mt-4'>
+          <Pagination
+            totalItems={purchases.length}
+            totalPagesCount={totalPages}
+            itemsPerPage={limit}
+            currentPage={currentPage}
+            onPageChange={(page) => setCurrentPage(page)}
+            onLimitChange={(limit) => setLimit(limit)}
+          />
+        </div>
       </div>
     </div>
   );
