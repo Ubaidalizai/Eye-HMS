@@ -57,7 +57,7 @@ const Pagination = ({
           <select
             value={itemsPerPage}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className='flex items-center justify-center w-full sm:w-auto bg-white border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm'
+            className='flex items-center justify-center w-full sm:w-auto bg-white border border-gray-300 rounded-md px-4 py-1 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm'
           >
             {[10, 20, 50, 100].map((value) => (
               <option key={value} value={value}>

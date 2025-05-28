@@ -1,13 +1,101 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, PrinterIcon } from '@heroicons/react/24/outline';
 
 export function BillPrintModal({ showBill, setShowBill, soldItems }) {
+  const printRef = useRef(null);
+
+  const handlePrint = () => {
+    const printContent = printRef.current;
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+
+    // Add print-specific styles
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Sale Receipt</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            th, td {
+              padding: 8px;
+              text-align: left;
+              border-bottom: 1px solid #ddd;
+            }
+            th {
+              font-weight: bold;
+            }
+            .total-row {
+              font-weight: bold;
+              margin-top: 20px;
+              display: flex;
+              justify-content: space-between;
+            }
+            .receipt-header {
+              margin-bottom: 20px;
+            }
+            .receipt-title {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            .date{
+              display: flex;
+              justify-content: flex-end;
+
+            }
+            @media print {
+              body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+              }
+            }
+          @page {
+            size: auto; /* or the size you want */
+            margin: 0; /* remove default margins */
+          }
+          /* Remove default headers and footers */
+        @page {
+          @top-center {
+            content: none;
+          }
+          @bottom-center {
+            content: none;
+          }
+        }
+          /* Adjust the title font size */
+        .title {
+          font-size: 24px; /* or the size you want */
+        }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.onafterprint = () => printWindow.close();
+  };
   return (
     <Transition.Root show={showBill} as='div'>
       <Dialog
         as='div'
-        className='relative z-50'
+        className='relative z-[9999]'
         onClose={() => setShowBill(false)}
       >
         <Transition.Child
@@ -19,10 +107,10 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity' />
+          <div className='fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity' />
         </Transition.Child>
 
-        <div className='fixed inset-0 z-50 overflow-y-auto'>
+        <div className='fixed inset-0 z-[9999] overflow-y-auto'>
           <div className='flex min-h-full items-center justify-center p-4 sm:p-6'>
             <Transition.Child
               as='div'
@@ -34,7 +122,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
               leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
             >
               {showBill && soldItems && soldItems.soldItems.length > 0 && (
-                <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-sm sm:max-w-md md:max-w-lg'>
+                <Dialog.Panel className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-2xl border border-gray-200 transition-all w-full max-w-sm sm:max-w-md md:max-w-lg'>
                   <div className='absolute top-0 right-0 pt-4 pr-4 block'>
                     <button
                       type='button'
@@ -46,28 +134,19 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                     </button>
                   </div>
 
-                  <div className='bg-white px-4 py-5 sm:p-6'>
-                    <Dialog.Title
-                      as='h3'
-                      className='text-xl sm:text-2xl font-semibold text-gray-900 mb-4'
-                    >
-                      Sale Receipt
-                    </Dialog.Title>
-
-                    <div className='mt-2'>
-                      <div className='flex justify-between items-center mb-4'>
+                  <div ref={printRef} className='bg-white px-4 py-5 sm:p-6'>
+                    <div className='receipt-header'>
+                      <div className='receipt-title'>Sale Receipt</div>
+                      <div className='flex justify-end items-center mb-4 date'>
                         <p className='text-sm text-gray-500'>
                           <span className='font-medium'>Date:</span>{' '}
-                          {soldItems.date || new Date().split('T')[0]}
-                        </p>
-                        <p className='text-sm text-gray-500'>
-                          <span className='font-medium'>Receipt #:</span>{' '}
-                          {Math.floor(Math.random() * 10000)
-                            .toString()
-                            .padStart(4, '0')}
+                          {new Date(soldItems.date).toLocaleDateString() ||
+                            new Date().toLocaleDateString()}
                         </p>
                       </div>
+                    </div>
 
+                    <div className='mt-2'>
                       <div className='border-t border-gray-200 py-4'>
                         <h4 className='text-base sm:text-lg font-medium text-gray-900 mb-3'>
                           Items Sold
@@ -116,7 +195,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                       </div>
 
                       <div className='border-t border-gray-200 pt-4 mt-4'>
-                        <div className='flex justify-between items-center'>
+                        <div className='total-row'>
                           <p className='text-base sm:text-lg font-semibold text-gray-900'>
                             Total:
                           </p>
@@ -140,7 +219,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                     <button
                       type='button'
                       className='inline-flex justify-center items-center px-4 py-2 h-10 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
-                      onClick={() => window.print()}
+                      onClick={handlePrint}
                     >
                       <PrinterIcon className='h-5 w-5 mr-2' />
                       Print Receipt

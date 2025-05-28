@@ -1,12 +1,11 @@
 const Purchase = require('../models/purchase');
 const Product = require('../models/product');
 const Glass = require('../models/glassesModel');
-const purchaseStock = require('./purchaseStock');
 const asyncHandler = require('../middlewares/asyncHandler');
-const AppError = require('../utils/appError'); // Custom error handler
+const AppError = require('../utils/appError');
 const getAll = require('./handleFactory');
 const mongoose = require('mongoose');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 const {
   getDateRangeForYear,

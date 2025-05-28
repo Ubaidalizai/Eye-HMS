@@ -202,7 +202,7 @@ export default function CategoryManagement() {
       </div>
 
       {/* Content */}
-      <div className='p-4 sm:p-6'>
+      <div className='p-4 sm:p-4'>
         {loading && categories.length === 0 ? (
           <div className='flex justify-center items-center h-64'>
             <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600'></div>

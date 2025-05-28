@@ -4,7 +4,7 @@ const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const appError = require('../utils/appError');
 const PharmacySaleTotal = require('../models/PharmacySalesTotal');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 // CREATE
 exports.createPharmacyLog = asyncHandler(async (req, res) => {

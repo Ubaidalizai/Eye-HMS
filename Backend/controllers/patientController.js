@@ -2,7 +2,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const Patient = require('../models/patientModel');
 const getAll = require('../controllers/handleFactory');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 const {
   getDateRangeForYear,

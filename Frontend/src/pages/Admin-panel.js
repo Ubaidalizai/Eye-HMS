@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import PersonInfoDropdown from './PersonInfoDropdown';
-import { BASE_URL } from '../config';
+import { BASE_URL, IMAGE_BASE_URL } from '../config';
 import { toast } from 'react-toastify';
 import DoctorBranchAssignment from '../components/DoctorAssigenment';
 import OperationTypeManagement from '../components/OperationTypeManagement';
@@ -21,6 +21,7 @@ const UserList = () => {
     phoneNumber: '',
     image: null,
   });
+
   const [editingUser, setEditingUser] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
@@ -220,7 +221,7 @@ const UserList = () => {
                   >
                     <td className='px-4 sm:px-6 py-4 whitespace-nowrap'>
                       <img
-                        src={`http://localhost:4000/public/img/users/${user?.image}`}
+                        src={`${IMAGE_BASE_URL}/users/${user?.image}`}
                         alt={`${user?.firstName} ${user?.lastName}`}
                         className='h-10 w-10 rounded-full object-cover'
                       />

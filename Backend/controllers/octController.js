@@ -1,11 +1,8 @@
-// controllers/octController.js
 const mongoose = require('mongoose');
 const OCT = require('../models/octModule');
-const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
-const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const calculatePercentage = require('../utils/calculatePercentage');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
@@ -14,7 +11,7 @@ const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
 const operationTypeModel = require('../models/operationTypeModel');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 const getOctDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;

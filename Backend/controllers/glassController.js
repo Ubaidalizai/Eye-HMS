@@ -1,5 +1,5 @@
 const Glass = require('../models/glassesModel');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 
@@ -166,6 +166,21 @@ const getGlassesSummary = asyncHandler(async (req, res) => {
   });
 });
 
+// Get low stock glasses
+const getLowStockGlasses = asyncHandler(async (req, res) => {
+  // Find glasses where quantity is less than or equal to minLevel
+  const lowStockGlasses = await Glass.find({
+    $expr: { $lte: ['$quantity', '$minLevel'] },
+    quantity: { $gt: 0 }, // Only include glasses that have some stock (not zero)
+  }).sort({ name: 1 });
+
+  res.status(200).json({
+    status: 'success',
+    length: lowStockGlasses.length,
+    data: { lowStockGlasses },
+  });
+});
+
 module.exports = {
   addGlass,
   getAllGlasses,
@@ -173,4 +188,5 @@ module.exports = {
   deleteGlass,
   updateGlass,
   getGlassesSummary,
+  getLowStockGlasses,
 };

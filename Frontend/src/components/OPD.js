@@ -126,7 +126,7 @@ function OPD() {
   };
 
   const fields = [
-    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
     { label: 'Date', type: 'date', name: 'date' },
     {

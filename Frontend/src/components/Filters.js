@@ -16,6 +16,18 @@ export const Filters = ({
   setSelectedMonth,
   setSelectedYear,
 }) => {
+  // Generate year options from 2022 to current year
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2022; // Starting year for the application
+    const years = [];
+
+    for (let year = currentYear; year >= startYear; year--) {
+      years.push({ value: year, label: year.toString() });
+    }
+
+    return years;
+  };
   // Custom styles for React Select to match the existing UI
   const customStyles = {
     control: (provided) => ({
@@ -89,7 +101,6 @@ export const Filters = ({
             aria-label='Select category'
           />
         </div>
-
         <div>
           <label
             htmlFor='model-filter'
@@ -107,7 +118,6 @@ export const Filters = ({
             onChange={(e) => setSelectedModel(e.target.value)}
           />
         </div>
-
         <div>
           <label
             htmlFor='summary-type'
@@ -125,7 +135,6 @@ export const Filters = ({
             onChange={(e) => setSummaryType(e.target.value)}
           />
         </div>
-
         {summaryType === 'monthly' && (
           <div>
             <label
@@ -145,26 +154,21 @@ export const Filters = ({
             />
           </div>
         )}
-
-        {summaryType === 'yearly' && (
-          <div>
-            <label
-              htmlFor='year-filter'
-              className='block text-sm font-medium text-gray-700 mb-1'
-            >
-              Year
-            </label>
-            <input
-              id='year-filter'
-              className='w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
-              type='number'
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              min='2000'
-              max={new Date().getFullYear()}
-            />
-          </div>
-        )}
+        {/* Always show Year filter for both yearly and monthly views */}
+        <div>
+          <label
+            htmlFor='year-filter'
+            className='block text-sm font-medium text-gray-700 mb-1'
+          >
+            Year
+          </label>
+          <SelectInput
+            id='year-filter'
+            options={generateYearOptions()}
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+          />
+        </div>
       </div>
     </div>
   );

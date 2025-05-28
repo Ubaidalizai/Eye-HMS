@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
 const Pharmacy = require('../models/pharmacyModel');
 const Product = require('../models/product');
-const Purchase = require('../models/purchase');
 const getAll = require('./handleFactory');
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 const checkExpiry = require('../utils/checkExpiry');
 
 exports.getAllDrugsInPharmacy = getAll(Pharmacy);
@@ -117,17 +116,6 @@ exports.deleteDrug = asyncHandler(async (req, res, next) => {
       await product.save({ session });
     }
 
-    // Step 3: Update purchased quantity in the pharmacy
-    const purchase = await Purchase.findOne({
-      ProductID: product._id,
-    }).session(session);
-
-    if (purchase) {
-      purchase.QuantityPurchased += drug.quantity;
-      purchase.originalQuantity += drug.quantity;
-      await purchase.save({ session });
-    }
-
     // Step 4: Delete the drug from the pharmacy
     const drugDeleted = await Pharmacy.findByIdAndDelete(id, { session });
     if (!drugDeleted) {
@@ -156,3 +144,18 @@ exports.deleteDrug = asyncHandler(async (req, res, next) => {
 
 // Check for drugs expiring within 90 days
 exports.checkDrugExpiry = checkExpiry(Pharmacy, 'expiryDate');
+
+// Get low stock pharmacy items
+exports.getLowStockDrugs = asyncHandler(async (req, res) => {
+  // Find pharmacy items where quantity is less than or equal to minLevel
+  const lowStockDrugs = await Pharmacy.find({
+    $expr: { $lte: ['$quantity', '$minLevel'] },
+    quantity: { $gt: 0 }, // Only include items that have some stock (not zero)
+  }).sort({ name: 1 });
+
+  res.status(200).json({
+    status: 'success',
+    length: lowStockDrugs.length,
+    data: { lowStockDrugs },
+  });
+});

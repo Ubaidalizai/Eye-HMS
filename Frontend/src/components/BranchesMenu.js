@@ -3,7 +3,7 @@ import { LiaHandLizardSolid } from 'react-icons/lia';
 import { GiDoctorFace } from 'react-icons/gi';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  FaClipboard,
+  FaSitemap,
   FaUserMd,
   FaStethoscope,
   FaBed,
@@ -87,7 +87,7 @@ export default function BranchesMenu({ onMobileItemClick }) {
         }`}
       >
         <span className='flex items-center justify-center gap-2'>
-          <FaClipboard className='text-lg' />
+          <FaSitemap className='text-lg' />
           <span className='text-sm flex font-medium'>
             Branches <IoMdArrowDropdown className='ml-5 text-2xl' />
           </span>

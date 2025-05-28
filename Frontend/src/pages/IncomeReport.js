@@ -141,27 +141,34 @@ export default function IncomeReport() {
   return (
     <div className='container mx-auto p-4'>
       <h2 className='font-semibold text-xl mb-4'>Income List</h2>
-      <div className='border sm:rounded-lg my-4 sm:my-6 overflow-hidden'>
-        {/* Responsive filters and add button */}
-        <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 gap-4'>
-          <div className='w-full sm:w-auto relative'>
-            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
-              <HiSearch className='text-gray-400' size={20} />
+      <div className='border sm:rounded-lg my-4 sm:my-6'>
+        {/* Horizontal filters and add button */}
+        <div className='flex flex-col lg:flex-row lg:items-end lg:justify-between p-4 gap-4'>
+          {/* Search Input */}
+          <div className='flex-1 lg:flex-none lg:w-64'>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
+              Search by Date
+            </label>
+            <div className='relative'>
+              <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
+                <HiSearch className='text-gray-400' size={20} />
+              </div>
+              <input
+                type='date'
+                placeholder='Search by date'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='pl-10 pr-4 py-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-1 focus:ring-blue-500 h-10'
+              />
             </div>
-            <input
-              type='date'
-              placeholder='Search by date'
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className='pl-10 pr-4 py-2 border border-gray-300 rounded w-full sm:w-64 focus:outline-none focus:ring-1 focus:ring-blue-500 h-10'
-            />
           </div>
 
-          <div className='flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto'>
-            <div className='w-full sm:w-auto'>
+          <div className='flex flex-col lg:flex-row gap-4'>
+            {/* Category Selection */}
+            <div className='flex-1 lg:flex-none lg:w-48'>
               <label
                 htmlFor='category'
-                className='block mb-1 sm:mb-0 sm:mr-2 text-sm font-medium text-gray-900'
+                className='block text-sm font-medium text-gray-700 mb-1'
               >
                 Category
               </label>
@@ -180,27 +187,40 @@ export default function IncomeReport() {
                 }}
                 placeholder='Select Category'
                 isClearable
-                className='basic-single w-full sm:w-48'
+                className='basic-single w-full'
                 classNamePrefix='select'
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: '40px',
+                    height: '40px',
+                  }),
+                }}
                 required
               />
             </div>
 
-            <button
-              className='inline-flex items-center justify-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full sm:w-auto mt-2 sm:mt-0'
-              onClick={() => {
-                setNewIncome({
-                  totalNetIncome: '',
-                  date: '',
-                  description: '',
-                  category: '',
-                });
-                setShowModal(true);
-              }}
-              disabled={showModal} // Disable the button when the modal is open
-            >
-              <FaPlus className='mr-2' /> Add Income
-            </button>
+            {/* Add Income Button */}
+            <div className='flex-shrink-0'>
+              <label className='block text-sm font-medium text-transparent mb-1'>
+                Action
+              </label>
+              <button
+                className='inline-flex items-center justify-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 h-10 w-full lg:w-auto'
+                onClick={() => {
+                  setNewIncome({
+                    totalNetIncome: '',
+                    date: '',
+                    description: '',
+                    category: '',
+                  });
+                  setShowModal(true);
+                }}
+                disabled={showModal} // Disable the button when the modal is open
+              >
+                <FaPlus className='mr-2' /> Add Income
+              </button>
+            </div>
           </div>
         </div>
 

@@ -12,7 +12,7 @@ const getAll = require('./handleFactory');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 
 const getOpdDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;

@@ -1,5 +1,4 @@
 const Laboratory = require('../models/labratoryModule');
-const User = require('../models/userModel');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');

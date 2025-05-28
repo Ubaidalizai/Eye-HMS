@@ -148,7 +148,7 @@ function Operation() {
   };
 
   const fields = [
-    { label: 'Patient ID', type: 'text', name: 'patientId' },
+    { label: 'Patient', type: 'text', name: 'patientId' },
     {
       label: 'Type',
       type: 'select',

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
-const BASE_URL = 'http://localhost:4000/api/v1'; // Replace with actual API
+import { BASE_URL } from '../config';
 
 const OperationTypeManagement = () => {
   const [operationTypes, setOperationTypes] = useState([]);

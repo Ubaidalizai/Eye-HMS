@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import useFetchData from '../components/useFetchData';
 import BarChart from '../components/BarChart';
 import { Filters } from '../components/Filters';
@@ -103,13 +103,38 @@ function Dashboard() {
     [selectedCategory, selectedMonth, selectedYear, summaryType, selectedModel]
   );
 
+  // Function to get the number of days in a month
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
+  };
+
   const getBarChartData = useMemo(() => {
-    const labels =
-      summaryType === 'yearly'
-        ? monthLabels
-        : Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
-    const data =
-      stats?.data || Array(summaryType === 'yearly' ? 12 : 30).fill(0);
+    let labels, data;
+
+    if (summaryType === 'yearly') {
+      // For yearly summary, use month labels
+      labels = monthLabels;
+      data = stats?.data || Array(12).fill(0);
+    } else {
+      // For monthly summary, dynamically calculate the number of days
+      const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+
+      // If we have data, use it; otherwise create an array of zeros with the correct length
+      data = stats?.data || Array(daysInMonth).fill(0);
+
+      // Ensure data length matches the days in month (in case the API returns a fixed array)
+      if (data.length !== daysInMonth) {
+        // If API returns more data than needed, truncate it
+        if (data.length > daysInMonth) {
+          data = data.slice(0, daysInMonth);
+        }
+        // If API returns less data than needed, pad with zeros
+        else if (data.length < daysInMonth) {
+          data = [...data, ...Array(daysInMonth - data.length).fill(0)];
+        }
+      }
+    }
 
     return {
       labels,
@@ -123,70 +148,7 @@ function Dashboard() {
         },
       ],
     };
-  }, [stats, summaryType, selectedModel]);
-
-  const getDoughnutChartData = useMemo(() => {
-    // Filter out categories with no data to make the chart more readable
-    const categoriesWithData = allCategories.filter((category) => {
-      const categoryData = (stats?.data || [])
-        .filter(
-          (item) => item.category?.toLowerCase() === category.toLowerCase()
-        )
-        .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-      return categoryData > 0;
-    });
-
-    // Get data for each category
-    const data = categoriesWithData.map((category) =>
-      (stats?.data || [])
-        .filter(
-          (item) => item.category?.toLowerCase() === category.toLowerCase()
-        )
-        .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0)
-    );
-
-    // Generate more colors if needed
-    const generateColors = (count) => {
-      const baseColors = [
-        '#FF6384',
-        '#36A2EB',
-        '#FFCE56',
-        '#4BC0C0',
-        '#9966FF',
-        '#FF9F40',
-        '#4BC0C0',
-        '#7ED321',
-        '#50E3C2',
-        '#B8E986',
-      ];
-      if (count <= baseColors.length) return baseColors.slice(0, count);
-
-      // If we need more colors, generate them
-      const colors = [...baseColors];
-      for (let i = baseColors.length; i < count; i++) {
-        const hue = (i * 137.5) % 360; // Use golden ratio to spread colors
-        colors.push(`hsl(${hue}, 70%, 60%)`);
-      }
-      return colors;
-    };
-
-    // Format labels to be more readable (capitalize first letter)
-    const formattedLabels = categoriesWithData.map(
-      (cat) => cat.charAt(0).toUpperCase() + cat.slice(1)
-    );
-
-    return {
-      labels: formattedLabels,
-      datasets: [
-        {
-          data,
-          backgroundColor: generateColors(categoriesWithData.length),
-          borderWidth: 1,
-          borderColor: '#fff',
-        },
-      ],
-    };
-  }, [stats, allCategories]);
+  }, [stats, summaryType, selectedModel, selectedYear, selectedMonth]);
 
   return (
     <div className='px-4 sm:px-6 py-6 max-w-full'>
@@ -245,7 +207,13 @@ function Dashboard() {
       <div className='grid grid-cols-1 gap-6 mb-8'>
         <BarChart
           data={getBarChartData}
-          title={`${summaryType} Summary for ${selectedModel}`}
+          title={`${
+            summaryType === 'yearly'
+              ? `Yearly Summary for ${selectedModel} (${selectedYear})`
+              : `Monthly Summary for ${selectedModel} (${
+                  monthLabels[selectedMonth - 1]
+                } ${selectedYear})`
+          }`}
         />
       </div>
 

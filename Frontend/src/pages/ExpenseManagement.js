@@ -43,6 +43,19 @@ const monthLabels = [
   'December',
 ];
 
+// Generate year options from 2022 to current year
+const generateYearOptions = () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = 2022; // Starting year for the application
+  const years = [];
+
+  for (let year = currentYear; year >= startYear; year--) {
+    years.push(year);
+  }
+
+  return years;
+};
+
 const ExpenseManagement = () => {
   const [expenses, setExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
@@ -235,21 +248,51 @@ const ExpenseManagement = () => {
 
   const handleMonthChange = (e) => {
     setSelectedMonth(Number(e.target.value));
+    // Refetch data when month changes
+    fetchMonthlyExpenses();
   };
 
   const handleYearChange = (e) => {
     setSelectedYear(Number(e.target.value));
+    // Refetch data when year changes
+    if (summaryType === 'monthly') {
+      fetchMonthlyExpenses();
+    } else {
+      fetchYearlyExpenses();
+    }
+  };
+
+  // Function to get the number of days in a month
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
   };
 
   const getBarChartData = () => {
     let labels, data;
 
     if (summaryType === 'yearly') {
-      labels = monthLabels; // Month names for the x-axis
-      data = summary || Array(12).fill(0); // Use data from the API or zeros
+      // For yearly summary, use month labels
+      labels = monthLabels;
+      data = summary || Array(12).fill(0);
     } else {
-      labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`); // Days of the month
-      data = summary || Array(30).fill(0); // Use data from the API or zeros
+      // For monthly summary, dynamically calculate the number of days
+      const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+
+      // If we have data, use it; otherwise create an array of zeros with the correct length
+      data = summary || Array(daysInMonth).fill(0);
+
+      // Ensure data length matches the days in month (in case the API returns a fixed array)
+      if (data.length !== daysInMonth) {
+        // If API returns more data than needed, truncate it
+        if (data.length > daysInMonth) {
+          data = data.slice(0, daysInMonth);
+        }
+        // If API returns less data than needed, pad with zeros
+        else if (data.length < daysInMonth) {
+          data = [...data, ...Array(daysInMonth - data.length).fill(0)];
+        }
+      }
     }
 
     return {
@@ -494,7 +537,6 @@ const ExpenseManagement = () => {
               }}
             />
           </div>
-
           <div>
             <label
               htmlFor='summary-type'
@@ -512,7 +554,6 @@ const ExpenseManagement = () => {
               <option value='yearly'>Yearly Summary</option>
             </select>
           </div>
-
           {summaryType === 'monthly' && (
             <div>
               <label
@@ -535,26 +576,27 @@ const ExpenseManagement = () => {
               </select>
             </div>
           )}
-
-          {summaryType === 'yearly' && (
-            <div>
-              <label
-                htmlFor='year-select'
-                className='block text-sm font-medium text-gray-700 mb-1'
-              >
-                Select Year
-              </label>
-              <input
-                id='year-select'
-                className='w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
-                type='number'
-                value={selectedYear}
-                onChange={handleYearChange}
-                min='2000'
-                max={new Date().getFullYear()}
-              />
-            </div>
-          )}
+          {/* Always show Year filter for both yearly and monthly views */}
+          <div>
+            <label
+              htmlFor='year-select'
+              className='block text-sm font-medium text-gray-700 mb-1'
+            >
+              Select Year
+            </label>
+            <select
+              id='year-select'
+              className='w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+              value={selectedYear}
+              onChange={handleYearChange}
+            >
+              {generateYearOptions().map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className='w-full h-[300px] sm:h-[350px] lg:h-[400px]'>
@@ -576,9 +618,14 @@ const ExpenseManagement = () => {
                 },
                 title: {
                   display: true,
-                  text: `${
-                    summaryType.charAt(0).toUpperCase() + summaryType.slice(1)
-                  } Summary for ${selectedCategory || 'All Categories'}`,
+                  text:
+                    summaryType === 'yearly'
+                      ? `Yearly Summary for ${
+                          selectedCategory || 'All Categories'
+                        } (${selectedYear})`
+                      : `Monthly Summary for ${
+                          selectedCategory || 'All Categories'
+                        } (${monthLabels[selectedMonth - 1]} ${selectedYear})`,
                   font: {
                     size: 14,
                   },

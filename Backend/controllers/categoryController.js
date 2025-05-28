@@ -1,6 +1,6 @@
 const asyncHandler = require('../middlewares/asyncHandler');
 const Category = require('../models/categoryModel');
-const AppError = require('../utils/AppError');
+const AppError = require('../utils/appError');
 
 // Create Category
 exports.createCategory = asyncHandler(async (req, res) => {

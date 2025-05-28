@@ -3,75 +3,80 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { RoleMenus } from '../roles';
 import {
-  FaClipboard,
-  FaFileInvoice,
-  FaShoppingBag,
-  FaCapsules,
-  FaFileMedical,
-  FaWarehouse,
-  FaUsers,
+  FaTachometerAlt,
+  FaUserShield,
+  FaBoxes,
+  FaShoppingCart,
+  FaChartLine,
+  FaUserInjured,
+  FaMoneyBillWave,
+  FaCoins,
+  FaPills,
+  FaCalculator,
+  FaGlasses,
+  FaSitemap,
 } from 'react-icons/fa';
 import BranchesMenu from './BranchesMenu';
-import { BASE_URL } from '../config';
+import { BASE_URL, IMAGE_BASE_URL } from '../config';
 
 const menuItems = [
-  { id: 'dashboard', path: '/', icon: <FaClipboard />, label: 'Dashboard' },
+  { id: 'dashboard', path: '/', icon: <FaTachometerAlt />, label: 'Dashboard' },
   {
     id: 'admin-panel',
     path: '/Admin-panel',
-    icon: <FaUsers />,
+    icon: <FaUserShield />,
     label: 'Admin Panel',
   },
   {
     id: 'inventory',
     path: '/inventory',
-    icon: <FaWarehouse />,
+    icon: <FaBoxes />,
     label: 'Inventory',
   },
   {
     id: 'purchase-details',
     path: '/purchase-details',
-    icon: <FaFileInvoice />,
+    icon: <FaShoppingCart />,
     label: 'Purchase',
   },
-  { id: 'sales', path: '/sales', icon: <FaShoppingBag />, label: 'Sales' },
+  { id: 'sales', path: '/sales', icon: <FaChartLine />, label: 'Sales' },
   {
     id: 'patient',
     path: '/patient',
-    icon: <FaFileMedical />,
+    icon: <FaUserInjured />,
     label: 'Patient',
   },
   {
     id: 'expenses',
     path: '/expenseManagement',
-    icon: <FaFileInvoice />,
+    icon: <FaMoneyBillWave />,
     label: 'Expenses',
   },
   {
     id: 'income',
     path: '/incomeReport',
-    icon: <FaFileInvoice />,
+    icon: <FaCoins />,
     label: 'Income',
   },
   {
     id: 'pharmacy',
     path: '/pharmacy',
-    icon: <FaCapsules />,
+    icon: <FaPills />,
     label: 'Pharmacy',
   },
   {
     id: 'doctor-finance',
     path: '/doctor-finance',
-    icon: <FaFileInvoice />,
+    icon: <FaCalculator />,
     label: 'Finance',
   },
   {
     id: 'glasses',
     path: '/glasses',
-    icon: <FaFileInvoice />,
+    icon: <FaGlasses />,
     label: 'Glasses',
   },
-  { id: 'branches', path: '', icon: null, label: 'Branches' }, // Placeholder for branches menu
+  { id: 'branches', path: '', icon: <FaSitemap />, label: 'Branches' }, // Updated with sitemap icon
 ];
 
 function SideMenu({ onMobileItemClick }) {
@@ -164,7 +169,7 @@ function SideMenu({ onMobileItemClick }) {
         <div className='flex justify-start items-end gap-2 py-3 px-4 hover:bg-gray-50'>
           {userInfo?.image && (
             <img
-              src={`http://localhost:4000/public/img/users/${userInfo.image}`}
+              src={`${IMAGE_BASE_URL}/users/${userInfo.image}`}
               alt={`${userInfo.firstName || ''} ${userInfo.lastName || ''}`}
               className='h-10 w-10 rounded-full object-cover'
             />

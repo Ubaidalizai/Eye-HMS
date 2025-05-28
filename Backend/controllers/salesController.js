@@ -12,7 +12,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
 const PharmacySalesTotal = require('../models/PharmacySalesTotal');
 
-const validateMongoDBId = require('../utils/validateMongoDBId');
+const validateMongoDBId = require('../utils/validateMongoDbId');
 const {
   getDateRangeForYear,
   getDateRangeForMonth,
@@ -486,6 +486,9 @@ const deleteSale = asyncHandler(async (req, res) => {
         pharmacyProduct.quantity += quantity;
         await pharmacyProduct.save({ session });
       }
+
+      const saleRecord = await Sale.findById(saleId).session(session);
+      updateLedger(PharmacySalesTotal, -saleRecord.income, session);
 
       // Restore quantity to the purchase batch
       const purchaseBatch = await Purchase.findById(purchaseRefId).session(

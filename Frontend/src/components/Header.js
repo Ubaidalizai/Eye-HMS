@@ -132,7 +132,7 @@ export default function Header() {
                     {/* Backup Button - Visible on all screens */}
                     <button
                       onClick={handleBackup}
-                      className='relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 transition transform duration-150'
+                      className='relative flex items-center justify-center w-10 h-10 rounded-full bg-white border shadow-sm text-gray-700 hover:bg-gray-200 active:scale-95 transition transform duration-150'
                       aria-label='Backup data'
                     >
                       <MdOutlineCloudDownload className='text-xl' />
@@ -142,7 +142,7 @@ export default function Header() {
                     <Link to='/ExpiredProduct'>
                       <button
                         type='button'
-                        className='relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 transition'
+                        className='relative flex items-center justify-center w-10 h-10 rounded-full bg-white border shadow-sm  text-gray-700 hover:bg-gray-200 active:scale-95 transition'
                         aria-label='View notifications'
                       >
                         <Bell className='text-lg' aria-hidden='true' />
@@ -173,7 +173,7 @@ export default function Header() {
                     <Menu as='div' className='relative'>
                       <div>
                         <Menu.Button
-                          className='relative flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95 transition'
+                          className='relative flex items-center justify-center w-10 h-10 rounded-full bg-white border shadow-sm text-gray-700 hover:bg-gray-200 active:scale-95 transition'
                           aria-label='Logout menu'
                         >
                           <TbLogout className='text-xl' />

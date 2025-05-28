@@ -9,6 +9,7 @@ const {
 router.use(authenticate, authorizeAdminOrReceptionist);
 
 router.get('/summary', glasses.getGlassesSummary);
+router.get('/low-stock', glasses.getLowStockGlasses);
 
 router.route('/').get(glasses.getAllGlasses).post(glasses.addGlass);
 

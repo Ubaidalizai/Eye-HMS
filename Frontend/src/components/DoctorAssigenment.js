@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
-import { BASE_URL } from '../config';
+import { BASE_URL, IMAGE_BASE_URL } from '../config';
 import { useAuth } from '../AuthContext';
 
 // Custom Button Component
@@ -73,7 +73,7 @@ const Table = ({ headers, data, onDelete, onEdit }) => (
             <tr key={index} className='hover:bg-gray-50 transition-colors'>
               <td className='px-4 sm:px-6 py-4 whitespace-nowrap'>
                 <img
-                  src={`http://localhost:4000/public/img/users/${row?.image}`}
+                  src={`${IMAGE_BASE_URL}/users/${row?.image}`}
                   alt='doctor'
                   className='w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover'
                 />
@@ -126,7 +126,7 @@ const MobileCardView = ({ data, onDelete, onEdit }) => (
       >
         <div className='flex items-center p-4 border-b'>
           <img
-            src={`http://localhost:4000/public/img/users/${row?.image}`}
+            src={`${IMAGE_BASE_URL}/users/${row?.image}`}
             alt='doctor'
             className='w-12 h-12 rounded-full object-cover mr-3'
           />
@@ -412,8 +412,6 @@ const DoctorBranchAssignment = () => {
             <option value=''>Select Branch</option>
             <option value='operationModule'>Operation</option>
             <option value='opdModule'>OPD</option>
-            <option value='octModule'>OCT</option>
-            <option value='ultraSoundModule'>Biscayne</option>
             <option value='yeglizerModel'>Yeglizer</option>
             <option value='laboratoryModule'>Laboratory</option>
             <option value='bedroomModule'>Bedroom</option>
