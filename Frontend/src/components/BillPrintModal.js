@@ -195,7 +195,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                       </div>
 
                       <div className='border-t border-gray-200 pt-4 mt-4'>
-                        <div className='total-row'>
+                        <div className='flex justify-between total-row'>
                           <p className='text-base sm:text-lg font-semibold text-gray-900'>
                             Total:
                           </p>

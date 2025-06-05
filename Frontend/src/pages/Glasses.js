@@ -692,7 +692,7 @@ const Glasses = () => {
           </div>
         </div>
 
-        {/* Responsive pagination */}
+        {/* Pagination */}
         <div className='mt-4'>
           <Pagination
             totalItems={glasses.length}

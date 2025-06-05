@@ -155,6 +155,19 @@ const getAllIncome = getAll(Income);
 // Delete an income record by ID
 const deleteIncome = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  const constantCategories = [
+    'drug',
+    'sunglasses',
+    'glass',
+    'frame',
+    'oct',
+    'opd',
+    'laboratory',
+    'bedroom',
+    'ultrasound',
+    'operation',
+    'yeglizer',
+  ];
 
   if (!id) {
     throw new AppError('Income ID is required', 400);
@@ -165,7 +178,7 @@ const deleteIncome = asyncHandler(async (req, res) => {
   if (!income) {
     throw new AppError('Income record not found', 404);
   }
-  if (income.category !== 'other') {
+  if (constantCategories.includes(income.category.toString())) {
     throw new AppError('You can not delete this income', 400);
   }
   await income.deleteOne();

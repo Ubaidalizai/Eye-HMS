@@ -26,13 +26,26 @@ const createOperationType = asyncHandler(async (req, res) => {
 // @desc   Get all operation types
 // @route  GET /api/v1/operation-types
 const getAllOperationTypes = asyncHandler(async (req, res) => {
-  const { type } = req.query;
-  const query = type ? { type } : {}; // Filter by type if provided
+  const { type, page = 1, limit = 10 } = req.query;
 
-  const operationTypes = await OperationType.find(query).select('-__v'); // Exclude __v field
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const query = type ? { type } : {};
+
+  const [operationTypes, totalDocs] = await Promise.all([
+    OperationType.find(query).select('-__v').skip(skip).limit(limitNumber),
+    OperationType.countDocuments(query),
+  ]);
+
+  const totalPages = Math.ceil(totalDocs / limitNumber);
 
   res.status(200).json({
     success: true,
+    currentPage: pageNumber,
+    totalPages,
+    results: totalDocs,
     data: operationTypes,
   });
 });

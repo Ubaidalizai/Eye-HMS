@@ -1,16 +1,15 @@
 const mongoose = require('mongoose');
 
-// Define the Income schema
 const incomeSchema = new mongoose.Schema(
   {
     saleId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true, // Ensure saleId is always provided
+      required: true,
       refPath: 'saleModel', // Dynamic reference based on 'saleModel'
     },
     saleModel: {
-      type: String, // Stores the referenced model name (e.g., 'Sale', 'FrameSale')
-      required: true, // Must specify the model name for dynamic referencing
+      type: String,
+      required: true,
       enum: [
         'userModel',
         'octModule',
@@ -23,6 +22,9 @@ const incomeSchema = new mongoose.Schema(
         'salesModel',
         'pharmacyModel',
         'glassModel',
+        'perimetryModel',
+        'FAModel',
+        'PRPModel',
       ], // Allowed models
     },
     date: {

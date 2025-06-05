@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 import { BASE_URL, IMAGE_BASE_URL } from '../config';
 import { useAuth } from '../AuthContext';
+import Pagination from './Pagination';
 
 // Custom Button Component
 const Button = ({ children, onClick, className, disabled }) => (
@@ -116,54 +117,6 @@ const Table = ({ headers, data, onDelete, onEdit }) => (
   </div>
 );
 
-// Mobile Card View Component
-const MobileCardView = ({ data, onDelete, onEdit }) => (
-  <div className='space-y-4 mt-4 md:hidden'>
-    {data?.map((row, index) => (
-      <div
-        key={index}
-        className='bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden'
-      >
-        <div className='flex items-center p-4 border-b'>
-          <img
-            src={`${IMAGE_BASE_URL}/users/${row?.image}`}
-            alt='doctor'
-            className='w-12 h-12 rounded-full object-cover mr-3'
-          />
-          <div>
-            <h3 className='font-medium text-gray-900'>{row?.doctorName}</h3>
-            <p className='text-sm text-gray-500'>{row?.branch}</p>
-          </div>
-        </div>
-        <div className='grid grid-cols-2 gap-2 p-4 text-sm'>
-          <div>
-            <span className='text-gray-500'>Percentage: </span>
-            <span className='font-medium'>{row?.percentage}%</span>
-          </div>
-          <div>
-            <span className='text-gray-500'>Price: </span>
-            <span className='font-medium'>{row?.price}</span>
-          </div>
-        </div>
-        <div className='flex justify-end border-t p-3 bg-gray-50'>
-          <button
-            onClick={() => onEdit(row)}
-            className='flex items-center justify-center px-3 py-1.5 text-blue-600 bg-blue-50 rounded-md mr-2'
-          >
-            <FaEdit className='mr-1' /> Edit
-          </button>
-          <button
-            onClick={() => onDelete(row?.id)}
-            className='flex items-center justify-center px-3 py-1.5 text-red-600 bg-red-50 rounded-md'
-          >
-            <FaTrash className='mr-1' /> Delete
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
 const DoctorBranchAssignment = () => {
   const [assignments, setAssignments] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState('');
@@ -176,13 +129,16 @@ const DoctorBranchAssignment = () => {
   const [category, setCategory] = useState('');
   const [error, setError] = useState('');
   const [isAssignButtonDisabled, setIsAssignButtonDisabled] = useState(false);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { perDoctors } = useAuth();
 
   const fetchAssignments = useCallback(async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/doctor-branch?doctorId=${category}`,
+        `${BASE_URL}/doctor-branch?doctorId=${category}&page=${currentPage}&limit=${limit}`,
         {
           method: 'GET',
           credentials: 'include',
@@ -190,15 +146,16 @@ const DoctorBranchAssignment = () => {
       );
       const data = await response.json();
       setAssignments(data.data);
+      setTotalPages(data.totalPages || Math.ceil(data.totalResults / limit));
     } catch (error) {
       console.error('Error fetching assignments:', error);
       setError('Failed to fetch assignments');
     }
-  }, [category]);
+  }, [category, currentPage, limit]);
 
   useEffect(() => {
     fetchAssignments();
-  }, [fetchAssignments]);
+  }, [fetchAssignments, currentPage, limit]);
 
   const handleAssign = async () => {
     setIsAssignButtonDisabled(true);
@@ -361,8 +318,17 @@ const DoctorBranchAssignment = () => {
           <p>Swipe horizontally to see more data</p>
         </div>
       </div>
-
-      {/* Mobile Card View - Removed in favor of horizontal scrolling */}
+      {/* Pagination */}
+      <div className='mt-4'>
+        <Pagination
+          totalItems={assignments.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+      </div>
 
       {/* Assign Doctor Modal */}
       <Modal
@@ -415,6 +381,9 @@ const DoctorBranchAssignment = () => {
             <option value='yeglizerModel'>Yeglizer</option>
             <option value='laboratoryModule'>Laboratory</option>
             <option value='bedroomModule'>Bedroom</option>
+            <option value='perimetryModel'>Perimetry</option>
+            <option value='FAModel'>FA</option>
+            <option value='PRPModel'>PRP</option>
           </select>
         </div>
 

@@ -1,6 +1,7 @@
 const asyncHandler = require('../middlewares/asyncHandler');
 const Category = require('../models/categoryModel');
 const AppError = require('../utils/appError');
+const getAll = require('./handleFactory');
 
 // Create Category
 exports.createCategory = asyncHandler(async (req, res) => {
@@ -15,10 +16,7 @@ exports.createCategory = asyncHandler(async (req, res) => {
 });
 
 // Get All Categories
-exports.getCategories = asyncHandler(async (req, res) => {
-  const categories = await Category.find().sort({ createdAt: -1 });
-  res.json({ success: true, data: categories });
-});
+exports.getCategories = getAll(Category);
 
 // Get Single Category
 exports.getCategoryById = asyncHandler(async (req, res, next) => {
