@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import Pagination from './Pagination';
 
 import { BASE_URL } from '../config';
 
@@ -9,20 +10,27 @@ const OperationTypeManagement = () => {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchOperationTypes();
-  }, []);
+  }, [limit, currentPage]);
 
   //Fetch all active operation types
   const fetchOperationTypes = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}/operation-types`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${BASE_URL}/operation-types?page=${currentPage}&limit=${limit}`,
+        {
+          credentials: 'include',
+        }
+      );
       const data = await response.json();
       setOperationTypes(data.data);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (error) {
       console.error('Error fetching operation types:', error);
     } finally {
@@ -148,6 +156,9 @@ const OperationTypeManagement = () => {
             <option value='oct'>OCT</option>
             <option value='biscayne'>Biscayne</option>
             <option value='bedroom'>Bedroom</option>
+            <option value='perimetry'>Perimetry</option>
+            <option value='FA'>FA</option>
+            <option value='PRP'>Prp</option>
           </select>
         </div>
 
@@ -260,6 +271,17 @@ const OperationTypeManagement = () => {
           </div>
         </>
       )}
+      {/* Pagination */}
+      <div className='mt-4'>
+        <Pagination
+          totalItems={operationTypes.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+      </div>
     </div>
   );
 };

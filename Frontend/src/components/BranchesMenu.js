@@ -9,6 +9,9 @@ import {
   FaBed,
   FaFlask,
   FaEye,
+  FaSearchPlus,
+  FaTint,
+  FaBurn,
 } from 'react-icons/fa';
 import { IoMdArrowDropdown } from 'react-icons/io';
 
@@ -65,11 +68,26 @@ export default function BranchesMenu({ onMobileItemClick }) {
       icon: <GiDoctorFace className='h-4 w-4 ' />,
     },
     {
-      name: 'Yeglizer',
+      name: 'Yag Laser',
       path: '/branches/yeglizer',
       icon: (
         <LiaHandLizardSolid className='h-4 w-4 transition-colors duration-300 hover:text-blue-500 focus:text-blue-500' />
       ),
+    },
+    {
+      name: 'Perimetry',
+      path: '/branches/perimetry',
+      icon: <FaSearchPlus className='h-4 w-4' />,
+    },
+    {
+      name: 'FA',
+      path: '/branches/FA',
+      icon: <FaTint className='h-4 w-4' />, // Use FaTint here
+    },
+    {
+      name: 'PRP',
+      path: '/branches/PRP',
+      icon: <FaBurn className='h-4 w-4' />, // Use FaTint here
     },
   ];
 

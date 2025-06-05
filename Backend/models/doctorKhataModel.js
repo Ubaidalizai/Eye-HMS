@@ -20,6 +20,9 @@ const doctorKhataSchema = new mongoose.Schema(
         'operationModule',
         'yeglizerModel',
         'glassModel',
+        'perimetryModel',
+        'FAModel',
+        'PRPModel',
       ], // Allowed models
     },
     doctorId: {

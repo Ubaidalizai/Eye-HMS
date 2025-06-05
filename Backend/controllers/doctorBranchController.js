@@ -80,12 +80,16 @@ const deleteDoctorAssignment = asyncHandler(async (req, res) => {
 });
 
 const getAllBranchesWithDoctors = asyncHandler(async (req, res, next) => {
-  const { doctorId } = req.query; // Extract doctorId from query params
+  const { doctorId, page = 1, limit = 10 } = req.query;
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
   const matchStage = doctorId
     ? { $match: { doctorId: new mongoose.Types.ObjectId(doctorId) } }
-    : {}; // Add filter only if doctorId is provided
+    : null;
 
-  const pipeline = [
+  const basePipeline = [
     {
       $lookup: {
         from: 'users',
@@ -110,12 +114,30 @@ const getAllBranchesWithDoctors = asyncHandler(async (req, res, next) => {
     },
   ];
 
-  if (doctorId) pipeline.unshift(matchStage); // Add filter stage dynamically
+  // Full pipeline with optional match, and pagination
+  const pipeline = [];
+  if (matchStage) pipeline.push(matchStage);
+  pipeline.push(...basePipeline);
+  pipeline.push({ $skip: skip }, { $limit: limitNumber });
 
-  const assignments = await DoctorBranchAssignment.aggregate(pipeline);
+  // Count total documents (without pagination)
+  const countPipeline = [];
+  if (matchStage) countPipeline.push(matchStage);
+  countPipeline.push(...basePipeline, { $count: 'total' });
+
+  const [assignments, countResult] = await Promise.all([
+    DoctorBranchAssignment.aggregate(pipeline),
+    DoctorBranchAssignment.aggregate(countPipeline),
+  ]);
+
+  const totalDocs = countResult[0]?.total || 0;
+  const totalPages = Math.ceil(totalDocs / limitNumber);
 
   res.status(200).json({
     success: true,
+    currentPage: pageNumber,
+    totalPages,
+    totalResults: totalDocs,
     data: assignments,
   });
 });

@@ -1,7 +1,6 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { BASE_URL } from '../config';
+import Pagination from './Pagination';
 
 export default function CategoryManagement() {
   const [categories, setCategories] = useState([]);
@@ -13,11 +12,14 @@ export default function CategoryManagement() {
   const [categoryName, setCategoryName] = useState('');
   const [nameError, setNameError] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch categories on component mount
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [currentPage, limit]);
 
   // Hide toast after 3 seconds
   useEffect(() => {
@@ -33,12 +35,15 @@ export default function CategoryManagement() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}/categories`);
+      const response = await fetch(
+        `${BASE_URL}/categories?page=${currentPage}&limit=${limit}`
+      );
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch categories');
       }
-      setCategories(data.data);
+      setCategories(data.data.results);
+      setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -300,6 +305,18 @@ export default function CategoryManagement() {
             </table>
           </div>
         )}
+      </div>
+
+      {/* Pagination */}
+      <div className='mt-4'>
+        <Pagination
+          totalItems={categories.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
       </div>
 
       {/* Add Category Modal */}

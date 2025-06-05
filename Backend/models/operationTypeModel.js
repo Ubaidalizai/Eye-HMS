@@ -10,7 +10,15 @@ const operationTypeSchema = new mongoose.Schema(
     type: {
       type: String,
       required: [true, 'Type is required'],
-      enum: ['operation', 'oct', 'biscayne', 'bedroom'],
+      enum: [
+        'operation',
+        'oct',
+        'biscayne',
+        'bedroom',
+        'perimetry',
+        'FA',
+        'PRP',
+      ],
       default: 'operation',
     },
     price: {

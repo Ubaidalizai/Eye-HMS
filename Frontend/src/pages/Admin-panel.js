@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
 import PersonInfoDropdown from './PersonInfoDropdown';
@@ -9,6 +7,7 @@ import DoctorBranchAssignment from '../components/DoctorAssigenment';
 import OperationTypeManagement from '../components/OperationTypeManagement';
 import EditUser from '../components/EditUser';
 import CategoryManagement from '../components/category-management';
+import Pagination from '../components/Pagination';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -26,12 +25,18 @@ const UserList = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/user`, {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${BASE_URL}/user?page=${currentPage}&limit=${limit}`,
+        {
+          credentials: 'include',
+        }
+      );
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || `Error: ${res.status}`);
@@ -40,6 +45,7 @@ const UserList = () => {
       const data = await res.json();
       if (data && data.data && Array.isArray(data.data.results)) {
         setUsers(data.data.results);
+        setTotalPages(data.totalPages || Math.ceil(data.results / limit));
       } else {
         throw new Error('Unexpected API response structure');
       }
@@ -52,7 +58,7 @@ const UserList = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [currentPage, limit]);
 
   const validateForm = (user, isNewUser = false) => {
     const errors = {};
@@ -274,7 +280,17 @@ const UserList = () => {
           <p>Swipe horizontally to see more data</p>
         </div>
       </div>
-
+      {/* Pagination */}
+      <div className='mt-4'>
+        <Pagination
+          totalItems={users.length}
+          totalPagesCount={totalPages}
+          itemsPerPage={limit}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+          onLimitChange={(limit) => setLimit(limit)}
+        />
+      </div>
       {/* Add User Modal */}
       {isAddModalOpen && (
         <div className='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50'>

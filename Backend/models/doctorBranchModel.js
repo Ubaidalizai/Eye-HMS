@@ -18,6 +18,9 @@ const doctorBranchSchema = new mongoose.Schema(
         'operationModule',
         'yeglizerModel',
         'labratoryModule',
+        'perimetryModel',
+        'FAModel',
+        'PRPModel',
       ],
     },
     percentage: {

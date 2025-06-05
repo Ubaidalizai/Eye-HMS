@@ -382,36 +382,6 @@ const Pharmacy = () => {
     };
   };
 
-  if (loading) {
-    return (
-      <div className='flex items-center justify-center h-screen bg-gray-100'>
-        <div className='text-2xl font-semibold text-blue-600'>
-          <svg
-            className='animate-spin h-8 w-8 mr-3 inline-block'
-            xmlns='http://www.w3.org/2000/svg'
-            fill='none'
-            viewBox='0 0 24 24'
-          >
-            <circle
-              className='opacity-25'
-              cx='12'
-              cy='12'
-              r='10'
-              stroke='currentColor'
-              strokeWidth='4'
-            ></circle>
-            <path
-              className='opacity-75'
-              fill='currentColor'
-              d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-            ></path>
-          </svg>
-          Loading...
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className='flex items-center justify-center h-screen bg-gray-100'>
@@ -532,132 +502,141 @@ const Pharmacy = () => {
             </div>
 
             {/* Responsive table with horizontal scroll */}
-            <div className='overflow-x-auto rounded-lg shadow-md'>
-              <table className='w-full text-sm text-left text-gray-500'>
-                <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                  <tr>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Manufacturer
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Min-Level
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Expire-Duration
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Expiry-Date
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Sale-price
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Quantity
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope='col'
-                      className='px-4 py-3 font-bold tracking-wider'
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className='divide-y divide-gray-200'>
-                  {drugs.map((drug, index) => (
-                    <tr
-                      key={index}
-                      className='hover:bg-gray-50 transition duration-150 ease-in-out'
-                    >
-                      <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900'>
-                        {drug.name}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {drug.manufacturer}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {drug.minLevel}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {drug.expireNotifyDuration}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {drug.expiryDate?.split('T')[0]}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {drug.salePrice}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {drug.quantity}
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                        {
-                          <span
-                            className={`text-xs font-medium ${
-                              drug.quantity === 0
-                                ? 'text-red-500'
-                                : drug.quantity <= drug.minLevel
-                                ? 'text-yellow-500'
-                                : 'text-green-500'
-                            }`}
-                          >
-                            {drug.quantity === 0
-                              ? 'Out of quantity'
-                              : drug.quantity <= drug.minLevel
-                              ? 'Low'
-                              : 'Available'}
-                          </span>
-                        }
-                      </td>
-                      <td className='px-4 py-3 whitespace-nowrap'>
-                        <div className='flex space-x-2'>
-                          <button
-                            onClick={() => handleEdit(drug)}
-                            className='font-medium text-blue-600 hover:text-blue-700'
-                          >
-                            <FaEdit className='w-4 h-4' />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(drug._id)}
-                            className='font-medium text-red-600 hover:text-red-700'
-                          >
-                            <FaTrash className='w-4 h-4' />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className='border-t border-gray-200'>
+              {loading ? (
+                <div className='flex justify-center items-center py-10'>
+                  <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500'></div>
+                  <p className='ml-3 text-gray-600'>Loading...</p>
+                </div>
+              ) : (
+                <div className='overflow-x-auto rounded-lg shadow-md'>
+                  <table className='w-full text-sm text-left text-gray-500'>
+                    <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+                      <tr>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Name
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Manufacturer
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Min-Level
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Expire-Duration
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Expiry-Date
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Sale-price
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Quantity
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Status
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-4 py-3 font-bold tracking-wider'
+                        >
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className='divide-y divide-gray-200'>
+                      {drugs.map((drug, index) => (
+                        <tr
+                          key={index}
+                          className='hover:bg-gray-50 transition duration-150 ease-in-out'
+                        >
+                          <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900'>
+                            {drug.name}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {drug.manufacturer}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {drug.minLevel}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {drug.expireNotifyDuration}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {drug.expiryDate?.split('T')[0]}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {drug.salePrice}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {drug.quantity}
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                            {
+                              <span
+                                className={`text-xs font-medium ${
+                                  drug.quantity === 0
+                                    ? 'text-red-500'
+                                    : drug.quantity <= drug.minLevel
+                                    ? 'text-yellow-500'
+                                    : 'text-green-500'
+                                }`}
+                              >
+                                {drug.quantity === 0
+                                  ? 'Out of quantity'
+                                  : drug.quantity <= drug.minLevel
+                                  ? 'Low'
+                                  : 'Available'}
+                              </span>
+                            }
+                          </td>
+                          <td className='px-4 py-3 whitespace-nowrap'>
+                            <div className='flex space-x-2'>
+                              <button
+                                onClick={() => handleEdit(drug)}
+                                className='font-medium text-blue-600 hover:text-blue-700'
+                              >
+                                <FaEdit className='w-4 h-4' />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(drug._id)}
+                                className='font-medium text-red-600 hover:text-red-700'
+                              >
+                                <FaTrash className='w-4 h-4' />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
