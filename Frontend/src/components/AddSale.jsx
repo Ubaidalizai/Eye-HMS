@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from 'react';
 import Select from 'react-select';
 import { Dialog, Transition } from '@headlessui/react';
-import { BillPrintModal } from "./BillPrintModal.jsx";
+import { BillPrintModal } from './BillPrintModal.jsx';
 import { BASE_URL } from '../config';
-import AuthContext from "../AuthContext.jsx";
+import AuthContext from '../AuthContext.jsx';
 
 export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
   const [sales, setSales] = useState([
@@ -241,9 +241,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                 className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 h-10 focus:ring-blue-500 focus:border-blue-500'
                               >
                                 <option value=''>Select a category</option>
-                                {authContext.user.role === 'admin' && (
-                                  <option value='drug'>Drug</option>
-                                )}
+                                <option value='drug'>Drug</option>
                                 <option value='sunglasses'>Sunglasses</option>
                                 <option value='glass'>Glass</option>
                                 <option value='frame'>Frame</option>
