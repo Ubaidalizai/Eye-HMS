@@ -4,7 +4,9 @@ import {
   getCoreRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import Pagination from "../components/Pagination.jsx";
+import MoveProductStats from '../components/moveProductStats';
+
+import Pagination from '../components/Pagination.jsx';
 import { BASE_URL } from '../config';
 
 export default function MoveHistory() {
@@ -43,6 +45,7 @@ export default function MoveHistory() {
     () => [
       { accessorKey: 'inventory_id.name', header: 'productName' },
       { accessorKey: 'quantity_moved', header: 'Quantity Moved' },
+      { accessorKey: 'totalAmount', header: 'Total Amount' },
       {
         accessorKey: 'moved_by',
         header: 'Moved By',
@@ -177,6 +180,8 @@ export default function MoveHistory() {
           />
         </div>
       </div>
+
+      <MoveProductStats />
     </div>
   );
 }

@@ -2,11 +2,68 @@ const mongoose = require('mongoose');
 const Product = require('../models/product');
 const Pharmacy = require('../models/pharmacyModel');
 const DrugMovement = require('../models/drugMovmentModel');
+
 const getAll = require('./handleFactory');
 const validateMongoDBId = require('../utils/validateMongoDbId');
 
+const {
+  getDateRangeForYear,
+  getDateRangeForMonth,
+} = require('../utils/dateUtils');
+const {
+  getAggregatedData,
+  populateDataArray,
+} = require('../utils/aggregationUtils');
+
 const asyncHandler = require('../middlewares/asyncHandler');
 const AppError = require('../utils/appError');
+
+// Get summarized data by month for a given year (generic for any model)
+const getDataByYear = asyncHandler(async (req, res, Model) => {
+  const { year } = req.params;
+  const { category } = req.query;
+
+  const { startDate, endDate } = getDateRangeForYear(year);
+  const matchCriteria = { date_moved: { $gte: startDate, $lte: endDate } };
+  if (category) matchCriteria.category = category;
+
+  const groupBy = {
+    _id: { month: { $month: '$date_moved' } },
+    totalAmount: { $sum: '$totalAmount' },
+  };
+
+  const data = await getAggregatedData(Model, matchCriteria, groupBy);
+
+  const totalAmountsByMonth = populateDataArray(data, 12, 'month');
+  res.status(200).json({ data: totalAmountsByMonth });
+});
+
+// Get summarized data by day for a given month (generic for any model)
+const getDataByMonth = asyncHandler(async (req, res, Model) => {
+  const { year, month } = req.params;
+  const { category } = req.query;
+
+  const { startDate, endDate } = getDateRangeForMonth(year, month);
+  const matchCriteria = { date_moved: { $gte: startDate, $lte: endDate } };
+  if (category) matchCriteria.category = category;
+
+  const groupBy = {
+    _id: { day: { $dayOfMonth: '$date_moved' } },
+    totalAmount: { $sum: '$totalAmount' },
+  };
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const data = await getAggregatedData(Model, matchCriteria, groupBy);
+
+  const totalAmountsByDay = populateDataArray(data, daysInMonth, 'day');
+  res.status(200).json({ data: totalAmountsByDay });
+});
+
+// Example usage for expenses
+const getDrugMovementByYear = (req, res) =>
+  getDataByYear(req, res, DrugMovement);
+const getDrugMovementByMonth = (req, res) =>
+  getDataByMonth(req, res, DrugMovement);
 
 const getAllProductMovements = getAll(DrugMovement, false, [
   {
@@ -81,6 +138,7 @@ const moveProductsToPharmacy = asyncHandler(async (req, res, next) => {
         {
           inventory_id: product._id,
           quantity_moved: Number(quantity),
+          totalAmount: Number(quantity) * Number(salePrice),
           moved_by: req.user._id,
           expiryDate,
         },
@@ -121,6 +179,8 @@ const deleteMovement = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getDrugMovementByYear,
+  getDrugMovementByMonth,
   getAllProductMovements,
   moveProductsToPharmacy,
   deleteMovement,

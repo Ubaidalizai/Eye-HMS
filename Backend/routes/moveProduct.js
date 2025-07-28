@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {
+  getDrugMovementByYear,
+  getDrugMovementByMonth,
   moveProductsToPharmacy,
   getAllProductMovements,
   deleteMovement,
@@ -11,6 +13,9 @@ const {
 } = require('../middlewares/authMiddleware');
 
 router.use(authenticate, authorizeAdmin);
+
+router.get('/:year', getDrugMovementByYear);
+router.get('/:year/:month', getDrugMovementByMonth);
 
 // Move Drugs From Inventory to pharmacy
 router.post('/', moveProductsToPharmacy);

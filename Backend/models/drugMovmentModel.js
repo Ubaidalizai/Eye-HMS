@@ -1,7 +1,4 @@
 const mongoose = require('mongoose');
-const Product = require('./product');
-const Pharmacy = require('./pharmacyModel');
-const User = require('./userModel');
 
 const drugMovementSchema = new mongoose.Schema(
   {
@@ -11,6 +8,7 @@ const drugMovementSchema = new mongoose.Schema(
       required: true,
     },
     quantity_moved: { type: Number, required: true, min: 0 },
+    totalAmount: { type: Number, required: true, min: 0 },
     date_moved: { type: Date, default: Date.now },
     moved_by: {
       type: mongoose.Schema.Types.ObjectId,
