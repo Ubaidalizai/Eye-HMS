@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback, memo } from 'react';
 import AddGlasses from "../components/AddGlasses.jsx";
 import {
   FaDollarSign,
@@ -8,6 +8,8 @@ import {
   FaEdit,
   FaTrash,
   FaPlus,
+  FaSearch,
+  FaTimes,
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -90,6 +92,211 @@ const Modal = ({ open, onClose, handleUpdate, children }) => {
   );
 };
 
+// Separate SearchBar component that won't re-render with table updates
+const SearchBar = memo(({
+  searchTerm,
+  onSearchChange,
+  onClearSearch,
+  isSearching,
+  debouncedSearchTerm,
+  resultsCount
+}) => {
+  const searchInputRef = useRef(null);
+
+  return (
+    <div className='px-4 py-4 border-b border-gray-200 bg-gray-50'>
+      <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
+        <div className='w-full sm:w-auto'>
+          <label className='block text-sm font-medium text-gray-700 mb-2'>
+            Search Glasses
+          </label>
+          <div className='relative'>
+            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
+              <FaSearch className='text-gray-400' />
+            </div>
+            <input
+              ref={searchInputRef}
+              type='text'
+              placeholder='Search glasses by name...'
+              value={searchTerm}
+              onChange={onSearchChange}
+              className='block w-full sm:w-80 pl-10 pr-10 py-2 text-sm border border-gray-300 rounded-lg bg-white shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400'
+            />
+            {searchTerm && (
+              <button
+                onClick={onClearSearch}
+                className='absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors'
+                title='Clear search'
+              >
+                <FaTimes className='h-4 w-4' />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search Results Info */}
+        {searchTerm && (
+          <div className='text-sm text-gray-600'>
+            {isSearching ? (
+              <div className='flex items-center'>
+                <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500 mr-2'></div>
+                <span>Searching...</span>
+              </div>
+            ) : debouncedSearchTerm ? (
+              <div>
+                <span>Found </span>
+                <span className='font-semibold text-gray-900'>{resultsCount}</span>
+                <span> result{resultsCount !== 1 ? 's' : ''} for </span>
+                <span className='font-medium text-indigo-600'>"{debouncedSearchTerm}"</span>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+SearchBar.displayName = 'SearchBar';
+
+// Separate TableSection component for independent loading
+const TableSection = memo(({
+  glasses,
+  loading,
+  debouncedSearchTerm,
+  onEdit,
+  onDelete,
+  onClearSearch
+}) => {
+  if (loading) {
+    return (
+      <div className='flex justify-center items-center py-10'>
+        <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500'></div>
+        <p className='ml-3 text-gray-600'>Loading glasses...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className='overflow-x-auto'>
+      <table className='w-full text-sm text-left text-gray-500'>
+        <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+          <tr>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Name</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Manufacturer</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Min-Level</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Category</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Date</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Purchase-price</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Sale-price</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Quantity</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Status</th>
+            <th scope='col' className='px-4 py-3 font-bold tracking-wider'>Actions</th>
+          </tr>
+        </thead>
+        <tbody className='divide-y divide-gray-200'>
+          {glasses.length === 0 && debouncedSearchTerm ? (
+            <tr>
+              <td colSpan='10' className='px-4 py-8 text-center text-gray-500'>
+                <div className='flex flex-col items-center'>
+                  <FaSearch className='h-12 w-12 text-gray-300 mb-4' />
+                  <p className='text-lg font-medium'>No glasses found</p>
+                  <p className='text-sm'>
+                    No glasses match your search for "{debouncedSearchTerm}"
+                  </p>
+                  <button
+                    onClick={onClearSearch}
+                    className='mt-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium'
+                  >
+                    Clear search
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ) : glasses.length === 0 ? (
+            <tr>
+              <td colSpan='10' className='px-4 py-8 text-center text-gray-500'>
+                <div className='flex flex-col items-center'>
+                  <FaBoxOpen className='h-12 w-12 text-gray-300 mb-4' />
+                  <p className='text-lg font-medium'>No glasses available</p>
+                  <p className='text-sm'>There are no glasses in the inventory.</p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            glasses.map((glass, index) => (
+              <tr
+                key={index}
+                className='hover:bg-gray-50 transition duration-150 ease-in-out'
+              >
+                <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900'>
+                  {glass.name}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.manufacturer}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.minLevel}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.category}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.createdAt.split('T')[0]}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.purchasePrice}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.salePrice}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  {glass.quantity}
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
+                  <span
+                    className={`text-xs font-medium ${
+                      glass.quantity === 0
+                        ? 'text-red-500'
+                        : glass.quantity <= glass.minLevel
+                        ? 'text-yellow-500'
+                        : 'text-green-500'
+                    }`}
+                  >
+                    {glass.quantity === 0
+                      ? 'Out of stock'
+                      : glass.quantity <= glass.minLevel
+                      ? 'Low'
+                      : 'Available'}
+                  </span>
+                </td>
+                <td className='px-4 py-3 whitespace-nowrap'>
+                  <div className='flex space-x-2'>
+                    <button
+                      onClick={() => onEdit(glass)}
+                      className='font-medium text-blue-600 hover:text-blue-700'
+                    >
+                      <FaEdit className='w-4 h-4' />
+                    </button>
+                    <button
+                      onClick={() => onDelete(glass._id)}
+                      className='font-medium text-red-600 hover:text-red-700'
+                    >
+                      <FaTrash className='w-4 h-4' />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+});
+
+TableSection.displayName = 'TableSection';
+
 const Glasses = () => {
   const [glasses, setGlasses] = useState([]);
   const [glassesSummary, setGlassesSummary] = useState([]);
@@ -99,6 +306,9 @@ const Glasses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState('');
   const [tableCategory, setTableCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [limit, setLimit] = useState(10);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState(null);
@@ -118,6 +328,20 @@ const Glasses = () => {
     category: '',
   });
 
+  // Debounce search term to prevent excessive API calls and focus loss
+  useEffect(() => {
+    if (searchTerm !== debouncedSearchTerm) {
+      setIsSearching(true);
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setIsSearching(false);
+    }, 300); // 300ms delay for faster response than pharmacy
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearchTerm]);
+
   useEffect(() => {
     if (summaryType === 'monthly') {
       fetchMonthlySales();
@@ -131,6 +355,7 @@ const Glasses = () => {
     selectedMonth,
     category,
     tableCategory,
+    debouncedSearchTerm,
     currentPage,
     limit,
     summaryType,
@@ -140,7 +365,7 @@ const Glasses = () => {
     setLoading(true);
     setError(null);
 
-    let baseUrl = `${BASE_URL}/glasses?page=${currentPage}&limit=${limit}`;
+    let baseUrl = `${BASE_URL}/glasses?page=${currentPage}&limit=${limit}&fieldName=name&searchTerm=${debouncedSearchTerm}`;
 
     if (tableCategory) {
       baseUrl += `&category=${tableCategory}`;
@@ -339,6 +564,24 @@ const Glasses = () => {
     }
   };
 
+  // Handle search input change - useCallback to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((e) => {
+    setSearchTerm(e.target.value);
+    // Reset to first page when searching
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [currentPage]);
+
+  // Clear search - useCallback to prevent unnecessary re-renders
+  const clearSearch = useCallback(() => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [currentPage]);
+
   // Function to get the number of days in a month
   const getDaysInMonth = (year, month) => {
     return new Date(year, month, 0).getDate();
@@ -386,7 +629,8 @@ const Glasses = () => {
     };
   };
 
-  if (loading) {
+  // Only show full page loading on initial load (when no glasses data exists yet)
+  if (loading && glasses.length === 0 && !debouncedSearchTerm) {
     return (
       <div className='flex items-center justify-center h-screen bg-gray-100'>
         <div className='text-2xl font-semibold text-blue-600'>
@@ -523,7 +767,18 @@ const Glasses = () => {
               />
             )}
 
+            {/* Search Section - Separate component to prevent re-rendering */}
+            <SearchBar
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+              onClearSearch={clearSearch}
+              isSearching={isSearching}
+              debouncedSearchTerm={debouncedSearchTerm}
+              resultsCount={glasses.length}
+            />
+
             <div className='overflow-x-auto rounded-lg shadow-md'>
+
               {/* Responsive filter and add button */}
               <div className='flex flex-col sm:flex-row justify-between p-4 gap-4'>
                 <div className='w-full sm:w-auto'>
@@ -551,143 +806,15 @@ const Glasses = () => {
                 </div>
               </div>
 
-              {/* Responsive table with horizontal scroll */}
-              <div className='overflow-x-auto'>
-                <table className='w-full text-sm text-left text-gray-500'>
-                  <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                    <tr>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Name
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Manufacturer
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Min-Level
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Category
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Date
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Purchase-price
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Sale-price
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Quantity
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Status
-                      </th>
-                      <th
-                        scope='col'
-                        className='px-4 py-3 font-bold tracking-wider'
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className='divide-y divide-gray-200'>
-                    {glasses.map((glass, index) => (
-                      <tr
-                        key={index}
-                        className='hover:bg-gray-50 transition duration-150 ease-in-out'
-                      >
-                        <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900'>
-                          {glass.name}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.manufacturer}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.minLevel}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.category}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.createdAt.split('T')[0]}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.purchasePrice}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.salePrice}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {glass.quantity}
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-600'>
-                          {
-                            <span
-                              className={`text-xs font-medium ${
-                                glass.quantity === 0
-                                  ? 'text-red-500'
-                                  : glass.quantity <= glass.minLevel
-                                  ? 'text-yellow-500'
-                                  : 'text-green-500'
-                              }`}
-                            >
-                              {glass.quantity === 0
-                                ? 'Out of stock'
-                                : glass.quantity <= glass.minLevel
-                                ? 'Low'
-                                : 'Available'}
-                            </span>
-                          }
-                        </td>
-                        <td className='px-4 py-3 whitespace-nowrap'>
-                          <div className='flex space-x-2'>
-                            <button
-                              onClick={() => handleEdit(glass)}
-                              className='font-medium text-blue-600 hover:text-blue-700'
-                            >
-                              <FaEdit className='w-4 h-4' />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(glass._id)}
-                              className='font-medium text-red-600 hover:text-red-700'
-                            >
-                              <FaTrash className='w-4 h-4' />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {/* Table Section - Separate component for independent loading */}
+              <TableSection
+                glasses={glasses}
+                loading={loading}
+                debouncedSearchTerm={debouncedSearchTerm}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onClearSearch={clearSearch}
+              />
             </div>
           </div>
         </div>

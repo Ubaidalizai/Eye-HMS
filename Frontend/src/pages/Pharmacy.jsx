@@ -7,11 +7,13 @@ import {
   FaExclamationTriangle,
   FaEdit,
   FaTrash,
+  FaSearch,
+  FaTimes
 } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Pagination from "../components/Pagination.jsx";
-import MoveSalesToLog from "../components/MoveSalesToLog.jsx";
+import Pagination from '../components/Pagination.jsx';
+import MoveSalesToLog from '../components/MoveSalesToLog.jsx';
 
 import { BASE_URL } from '../config';
 
@@ -102,6 +104,9 @@ const Pharmacy = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState('');
   const [limit, setLimit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState(null);
   const [minLevel, setMinLevel] = useState(0);
@@ -113,6 +118,22 @@ const Pharmacy = () => {
   const [summary, setSummary] = useState([]);
   const [pharmacySaleTotal, setPharmacySaleTotal] = useState(0);
 
+
+
+  // Debounce search term to prevent excessive API calls and focus loss
+  useEffect(() => {
+    if (searchTerm !== debouncedSearchTerm) {
+      setIsSearching(true);
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setIsSearching(false);
+    }, 300); // 300ms delay for faster response than glasses
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearchTerm]);
+
   useEffect(() => {
     if (summaryType === 'monthly') {
       fetchMonthlySales();
@@ -122,13 +143,26 @@ const Pharmacy = () => {
     fetchPharmacySaleTotal();
     fetchData();
     fetchDrugsSummary();
-  }, [selectedYear, selectedMonth, category, currentPage, limit, summaryType]);
+  }, [
+    selectedYear,
+    selectedMonth,
+    category,
+    currentPage,
+    limit,
+    summaryType,
+    debouncedSearchTerm,
+  ]);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
 
-    let baseUrl = `${BASE_URL}/pharmacy?page=${currentPage}&limit=${limit}`;
+    // Set searching state if there's a search term
+    if (debouncedSearchTerm) {
+      setIsSearching(true);
+    }
+
+    let baseUrl = `${BASE_URL}/pharmacy?page=${currentPage}&limit=${limit}&fieldName=name&searchTerm=${debouncedSearchTerm}`;
 
     if (category) {
       baseUrl += `&category=${category}`;
@@ -151,6 +185,7 @@ const Pharmacy = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -335,6 +370,26 @@ const Pharmacy = () => {
     }
   };
 
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    // Reset to first page when searching
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  };
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  };
+
+
+
   // Function to get the number of days in a month
   const getDaysInMonth = (year, month) => {
     return new Date(year, month, 0).getDate();
@@ -498,6 +553,64 @@ const Pharmacy = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Search Section - Moved outside table area */}
+            <div className='px-4 py-5 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50'>
+              <div className='flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between'>
+                <div className='w-full lg:w-auto'>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    Search Pharmacy Inventory
+                  </label>
+                  <div className='relative group'>
+                    <div className='absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none'>
+                      <FaSearch className={`text-gray-400 transition-colors group-focus-within:text-blue-500 ${isSearching ? 'animate-pulse' : ''}`} />
+                    </div>
+                    <input
+                      type='text'
+                      placeholder='Search drugs by name...'
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      className='block w-full lg:w-80 pl-11 pr-12 py-3 text-sm border border-gray-300 rounded-lg bg-white shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-400 hover:shadow-md'
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={clearSearch}
+                        className='absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 transition-colors'
+                        title='Clear search'
+                      >
+                        <FaTimes className='h-4 w-4' />
+                      </button>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Search Results Info */}
+                {debouncedSearchTerm && (
+                  <div className='flex items-center space-x-4'>
+                    {isSearching ? (
+                      <div className='flex items-center text-sm text-blue-600'>
+                        <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2'></div>
+                        Searching...
+                      </div>
+                    ) : (
+                      <div className='text-sm bg-white px-3 py-2 rounded-lg shadow-sm border'>
+                        <span className='text-gray-600'>Found </span>
+                        <span className='font-semibold text-gray-900'>{drugs.length}</span>
+                        <span className='text-gray-600'> result{drugs.length !== 1 ? 's' : ''} for </span>
+                        <span className='font-medium text-blue-600'>"{debouncedSearchTerm}"</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={clearSearch}
+                      className='text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors px-3 py-1 rounded hover:bg-blue-50'
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
