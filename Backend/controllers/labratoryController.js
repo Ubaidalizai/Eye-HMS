@@ -2,6 +2,7 @@ const Laboratory = require('../models/labratoryModule');
 const Patient = require('../models/patientModel');
 const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
+const User = require('../models/userModel');
 const DoctorBranchAssignment = require('../models/doctorBranchModel');
 const mongoose = require('mongoose');
 const calculatePercentage = require('../utils/calculatePercentage');
@@ -11,6 +12,7 @@ const getAll = require('./handleFactory');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
+const operationTypeModel = require('../models/operationTypeModel');
 
 const getLaboratoryDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -35,8 +37,8 @@ const getLaboratoryDataByMonth = asyncHandler(async (req, res) => {
 });
 
 // Create a new lab record
-const createLabRecord = asyncHandler(async (req, res, next) => {
-  const { patientId, doctor, time, date, discount } = req.body;
+const createLabRecord = asyncHandler(async (req, res) => {
+  const { patientId, doctor, time, date, discount, type } = req.body;
 
   // Start a MongoDB transaction session
   const session = await mongoose.startSession();
@@ -51,7 +53,13 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('Patient not found', 404);
     }
 
-    // Step 2: Check if doctor is assigned to this branch
+    // Step 2: Validate doctor
+    const doctorExist = await User.findById(doctor).session(session);
+    if (!doctorExist || doctorExist.role !== 'doctor') {
+      throw new AppError('Doctor not found', 404);
+    }
+
+    // Step 3: Check if doctor is assigned to this branch
     const doctorAssignment = await DoctorBranchAssignment.findOne({
       doctorId: doctor,
       branchModel: 'labratoryModule',
@@ -61,48 +69,56 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
       throw new AppError('This doctor is not assigned to this branch', 400);
     }
 
-    const doctorPercentage = doctorAssignment.percentage;
-
-    // Step 3: Calculate total amount after doctor percentage & discount
-    let totalAmount = doctorAssignment.price;
-    let doctorIncome = 0;
+    const findOperationType = await operationTypeModel
+      .findById(type)
+      .session(session);
+    if (!findOperationType) {
+      throw new AppError('Operation type not found', 403);
+    }
+    // Step 4: Calculate total amount and doctor percentage
+    req.body.totalAmount = findOperationType.price;
+    let doctorPercentage = doctorAssignment.percentage || 0; // Use assigned percentage
 
     if (doctorPercentage > 0) {
       const result = await calculatePercentage(
-        doctorAssignment.price,
+        findOperationType.price,
         doctorPercentage
       );
-      doctorIncome = result.percentageAmount;
-      totalAmount = result.finalPrice;
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
     }
 
-    if (discount > 0) {
-      const discountResult = await calculatePercentage(totalAmount, discount);
-      totalAmount = discountResult.finalPrice;
+    if (req.body.discount > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        req.body.discount
+      );
+      req.body.totalAmount = result.finalPrice;
     }
 
-    // Step 4: Create Laboratory Record
+    // Step 5: Create Laboratory Record
     const laboratory = new Laboratory({
       patientId: patient._id,
       doctor,
       percentage: doctorAssignment.percentage,
-      price: doctorAssignment.price,
+      price: findOperationType.price,
+      type,
       time,
       date,
       discount,
-      totalAmount,
+      totalAmount: req.body.totalAmount,
     });
     await laboratory.save({ session });
 
-    // Step 5: Create DoctorKhata Record
-    if (doctorIncome > 0) {
+    // Step 6: Create DoctorKhata Record
+    if (doctorPercentage > 0) {
       await DoctorKhata.create(
         [
           {
             branchNameId: laboratory._id,
             branchModel: 'labratoryModule',
             doctorId: doctor,
-            amount: doctorIncome,
+            amount: doctorPercentage,
             date,
             amountType: 'income',
           },
@@ -111,15 +127,15 @@ const createLabRecord = asyncHandler(async (req, res, next) => {
       );
     }
 
-    // Step 6: Create Income Record
-    if (totalAmount > 0) {
+    // Step 7: Create Income Record
+    if (laboratory.totalAmount > 0) {
       await Income.create(
         [
           {
             saleId: laboratory._id,
             saleModel: 'labratoryModule',
             date,
-            totalNetIncome: totalAmount,
+            totalNetIncome: laboratory.totalAmount,
             category: 'laboratory',
             description: 'Laboratory income',
           },
@@ -154,6 +170,10 @@ const getAllLabRecords = getAll(Laboratory, false, [
   {
     path: 'doctor',
     select: 'firstName lastName percentage',
+  },
+  {
+    path: 'type',
+    select: 'name',
   },
 ]);
 
@@ -266,13 +286,9 @@ const deleteLabRecordById = asyncHandler(async (req, res, next) => {
 });
 
 const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
-  const patientID = req.params.patientID;
-  const results = await getPatientRecordsByPatientID(patientID, Laboratory);
-
-  res.status(200).json({
-    success: true,
-    data: results,
-  });
+  req.Model = Laboratory;
+  const result = await getPatientRecordsByPatientID(req, res);
+  res.status(200).json({data: result});
 });
 
 const getLaboratoryDoctors = asyncHandler(async (req, res, next) => {

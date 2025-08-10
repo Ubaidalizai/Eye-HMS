@@ -16,6 +16,11 @@ const laboratorySchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'OperationType',
+      required: true,
+    },
     percentage: { type: Number, required: true, default: 0, min: 0, max: 100 },
     discount: { type: Number, default: 0, min: 0, max: 100 },
     totalAmount: { type: Number, required: true, min: 0 },
