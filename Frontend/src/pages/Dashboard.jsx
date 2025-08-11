@@ -24,7 +24,7 @@ const constantCategories = [
   'yeglizer',
 ];
 
-const models = ['sales', 'purchase', 'income'];
+const models = []; // Remove ]; // Re since it's the only optionve 'income' since it's the only option
 const monthLabels = [
   'January',
   'February',
@@ -45,7 +45,7 @@ function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedModel, setSelectedModel] = useState('sales');
+  const [selectedModel, setSelectedModel] = useState('income');
 
   const dashboardSummary = useFetchData(
     `${API_BASE_URL}/dashboard/summary`,
@@ -54,10 +54,20 @@ function Dashboard() {
 
   const { categories } = useAuth();
 
-  // Combine constant categories with dynamic ones from useAuth, removing duplicates
+  // Filter categories based on the selected model (income/expense)
+  const filteredCategories = useMemo(() => {
+    // For income charts, only show income categories
+    if (selectedModel === 'income') {
+      return categories.filter((cat) => cat.type === 'income');
+    }
+    // For other models, show all categories (or filter by expense if needed)
+    return categories;
+  }, [categories, selectedModel]);
+
+  // Combine constant categories with filtered dynamic ones from useAuth, removing duplicates
   const allCategories = useMemo(() => {
-    // Get category names from the dynamic categories
-    const dynamicCategoryNames = categories.map((cat) => cat.name);
+    // Get category names from the filtered dynamic categories
+    const dynamicCategoryNames = filteredCategories.map((cat) => cat.name);
 
     // Create a Set to remove duplicates (case-insensitive)
     const uniqueCategories = new Set([
@@ -73,7 +83,7 @@ function Dashboard() {
       );
       if (constCat) return constCat;
 
-      // Then check if it exists in dynamic categories with original casing
+      // Then check if it exists in filtered dynamic categories with original casing
       const dynamicCat = dynamicCategoryNames.find(
         (c) => c.toLowerCase() === lowerCat
       );
@@ -84,7 +94,7 @@ function Dashboard() {
     });
 
     return allCats;
-  }, [categories]);
+  }, [filteredCategories]);
 
   // Convert to react-select format
   const categoryOptions = useMemo(
@@ -227,3 +237,5 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+

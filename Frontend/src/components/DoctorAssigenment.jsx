@@ -371,19 +371,23 @@ const DoctorBranchAssignment = () => {
           </label>
           <select
             id='branch'
-            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500'
+            className='border px-3 py-2 rounded-md w-full focus:ring-indigo-500 focus:border-indigo-500 scrollable-select'
+            style={{
+              maxHeight: '200px',
+              overflowY: 'auto'
+            }}
             value={selectedBranch}
             onChange={(e) => setSelectedBranch(e.target.value)}
           >
             <option value=''>Select Branch</option>
-            <option value='operationModule'>Operation</option>
-            <option value='opdModule'>OPD</option>
-            <option value='yeglizerModel'>Yeglizer</option>
-            <option value='labratoryModule'>Laboratory</option>
-            <option value='bedroomModule'>Bedroom</option>
-            <option value='perimetryModel'>Perimetry</option>
-            <option value='FAModel'>FA</option>
-            <option value='PRPModel'>PRP</option>
+            <option value='operationModule' className="py-2">Operation</option>
+            <option value='opdModule' className="py-2">OPD</option>
+            <option value='yeglizerModel' className="py-2">Yeglizer</option>
+            <option value='labratoryModule' className="py-2">Laboratory</option>
+            <option value='bedroomModule' className="py-2">Bedroom</option>
+            <option value='perimetryModel' className="py-2">Perimetry</option>
+            <option value='FAModel' className="py-2">FA</option>
+            <option value='PRPModel' className="py-2">PRP</option>
           </select>
         </div>
 
