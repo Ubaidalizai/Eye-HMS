@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useContext } from 'react';
 import BarChart from './BarChart.jsx';
 import { BASE_URL } from '../config';
+import AuthContext from '../AuthContext.jsx';
 
-const IncomeChart = ({ 
-  category = '', 
+const IncomeChart = ({
+  category = '',
   title = 'Income Chart',
   defaultYear = new Date().getFullYear(),
   defaultMonth = new Date().getMonth() + 1,
@@ -11,9 +12,11 @@ const IncomeChart = ({
   summaryType: propSummaryType = 'yearly',
   className = ''
 }) => {
+  const authContext = useContext(AuthContext);
   const [incomeData, setIncomeData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [summaryType, setSummaryType] = useState(propSummaryType);
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedMonth, setSelectedMonth] = useState(defaultMonth);
@@ -27,7 +30,8 @@ const IncomeChart = ({
   const fetchIncomeData = async () => {
     setLoading(true);
     setError(null);
-    
+    setAccessDenied(false);
+
     try {
       let url;
       if (summaryType === 'yearly') {
@@ -35,7 +39,7 @@ const IncomeChart = ({
       } else {
         url = `${BASE_URL}/income/${selectedYear}/${selectedMonth}`;
       }
-      
+
       // Add category filter if provided
       if (category) {
         url += `?category=${encodeURIComponent(category)}`;
@@ -46,6 +50,12 @@ const IncomeChart = ({
       });
 
       if (!response.ok) {
+        if (response.status === 403) {
+          // Handle access denied (403) specifically
+          setAccessDenied(true);
+          setIncomeData([]);
+          return;
+        }
         throw new Error(`Failed to fetch income data: ${response.status}`);
       }
 
@@ -117,13 +127,34 @@ const IncomeChart = ({
     );
   }
 
+  if (accessDenied) {
+    return (
+      <div className={`p-4 sm:p-6 border rounded-lg shadow-sm bg-white ${className}`}>
+        <div className="text-center py-8">
+          <div className="text-blue-500 mb-2">
+            <svg className="w-12 h-12 mx-auto mb-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Income Analytics
+          </div>
+          <div className="text-sm text-gray-600 mb-2">
+            Income data and analytics are available for administrators only.
+          </div>
+          <div className="text-xs text-gray-500">
+            Contact your administrator for access to financial reports.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className={`p-4 sm:p-6 border rounded-lg shadow-sm bg-white ${className}`}>
         <div className="text-center py-8">
           <div className="text-red-500 mb-2">⚠️ Error loading chart</div>
           <div className="text-sm text-gray-600">{error}</div>
-          <button 
+          <button
             onClick={fetchIncomeData}
             className="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
           >

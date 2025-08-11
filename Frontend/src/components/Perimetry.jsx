@@ -67,7 +67,7 @@ function Perimetry() {
   const fetchTypes = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/operation-types?type=perimetry`,
+        `${BASE_URL}/operation-types?type=perimetry&all=true`,
         {
           method: 'GET',
           credentials: 'include',

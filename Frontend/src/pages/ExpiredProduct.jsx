@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../AuthContext.jsx';
 import { BASE_URL } from '../config';
+import Pagination from '../components/Pagination.jsx';
 
 const ExpiredProduct = () => {
   const [expiredProducts, setExpiredProducts] = useState([]);
@@ -18,6 +19,15 @@ const ExpiredProduct = () => {
   const [error, setError] = useState({
     expired: null,
     lowStock: null,
+  });
+
+  // Pagination states for each table
+  const [pagination, setPagination] = useState({
+    expiredProducts: { currentPage: 1, totalPages: 1, limit: 10, totalItems: 0 },
+    expiredDrugs: { currentPage: 1, totalPages: 1, limit: 10, totalItems: 0 },
+    lowStockProducts: { currentPage: 1, totalPages: 1, limit: 10, totalItems: 0 },
+    lowStockGlasses: { currentPage: 1, totalPages: 1, limit: 10, totalItems: 0 },
+    lowStockDrugs: { currentPage: 1, totalPages: 1, limit: 10, totalItems: 0 },
   });
 
   useEffect(() => {
@@ -40,20 +50,54 @@ const ExpiredProduct = () => {
         fetchLowStockGlasses();
       }
     }
-  }, [user.role, activeTab]);
+  }, [
+    user.role,
+    activeTab,
+    pagination.expiredProducts.currentPage,
+    pagination.expiredProducts.limit,
+    pagination.expiredDrugs.currentPage,
+    pagination.expiredDrugs.limit,
+    pagination.lowStockProducts.currentPage,
+    pagination.lowStockProducts.limit,
+    pagination.lowStockGlasses.currentPage,
+    pagination.lowStockGlasses.limit,
+    pagination.lowStockDrugs.currentPage,
+    pagination.lowStockDrugs.limit,
+  ]);
 
   // Fetch expired products
   const fetchExpiredProducts = async () => {
     setLoading((prev) => ({ ...prev, expired: true }));
     setError((prev) => ({ ...prev, expired: null }));
     try {
-      const res = await axios.get(`${BASE_URL}/inventory/product/expire`, {
-        withCredentials: true,
-      });
-      if (res?.data?.length > 0) {
-        setExpiredProducts(res?.data?.expiringSoon);
+      const { currentPage, limit } = pagination.expiredProducts;
+      const res = await axios.get(
+        `${BASE_URL}/inventory/product/expire?page=${currentPage}&limit=${limit}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (res?.data?.expiringSoon) {
+        setExpiredProducts(res.data.expiringSoon);
+        setPagination(prev => ({
+          ...prev,
+          expiredProducts: {
+            ...prev.expiredProducts,
+            totalPages: res.data.totalPages || 1,
+            totalItems: res.data.results || 0,
+          }
+        }));
       } else {
         setExpiredProducts([]);
+        setPagination(prev => ({
+          ...prev,
+          expiredProducts: {
+            ...prev.expiredProducts,
+            totalPages: 1,
+            totalItems: 0,
+          }
+        }));
       }
     } catch (error) {
       console.error('Error fetching expired products', error);
@@ -61,6 +105,7 @@ const ExpiredProduct = () => {
         ...prev,
         expired: 'Failed to fetch expired products',
       }));
+      setExpiredProducts([]);
     } finally {
       setLoading((prev) => ({ ...prev, expired: false }));
     }
@@ -71,14 +116,34 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, expired: true }));
     setError((prev) => ({ ...prev, expired: null }));
     try {
-      const res = await axios.get(`${BASE_URL}/pharmacy/expire`, {
-        withCredentials: true,
-      });
+      const { currentPage, limit } = pagination.expiredDrugs;
+      const res = await axios.get(
+        `${BASE_URL}/pharmacy/expire?page=${currentPage}&limit=${limit}`,
+        {
+          withCredentials: true,
+        }
+      );
 
-      if (res.status === 200 && res?.data?.length > 0) {
-        setExpiredDrugs(res?.data?.expiringSoon);
+      if (res.status === 200 && res?.data?.expiringSoon) {
+        setExpiredDrugs(res.data.expiringSoon);
+        setPagination(prev => ({
+          ...prev,
+          expiredDrugs: {
+            ...prev.expiredDrugs,
+            totalPages: res.data.totalPages || 1,
+            totalItems: res.data.results || 0,
+          }
+        }));
       } else {
         setExpiredDrugs([]);
+        setPagination(prev => ({
+          ...prev,
+          expiredDrugs: {
+            ...prev.expiredDrugs,
+            totalPages: 1,
+            totalItems: 0,
+          }
+        }));
       }
     } catch (error) {
       console.error('Error fetching expired drugs', error);
@@ -86,6 +151,7 @@ const ExpiredProduct = () => {
         ...prev,
         expired: 'Failed to fetch expired drugs',
       }));
+      setExpiredDrugs([]);
     } finally {
       setLoading((prev) => ({ ...prev, expired: false }));
     }
@@ -96,13 +162,33 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
-      const res = await axios.get(`${BASE_URL}/inventory/product/low-stock`, {
-        withCredentials: true,
-      });
+      const { currentPage, limit } = pagination.lowStockProducts;
+      const res = await axios.get(
+        `${BASE_URL}/inventory/product/low-stock?page=${currentPage}&limit=${limit}`,
+        {
+          withCredentials: true,
+        }
+      );
       if (res.status === 200) {
         setLowStockProducts(res.data.data.lowStockProducts || []);
+        setPagination(prev => ({
+          ...prev,
+          lowStockProducts: {
+            ...prev.lowStockProducts,
+            totalPages: res.data.totalPages || 1,
+            totalItems: res.data.results || 0,
+          }
+        }));
       } else {
         setLowStockProducts([]);
+        setPagination(prev => ({
+          ...prev,
+          lowStockProducts: {
+            ...prev.lowStockProducts,
+            totalPages: 1,
+            totalItems: 0,
+          }
+        }));
       }
     } catch (error) {
       console.error('Error fetching low stock products', error);
@@ -110,6 +196,7 @@ const ExpiredProduct = () => {
         ...prev,
         lowStock: 'Failed to fetch low stock products',
       }));
+      setLowStockProducts([]);
     } finally {
       setLoading((prev) => ({ ...prev, lowStock: false }));
     }
@@ -120,13 +207,33 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
-      const res = await axios.get(`${BASE_URL}/glasses/low-stock`, {
-        withCredentials: true,
-      });
+      const { currentPage, limit } = pagination.lowStockGlasses;
+      const res = await axios.get(
+        `${BASE_URL}/glasses/low-stock?page=${currentPage}&limit=${limit}`,
+        {
+          withCredentials: true,
+        }
+      );
       if (res.status === 200) {
         setLowStockGlasses(res.data.data.lowStockGlasses || []);
+        setPagination(prev => ({
+          ...prev,
+          lowStockGlasses: {
+            ...prev.lowStockGlasses,
+            totalPages: res.data.totalPages || 1,
+            totalItems: res.data.results || 0,
+          }
+        }));
       } else {
         setLowStockGlasses([]);
+        setPagination(prev => ({
+          ...prev,
+          lowStockGlasses: {
+            ...prev.lowStockGlasses,
+            totalPages: 1,
+            totalItems: 0,
+          }
+        }));
       }
     } catch (error) {
       console.error('Error fetching low stock glasses', error);
@@ -134,6 +241,7 @@ const ExpiredProduct = () => {
         ...prev,
         lowStock: 'Failed to fetch low stock glasses',
       }));
+      setLowStockGlasses([]);
     } finally {
       setLoading((prev) => ({ ...prev, lowStock: false }));
     }
@@ -144,13 +252,33 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
-      const res = await axios.get(`${BASE_URL}/pharmacy/low-stock`, {
-        withCredentials: true,
-      });
+      const { currentPage, limit } = pagination.lowStockDrugs;
+      const res = await axios.get(
+        `${BASE_URL}/pharmacy/low-stock?page=${currentPage}&limit=${limit}`,
+        {
+          withCredentials: true,
+        }
+      );
       if (res.status === 200) {
         setLowStockDrugs(res.data.data.lowStockDrugs || []);
+        setPagination(prev => ({
+          ...prev,
+          lowStockDrugs: {
+            ...prev.lowStockDrugs,
+            totalPages: res.data.totalPages || 1,
+            totalItems: res.data.results || 0,
+          }
+        }));
       } else {
         setLowStockDrugs([]);
+        setPagination(prev => ({
+          ...prev,
+          lowStockDrugs: {
+            ...prev.lowStockDrugs,
+            totalPages: 1,
+            totalItems: 0,
+          }
+        }));
       }
     } catch (error) {
       console.error('Error fetching low stock drugs', error);
@@ -158,9 +286,32 @@ const ExpiredProduct = () => {
         ...prev,
         lowStock: 'Failed to fetch low stock drugs',
       }));
+      setLowStockDrugs([]);
     } finally {
       setLoading((prev) => ({ ...prev, lowStock: false }));
     }
+  };
+
+  // Pagination handlers
+  const handlePageChange = (tableType, page) => {
+    setPagination(prev => ({
+      ...prev,
+      [tableType]: {
+        ...prev[tableType],
+        currentPage: page,
+      }
+    }));
+  };
+
+  const handleLimitChange = (tableType, limit) => {
+    setPagination(prev => ({
+      ...prev,
+      [tableType]: {
+        ...prev[tableType],
+        limit: limit,
+        currentPage: 1, // Reset to first page when changing limit
+      }
+    }));
   };
 
   return (
@@ -265,6 +416,18 @@ const ExpiredProduct = () => {
                   </table>
                 </div>
               )}
+
+              {/* Pagination for Expired Products */}
+              {expiredProducts.length > 0 && (
+                <Pagination
+                  totalItems={pagination.expiredProducts.totalItems}
+                  totalPagesCount={pagination.expiredProducts.totalPages}
+                  itemsPerPage={pagination.expiredProducts.limit}
+                  currentPage={pagination.expiredProducts.currentPage}
+                  onPageChange={(page) => handlePageChange('expiredProducts', page)}
+                  onLimitChange={(limit) => handleLimitChange('expiredProducts', limit)}
+                />
+              )}
             </>
           )}
 
@@ -315,6 +478,18 @@ const ExpiredProduct = () => {
                     </tbody>
                   </table>
                 </div>
+              )}
+
+              {/* Pagination for Expired Drugs */}
+              {expiredDrugs.length > 0 && (
+                <Pagination
+                  totalItems={pagination.expiredDrugs.totalItems}
+                  totalPagesCount={pagination.expiredDrugs.totalPages}
+                  itemsPerPage={pagination.expiredDrugs.limit}
+                  currentPage={pagination.expiredDrugs.currentPage}
+                  onPageChange={(page) => handlePageChange('expiredDrugs', page)}
+                  onLimitChange={(limit) => handleLimitChange('expiredDrugs', limit)}
+                />
               )}
             </>
           )}
@@ -388,6 +563,18 @@ const ExpiredProduct = () => {
                   </table>
                 </div>
               )}
+
+              {/* Pagination for Low Stock Products */}
+              {lowStockProducts.length > 0 && (
+                <Pagination
+                  totalItems={pagination.lowStockProducts.totalItems}
+                  totalPagesCount={pagination.lowStockProducts.totalPages}
+                  itemsPerPage={pagination.lowStockProducts.limit}
+                  currentPage={pagination.lowStockProducts.currentPage}
+                  onPageChange={(page) => handlePageChange('lowStockProducts', page)}
+                  onLimitChange={(limit) => handleLimitChange('lowStockProducts', limit)}
+                />
+              )}
             </>
           )}
 
@@ -458,6 +645,18 @@ const ExpiredProduct = () => {
                     </tbody>
                   </table>
                 </div>
+              )}
+
+              {/* Pagination for Low Stock Glasses */}
+              {lowStockGlasses.length > 0 && (
+                <Pagination
+                  totalItems={pagination.lowStockGlasses.totalItems}
+                  totalPagesCount={pagination.lowStockGlasses.totalPages}
+                  itemsPerPage={pagination.lowStockGlasses.limit}
+                  currentPage={pagination.lowStockGlasses.currentPage}
+                  onPageChange={(page) => handlePageChange('lowStockGlasses', page)}
+                  onLimitChange={(limit) => handleLimitChange('lowStockGlasses', limit)}
+                />
               )}
             </>
           )}
@@ -535,6 +734,18 @@ const ExpiredProduct = () => {
                     </tbody>
                   </table>
                 </div>
+              )}
+
+              {/* Pagination for Low Stock Drugs */}
+              {lowStockDrugs.length > 0 && (
+                <Pagination
+                  totalItems={pagination.lowStockDrugs.totalItems}
+                  totalPagesCount={pagination.lowStockDrugs.totalPages}
+                  itemsPerPage={pagination.lowStockDrugs.limit}
+                  currentPage={pagination.lowStockDrugs.currentPage}
+                  onPageChange={(page) => handlePageChange('lowStockDrugs', page)}
+                  onLimitChange={(limit) => handleLimitChange('lowStockDrugs', limit)}
+                />
               )}
             </>
           )}
