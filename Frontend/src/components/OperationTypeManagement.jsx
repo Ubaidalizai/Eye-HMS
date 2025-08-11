@@ -147,19 +147,23 @@ const OperationTypeManagement = () => {
             required
             value={formData.type}
             onChange={handleChange}
-            className='p-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500'
+            className='p-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500 scrollable-select'
+            style={{
+              maxHeight: '200px',
+              overflowY: 'auto'
+            }}
           >
             <option value='' disabled>
               Select Type
             </option>
-            <option value='operation'>Operation</option>
-            <option value='laboratory'>Laboratory</option>
-            <option value='oct'>OCT</option>
-            <option value='biscayne'>Biscayne</option>
-            <option value='bedroom'>Bedroom</option>
-            <option value='perimetry'>Perimetry</option>
-            <option value='FA'>FA</option>
-            <option value='PRP'>Prp</option>
+            <option value='operation' className="py-2">Operation</option>
+            <option value='laboratory' className="py-2">Laboratory</option>
+            <option value='oct' className="py-2">OCT</option>
+            <option value='biscayne' className="py-2">Biscayne</option>
+            <option value='bedroom' className="py-2">Bedroom</option>
+            <option value='perimetry' className="py-2">Perimetry</option>
+            <option value='FA' className="py-2">FA</option>
+            <option value='PRP' className="py-2">Prp</option>
           </select>
         </div>
 

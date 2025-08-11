@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import ScrollableSelect from './ScrollableSelect.jsx';
 
 const FormModal = ({
   title,
@@ -132,14 +133,9 @@ const FormModal = ({
                     {field.label}
                   </label>
                   {field.type === 'select' ? (
-                    <select
+                    <ScrollableSelect
                       id={field.name}
                       name={field.name}
-                      className={`border rounded w-full h-10 px-3 focus:outline-none focus:ring transition ${
-                        errors[field.name]
-                          ? 'border-red-500'
-                          : 'border-gray-300'
-                      }`}
                       value={fieldValues[field.name] || ''}
                       onChange={(e) =>
                         setFieldValues({
@@ -147,16 +143,11 @@ const FormModal = ({
                           [field.name]: e.target.value,
                         })
                       }
-                    >
-                      <option value='' disabled>
-                        Select {field.label}
-                      </option>
-                      {field.options?.map((option, idx) => (
-                        <option key={idx} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      options={field.options || []}
+                      placeholder={`Select ${field.label}`}
+                      error={!!errors[field.name]}
+                      maxHeight="200px"
+                    />
                   ) : (
                     <input
                       id={field.name}
