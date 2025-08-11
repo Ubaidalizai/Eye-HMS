@@ -26,16 +26,45 @@ const createOperationType = asyncHandler(async (req, res) => {
 // @desc   Get all operation types
 // @route  GET /api/v1/operation-types
 const getAllOperationTypes = asyncHandler(async (req, res) => {
-  const { type, page = 1, limit = 10 } = req.query;
+  const { type, search, page, limit, all } = req.query;
 
-  const pageNumber = parseInt(page);
-  const limitNumber = parseInt(limit);
+  // Build query object
+  const query = { isDeleted: { $ne: true } }; // Exclude deleted records
+
+  // Add type filter if specified
+  if (type) {
+    query.type = type;
+  }
+
+  // Add search filter if specified (case-insensitive search by name)
+  if (search) {
+    query.name = { $regex: search, $options: 'i' };
+  }
+
+  // If 'all' parameter is provided, return all records without pagination
+  if (all === 'true') {
+    const operationTypes = await OperationType.find(query)
+      .select('-__v')
+      .sort({ name: 1 }); // Sort by name for dropdowns
+
+    return res.status(200).json({
+      success: true,
+      results: operationTypes.length,
+      data: operationTypes,
+    });
+  }
+
+  // Default paginated response
+  const pageNumber = parseInt(page) || 1;
+  const limitNumber = parseInt(limit) || 10;
   const skip = (pageNumber - 1) * limitNumber;
 
-  const query = type ? { type } : {};
-
   const [operationTypes, totalDocs] = await Promise.all([
-    OperationType.find(query).select('-__v').skip(skip).limit(limitNumber),
+    OperationType.find(query)
+      .select('-__v')
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(limitNumber),
     OperationType.countDocuments(query),
   ]);
 

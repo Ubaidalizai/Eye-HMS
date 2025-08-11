@@ -53,7 +53,7 @@ function Laboratory() {
   const fetchTypes = async () => {
       try {
         const response = await fetch(
-          `${BASE_URL}/operation-types?type=laboratory`,
+          `${BASE_URL}/operation-types?type=laboratory&all=true`,
           {
             method: 'GET',
             credentials: 'include',

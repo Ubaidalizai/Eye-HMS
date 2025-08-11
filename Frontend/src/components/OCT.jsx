@@ -29,13 +29,13 @@ function OCT() {
 
   const fetchOctTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=oct`, {
+      const response = await fetch(`${BASE_URL}/operation-types?type=oct&all=true`, {
         credentials: 'include',
       });
       const data = await response.json();
       setOctTypes(data.data);
     } catch (error) {
-      console.error('Error fetching biscayne types:', error);
+      console.error('Error fetching oct types:', error);
     }
   };
 

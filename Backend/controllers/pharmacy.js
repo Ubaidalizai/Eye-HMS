@@ -147,13 +147,32 @@ exports.checkDrugExpiry = checkExpiry(Pharmacy, 'expiryDate');
 
 // Get low stock pharmacy items
 exports.getLowStockDrugs = asyncHandler(async (req, res) => {
-  // Find pharmacy items where quantity is less than or equal to minLevel
-  const lowStockDrugs = await Pharmacy.find({
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const query = {
     $expr: { $lte: ['$quantity', '$minLevel'] },
-  }).sort({ name: 1 });
+  };
+
+  // Get paginated results and total count
+  const [lowStockDrugs, totalDocs] = await Promise.all([
+    Pharmacy.find(query)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNumber),
+    Pharmacy.countDocuments(query),
+  ]);
+
+  const totalPages = Math.ceil(totalDocs / limitNumber);
 
   res.status(200).json({
     status: 'success',
+    currentPage: pageNumber,
+    totalPages,
+    results: totalDocs,
     length: lowStockDrugs.length,
     data: { lowStockDrugs },
   });

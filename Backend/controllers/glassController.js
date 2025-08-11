@@ -168,13 +168,32 @@ const getGlassesSummary = asyncHandler(async (req, res) => {
 
 // Get low stock glasses
 const getLowStockGlasses = asyncHandler(async (req, res) => {
-  // Find glasses where quantity is less than or equal to minLevel
-  const lowStockGlasses = await Glass.find({
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const query = {
     $expr: { $lte: ['$quantity', '$minLevel'] },
-  }).sort({ name: 1 });
+  };
+
+  // Get paginated results and total count
+  const [lowStockGlasses, totalDocs] = await Promise.all([
+    Glass.find(query)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNumber),
+    Glass.countDocuments(query),
+  ]);
+
+  const totalPages = Math.ceil(totalDocs / limitNumber);
 
   res.status(200).json({
     status: 'success',
+    currentPage: pageNumber,
+    totalPages,
+    results: totalDocs,
     length: lowStockGlasses.length,
     data: { lowStockGlasses },
   });

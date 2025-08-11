@@ -64,7 +64,7 @@ function PRP() {
 
   const fetchTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=PRP`, {
+      const response = await fetch(`${BASE_URL}/operation-types?type=PRP&all=true`, {
         method: 'GET',
         credentials: 'include',
       });

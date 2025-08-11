@@ -54,7 +54,7 @@ function Operation() {
   const fetchTypes = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/operation-types?type=operation`,
+        `${BASE_URL}/operation-types?type=operation&all=true`,
         {
           method: 'GET',
           credentials: 'include',

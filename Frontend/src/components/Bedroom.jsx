@@ -52,7 +52,7 @@ function Bedroom() {
 
   const fetchTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=bedroom`, {
+      const response = await fetch(`${BASE_URL}/operation-types?type=bedroom&all=true`, {
         method: 'GET',
         credentials: 'include',
       });

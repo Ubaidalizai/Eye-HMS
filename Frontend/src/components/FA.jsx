@@ -64,7 +64,7 @@ function FA() {
 
   const fetchTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=FA`, {
+      const response = await fetch(`${BASE_URL}/operation-types?type=FA&all=true`, {
         method: 'GET',
         credentials: 'include',
       });

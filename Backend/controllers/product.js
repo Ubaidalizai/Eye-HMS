@@ -201,6 +201,7 @@ const getInventorySummary = asyncHandler(async (req, res) => {
 
 const giveProductExpireByMonth = asyncHandler(async (req, res) => {
   const months = parseInt(req.params.months, 10);
+  const { page = 1, limit = 10 } = req.query;
 
   if (isNaN(months) || months < 0) {
     return res.status(400).json({
@@ -208,6 +209,10 @@ const giveProductExpireByMonth = asyncHandler(async (req, res) => {
       message: 'Invalid months value in URL',
     });
   }
+
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
 
   const now = new Date();
   const futureDate = new Date();
@@ -222,14 +227,27 @@ const giveProductExpireByMonth = asyncHandler(async (req, res) => {
   // Ensure to include the start of the past date as the range start
   pastDate.setHours(0, 0, 0, 0);
 
-  // Find expired items that match the exact expiration date or fall within the range
-  const expiringProducts = await Product.find({
+  const query = {
     expiryDate: { $gte: pastDate, $lte: futureDate },
     stock: { $gt: 0 }, // Only products with stock available
-  });
+  };
+
+  // Get paginated results and total count
+  const [expiringProducts, totalDocs] = await Promise.all([
+    Product.find(query)
+      .sort({ expiryDate: 1 }) // Sort by expiry date (earliest first)
+      .skip(skip)
+      .limit(limitNumber),
+    Product.countDocuments(query),
+  ]);
+
+  const totalPages = Math.ceil(totalDocs / limitNumber);
 
   res.status(200).json({
     status: 'success',
+    currentPage: pageNumber,
+    totalPages,
+    results: totalDocs,
     length: expiringProducts.length,
     data: { expiringProducts },
   });
@@ -237,13 +255,32 @@ const giveProductExpireByMonth = asyncHandler(async (req, res) => {
 
 // Get low stock products
 const getLowStockProducts = asyncHandler(async (req, res) => {
-  // Find products where stock is less than or equal to minLevel
-  const lowStockProducts = await Product.find({
+  const { page = 1, limit = 10 } = req.query;
+
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const query = {
     $expr: { $lte: ['$stock', '$minLevel'] },
-  }).sort({ name: 1 });
+  };
+
+  // Get paginated results and total count
+  const [lowStockProducts, totalDocs] = await Promise.all([
+    Product.find(query)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNumber),
+    Product.countDocuments(query),
+  ]);
+
+  const totalPages = Math.ceil(totalDocs / limitNumber);
 
   res.status(200).json({
     status: 'success',
+    currentPage: pageNumber,
+    totalPages,
+    results: totalDocs,
     length: lowStockProducts.length,
     data: { lowStockProducts },
   });

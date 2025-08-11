@@ -1,12 +1,60 @@
 import { useState, useEffect, useContext } from 'react';
 import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
-import AddPurchaseDetails from "../components/AddPurchaseDetails.jsx";
-import AuthContext from "../AuthContext.jsx";
+import AddPurchaseDetails from '../components/AddPurchaseDetails.jsx';
+import AuthContext from '../AuthContext.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import { HiSearch } from 'react-icons/hi';
-import Pagination from "../components/Pagination.jsx";
+import Pagination from '../components/Pagination.jsx';
 import { BASE_URL } from '../config';
-import EditPurchaseDetails from "../components/EditPurchaseDetails.jsx";
+import EditPurchaseDetails from '../components/EditPurchaseDetails.jsx';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
+
+const monthLabels = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+// Generate year options from 2022 to current year
+const generateYearOptions = () => {
+  const currentYear = new Date().getFullYear();
+  const startYear = 2022; // Starting year for the application
+  const years = [];
+
+  for (let year = currentYear; year >= startYear; year--) {
+    years.push(year);
+  }
+
+  return years;
+};
 
 function PurchaseDetails() {
   const [showPurchaseModal, setPurchaseModal] = useState(false);
@@ -21,16 +69,35 @@ function PurchaseDetails() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [summaryType, setSummaryType] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [summary, setSummary] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
+    if (summaryType === 'monthly') {
+      fetchMonthlyPurchase();
+    } else {
+      fetchYearlyPurchase();
+    }
     const delayDebounceFn = setTimeout(() => {
       fetchPurchaseData();
     }, 500); // Debounce search query (500ms delay)
     fetchProductsData();
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, currentPage, category, limit]);
+  }, [
+    searchTerm,
+    currentPage,
+    category,
+    limit,
+    selectedCategory,
+    selectedMonth,
+    selectedYear,
+    summaryType,
+  ]);
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
@@ -52,6 +119,10 @@ function PurchaseDetails() {
         // If category is selected and allowed, add it
         if (category && allowedCategories.includes(category)) {
           baseUrl += `&category=${category}`;
+        } else if (category === 'drug') {
+          // If drug is somehow selected (shouldn't happen with UI restrictions), exclude it
+          const categoryFilter = allowedCategories.join(',');
+          baseUrl += `&category=${categoryFilter}`;
         } else {
           // If no specific valid category selected, include all allowed categories
           const categoryFilter = allowedCategories.join(','); // Join the allowed categories into a comma-separated string
@@ -157,6 +228,147 @@ function PurchaseDetails() {
   const handlePurchaseSuccess = () => {
     toast.success('Purchase added successfully!');
     fetchPurchaseData(); // refresh list
+  };
+
+  const fetchMonthlyPurchase = async () => {
+    try {
+      const userRole = authContext.user.role;
+      const allowedCategories = ['frame', 'glass', 'sunglasses'];
+
+      // Build URL with role-based filtering
+      let url = `${BASE_URL}/purchase/${selectedYear}/${selectedMonth}?category=${selectedCategory}`;
+
+      // For receptionist users, restrict to allowed categories if no specific category is selected
+      if (userRole === 'receptionist') {
+        if (!selectedCategory) {
+          // If no category selected, include all allowed categories
+          const categoryFilter = allowedCategories.join(',');
+          url = `${BASE_URL}/purchase/${selectedYear}/${selectedMonth}?category=${categoryFilter}`;
+        } else if (selectedCategory === 'drug') {
+          // If drug is somehow selected (shouldn't happen with UI restrictions), exclude it
+          const categoryFilter = allowedCategories.join(',');
+          url = `${BASE_URL}/purchase/${selectedYear}/${selectedMonth}?category=${categoryFilter}`;
+        }
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchYearlyPurchase = async () => {
+    try {
+      const userRole = authContext.user.role;
+      const allowedCategories = ['frame', 'glass', 'sunglasses'];
+
+      // Build URL with role-based filtering
+      let url = `${BASE_URL}/purchase/${selectedYear}?category=${selectedCategory}`;
+
+      // For receptionist users, restrict to allowed categories if no specific category is selected
+      if (userRole === 'receptionist') {
+        if (!selectedCategory) {
+          // If no category selected, include all allowed categories
+          const categoryFilter = allowedCategories.join(',');
+          url = `${BASE_URL}/purchase/${selectedYear}?category=${categoryFilter}`;
+        } else if (selectedCategory === 'drug') {
+          // If drug is somehow selected (shouldn't happen with UI restrictions), exclude it
+          const categoryFilter = allowedCategories.join(',');
+          url = `${BASE_URL}/purchase/${selectedYear}?category=${categoryFilter}`;
+        }
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.data); // Assuming the backend returns a "summary" field
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleSummaryTypeChange = (e) => {
+    setSummaryType(e.target.value);
+  };
+
+  const handleMonthChange = (e) => {
+    setSelectedMonth(Number(e.target.value));
+    // Refetch data when month changes
+    fetchMonthlyPurchase();
+  };
+
+  const handleYearChange = (e) => {
+    setSelectedYear(Number(e.target.value));
+    // Refetch data when year changes
+    if (summaryType === 'monthly') {
+      fetchMonthlyPurchase();
+    } else {
+      fetchYearlyPurchase();
+    }
+  };
+
+  // Function to get the number of days in a month
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const getBarChartData = () => {
+    let labels, data;
+
+    if (summaryType === 'yearly') {
+      // For yearly summary, use month labels
+      labels = monthLabels;
+      data = summary || Array(12).fill(0);
+    } else {
+      // For monthly summary, dynamically calculate the number of days
+      const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+
+      // If we have data, use it; otherwise create an array of zeros with the correct length
+      data = summary || Array(daysInMonth).fill(0);
+
+      // Ensure data length matches the days in month (in case the API returns a fixed array)
+      if (data.length !== daysInMonth) {
+        // If API returns more data than needed, truncate it
+        if (data.length > daysInMonth) {
+          data = data.slice(0, daysInMonth);
+        }
+        // If API returns less data than needed, pad with zeros
+        else if (data.length < daysInMonth) {
+          data = [...data, ...Array(daysInMonth - data.length).fill(0)];
+        }
+      }
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Purchase',
+          data,
+          backgroundColor: 'rgb(0, 179, 255)',
+          borderColor: 'rgb(0, 179, 255)',
+          borderWidth: 1,
+        },
+      ],
+    };
   };
 
   return (
@@ -406,6 +618,155 @@ function PurchaseDetails() {
             onPageChange={(page) => setCurrentPage(page)}
             onLimitChange={(limit) => setLimit(limit)}
           />
+        </div>
+
+
+        {/* Chart Section */}
+        <div className='bg-white border rounded-lg shadow-sm p-4 sm:p-6 mb-6'>
+          <h2 className='text-lg sm:text-xl font-semibold text-gray-800 mb-4'>
+            Purchase Summary
+          </h2>
+
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+            <div className='w-full sm:w-auto'>
+              <label
+                htmlFor='category'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
+                Filter by Category
+              </label>
+              <select
+                id='category'
+                name='category'
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className='block w-full sm:w-48 h-10 pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              >
+                <option value=''>All Categories</option>
+                {authContext.user.role === 'admin' && (
+                  <option value='drug'>Drug</option>
+                )}
+                <option value='sunglasses'>Sunglasses</option>
+                <option value='glass'>Glass</option>
+                <option value='frame'>Frame</option>
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor='summary-type'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
+                Summary Type
+              </label>
+              <select
+                id='summary-type'
+                className='w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+                onChange={handleSummaryTypeChange}
+                value={summaryType}
+              >
+                <option value='monthly'>Monthly Summary</option>
+                <option value='yearly'>Yearly Summary</option>
+              </select>
+            </div>
+            {summaryType === 'monthly' && (
+              <div>
+                <label
+                  htmlFor='month-select'
+                  className='block text-sm font-medium text-gray-700 mb-1'
+                >
+                  Select Month
+                </label>
+                <select
+                  id='month-select'
+                  className='w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+                  onChange={handleMonthChange}
+                  value={selectedMonth}
+                >
+                  {monthLabels.map((label, index) => (
+                    <option key={index} value={index + 1}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {/* Always show Year filter for both yearly and monthly views */}
+            <div>
+              <label
+                htmlFor='year-select'
+                className='block text-sm font-medium text-gray-700 mb-1'
+              >
+                Select Year
+              </label>
+              <select
+                id='year-select'
+                className='w-full h-10 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white'
+                value={selectedYear}
+                onChange={handleYearChange}
+              >
+                {generateYearOptions().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className='w-full h-[300px] sm:h-[350px] lg:h-[400px]'>
+            <Bar
+              data={getBarChartData()}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                    labels: {
+                      boxWidth: 12,
+                      padding: 15,
+                      font: {
+                        size: 12,
+                      },
+                    },
+                  },
+                  title: {
+                    display: true,
+                    text:
+                      summaryType === 'yearly'
+                        ? `Yearly Summary for ${
+                            selectedCategory || 'All Categories'
+                          } (${selectedYear})`
+                        : `Monthly Summary for ${
+                            selectedCategory || 'All Categories'
+                          } (${
+                            monthLabels[selectedMonth - 1]
+                          } ${selectedYear})`,
+                    font: {
+                      size: 14,
+                    },
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      font: {
+                        size: 11,
+                      },
+                    },
+                  },
+                  x: {
+                    ticks: {
+                      font: {
+                        size: 11,
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
