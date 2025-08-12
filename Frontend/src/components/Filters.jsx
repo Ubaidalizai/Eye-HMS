@@ -3,15 +3,12 @@ import SelectInput from "../components/SelectInput.jsx";
 
 export const Filters = ({
   categories,
-  models,
   monthLabels,
   summaryType,
   selectedCategory,
-  selectedModel,
   selectedMonth,
   selectedYear,
   setSelectedCategory,
-  setSelectedModel,
   setSummaryType,
   setSelectedMonth,
   setSelectedYear,
@@ -101,25 +98,6 @@ export const Filters = ({
             aria-label='Select category'
           />
         </div>
-        {models.length > 1 && (
-          <div>
-            <label
-              htmlFor='model-filter'
-              className='block text-sm font-medium text-gray-700 mb-1'
-            >
-              Data Type
-            </label>
-            <SelectInput
-              id='model-filter'
-              options={models.map((m) => ({
-                value: m,
-                label: m.charAt(0).toUpperCase() + m.slice(1),
-              }))}
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-            />
-          </div>
-        )}
         <div>
           <label
             htmlFor='summary-type'

@@ -1,5 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { BASE_URL } from '../config';
+
+// Constant categories for income
+const constantCategories = [
+  'drug',
+  'sunglasses',
+  'glass',
+  'frame',
+  'oct',
+  'opd',
+  'laboratory',
+  'bedroom',
+  'ultrasound',
+  'operation',
+  'yeglizer',
+  'perimetry',
+  'FA',
+  'PRP',
+];
 
 const CategorySelector = ({
   value,
@@ -10,7 +28,7 @@ const CategorySelector = ({
   className = "",
   error = null
 }) => {
-  const [categories, setCategories] = useState([]);
+  const [apiCategories, setApiCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +36,29 @@ const CategorySelector = ({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Combine constant categories with API categories for income type
+  const categories = useMemo(() => {
+    if (type === 'income') {
+      // Get category names from the API categories
+      const apiCategoryNames = apiCategories.map((cat) => cat.name.toLowerCase());
+
+      // Create constant category objects for those not already in API
+      const constantCategoryObjects = constantCategories
+        .filter(constCat => !apiCategoryNames.includes(constCat.toLowerCase()))
+        .map(constCat => ({
+          _id: `constant-${constCat}`,
+          name: constCat,
+          type: 'income'
+        }));
+
+      // Combine API categories with constant categories
+      return [...apiCategories, ...constantCategoryObjects];
+    }
+
+    // For non-income types, just return API categories
+    return apiCategories;
+  }, [apiCategories, type]);
 
   useEffect(() => {
     fetchCategories();
@@ -107,14 +148,14 @@ const CategorySelector = ({
       const data = await response.json();
 
       if (response.ok) {
-        setCategories(data.data.results || []);
+        setApiCategories(data.data.results || []);
       } else {
         console.error('Failed to fetch categories:', data.message);
-        setCategories([]);
+        setApiCategories([]);
       }
     } catch (error) {
       console.error('Failed to fetch categories:', error);
-      setCategories([]);
+      setApiCategories([]);
     } finally {
       setLoading(false);
     }

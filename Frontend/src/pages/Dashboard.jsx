@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import useFetchData from '../components/useFetchData';
 import BarChart from "../components/BarChart.jsx";
+import IncomeCategoryChart from "../components/IncomeCategoryChart.jsx";
 import { Filters } from "../components/Filters.jsx";
 import SummaryCard from "../components/SummaryCard.jsx";
 import MoveHistory from "./MoveHistory.jsx";
@@ -22,9 +23,11 @@ const constantCategories = [
   'ultrasound',
   'operation',
   'yeglizer',
+  'perimetry',
+  'FA',
+  'PRP',
 ];
 
-const models = []; // Remove ]; // Re since it's the only optionve 'income' since it's the only option
 const monthLabels = [
   'January',
   'February',
@@ -198,7 +201,6 @@ function Dashboard() {
       <div className='mt-8 mb-6'>
         <Filters
           categories={categoryOptions}
-          models={models}
           monthLabels={monthLabels}
           summaryType={summaryType}
           selectedCategory={selectedCategory}
@@ -214,7 +216,7 @@ function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className='grid grid-cols-1 gap-6 mb-8'>
+      <div className='grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8'>
         <BarChart
           data={getBarChartData}
           title={`${
@@ -225,6 +227,14 @@ function Dashboard() {
                 } ${selectedYear})`
           }`}
         />
+
+        {/* Income Category Pie Chart - Only show for income model */}
+        {selectedModel === 'income' && (
+          <IncomeCategoryChart
+            title="Income by Category"
+            className="xl:max-w-none"
+          />
+        )}
       </div>
 
       {/* Tables Section */}

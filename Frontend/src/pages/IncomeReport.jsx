@@ -212,7 +212,7 @@ export default function IncomeReport() {
                 income.map((item) => (
                   <tr key={item._id} className='hover:bg-gray-50'>
                     <td className='px-4 py-3 whitespace-nowrap text-gray-900'>
-                      {item.totalNetIncome}
+                      {item.totalNetIncome?.toFixed(2)}
                     </td>
                     <td className='px-4 py-3 whitespace-nowrap text-gray-700'>
                       {item.date.split('T')[0]}

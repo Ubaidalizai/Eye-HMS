@@ -9,6 +9,7 @@ const {
   filterIncomeByYear,
   filterIncomeByYearAndMonth,
   getIncomeCategoryTotal,
+  getIncomeTotalsByCategory,
 } = require('../controllers/IncomeController');
 const {
   authenticate,
@@ -17,6 +18,7 @@ const {
 
 router.use(authenticate, authorizeAdmin);
 router.get('/categoryIncome', getIncomeCategoryTotal);
+router.get('/categories/totals', getIncomeTotalsByCategory);
 
 router.get('/:year', filterIncomeByYear);
 router.get('/:year/:month', filterIncomeByYearAndMonth);
