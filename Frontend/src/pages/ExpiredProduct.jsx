@@ -21,6 +21,9 @@ const ExpiredProduct = () => {
     lowStock: null,
   });
 
+  // Filter states for low stock tables
+  const [lowStockFilter, setLowStockFilter] = useState('all'); // 'all', 'critical', 'low'
+
   // Pagination states for each table
   const [pagination, setPagination] = useState({
     expiredProducts: { currentPage: 1, totalPages: 1, limit: 10, totalItems: 0 },
@@ -314,6 +317,26 @@ const ExpiredProduct = () => {
     }));
   };
 
+  // Filter functions for low stock items
+  const filterLowStockItems = (items) => {
+    if (lowStockFilter === 'critical') {
+      return items.filter(item => {
+        const stockValue = item.stock !== undefined ? item.stock : item.quantity;
+        return stockValue === 0;
+      });
+    } else if (lowStockFilter === 'low') {
+      return items.filter(item => {
+        const stockValue = item.stock !== undefined ? item.stock : item.quantity;
+        return stockValue > 0;
+      });
+    }
+    return items; // 'all' - return all items
+  };
+
+  const getFilteredLowStockProducts = () => filterLowStockItems(lowStockProducts);
+  const getFilteredLowStockGlasses = () => filterLowStockItems(lowStockGlasses);
+  const getFilteredLowStockDrugs = () => filterLowStockItems(lowStockDrugs);
+
   return (
     <div className='container mx-auto p-4'>
       <h3 className='text-2xl font-medium mb-4'>Inventory Monitoring</h3>
@@ -499,12 +522,48 @@ const ExpiredProduct = () => {
       {/* Low Stock Items Tab Content */}
       {activeTab === 'lowStock' && (
         <div>
+          {/* Filter Controls */}
+          <div className='mb-6 bg-gray-50 p-4 rounded-lg'>
+            <h3 className='text-lg font-medium mb-3'>Filter Low Stock Items</h3>
+            <div className='flex flex-wrap gap-2'>
+              <button
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  lowStockFilter === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setLowStockFilter('all')}
+              >
+                All Items
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  lowStockFilter === 'critical'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setLowStockFilter('critical')}
+              >
+                Out of Stock
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  lowStockFilter === 'low'
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setLowStockFilter('low')}
+              >
+                Low Stock
+              </button>
+            </div>
+          </div>
           {/* Low Stock Products Table (Admin only) */}
           {user.role === 'admin' && (
             <>
               <h2 className='text-lg font-medium mb-4'>Low Stock Products</h2>
-              {lowStockProducts.length === 0 ? (
-                <p>No low stock products available.</p>
+              {getFilteredLowStockProducts().length === 0 ? (
+                <p>No low stock products available for the selected filter.</p>
               ) : (
                 <div className='overflow-x-auto mb-8'>
                   <table className='min-w-full border-collapse border border-gray-300 text-left'>
@@ -527,7 +586,7 @@ const ExpiredProduct = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {lowStockProducts.map((product) => (
+                      {getFilteredLowStockProducts().map((product) => (
                         <tr key={product._id} className='hover:bg-gray-100'>
                           <td className='border border-gray-300 p-2'>
                             {product.name}
@@ -547,12 +606,16 @@ const ExpiredProduct = () => {
                           <td className='border border-gray-300 p-2'>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                product.stock <= product.minLevel * 0.5
+                                product.stock === 0
                                   ? 'bg-red-100 text-red-800'
+                                  : product.stock <= product.minLevel * 0.5
+                                  ? 'bg-orange-100 text-orange-800'
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}
                             >
-                              {product.stock <= product.minLevel * 0.5
+                              {product.stock === 0
+                                ? 'Out of Stock'
+                                : product.stock <= product.minLevel * 0.5
                                 ? 'Critical'
                                 : 'Low'}
                             </span>
@@ -565,7 +628,7 @@ const ExpiredProduct = () => {
               )}
 
               {/* Pagination for Low Stock Products */}
-              {lowStockProducts.length > 0 && (
+              {getFilteredLowStockProducts().length > 0 && (
                 <Pagination
                   totalItems={pagination.lowStockProducts.totalItems}
                   totalPagesCount={pagination.lowStockProducts.totalPages}
@@ -582,8 +645,8 @@ const ExpiredProduct = () => {
           {(user.role === 'admin' || user.role === 'receptionist') && (
             <>
               <h2 className='text-lg font-medium mb-4'>Low Stock Glasses</h2>
-              {lowStockGlasses.length === 0 ? (
-                <p>No low stock glasses available.</p>
+              {getFilteredLowStockGlasses().length === 0 ? (
+                <p>No low stock glasses available for the selected filter.</p>
               ) : (
                 <div className='overflow-x-auto mb-8'>
                   <table className='min-w-full border-collapse border border-gray-300 text-left'>
@@ -607,7 +670,7 @@ const ExpiredProduct = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {lowStockGlasses.map((glass) => (
+                      {getFilteredLowStockGlasses().map((glass) => (
                         <tr key={glass._id} className='hover:bg-gray-100'>
                           <td className='border border-gray-300 p-2'>
                             {glass.name}
@@ -630,12 +693,16 @@ const ExpiredProduct = () => {
                           <td className='border border-gray-300 p-2'>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                glass.quantity <= glass.minLevel * 0.5
+                                glass.quantity === 0
                                   ? 'bg-red-100 text-red-800'
+                                  : glass.quantity <= glass.minLevel * 0.5
+                                  ? 'bg-orange-100 text-orange-800'
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}
                             >
-                              {glass.quantity <= glass.minLevel * 0.5
+                              {glass.quantity === 0
+                                ? 'Out of Stock'
+                                : glass.quantity <= glass.minLevel * 0.5
                                 ? 'Critical'
                                 : 'Low'}
                             </span>
@@ -648,7 +715,7 @@ const ExpiredProduct = () => {
               )}
 
               {/* Pagination for Low Stock Glasses */}
-              {lowStockGlasses.length > 0 && (
+              {getFilteredLowStockGlasses().length > 0 && (
                 <Pagination
                   totalItems={pagination.lowStockGlasses.totalItems}
                   totalPagesCount={pagination.lowStockGlasses.totalPages}
@@ -669,8 +736,8 @@ const ExpiredProduct = () => {
               <h2 className='text-lg font-medium mb-4'>
                 Low Stock Pharmacy Items
               </h2>
-              {lowStockDrugs.length === 0 ? (
-                <p>No low stock pharmacy items available.</p>
+              {getFilteredLowStockDrugs().length === 0 ? (
+                <p>No low stock pharmacy items available for the selected filter.</p>
               ) : (
                 <div className='overflow-x-auto'>
                   <table className='min-w-full border-collapse border border-gray-300 text-left'>
@@ -696,7 +763,7 @@ const ExpiredProduct = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {lowStockDrugs.map((drug) => (
+                      {getFilteredLowStockDrugs().map((drug) => (
                         <tr key={drug._id} className='hover:bg-gray-100'>
                           <td className='border border-gray-300 p-2'>
                             {drug.name}
@@ -719,12 +786,16 @@ const ExpiredProduct = () => {
                           <td className='border border-gray-300 p-2'>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                drug.quantity <= drug.minLevel * 0.5
+                                drug.quantity === 0
                                   ? 'bg-red-100 text-red-800'
+                                  : drug.quantity <= drug.minLevel * 0.5
+                                  ? 'bg-orange-100 text-orange-800'
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}
                             >
-                              {drug.quantity <= drug.minLevel * 0.5
+                              {drug.quantity === 0
+                                ? 'Out of Stock'
+                                : drug.quantity <= drug.minLevel * 0.5
                                 ? 'Critical'
                                 : 'Low'}
                             </span>
@@ -737,7 +808,7 @@ const ExpiredProduct = () => {
               )}
 
               {/* Pagination for Low Stock Drugs */}
-              {lowStockDrugs.length > 0 && (
+              {getFilteredLowStockDrugs().length > 0 && (
                 <Pagination
                   totalItems={pagination.lowStockDrugs.totalItems}
                   totalPagesCount={pagination.lowStockDrugs.totalPages}

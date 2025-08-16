@@ -9,7 +9,7 @@ const constantCategories = [
   'frame',
   'oct',
   'opd',
-  'laboratory',
+  'labocratory',
   'bedroom',
   'ultrasound',
   'operation',

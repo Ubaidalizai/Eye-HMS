@@ -37,6 +37,7 @@ const operationTypeRoute = require('./routes/operationTypeRoutes');
 const pharmacyTotalSalesRoute = require('./routes/pharmacySalesTotalRoutes');
 const pharmacyLogRoute = require('./routes/pharmacyLogRoutes');
 const glassesRoutes = require('./routes/glassesRoutes');
+const dailySummaryRoutes = require('./routes/dailySummaryRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const perimetryRoute = require('./routes/perimetryRoutes');
 const FARoute = require('./routes/FARoutes');
@@ -126,6 +127,7 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/perimetry', perimetryRoute);
 app.use('/api/v1/FA', FARoute);
 app.use('/api/v1/PRP', PRPRoute);
+app.use('/api/v1/daily-summary', dailySummaryRoutes);
 
 app.all('*', (req, res) => {
   throw new AppError(`Can't find ${req.originalUrl} on this server!`, 404);

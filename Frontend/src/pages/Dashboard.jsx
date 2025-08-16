@@ -6,6 +6,7 @@ import { Filters } from "../components/Filters.jsx";
 import SummaryCard from "../components/SummaryCard.jsx";
 import MoveHistory from "./MoveHistory.jsx";
 import PharmacyLogs from "../components/PharmacyLogs.jsx";
+import DailySummaryTable from "../components/DailySummaryTable.jsx";
 import { BASE_URL } from '../config';
 import { useAuth } from "../AuthContext.jsx";
 
@@ -197,6 +198,11 @@ function Dashboard() {
         )}
       </div>
 
+      {/* Daily Summary Table */}
+      <div className='mt-8 mb-6'>
+        <DailySummaryTable />
+      </div>
+
       {/* Filters Section */}
       <div className='mt-8 mb-6'>
         <Filters
@@ -216,24 +222,29 @@ function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className='grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8'>
-        <BarChart
-          data={getBarChartData}
-          title={`${
-            summaryType === 'yearly'
-              ? `Yearly Summary for ${selectedModel} (${selectedYear})`
-              : `Monthly Summary for ${selectedModel} (${
-                  monthLabels[selectedMonth - 1]
-                } ${selectedYear})`
-          }`}
-        />
+      <div className='space-y-6 mb-8'>
+        {/* Bar Chart - Full Width */}
+        <div className='w-full'>
+          <BarChart
+            data={getBarChartData}
+            title={`${
+              summaryType === 'yearly'
+                ? `Yearly Summary for ${selectedModel} (${selectedYear})`
+                : `Monthly Summary for ${selectedModel} (${
+                    monthLabels[selectedMonth - 1]
+                  } ${selectedYear})`
+            }`}
+          />
+        </div>
 
         {/* Income Category Pie Chart - Only show for income model */}
         {selectedModel === 'income' && (
-          <IncomeCategoryChart
-            title="Income by Category"
-            className="xl:max-w-none"
-          />
+          <div className='w-full'>
+            <IncomeCategoryChart
+              title="Income by Category"
+              className="w-full"
+            />
+          </div>
         )}
       </div>
 
