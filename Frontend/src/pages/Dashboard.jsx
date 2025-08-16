@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import useFetchData from '../components/useFetchData';
 import BarChart from "../components/BarChart.jsx";
+import IncomeCategoryChart from "../components/IncomeCategoryChart.jsx";
 import { Filters } from "../components/Filters.jsx";
 import SummaryCard from "../components/SummaryCard.jsx";
 import MoveHistory from "./MoveHistory.jsx";
 import PharmacyLogs from "../components/PharmacyLogs.jsx";
+import DailySummaryTable from "../components/DailySummaryTable.jsx";
 import { BASE_URL } from '../config';
 import { useAuth } from "../AuthContext.jsx";
 
@@ -22,9 +24,11 @@ const constantCategories = [
   'ultrasound',
   'operation',
   'yeglizer',
+  'perimetry',
+  'FA',
+  'PRP',
 ];
 
-const models = []; // Remove ]; // Re since it's the only optionve 'income' since it's the only option
 const monthLabels = [
   'January',
   'February',
@@ -194,11 +198,15 @@ function Dashboard() {
         )}
       </div>
 
+      {/* Daily Summary Table */}
+      <div className='mt-8 mb-6'>
+        <DailySummaryTable />
+      </div>
+
       {/* Filters Section */}
       <div className='mt-8 mb-6'>
         <Filters
           categories={categoryOptions}
-          models={models}
           monthLabels={monthLabels}
           summaryType={summaryType}
           selectedCategory={selectedCategory}
@@ -214,17 +222,30 @@ function Dashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className='grid grid-cols-1 gap-6 mb-8'>
-        <BarChart
-          data={getBarChartData}
-          title={`${
-            summaryType === 'yearly'
-              ? `Yearly Summary for ${selectedModel} (${selectedYear})`
-              : `Monthly Summary for ${selectedModel} (${
-                  monthLabels[selectedMonth - 1]
-                } ${selectedYear})`
-          }`}
-        />
+      <div className='space-y-6 mb-8'>
+        {/* Bar Chart - Full Width */}
+        <div className='w-full'>
+          <BarChart
+            data={getBarChartData}
+            title={`${
+              summaryType === 'yearly'
+                ? `Yearly Summary for ${selectedModel} (${selectedYear})`
+                : `Monthly Summary for ${selectedModel} (${
+                    monthLabels[selectedMonth - 1]
+                  } ${selectedYear})`
+            }`}
+          />
+        </div>
+
+        {/* Income Category Pie Chart - Only show for income model */}
+        {selectedModel === 'income' && (
+          <div className='w-full'>
+            <IncomeCategoryChart
+              title="Income by Category"
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
 
       {/* Tables Section */}

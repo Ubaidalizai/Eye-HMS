@@ -95,6 +95,57 @@ const getIncomeCategoryTotal = asyncHandler(async (req, res) => {
   });
 });
 
+// Get income totals by all categories for pie chart
+const getIncomeTotalsByCategory = asyncHandler(async (req, res) => {
+  const { year, month } = req.query;
+
+  // Build match criteria based on date filters
+  let matchCriteria = {};
+
+  if (year && month) {
+    const { startDate, endDate } = getDateRangeForMonth(year, month);
+    matchCriteria.date = { $gte: startDate, $lte: endDate };
+  } else if (year) {
+    const { startDate, endDate } = getDateRangeForYear(year);
+    matchCriteria.date = { $gte: startDate, $lte: endDate };
+  }
+
+  const categoryTotals = await Income.aggregate([
+    { $match: matchCriteria },
+    {
+      $group: {
+        _id: '$category',
+        total: { $sum: '$totalNetIncome' },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        category: '$_id',
+        total: 1,
+        count: 1,
+        _id: 0
+      }
+    },
+    { $sort: { total: -1 } } // Sort by total descending
+  ]);
+
+  // If no data found, return empty array
+  if (!categoryTotals || categoryTotals.length === 0) {
+    return res.status(200).json({
+      success: true,
+      data: [],
+      message: 'No income data found for the specified period'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: categoryTotals,
+    totalCategories: categoryTotals.length
+  });
+});
+
 // Create new income record
 const createIncome = asyncHandler(async (req, res) => {
   const { totalNetIncome, category, description, date } = req.body;
@@ -194,4 +245,5 @@ module.exports = {
   filterIncomeByYear,
   filterIncomeByYearAndMonth,
   getIncomeCategoryTotal,
+  getIncomeTotalsByCategory,
 };

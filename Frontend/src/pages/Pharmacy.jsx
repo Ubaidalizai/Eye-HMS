@@ -458,18 +458,18 @@ const Pharmacy = () => {
             <div className='px-4 py-5 sm:p-6'>
               {/* Responsive grid for summary cards */}
               <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4'>
-                <div className='bg-blue-100 overflow-hidden shadow rounded-lg'>
+                <div className='bg-blue-100 overflow-hidden shadow rounded-lg min-w-0'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
                         <FaDollarSign className='h-5 w-5 text-white' />
                       </div>
-                      <div className='ml-5 w-0 flex-1'>
+                      <div className='ml-5 min-w-0 flex-1'>
                         <dl>
-                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                          <dt className='text-sm font-medium text-gray-500 break-words'>
                             Total Available Value
                           </dt>
-                          <dd className='text-lg font-medium text-gray-900'>
+                          <dd className='text-lg font-medium text-gray-900 break-words'>
                             {drugSummary.totalSalePrice}
                           </dd>
                         </dl>
@@ -477,18 +477,18 @@ const Pharmacy = () => {
                     </div>
                   </div>
                 </div>
-                <div className='bg-blue-100 overflow-hidden shadow rounded-lg'>
+                <div className='bg-blue-100 overflow-hidden shadow rounded-lg min-w-0'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
                         <FaBoxOpen className='h-5 w-5 text-white' />
                       </div>
-                      <div className='ml-5 w-0 flex-1'>
+                      <div className='ml-5 min-w-0 flex-1'>
                         <dl>
-                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                          <dt className='text-sm font-medium text-gray-500 break-words'>
                             Total Items
                           </dt>
-                          <dd className='text-lg font-medium text-gray-900'>
+                          <dd className='text-lg font-medium text-gray-900 break-words'>
                             {drugSummary.length}
                           </dd>
                         </dl>
@@ -496,18 +496,18 @@ const Pharmacy = () => {
                     </div>
                   </div>
                 </div>
-                <div className='bg-green-100 overflow-hidden shadow rounded-lg'>
+                <div className='bg-green-100 overflow-hidden shadow rounded-lg min-w-0'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-green-500 rounded-md p-3'>
                         <FaBoxes className='h-5 w-5 text-white' />
                       </div>
-                      <div className='ml-5 w-0 flex-1'>
+                      <div className='ml-5 min-w-0 flex-1'>
                         <dl>
-                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                          <dt className='text-sm font-medium text-gray-500 break-words'>
                             Total Quantity
                           </dt>
-                          <dd className='text-lg font-medium text-gray-900'>
+                          <dd className='text-lg font-medium text-gray-900 break-words'>
                             {drugSummary.totalQuantity}
                           </dd>
                         </dl>
@@ -515,18 +515,18 @@ const Pharmacy = () => {
                     </div>
                   </div>
                 </div>
-                <div className='bg-yellow-100 overflow-hidden shadow rounded-lg'>
+                <div className='bg-yellow-100 overflow-hidden shadow rounded-lg min-w-0'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-yellow-500 rounded-md p-3'>
                         <FaExclamationTriangle className='h-5 w-5 text-white' />
                       </div>
-                      <div className='ml-5 w-0 flex-1'>
+                      <div className='ml-5 min-w-0 flex-1'>
                         <dl>
-                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                          <dt className='text-sm font-medium text-gray-500 break-words'>
                             Low Stock Items
                           </dt>
-                          <dd className='text-lg font-medium text-gray-900'>
+                          <dd className='text-lg font-medium text-gray-900 break-words'>
                             {drugSummary.lowQuantityCount}
                           </dd>
                         </dl>
@@ -534,18 +534,18 @@ const Pharmacy = () => {
                     </div>
                   </div>
                 </div>
-                <div className='bg-yellow-100 overflow-hidden shadow rounded-lg'>
+                <div className='bg-yellow-100 overflow-hidden shadow rounded-lg min-w-0'>
                   <div className='px-4 py-5 sm:p-6'>
                     <div className='flex items-center'>
                       <div className='flex-shrink-0 bg-blue-500 rounded-md p-3'>
                         <FaDollarSign className='h-5 w-5 text-white' />
                       </div>
-                      <div className='ml-5 w-0 flex-1'>
+                      <div className='ml-5 min-w-0 flex-1'>
                         <dl>
-                          <dt className='text-sm font-medium text-gray-500 truncate'>
+                          <dt className='text-sm font-medium text-gray-500 break-words'>
                             Total Sale Amount
                           </dt>
-                          <dd className='text-lg font-medium text-gray-900'>
+                          <dd className='text-lg font-medium text-gray-900 break-words'>
                             {pharmacySaleTotal}
                           </dd>
                         </dl>

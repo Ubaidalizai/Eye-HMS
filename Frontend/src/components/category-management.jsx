@@ -17,11 +17,12 @@ export default function CategoryManagement({ filterType = null }) {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterTypeState, setFilterTypeState] = useState(filterType || '');
 
   // Fetch categories on component mount
   useEffect(() => {
     fetchCategories();
-  }, [currentPage, limit]);
+  }, [currentPage, limit, filterTypeState]);
 
   // Hide toast after 3 seconds
   useEffect(() => {
@@ -38,9 +39,9 @@ export default function CategoryManagement({ filterType = null }) {
     setLoading(true);
     try {
       let url = `${BASE_URL}/categories?page=${currentPage}&limit=${limit}`;
-      // If filterType is specified, add type query parameter
-      if (filterType) {
-        url += `&type=${filterType}`;
+      // If filterTypeState is specified, add type query parameter
+      if (filterTypeState) {
+        url += `&type=${filterTypeState}`;
       }
 
       const response = await fetch(url, {
@@ -230,17 +231,8 @@ export default function CategoryManagement({ filterType = null }) {
       <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-6 border-b border-gray-200'>
         <div>
           <h2 className='text-xl font-semibold text-gray-800'>
-            {filterType
-              ? `${filterType.charAt(0).toUpperCase() + filterType.slice(1)} Category Management`
-              : 'Financial Category Management'
-            }
+            Expenses and Income category management
           </h2>
-          <p className='text-sm text-gray-600 mt-1'>
-            {filterType
-              ? `Manage ${filterType} categories`
-              : 'Manage categories for expenses and income'
-            }
-          </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -264,9 +256,24 @@ export default function CategoryManagement({ filterType = null }) {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Filter by Type UI */}
       <div className='p-4 sm:p-4'>
-        {loading && categories.length === 0 ? (
+        <div className="mb-4">
+          <label className="mr-2 font-medium">Filter by Type:</label>
+          <select
+            value={filterTypeState}
+            onChange={e => {
+              setCurrentPage(1);
+              setFilterTypeState(e.target.value);
+            }}
+            className="border rounded px-2 py-1 min-w-[140px]"
+          >
+            <option value="">All</option>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+  {loading && categories.length === 0 ? (
           <div className='flex justify-center items-center h-64'>
             <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600'></div>
           </div>

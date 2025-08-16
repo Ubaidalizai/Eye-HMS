@@ -161,7 +161,7 @@ const formatFieldValue = (fieldName, value) => {
       ? value
       : numericValue.toFixed(2);
     return (
-      <span className='text-gray-800 font-semibold'>${formattedValue}</span>
+      <span className='text-gray-800 font-semibold'>{formattedValue}</span>
     );
   }
 
