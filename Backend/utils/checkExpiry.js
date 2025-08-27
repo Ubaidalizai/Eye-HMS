@@ -1,5 +1,4 @@
 const asyncHandler = require('../middlewares/asyncHandler');
-const Product = require('../models/product');
 
 const checkExpiry = (Model, fieldName) =>
   asyncHandler(async (req, res) => {
@@ -19,7 +18,7 @@ const checkExpiry = (Model, fieldName) =>
       [filterByStock]: { $gt: 0 },
     });
 
-    // Filter products that are expiring soon
+    // Filter products that are expiring soon OR already expired
     const expiringSoon = products.filter((product) => {
       const rawDate = product[fieldName];
       if (!rawDate) return false;
@@ -29,16 +28,21 @@ const checkExpiry = (Model, fieldName) =>
 
       const notifyDays = product.expireNotifyDuration || 0;
 
-      // Notify if expiryDate is within the next notifyDays days
+      // Check if product is already expired
+      if (expiryDate < currentDate) {
+        return true; // Include already expired products
+      }
+
+      // Check if product is expiring within the notify duration
       const notifyThreshold = new Date(
         currentDate.getTime() + notifyDays * 24 * 60 * 60 * 1000
       );
-      return expiryDate <= notifyThreshold && expiryDate >= currentDate;
+      return expiryDate <= notifyThreshold;
     });
 
     if (expiringSoon.length === 0) {
       return res.status(200).json({
-        message: 'No items needing expiry notification',
+        message: 'No expired or expiring items found',
         currentPage: pageNumber,
         totalPages: 0,
         results: 0,
@@ -47,13 +51,43 @@ const checkExpiry = (Model, fieldName) =>
       });
     }
 
-    // Apply pagination to the filtered results
-    const totalDocs = expiringSoon.length;
+    // Categorize products into expired and expiring
+    const categorizedProducts = expiringSoon.map(product => {
+      const expiryDate = new Date(product[fieldName]);
+      const isExpired = expiryDate < currentDate;
+      const daysUntilExpiry = Math.ceil((expiryDate - currentDate) / (1000 * 60 * 60 * 24));
+
+      return {
+        ...product.toObject(),
+        isExpired,
+        daysUntilExpiry,
+        expiryStatus: isExpired ? 'expired' : 'expiring'
+      };
+    });
+
+    // Sort: expired products first (by how long expired), then expiring products (by expiry date)
+    const sortedProducts = categorizedProducts.sort((a, b) => {
+      // If both are expired, sort by expiry date (most recently expired first)
+      if (a.isExpired && b.isExpired) {
+        return new Date(b[fieldName]) - new Date(a[fieldName]);
+      }
+      // If both are expiring, sort by expiry date (soonest first)
+      if (!a.isExpired && !b.isExpired) {
+        return new Date(a[fieldName]) - new Date(b[fieldName]);
+      }
+      // Expired products come first
+      return a.isExpired ? -1 : 1;
+    });
+
+    // Apply pagination to the sorted results
+    const totalDocs = sortedProducts.length;
     const totalPages = Math.ceil(totalDocs / limitNumber);
     const skip = (pageNumber - 1) * limitNumber;
-    const paginatedResults = expiringSoon
-      .sort((a, b) => new Date(a[fieldName]) - new Date(b[fieldName])) // Sort by expiry date
-      .slice(skip, skip + limitNumber);
+    const paginatedResults = sortedProducts.slice(skip, skip + limitNumber);
+
+    // Count expired vs expiring
+    const expiredCount = sortedProducts.filter(p => p.isExpired).length;
+    const expiringCount = sortedProducts.filter(p => !p.isExpired).length;
 
     res.status(200).json({
       status: 'success',
@@ -61,6 +95,11 @@ const checkExpiry = (Model, fieldName) =>
       totalPages,
       results: totalDocs,
       length: paginatedResults.length,
+      summary: {
+        total: totalDocs,
+        expired: expiredCount,
+        expiring: expiringCount
+      },
       expiringSoon: paginatedResults,
     });
   });

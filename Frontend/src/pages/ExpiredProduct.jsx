@@ -405,6 +405,9 @@ const ExpiredProduct = () => {
                           Expiry Date
                         </th>
                         <th className='border border-gray-300 p-2'>
+                          Status
+                        </th>
+                        <th className='border border-gray-300 p-2'>
                           Description
                         </th>
                       </tr>
@@ -429,6 +432,28 @@ const ExpiredProduct = () => {
                           </td>
                           <td className='border border-gray-300 p-2'>
                             {product.expiryDate.split('T')[0]}
+                          </td>
+                          <td className='border border-gray-300 p-2'>
+                            {(() => {
+                              const expiryDate = new Date(product.expiryDate);
+                              const currentDate = new Date();
+                              const isExpired = expiryDate < currentDate;
+                              const daysUntilExpiry = Math.ceil((expiryDate - currentDate) / (1000 * 60 * 60 * 24));
+
+                              if (isExpired) {
+                                return (
+                                  <span className='px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800'>
+                                    Expired ({Math.abs(daysUntilExpiry)} days ago)
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <span className='px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'>
+                                    Expires in {daysUntilExpiry} days
+                                  </span>
+                                );
+                              }
+                            })()}
                           </td>
                           <td className='border border-gray-300 p-2'>
                             {product.description}
@@ -474,7 +499,13 @@ const ExpiredProduct = () => {
                           Sale Price
                         </th>
                         <th className='border border-gray-300 p-2'>
+                          Expiry Duration
+                        </th>
+                        <th className='border border-gray-300 p-2'>
                           Expiry Date
+                        </th>
+                        <th className='border border-gray-300 p-2'>
+                          Status
                         </th>
                       </tr>
                     </thead>
@@ -494,7 +525,32 @@ const ExpiredProduct = () => {
                             {drug.salePrice}
                           </td>
                           <td className='border border-gray-300 p-2'>
+                            {drug.expireNotifyDuration || 0} days
+                          </td>
+                          <td className='border border-gray-300 p-2'>
                             {drug.expiryDate.split('T')[0]}
+                          </td>
+                          <td className='border border-gray-300 p-2'>
+                            {(() => {
+                              const expiryDate = new Date(drug.expiryDate);
+                              const currentDate = new Date();
+                              const isExpired = expiryDate < currentDate;
+                              const daysUntilExpiry = Math.ceil((expiryDate - currentDate) / (1000 * 60 * 60 * 24));
+
+                              if (isExpired) {
+                                return (
+                                  <span className='px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800'>
+                                    Expired ({Math.abs(daysUntilExpiry)} days ago)
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <span className='px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'>
+                                    Expires in {daysUntilExpiry} days
+                                  </span>
+                                );
+                              }
+                            })()}
                           </td>
                         </tr>
                       ))}

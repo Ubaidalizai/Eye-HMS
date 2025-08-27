@@ -130,6 +130,13 @@ function Yeglizer() {
     }
   };
 
+  // Calculate correct total for printing (original price - discount, without doctor percentage)
+  const calculatePrintTotal = (record) => {
+    const originalPrice = record.price || 0;
+    const discount = record.discount || 0;
+    return originalPrice - discount;
+  };
+
   const fields = [
     { label: 'Patient', type: 'text', name: 'patientId' },
     { label: 'Time', type: 'time', name: 'time' },
@@ -218,6 +225,7 @@ function Yeglizer() {
           fields={AllFields}
           handleEdit={handleEdit}
           handleRemove={handleRemove}
+          calculatePrintTotal={calculatePrintTotal}
         />
       </div>
 

@@ -85,7 +85,8 @@ const createBedroom = asyncHandler(async (req, res, next) => {
     if (discount > 0) {
       const discountResult = await calculatePercentage(
         req.body.totalAmount,
-        discount
+        discount,
+        true
       );
       req.body.totalAmount = discountResult.finalPrice;
     }
@@ -290,13 +291,9 @@ const deleteBedroom = asyncHandler(async (req, res, next) => {
 });
 
 const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
-  const patientID = req.params.patientID;
-  const results = await getPatientRecordsByPatientID(patientID, Bedroom);
-
-  res.status(200).json({
-    success: true,
-    data: results,
-  });
+  req.Model = Bedroom;
+  const result = await getPatientRecordsByPatientID(req, res);
+  res.status(200).json({data: result});
 });
 
 const getBedroomDoctors = asyncHandler(async (req, res, next) => {
