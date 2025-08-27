@@ -18,8 +18,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
   const [showBill, setShowBill] = useState(false);
   const [openAddSale, setOpenAddSale] = useState(true);
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
-  const [category, setCatagory] = useState('');
-  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
 
   const [soldItems, setSoldItems] = useState({
     date: '',
@@ -31,7 +30,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
 
   useEffect(() => {
     fetchProductsData();
-  }, [category]);
+  }, []);
 
   const fetchProductsData = async () => {
     try {
@@ -50,22 +49,34 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
           throw new Error(`Pharmacy error: ${pharmacyRes.status}`);
 
         const pharmacyData = await pharmacyRes.json();
-        results = pharmacyData.data.results;
+        // Add category property to pharmacy products
+        const pharmacyProducts = pharmacyData.data.results.map(product => ({
+          ...product,
+          category: 'drug'
+        }));
+        results = pharmacyProducts;
 
-        // 👓 For Receptionist: fetch only glasses products
+        // 👓 For Receptionist: fetch all glasses products (all categories)
       } else if (userRole === 'receptionist') {
-        const glassesUrl = `${BASE_URL}/glasses?checkQuantity=true&category=${category}`;
+        // Fetch all categories of glasses
+        const categories = ['sunglasses', 'glass', 'frame'];
+        for (const cat of categories) {
+          const glassesUrl = `${BASE_URL}/glasses?checkQuantity=true&category=${cat}`;
+          const glassesRes = await fetch(glassesUrl, {
+            credentials: 'include',
+            method: 'GET',
+          });
 
-        const glassesRes = await fetch(glassesUrl, {
-          credentials: 'include',
-          method: 'GET',
-        });
-
-        if (!glassesRes.ok)
-          throw new Error(`Glasses error: ${glassesRes.status}`);
-
-        const glassesData = await glassesRes.json();
-        results = glassesData.data.results;
+          if (glassesRes.ok) {
+            const glassesData = await glassesRes.json();
+            // Ensure category property is set correctly
+            const glassesProducts = glassesData.data.results.map(product => ({
+              ...product,
+              category: product.category || cat
+            }));
+            results = results.concat(glassesProducts);
+          }
+        }
 
         // For Admin or other roles: fetch both (optional fallback)
       } else {
@@ -75,24 +86,38 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
           credentials: 'include',
           method: 'GET',
         });
-        if (!pharmacyRes.ok)
-          throw new Error(`Pharmacy error: ${pharmacyRes.status}`);
-        const pharmacyData = await pharmacyRes.json();
-        results = results.concat(pharmacyData.data.results);
+        if (pharmacyRes.ok) {
+          const pharmacyData = await pharmacyRes.json();
+          // Add category property to pharmacy products
+          const pharmacyProducts = pharmacyData.data.results.map(product => ({
+            ...product,
+            category: 'drug'
+          }));
+          results = results.concat(pharmacyProducts);
+        }
 
-        // Fetch glasses
-        const glassesUrl = `${BASE_URL}/glasses?checkQuantity=true&category=${category}`;
-        const glassesRes = await fetch(glassesUrl, {
-          credentials: 'include',
-          method: 'GET',
-        });
-        if (!glassesRes.ok)
-          throw new Error(`Glasses error: ${glassesRes.status}`);
-        const glassesData = await glassesRes.json();
-        results = results.concat(glassesData.data.results);
+        // Fetch all categories of glasses
+        const categories = ['sunglasses', 'glass', 'frame'];
+        for (const cat of categories) {
+          const glassesUrl = `${BASE_URL}/glasses?checkQuantity=true&category=${cat}`;
+          const glassesRes = await fetch(glassesUrl, {
+            credentials: 'include',
+            method: 'GET',
+          });
+
+          if (glassesRes.ok) {
+            const glassesData = await glassesRes.json();
+            // Ensure category property is set correctly
+            const glassesProducts = glassesData.data.results.map(product => ({
+              ...product,
+              category: product.category || cat
+            }));
+            results = results.concat(glassesProducts);
+          }
+        }
       }
 
-      setProducts(results);
+      setAllProducts(results);
     } catch (err) {
       console.error('Error fetching products:', err);
     }
@@ -107,8 +132,10 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
               [name]: value,
               category:
                 name === 'productRefId'
-                  ? products.find((product) => product._id === value)
-                      ?.category || 'drug'
+                  ? allProducts.find((product) => product._id === value)
+                      ?.category || sale.category
+                  : name === 'category'
+                  ? value
                   : sale.category,
             }
           : sale
@@ -118,6 +145,23 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
 
   const isSaleValid = () => {
     return sales.every((sale) => sale.productRefId && sale.quantity > 0);
+  };
+
+  // Get filtered products based on selected category for a specific sale item
+  const getFilteredProducts = (saleCategory) => {
+
+    // If no category selected, show all products (respecting role permissions)
+    if (!saleCategory) {
+      return allProducts;
+    }
+
+    // If category selected, filter by that category
+    const filtered = allProducts.filter(product => {
+      const matches = product.category === saleCategory;
+      return matches;
+    });
+
+    return filtered;
   };
 
   const sendSalesToBackend = async (sales) => {
@@ -161,7 +205,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
     try {
       // Inject category into each sale item
       const salesWithCategory = sales.map((sale) => {
-        const product = products.find((p) => p._id === sale.productRefId);
+        const product = allProducts.find((p) => p._id === sale.productRefId);
         return {
           ...sale,
           category: product?.category || sale.category || '',
@@ -261,16 +305,22 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                   id={`category-${index}`}
                                   name='category'
                                   onChange={(e) => {
-                                    setCatagory(e.target.value);
+                                    handleInputChange(index, 'category', e.target.value);
                                   }}
-                                  value={category}
+                                  value={sale.category}
                                   className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 h-10 focus:ring-blue-500 focus:border-blue-500'
                                 >
-                                  <option value=''>Select a category</option>
-                                  <option value='drug'>Drug</option>
-                                  <option value='sunglasses'>Sunglasses</option>
-                                  <option value='glass'>Glass</option>
-                                  <option value='frame'>Frame</option>
+                                  <option value=''>All Categories</option>
+                                  {authContext?.user?.role !== 'receptionist' && (
+                                    <option value='drug'>Drug</option>
+                                  )}
+                                  {authContext?.user?.role !== 'pharmacist' && (
+                                    <>
+                                      <option value='sunglasses'>Sunglasses</option>
+                                      <option value='glass'>Glass</option>
+                                      <option value='frame'>Frame</option>
+                                    </>
+                                  )}
                                 </select>
                               </div>
                             )}
@@ -315,13 +365,13 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                   }),
                                 }}
                                 value={
-                                  products.find(
+                                  allProducts.find(
                                     (product) =>
                                       product._id === sale.productRefId
                                   )
                                     ? {
                                         value: sale.productRefId,
-                                        label: products.find(
+                                        label: allProducts.find(
                                           (product) =>
                                             product._id === sale.productRefId
                                         ).name,
@@ -335,11 +385,11 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                     selectedOption ? selectedOption.value : ''
                                   );
                                 }}
-                                options={products.map((product) => ({
+                                options={getFilteredProducts(sale.category).map((product) => ({
                                   value: product._id,
-                                  label: product.name,
+                                  label: `${product.name}${product.category ? ` (${product.category})` : ''}`,
                                 }))}
-                                placeholder='Search or select product'
+                                placeholder={sale.category ? `Search ${sale.category} products` : 'Search or select product'}
                                 isClearable
                               />
                             </div>

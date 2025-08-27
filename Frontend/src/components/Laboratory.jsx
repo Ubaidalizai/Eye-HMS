@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import FormModal from "../components/FormModal.jsx";
+import MultipleRecordModal from "../components/MultipleRecordModal.jsx";
 import DataTable from "../components/DataTable.jsx";
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaPrint, FaTimes, FaLayerGroup } from 'react-icons/fa';
+import PrintModal from "../components/PrintModal.jsx";
 import Pagination from "./Pagination.jsx";
 import { useAuth } from "../AuthContext.jsx";
 import { BASE_URL } from '../config';
@@ -24,6 +26,11 @@ function Laboratory() {
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedDate, setSelectedDate] = useState('');
+  const [selectedRecords, setSelectedRecords] = useState([]);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [isMultipleMode, setIsMultipleMode] = useState(false);
+  const [newlyCreatedRecords, setNewlyCreatedRecords] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -110,6 +117,153 @@ function Laboratory() {
     setCurrentPage(1); // Reset to first page when date changes
   };
 
+  const handleRecordSelection = (record, isSelected) => {
+    if (isSelected) {
+      setSelectedRecords(prev => [...prev, record]);
+    } else {
+      setSelectedRecords(prev => prev.filter(r => r._id !== record._id));
+    }
+  };
+
+  const handleSelectAll = (records, isSelected) => {
+    if (isSelected) {
+      setSelectedRecords(prev => {
+        const newRecords = records.filter(record =>
+          !prev.some(selected => selected._id === record._id)
+        );
+        return [...prev, ...newRecords];
+      });
+    } else {
+      setSelectedRecords(prev =>
+        prev.filter(selected =>
+          !records.some(record => record._id === selected._id)
+        )
+      );
+    }
+  };
+
+  const handlePrintSelected = () => {
+    if (selectedRecords.length > 0) {
+      setShowPrintModal(true);
+    }
+  };
+
+  const closePrintModal = () => {
+    setShowPrintModal(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedRecords([]);
+  };
+
+  // Calculate correct total for printing (original price - discount, without doctor percentage)
+  const calculatePrintTotal = (record) => {
+    const originalPrice = record.price || 0;
+    const discount = record.discount || 0;
+    return originalPrice - discount;
+  };
+
+  // Calculate total for all selected records for printing
+  const calculateSelectedRecordsPrintTotal = () => {
+    return selectedRecords.reduce((sum, record) => sum + calculatePrintTotal(record), 0);
+  };
+
+  // Handle multiple type selection
+  const handleTypeSelection = (typeId, isSelected) => {
+    if (isSelected) {
+      setSelectedTypes(prev => [...prev, typeId]);
+    } else {
+      setSelectedTypes(prev => prev.filter(id => id !== typeId));
+    }
+  };
+
+  // Calculate total amount for selected types
+  const calculateTotalAmount = () => {
+    return selectedTypes.reduce((total, typeId) => {
+      const type = typesData.find(t => t._id === typeId);
+      return total + (type?.price || 0);
+    }, 0);
+  };
+
+  // Submit multiple records
+  const handleMultipleSubmit = async () => {
+    if (selectedTypes.length === 0) {
+      alert('Please select at least one type');
+      return;
+    }
+
+    if (!patientId || !date || !time || !doctor) {
+      alert('Please fill all required fields');
+      return;
+    }
+
+    // Show confirmation with discount distribution info
+    const totalAmount = calculateTotalAmount();
+    const discountAmount = parseFloat(discount) || 0;
+
+    if (discountAmount > 0) {
+      const confirmMessage = `You are creating ${selectedTypes.length} records with a total amount of ${totalAmount}.\n\nThe discount of ${discountAmount} will be distributed proportionally across all records.\n\nDo you want to continue?`;
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+    }
+
+    try {
+      // Prepare records array for the new backend endpoint
+      const records = selectedTypes.map(typeId => ({
+        patientId,
+        type: typeId,
+        date,
+        time,
+        doctor,
+        discount: discount || 0
+      }));
+
+      // Call the new multiple records endpoint
+      const response = await fetch(`${BASE_URL}/labratory/multiple`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ records }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          errorData = { message: errorText };
+        }
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to create multiple records`);
+      }
+
+      const result = await response.json();
+      const createdRecords = result.data;
+
+      if (createdRecords && createdRecords.length > 0) {
+        // Close modal first
+        setIsOpen(false);
+        clearForm();
+
+        // Refresh data
+        await fetchData();
+
+        // Then set the records and show print modal
+        setNewlyCreatedRecords(createdRecords);
+        setShowPrintModal(true);
+      } else {
+        throw new Error('No records returned from backend');
+      }
+
+    } catch (error) {
+      console.error('Error creating multiple records:', error);
+      alert(`Error creating records: ${error.message}`);
+    }
+  };
+
   const handleCancel = () => {
     clearForm();
     setIsOpen(false);
@@ -124,6 +278,9 @@ function Laboratory() {
     setDiscount(0);
     setEditMode(false);
     setEditIndex(null);
+    setSelectedTypes([]);
+    setIsMultipleMode(false);
+    setNewlyCreatedRecords([]);
   };
 
   const handleEdit = (index) => {
@@ -216,37 +373,66 @@ function Laboratory() {
     <div className='p-6 min-h-screen'>
       <h2 className='font-semibold text-xl mb-6'>Laboratory</h2>
 
-      <div className='flex justify-end mb-[-4.3rem]'>
+      <div className='flex flex-col sm:flex-row justify-end items-stretch sm:items-center mb-4 gap-2 sm:gap-3'>
+        <button
+          onClick={() => {
+            clearForm();
+            setIsMultipleMode(true);
+            setIsOpen(true);
+          }}
+          className='inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 whitespace-nowrap'
+        >
+          <FaLayerGroup className='mr-2 flex-shrink-0' />
+          <span className='hidden sm:inline'>Add Multiple Records</span>
+          <span className='sm:hidden'>Multiple</span>
+        </button>
         <button
           onClick={() => {
             clearForm();
             setIsOpen(true);
           }}
-          className='inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 mr-5 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+          className='inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 whitespace-nowrap'
         >
-          <FaPlus className='mr-2' /> Add Record
+          <FaPlus className='mr-2 flex-shrink-0' />
+          <span className='hidden sm:inline'>Add Single Record</span>
+          <span className='sm:hidden'>Single</span>
         </button>
       </div>
 
-      <FormModal
-        title={editMode ? 'Edit Lab Record' : 'Lab Record'}
-        isOpen={isOpen}
-        handleCancel={handleCancel}
-        fields={fields}
-        fieldValues={fieldValues}
-        setFieldValues={setFieldValues}
-        url={
-          editMode
-            ? `${BASE_URL}/labratory/${patientId}`
-            : `${BASE_URL}/labratory/`
-        }
-        method={editMode ? 'PATCH' : 'POST'}
-        withCredentials={true}
-        fetchData={fetchData}
-      />
+      {!isMultipleMode ? (
+        <FormModal
+          title={editMode ? 'Edit Lab Record' : 'Lab Record'}
+          isOpen={isOpen}
+          handleCancel={handleCancel}
+          fields={fields}
+          fieldValues={fieldValues}
+          setFieldValues={setFieldValues}
+          url={
+            editMode
+              ? `${BASE_URL}/labratory/${patientId}`
+              : `${BASE_URL}/labratory/`
+          }
+          method={editMode ? 'PATCH' : 'POST'}
+          withCredentials={true}
+          fetchData={fetchData}
+        />
+      ) : (
+        <MultipleRecordModal
+          isOpen={isOpen}
+          onClose={handleCancel}
+          fields={fields}
+          fieldValues={fieldValues}
+          setFieldValues={setFieldValues}
+          typesData={typesData}
+          selectedTypes={selectedTypes}
+          onTypeSelection={handleTypeSelection}
+          onSubmit={handleMultipleSubmit}
+          title="Add Multiple Laboratory Records"
+        />
+      )}
 
       {/* Search and date filter */}
-      <div className='mt-8 mb-5 flex flex-col sm:flex-row gap-4'>
+      <div className='mt-6 mb-5 flex flex-col sm:flex-row gap-4'>
         <input
           type='text'
           placeholder='Search by Patient ID...'
@@ -274,12 +460,38 @@ function Laboratory() {
         </div>
       </div>
 
+      {/* Selection Actions */}
+      {selectedRecords.length > 0 && (
+        <div className='mb-4 flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200'>
+          <span className='text-sm text-gray-700 font-medium'>
+            {selectedRecords.length} record{selectedRecords.length !== 1 ? 's' : ''} selected
+          </span>
+          <button
+            onClick={handlePrintSelected}
+            className='inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500'
+          >
+            <FaPrint className='mr-2' /> Print Selected
+          </button>
+          <button
+            onClick={clearSelection}
+            className='inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500'
+          >
+            <FaTimes className='mr-2' /> Clear Selection
+          </button>
+        </div>
+      )}
+
       <DataTable
         title={'Laboratory'}
         submittedData={submittedData}
         fields={AllFields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
+        selectedRecords={selectedRecords}
+        onRecordSelection={handleRecordSelection}
+        onSelectAll={handleSelectAll}
+        showCheckboxes={true}
+        calculatePrintTotal={calculatePrintTotal}
       />
       <Pagination
         totalItems={submittedData.length}
@@ -290,6 +502,43 @@ function Laboratory() {
         onLimitChange={(limit) => setLimit(limit)}
       />
 
+
+      {/* Print Modal for Selected Records */}
+      {showPrintModal && selectedRecords.length > 0 && (
+        <PrintModal
+          title="Laboratory Records"
+          selectedRecord={{
+            records: selectedRecords,
+            totalAmount: calculateSelectedRecordsPrintTotal(),
+            patientName: selectedRecords[0]?.patientId?.name || 'Multiple Patients',
+            recordCount: selectedRecords.length
+          }}
+          fields={AllFields}
+          onClose={closePrintModal}
+          isMultipleRecords={true}
+          calculatePrintTotal={calculatePrintTotal}
+        />
+      )}
+
+      {/* Print Modal for Newly Created Records */}
+      {showPrintModal && newlyCreatedRecords.length > 0 && selectedRecords.length === 0 && (
+        <PrintModal
+          title="Laboratory Records"
+          selectedRecord={{
+            records: newlyCreatedRecords,
+            totalAmount: newlyCreatedRecords.reduce((sum, record) => sum + calculatePrintTotal(record), 0),
+            patientName: newlyCreatedRecords[0]?.patientId?.name || 'Patient',
+            recordCount: newlyCreatedRecords.length
+          }}
+          fields={AllFields}
+          onClose={() => {
+            setShowPrintModal(false);
+            setNewlyCreatedRecords([]);
+          }}
+          isMultipleRecords={true}
+          calculatePrintTotal={calculatePrintTotal}
+        />
+      )}
 
       {/* Laboratory Income Chart */}
       <div className='mt-10 mb-8'>

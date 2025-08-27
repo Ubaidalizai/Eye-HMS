@@ -21,7 +21,7 @@ const bedroomSchema = new mongoose.Schema(
       required: true,
     },
     percentage: { type: Number, required: true, default: 0, min: 0, max: 100 },
-    discount: { type: Number, required: true, default: 0, min: 0, max: 100 },
+    discount: { type: Number, required: true, default: 0, min: 0 },
     totalAmount: { type: Number, required: true },
   },
   { timestamps: true }

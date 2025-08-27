@@ -42,7 +42,7 @@ function Bedroom() {
       const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
-      console.log(data);
+      
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (error) {
@@ -105,6 +105,13 @@ function Bedroom() {
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setCurrentPage(1); // Reset to first page when date changes
+  };
+
+  // Calculate correct total for printing (original price - discount, without doctor percentage)
+  const calculatePrintTotal = (record) => {
+    const originalPrice = record.price || 0;
+    const discount = record.discount || 0;
+    return originalPrice - discount;
   };
 
   const handleCancel = () => {
@@ -274,6 +281,7 @@ function Bedroom() {
         fields={AllFields}
         handleEdit={handleEdit}
         handleRemove={handleRemove}
+        calculatePrintTotal={calculatePrintTotal}
       />
 
       {/* Responsive pagination */}

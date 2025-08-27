@@ -10,7 +10,7 @@ const generateToken = (res, userId) => {
   res.cookie('jwt', token, {
     httpOnly: true, // Cookie is only accessible by the server
     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    sameSite: 'Lax', // Prevent CSRF attacks by restricting cross-site requests
+    sameSite: 'Strict', // Prevent CSRF attacks by restricting cross-site requests
     maxAge: parseInt(process.env.COOKIE_MAX_AGE, 10), // 1 day in milliseconds
   });
 

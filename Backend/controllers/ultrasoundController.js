@@ -87,7 +87,8 @@ const addRecord = asyncHandler(async (req, res, next) => {
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
         req.body.totalAmount,
-        req.body.discount
+        req.body.discount,
+        true
       );
       req.body.totalAmount = result.finalPrice;
     }
@@ -236,13 +237,9 @@ const deleteRecord = asyncHandler(async (req, res, next) => {
 });
 
 const fetchRecordsByPatientId = asyncHandler(async (req, res) => {
-  const patientID = req.params.patientID;
-  const results = await getPatientRecordsByPatientID(patientID, Ultrasound);
-
-  res.status(200).json({
-    success: true,
-    data: results,
-  });
+  req.Model = Ultrasound;
+  const result = await getPatientRecordsByPatientID(req, res);
+  res.status(200).json({data: result});
 });
 
 const getUltrasoundDoctors = asyncHandler(async (req, res, next) => {

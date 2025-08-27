@@ -16,7 +16,7 @@ const octSchema = new mongoose.Schema(
       ref: 'OperationType',
       required: true,
     },
-    discount: { type: Number, default: 0, min: 0, max: 100 },
+    discount: { type: Number, default: 0, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
   },
   { timestamps: true }

@@ -4,6 +4,7 @@ const DoctorKhata = require('../models/doctorKhataModel');
 const Income = require('../models/incomeModule');
 const User = require('../models/userModel');
 const DoctorBranchAssignment = require('../models/doctorBranchModel');
+const operationTypeModel = require('../models/operationTypeModel');
 const mongoose = require('mongoose');
 const calculatePercentage = require('../utils/calculatePercentage');
 const asyncHandler = require('../middlewares/asyncHandler');
@@ -12,7 +13,6 @@ const getAll = require('./handleFactory');
 const { getDataByYear, getDataByMonth } = require('../utils/branchesStatics');
 const getPatientRecordsByPatientID = require('../utils/searchBranches');
 const getDoctorsByBranch = require('../utils/getDoctorsByBranch');
-const operationTypeModel = require('../models/operationTypeModel');
 
 const getLaboratoryDataByYear = asyncHandler(async (req, res) => {
   const { year } = req.params;
@@ -91,7 +91,8 @@ const createLabRecord = asyncHandler(async (req, res) => {
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
         req.body.totalAmount,
-        req.body.discount
+        req.body.discount,
+        true
       );
       req.body.totalAmount = result.finalPrice;
     }
@@ -301,10 +302,172 @@ const getLaboratoryDoctors = asyncHandler(async (req, res, next) => {
   });
 });
 
+// Create multiple lab records at once
+const createMultipleLabRecords = asyncHandler(async (req, res) => {
+  const { records } = req.body; // Array of record objects
+
+  if (!Array.isArray(records) || records.length === 0) {
+    throw new AppError('Records array is required and must not be empty', 400);
+  }
+
+  // Start a MongoDB transaction session
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const createdRecords = [];
+
+    // Step 1: Calculate total amount before discount for all records
+    let totalAmountBeforeDiscount = 0;
+    const recordsWithCalculations = [];
+
+    for (const record of records) {
+      const { patientId, doctor, time, date, discount, type } = record;
+
+      // Validate patient
+      const patient = await Patient.findOne({ patientID: patientId }).session(session);
+      if (!patient) {
+        throw new AppError(`Patient ${patientId} not found`, 404);
+      }
+
+      // Validate doctor assignment
+      const doctorAssignment = await DoctorBranchAssignment.findOne({
+        doctorId: doctor,
+        branchModel: 'labratoryModule',
+      }).session(session);
+      if (!doctorAssignment) {
+        throw new AppError(`Doctor not assigned to laboratory branch`, 403);
+      }
+
+      // Validate operation type
+      const findOperationType = await operationTypeModel.findById(type).session(session);
+      if (!findOperationType) {
+        throw new AppError(`Operation type ${type} not found`, 403);
+      }
+
+      // Calculate amount after doctor percentage but before discount
+      let totalAmount = findOperationType.price;
+      let doctorPercentage = doctorAssignment.percentage || 0;
+
+      if (doctorPercentage > 0) {
+        const result = await calculatePercentage(findOperationType.price, doctorPercentage);
+        totalAmount = result.finalPrice;
+        doctorPercentage = result.percentageAmount;
+      }
+
+      recordsWithCalculations.push({
+        ...record,
+        patient,
+        doctorAssignment,
+        findOperationType,
+        totalAmountBeforeDiscount: totalAmount,
+        doctorPercentageAmount: doctorPercentage,
+      });
+
+      totalAmountBeforeDiscount += totalAmount;
+    }
+
+    // Step 2: Calculate proportional discount for each record
+    const totalDiscount = records[0]?.discount || 0; // Get discount from first record (same for all)
+
+    for (let i = 0; i < recordsWithCalculations.length; i++) {
+      const recordData = recordsWithCalculations[i];
+      let finalAmount = recordData.totalAmountBeforeDiscount;
+
+      // Apply proportional discount if total discount > 0
+      if (totalDiscount > 0 && totalAmountBeforeDiscount > 0) {
+        const proportionalDiscount = (recordData.totalAmountBeforeDiscount / totalAmountBeforeDiscount) * totalDiscount;
+        finalAmount = recordData.totalAmountBeforeDiscount - proportionalDiscount;
+        recordData.proportionalDiscount = proportionalDiscount;
+      } else {
+        recordData.proportionalDiscount = 0;
+      }
+
+      recordData.finalAmount = finalAmount;
+    }
+
+    // Step 3: Create records with calculated amounts
+
+    for (const recordData of recordsWithCalculations) {
+      const { patient, doctorAssignment, findOperationType, finalAmount, proportionalDiscount, doctorPercentageAmount } = recordData;
+      const { doctor, time, date, type } = recordData;
+
+      // Step 4: Create Laboratory Record with calculated amounts
+      const laboratory = new Laboratory({
+        patientId: patient._id,
+        doctor,
+        percentage: doctorAssignment.percentage,
+        price: findOperationType.price,
+        type,
+        time,
+        date,
+        discount: proportionalDiscount, // Store the proportional discount for this record
+        totalAmount: finalAmount,
+      });
+      await laboratory.save({ session });
+
+      // Step 5: Create DoctorKhata Record
+      if (doctorPercentageAmount > 0) {
+        await DoctorKhata.create([{
+          branchNameId: laboratory._id,
+          branchModel: 'labratoryModule',
+          doctorId: doctor,
+          amount: doctorPercentageAmount,
+          date,
+          amountType: 'income',
+        }], { session });
+      }
+
+      // Step 6: Create Income Record
+      if (laboratory.totalAmount > 0) {
+        await Income.create([{
+          saleId: laboratory._id,
+          saleModel: 'labratoryModule',
+          date,
+          totalNetIncome: laboratory.totalAmount,
+          category: 'laboratory',
+          description: 'Laboratory income',
+        }], { session });
+      }
+
+      createdRecords.push(laboratory._id);
+    }
+
+    // Commit transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    // Fetch the created records with populated fields
+    const populatedRecords = await Laboratory.find({
+      _id: { $in: createdRecords }
+    })
+    .populate('patientId', 'name patientID')
+    .populate('doctor', 'firstName lastName')
+    .populate('type', 'name')
+    .sort({ createdAt: -1 });
+
+    // Send success response with populated records
+    res.status(201).json({
+      success: true,
+      message: `${createdRecords.length} lab records created successfully`,
+      data: populatedRecords,
+    });
+
+  } catch (error) {
+    // Rollback transaction on error
+    await session.abortTransaction();
+    session.endSession();
+
+    const errorMessage = error.message || 'Failed to create lab records';
+    throw new AppError(errorMessage, error.statusCode || 500);
+  }
+});
+
 module.exports = {
   getLaboratoryDataByYear,
   getLaboratoryDataByMonth,
   createLabRecord,
+  createMultipleLabRecords,
   getAllLabRecords,
   getLabRecordByPatientId,
   updateLabRecordById,

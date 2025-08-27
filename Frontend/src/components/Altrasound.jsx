@@ -131,6 +131,13 @@ function Ultrasound() {
     setCurrentPage(1); // Reset to first page when date changes
   };
 
+  // Calculate correct total for printing (original price - discount, without doctor percentage)
+  const calculatePrintTotal = (record) => {
+    const originalPrice = record.price || 0;
+    const discount = record.discount || 0;
+    return originalPrice - discount;
+  };
+
   const handleFormSubmit = async () => {
     const formData = new FormData();
     Object.keys(fieldValues).forEach((key) => {
@@ -274,6 +281,7 @@ function Ultrasound() {
           handleEdit={handleEdit}
           handleRemove={handleRemove}
           setSearchTerm={setSearchTerm}
+          calculatePrintTotal={calculatePrintTotal}
         />
       </div>
 

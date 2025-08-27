@@ -5,6 +5,7 @@ const {
   getLaboratoryDataByMonth,
   getLaboratoryDataByYear,
   createLabRecord,
+  createMultipleLabRecords,
   getAllLabRecords,
   getLabRecordByPatientId,
   updateLabRecordById,
@@ -28,6 +29,7 @@ router.get('/:year', getLaboratoryDataByYear);
 router.get('/:year/:month', getLaboratoryDataByMonth);
 
 router.route('/').post(createLabRecord).get(getAllLabRecords);
+router.route('/multiple').post(createMultipleLabRecords);
 
 router
   .route('/:id')

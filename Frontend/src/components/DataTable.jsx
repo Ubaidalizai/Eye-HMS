@@ -4,7 +4,17 @@ import { useState } from 'react';
 import { FaTrash, FaPrint } from 'react-icons/fa';
 import PrintModal from './PrintModal.jsx';
 
-const DataTable = ({ title, submittedData, fields, handleRemove }) => {
+const DataTable = ({
+  title,
+  submittedData,
+  fields,
+  handleRemove,
+  selectedRecords = [],
+  onRecordSelection,
+  onSelectAll,
+  showCheckboxes = false,
+  calculatePrintTotal,
+}) => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -16,6 +26,29 @@ const DataTable = ({ title, submittedData, fields, handleRemove }) => {
   const closePrintModal = () => {
     setSelectedRecord(null);
     setShowModal(false);
+  };
+
+  const isRecordSelected = (record) => {
+    return selectedRecords.some((selected) => selected._id === record._id);
+  };
+
+  const areAllRecordsSelected = () => {
+    return (
+      submittedData.length > 0 &&
+      submittedData.every((record) => isRecordSelected(record))
+    );
+  };
+
+  const handleSelectAllChange = (e) => {
+    if (onSelectAll) {
+      onSelectAll(submittedData, e.target.checked);
+    }
+  };
+
+  const handleRecordSelectionChange = (record, e) => {
+    if (onRecordSelection) {
+      onRecordSelection(record, e.target.checked);
+    }
   };
 
   return (
@@ -47,6 +80,16 @@ const DataTable = ({ title, submittedData, fields, handleRemove }) => {
           <table className='w-full border-collapse min-w-full'>
             <thead className='bg-gray-50 border-b border-gray-200'>
               <tr>
+                {showCheckboxes && (
+                  <th className='py-4 px-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap'>
+                    <input
+                      type='checkbox'
+                      checked={areAllRecordsSelected()}
+                      onChange={handleSelectAllChange}
+                      className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+                    />
+                  </th>
+                )}
                 {fields.map((field, index) => (
                   <th
                     key={index}
@@ -64,8 +107,20 @@ const DataTable = ({ title, submittedData, fields, handleRemove }) => {
               {submittedData.map((data, index) => (
                 <tr
                   key={index}
-                  className='hover:bg-gray-50 transition-colors duration-150 ease-in-out'
+                  className={`hover:bg-gray-50 transition-colors duration-150 ease-in-out ${
+                    isRecordSelected(data) ? 'bg-blue-50' : ''
+                  }`}
                 >
+                  {showCheckboxes && (
+                    <td className='py-4 px-3 whitespace-nowrap text-center'>
+                      <input
+                        type='checkbox'
+                        checked={isRecordSelected(data)}
+                        onChange={(e) => handleRecordSelectionChange(data, e)}
+                        className='rounded border-gray-300 text-blue-600 focus:ring-blue-500'
+                      />
+                    </td>
+                  )}
                   {fields.map((field, idx) => (
                     <td key={idx} className='py-4 px-3 whitespace-nowrap'>
                       <div className='text-sm font-medium text-gray-900'>
@@ -106,6 +161,7 @@ const DataTable = ({ title, submittedData, fields, handleRemove }) => {
           selectedRecord={selectedRecord}
           fields={fields}
           onClose={closePrintModal}
+          calculatePrintTotal={calculatePrintTotal}
         />
       )}
     </div>
@@ -143,19 +199,17 @@ const formatFieldValue = (fieldName, value) => {
     return <span className='text-gray-800 font-medium'>{displayValue}</span>;
   }
 
-  // Format percentage fields
-  if (fieldName === 'discount' || fieldName === 'percentage') {
+  // Format percentage or discount fields
+  if (fieldName === 'percentage' || fieldName === 'discount') {
     return (
       <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800'>
-        {value}%
+        {fieldName === 'percentage' ? `${value}%` : value.toFixed(2)}
       </span>
     );
   }
 
   // Format price/amount fields
-  if (
-    fieldName === 'totalAmount'
-  ) {
+  if (fieldName === 'totalAmount') {
     const numericValue = typeof value === 'number' ? value : parseFloat(value);
     const formattedValue = isNaN(numericValue)
       ? value
