@@ -32,7 +32,12 @@ const createSaleAndIncome = async ({
   productModel,
   batch,
   session,
+  discount = 0, // already proportional
+  finalPrice = 0, // already calculated
 }) => {
+  const income = item.salePrice * sellQty; // always gross/original
+
+  // Save Sale record
   const sale = await Sale.create(
     [
       {
@@ -40,7 +45,9 @@ const createSaleAndIncome = async ({
         productRefId: item._id,
         productModel,
         quantity: sellQty,
-        income: item.salePrice * sellQty,
+        income, // gross/original
+        discount, // proportional discount
+        finalPrice, // after discount
         date,
         category,
         userID,
@@ -49,9 +56,10 @@ const createSaleAndIncome = async ({
     { session }
   );
 
+  // Net income based on discounted finalPrice
   const purchaseCost =
     (batch ? batch.UnitPurchaseAmount : item.purchasePrice) * sellQty;
-  const netIncome = sale[0].income - purchaseCost;
+  const netIncome = finalPrice - purchaseCost;
 
   if (netIncome > 0) {
     await Income.create(
@@ -81,19 +89,32 @@ const updateLedger = async (LedgerModel, amount, session) => {
   await ledger.save({ session });
 };
 
-const addToReceipt = (receipt, name, qty, income, category, date) => {
+const addToReceipt = (
+  receipt,
+  name,
+  qty,
+  income,
+  proportionalDiscount,
+) => {
   const line = receipt.find((line) => line.productName === name);
   if (line) {
     line.quantity += qty;
     line.income += income;
+    line.proportionalDiscount += proportionalDiscount;
   } else {
-    receipt.push({ productName: name, quantity: qty, income, category, date });
+    receipt.push({
+      productName: name,
+      quantity: qty,
+      income,
+      proportionalDiscount,
+    });
   }
 };
 
 // Main sellItems function
 const sellItems = asyncHandler(async (req, res) => {
-  const { soldItems } = req.body;
+  const { soldItems, discount = 0 } = req.body;
+
   if (!Array.isArray(soldItems) || !soldItems.length) {
     throw new AppError('No sold items provided.', 400);
   }
@@ -104,6 +125,18 @@ const sellItems = asyncHandler(async (req, res) => {
   try {
     const receipt = [];
     let totalIncome = 0;
+
+    // 1️⃣ Separate discountable items
+    const discountableItems = soldItems.filter((i) =>
+      ['glass', 'frame', 'sunglasses'].includes(i.category)
+    );
+
+    // 2️⃣ Compute total income of discountable items
+    let discountableTotal = 0;
+    for (const { productRefId, quantity } of discountableItems) {
+      const glass = await Glass.findById(productRefId).session(session);
+      discountableTotal += glass.salePrice * quantity;
+    }
 
     for (const {
       productRefId,
@@ -163,7 +196,6 @@ const sellItems = asyncHandler(async (req, res) => {
             sellQty,
             sale.income,
             category,
-            date
           );
 
           totalIncome += sale.income;
@@ -173,10 +205,19 @@ const sellItems = asyncHandler(async (req, res) => {
         const glass = await Glass.findById(productRefId).session(session);
         if (!glass || glass.quantity < quantity) {
           throw new AppError(
-            `Invalid or insufficient stock for ${glass.name}`,
+            `Invalid or insufficient stock for ${glass?.name || productRefId}`,
             400
           );
         }
+
+        const income = glass.salePrice * quantity;
+
+        // 4️⃣ Proportional discount share
+        const proportionalDiscount =
+          discountableTotal > 0 ? (income / discountableTotal) * discount : 0;
+
+        const finalPrice = income - proportionalDiscount;
+
         const sale = await createSaleAndIncome({
           item: glass,
           sellQty: quantity,
@@ -186,49 +227,23 @@ const sellItems = asyncHandler(async (req, res) => {
           saleModel: 'glassModel',
           productModel: 'Glass',
           session,
+          discount: proportionalDiscount, // 👈 pass ready values
+          finalPrice,
         });
 
+        // reduce stock
         glass.quantity -= quantity;
         await glass.save({ session });
-
-        const purchaseCost = glass.purchasePrice * quantity;
-        const netIncome = sale.income - purchaseCost;
-
-        if (req.user.role === 'receptionist' || req.user.percentage > 0) {
-          const receptionist = await User.findById(req.user._id).session(
-            session
-          );
-          const percentage = receptionist?.percentage || 0;
-          const commission = (netIncome * percentage) / 100;
-
-          // Only create a DoctorKhata record if the commission is greater than 0
-          if (commission > 0) {
-            await DoctorKhata.create(
-              [
-                {
-                  branchNameId: glass._id, // or another unique identifier if needed
-                  branchModel: 'glassModel', // or the relevant source model
-                  doctorId: receptionist._id,
-                  amount: commission,
-                  date,
-                  amountType: 'income',
-                },
-              ],
-              { session }
-            );
-          }
-        }
 
         addToReceipt(
           receipt,
           glass.name,
           quantity,
-          sale.income,
-          category,
-          date
+          income,
+          proportionalDiscount,
         );
 
-        totalIncome += sale.income;
+        totalIncome += finalPrice;
       } else {
         throw new AppError(`Unsupported category: ${category}`, 400);
       }
@@ -243,6 +258,7 @@ const sellItems = asyncHandler(async (req, res) => {
         receipt: {
           date: new Date().toISOString(),
           soldItems: receipt,
+          discount,
           totalIncome,
         },
       },

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import PatientPrint from '../components/PatientPrint.jsx';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bar } from 'react-chartjs-2';
@@ -15,7 +17,7 @@ import {
 } from 'chart.js';
 
 import { FaPlus, FaRegEdit, FaTrash } from 'react-icons/fa';
-import Pagination from "../components/Pagination.jsx";
+import Pagination from '../components/Pagination.jsx';
 import { BASE_URL } from '../config';
 
 // Register Chart.js components
@@ -70,6 +72,9 @@ export default function PatientManagement() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [summary, setSummary] = useState([]);
+
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const componentRef = useRef(null);
 
   useEffect(() => {
     if (summaryType === 'monthly') {
@@ -281,6 +286,21 @@ export default function PatientManagement() {
     };
   };
 
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
+    onBeforeGetContent: async () => {
+      // Ensure any images inside the printable content are loaded before print dialog opens
+      if (!componentRef.current) return;
+      const img = componentRef.current.querySelector('img');
+      if (!img) return;
+      if (img.complete) return;
+      await new Promise((resolve) => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); // resolve on error so printing doesn't hang
+      });
+    },
+  });
+
   return (
     <div className='max-w-6xl mx-auto px-4 sm:px-6 py-6'>
       <ToastContainer />
@@ -453,6 +473,15 @@ export default function PatientManagement() {
                               >
                                 <FaTrash className='w-4 h-4' />
                               </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedPatient(patient);
+                                  setTimeout(() => handlePrint(), 100); // wait for component render
+                                }}
+                                className='text-green-600 hover:bg-green-50 p-1.5 rounded transition-colors'
+                              >
+                                🖨️
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -468,6 +497,27 @@ export default function PatientManagement() {
                       </tr>
                     )}
                   </tbody>
+                  {/* Render printable content off-screen but visible to allow images to load */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: '-9999px',
+                      top: '0',
+                      width: '0',
+                      height: '0',
+                      overflow: 'hidden',
+                      visibility: 'hidden',
+                    }}
+                  >
+                    {selectedPatient && (
+                      <PatientPrint
+                        ref={componentRef}
+                        patient={selectedPatient}
+                        // public folder files are served from the root path in dev/production
+                        formImageUrl={'/Patient-Form.PNG'}
+                      />
+                    )}
+                  </div>
                 </table>
               </div>
 
