@@ -27,6 +27,16 @@ const saleSchema = new mongoose.Schema(
       required: [true, 'A sold item must have an income'],
       min: 0,
     },
+    discount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    finalPrice: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
     date: {
       type: Date,
       default: Date.now,

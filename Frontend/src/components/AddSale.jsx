@@ -10,6 +10,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
     {
       productRefId: '',
       quantity: 0,
+      discount: 0,
       date: new Date().toISOString().split('T')[0],
       category: '',
     },
@@ -19,6 +20,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
   const [openAddSale, setOpenAddSale] = useState(true);
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
+  const [overallDiscount, setOverallDiscount] = useState(0);
 
   const [soldItems, setSoldItems] = useState({
     date: '',
@@ -50,9 +52,9 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
 
         const pharmacyData = await pharmacyRes.json();
         // Add category property to pharmacy products
-        const pharmacyProducts = pharmacyData.data.results.map(product => ({
+        const pharmacyProducts = pharmacyData.data.results.map((product) => ({
           ...product,
-          category: 'drug'
+          category: 'drug',
         }));
         results = pharmacyProducts;
 
@@ -70,9 +72,9 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
           if (glassesRes.ok) {
             const glassesData = await glassesRes.json();
             // Ensure category property is set correctly
-            const glassesProducts = glassesData.data.results.map(product => ({
+            const glassesProducts = glassesData.data.results.map((product) => ({
               ...product,
-              category: product.category || cat
+              category: product.category || cat,
             }));
             results = results.concat(glassesProducts);
           }
@@ -89,9 +91,9 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
         if (pharmacyRes.ok) {
           const pharmacyData = await pharmacyRes.json();
           // Add category property to pharmacy products
-          const pharmacyProducts = pharmacyData.data.results.map(product => ({
+          const pharmacyProducts = pharmacyData.data.results.map((product) => ({
             ...product,
-            category: 'drug'
+            category: 'drug',
           }));
           results = results.concat(pharmacyProducts);
         }
@@ -108,9 +110,9 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
           if (glassesRes.ok) {
             const glassesData = await glassesRes.json();
             // Ensure category property is set correctly
-            const glassesProducts = glassesData.data.results.map(product => ({
+            const glassesProducts = glassesData.data.results.map((product) => ({
               ...product,
-              category: product.category || cat
+              category: product.category || cat,
             }));
             results = results.concat(glassesProducts);
           }
@@ -149,14 +151,13 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
 
   // Get filtered products based on selected category for a specific sale item
   const getFilteredProducts = (saleCategory) => {
-
     // If no category selected, show all products (respecting role permissions)
     if (!saleCategory) {
       return allProducts;
     }
 
     // If category selected, filter by that category
-    const filtered = allProducts.filter(product => {
+    const filtered = allProducts.filter((product) => {
       const matches = product.category === saleCategory;
       return matches;
     });
@@ -172,7 +173,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
           'Content-type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ soldItems: sales }),
+        body: JSON.stringify({ soldItems: sales, discount: overallDiscount }),
       });
 
       if (!response.ok) {
@@ -213,9 +214,9 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
       });
 
       const data = await sendSalesToBackend(salesWithCategory);
-
       setSoldItems({
-        date: new Date().toISOString().split('T')[0],
+        date: data.data.date || new Date().toISOString().split('T')[0],
+        discount: data.data.receipt.discount || 0,
         totalIncome: data.data.receipt.totalIncome || 0,
         soldItems: data.data.receipt.soldItems || [],
       });
@@ -237,6 +238,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
       {
         productRefId: '',
         quantity: 0,
+        discount: 0,
         date: new Date().toISOString().split('T')[0],
         category: prevSales[0]?.category || '',
       },
@@ -305,18 +307,25 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                   id={`category-${index}`}
                                   name='category'
                                   onChange={(e) => {
-                                    handleInputChange(index, 'category', e.target.value);
+                                    handleInputChange(
+                                      index,
+                                      'category',
+                                      e.target.value
+                                    );
                                   }}
                                   value={sale.category}
                                   className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 h-10 focus:ring-blue-500 focus:border-blue-500'
                                 >
                                   <option value=''>All Categories</option>
-                                  {authContext?.user?.role !== 'receptionist' && (
+                                  {authContext?.user?.role !==
+                                    'receptionist' && (
                                     <option value='drug'>Drug</option>
                                   )}
                                   {authContext?.user?.role !== 'pharmacist' && (
                                     <>
-                                      <option value='sunglasses'>Sunglasses</option>
+                                      <option value='sunglasses'>
+                                        Sunglasses
+                                      </option>
                                       <option value='glass'>Glass</option>
                                       <option value='frame'>Frame</option>
                                     </>
@@ -346,8 +355,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                 min='1'
                               />
                             </div>
-
-                            <div className='col-span-1 sm:col-span-2'>
+                            <div className='grid grid-cols-1 col-span-2'>
                               <label
                                 htmlFor={`product-${index}`}
                                 className='block text-sm font-medium text-gray-700 mb-1'
@@ -385,18 +393,49 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                                     selectedOption ? selectedOption.value : ''
                                   );
                                 }}
-                                options={getFilteredProducts(sale.category).map((product) => ({
-                                  value: product._id,
-                                  label: `${product.name}${product.category ? ` (${product.category})` : ''}`,
-                                }))}
-                                placeholder={sale.category ? `Search ${sale.category} products` : 'Search or select product'}
+                                options={getFilteredProducts(sale.category).map(
+                                  (product) => ({
+                                    value: product._id,
+                                    label: `${product.name}${
+                                      product.category
+                                        ? ` (${product.category})`
+                                        : ''
+                                    }`,
+                                  })
+                                )}
+                                placeholder={
+                                  sale.category
+                                    ? `Search ${sale.category} products`
+                                    : 'Search or select product'
+                                }
                                 isClearable
                               />
                             </div>
                           </div>
                         </div>
                       ))}
-
+                      {authContext.user.role === 'receptionist' && (
+                        <div className='mb-4'>
+                          <label
+                            htmlFor='overall-discount'
+                            className='block text-sm font-medium text-gray-700 mb-1'
+                          >
+                            Overall Discount
+                          </label>
+                          <input
+                            id='overall-discount'
+                            type='number'
+                            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md block w-full p-2.5 h-10 focus:ring-blue-500 focus:border-blue-500'
+                            value={overallDiscount}
+                            onChange={(e) =>
+                              setOverallDiscount(
+                                Number.parseInt(e.target.value, 10)
+                              )
+                            }
+                            min='0'
+                          />
+                        </div>
+                      )}
                       <button
                         type='button'
                         className='mt-3 inline-flex items-center justify-center px-4 py-2 h-10 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors'
