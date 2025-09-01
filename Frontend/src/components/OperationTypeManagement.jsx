@@ -371,7 +371,7 @@ const OperationTypeManagement = () => {
                         </span>
                       </td>
                       <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        ${type.price}
+                        {type.price}
                       </td>
                       <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
                         <div className='flex justify-center space-x-2'>

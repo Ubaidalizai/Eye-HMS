@@ -27,7 +27,7 @@ const ProductSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['drug', 'sunglasses', 'glass', 'frame'],
+      enum: ['drug'],
       required: true,
     },
     purchasePrice: {

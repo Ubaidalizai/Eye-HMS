@@ -25,7 +25,7 @@ const getDateRange = (date) => {
 };
 
 // Helper function to get records count and sales total for a model
-const getModelSummary = async (Model, date, priceField = 'price') => {
+const getModelSummary = async (Model, date, priceField = 'totalAmount') => {
   
   const { startOfDay, endOfDay } = getDateRange(date);
   
@@ -84,7 +84,7 @@ exports.getDailySummary = asyncHandler(async (req, res) => {
     getModelSummary(OPD, targetDate),
     getModelSummary(OCT, targetDate),
     getModelSummary(Laboratory, targetDate),
-    getModelSummary(Bedroom, targetDate, 'rent'),
+    getModelSummary(Bedroom, targetDate),
     getModelSummary(Ultrasound, targetDate),
     getModelSummary(Operation, targetDate),
     getModelSummary(Yeglizer, targetDate),
@@ -92,9 +92,9 @@ exports.getDailySummary = asyncHandler(async (req, res) => {
     getModelSummary(FA, targetDate),
     getModelSummary(PRP, targetDate),
     // For glasses (from sales model)
-    getSalesSummary(targetDate, ['glass', 'frame', 'sunglasses']),
+    getSalesSummary(targetDate, ['glass', 'frame', 'sunglasses'], 'finalPrice'),
     // For drugs (from sales model)
-    getSalesSummary(targetDate, ['drug']),
+    getSalesSummary(targetDate, ['drug'], 'income'),
   ]);
 
   const summary = {
@@ -152,7 +152,7 @@ exports.getDailySummary = asyncHandler(async (req, res) => {
 });
 
 // Helper function for sales summary
-const getSalesSummary = async (date, categories) => {
+const getSalesSummary = async (date, categories, priceField = 'income') => {
   const { startOfDay, endOfDay } = getDateRange(date);
   
   const result = await Sale.aggregate([
@@ -169,7 +169,7 @@ const getSalesSummary = async (date, categories) => {
       $group: {
         _id: null,
         count: { $sum: 1 },
-        totalSales: { $sum: '$income' }
+        totalSales: { $sum: `$${priceField}` }
       }
     }
   ]);
@@ -229,14 +229,14 @@ exports.getDailySummaries = asyncHandler(async (req, res) => {
       getModelSummary(OPD, currentDate),
       getModelSummary(OCT, currentDate),
       getModelSummary(Laboratory, currentDate),
-      getModelSummary(Bedroom, currentDate, 'rent'),
+      getModelSummary(Bedroom, currentDate),
       getModelSummary(Ultrasound, currentDate),
       getModelSummary(Operation, currentDate),
       getModelSummary(Yeglizer, currentDate),
       getModelSummary(Perimetry, currentDate),
       getModelSummary(FA, currentDate),
       getModelSummary(PRP, currentDate),
-      getSalesSummary(currentDate, ['glass', 'frame', 'sunglasses']),
+      getSalesSummary(currentDate, ['glass', 'frame', 'sunglasses'], 'finalPrice'),
       getSalesSummary(currentDate, ['drug']),
     ]);
 
