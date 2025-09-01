@@ -24,35 +24,53 @@ export default function AddPurchaseDetails({
   const [open, setOpen] = useState(true);
   const cancelButtonRef = useRef(null);
 
-  const fetchProductsData = (productCatagory) => {
-    // Determine the URL based on the user's role
-    let url =
-      authContext.user.role === 'admin'
-        ? `${BASE_URL}/inventory/product`
-        : authContext.user.role === 'receptionist'
-        ? `${BASE_URL}/glasses`
-        : null;
+  const fetchProductsData = async (productCatagory) => {
+    try {
+      const role = authContext?.user?.role;
 
-    if (!url) {
-      throw new Error('Invalid user role. Cannot fetch products.');
-    }
-    if (productCatagory) {
-      url += `?category=${productCatagory}`;
-    }
+      // Only admin and receptionist should fetch products
+      if (role !== 'admin' && role !== 'receptionist') {
+        setAllProducts([]);
+        return;
+      }
 
-    fetch(url, {
-      credentials: 'include',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setAllProducts(data.data.results);
-      })
-      .catch((err) => console.log(err));
+      const query = productCatagory ? `?category=${productCatagory}` : '';
+
+      if (role === 'admin') {
+        // fetch both inventory and glasses and merge
+        const [resInv, resGlasses] = await Promise.all([
+          fetch(`${BASE_URL}/inventory/product${query}`, {
+            credentials: 'include',
+          }),
+          fetch(`${BASE_URL}/glasses${query}`, { credentials: 'include' }),
+        ]);
+
+        const dataInv = (await resInv.json().catch(() => ({}))) || {};
+        const dataGlasses = (await resGlasses.json().catch(() => ({}))) || {};
+
+        const resultsInv = dataInv?.data?.results || dataInv?.results || [];
+        const resultsGlasses =
+          dataGlasses?.data?.results || dataGlasses?.results || [];
+
+        setAllProducts([...resultsInv, ...resultsGlasses]);
+        return;
+      }
+
+      // role === 'receptionist' -> only glasses
+      const resp = await fetch(`${BASE_URL}/glasses${query}`, {
+        credentials: 'include',
+      });
+      const data = await resp.json();
+      setAllProducts(data?.data?.results || data?.results || []);
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+      setAllProducts([]);
+    }
   };
-
+  // ...existing code...
   useEffect(() => {
     fetchProductsData(productCatagory);
-  }, []);
+  }, [productCatagory, authContext?.user?.role]);
 
   const handleInputChange = (key, value) => {
     setPurchase({ ...purchase, [key]: value });
@@ -233,6 +251,9 @@ export default function AddPurchaseDetails({
                               className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5'
                             >
                               <option value=''>Filter by Category</option>
+                              {authContext.user.role === 'admin' && (
+                                <option value='drug'>drug</option>
+                              )}
                               <option value='sunglasses'>sunglasses</option>
                               <option value='glass'>Glass</option>
                               <option value='frame'>frame</option>

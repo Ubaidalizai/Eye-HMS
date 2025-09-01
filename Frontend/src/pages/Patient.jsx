@@ -302,7 +302,7 @@ export default function PatientManagement() {
   });
 
   return (
-    <div className='max-w-6xl mx-auto px-4 sm:px-6 py-6'>
+    <div className='max-w-6xl mx-auto'>
       <ToastContainer />
 
       <h2 className='text-xl sm:text-2xl font-semibold text-gray-800 mb-6'>
@@ -457,8 +457,17 @@ export default function PatientManagement() {
                           <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                             {patient?.insuranceContact}
                           </td>
-                          <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-center'>
-                            <div className='flex justify-center space-x-3'>
+                          <td className='px-2 sm:px-1 py-4 whitespace-nowrap text-center'>
+                            <div className='flex justify-center'>
+                              <button
+                                onClick={() => {
+                                  setSelectedPatient(patient);
+                                  setTimeout(() => handlePrint(), 100); // wait for component render
+                                }}
+                                className='text-green-600 hover:bg-green-50 p-1 rounded transition-colors'
+                              >
+                                🖨️
+                              </button>
                               <button
                                 onClick={() => handleEdit(patient)}
                                 className='text-indigo-600 hover:bg-indigo-50 p-1.5 rounded transition-colors'
@@ -472,15 +481,6 @@ export default function PatientManagement() {
                                 aria-label='Delete patient'
                               >
                                 <FaTrash className='w-4 h-4' />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedPatient(patient);
-                                  setTimeout(() => handlePrint(), 100); // wait for component render
-                                }}
-                                className='text-green-600 hover:bg-green-50 p-1.5 rounded transition-colors'
-                              >
-                                🖨️
                               </button>
                             </div>
                           </td>
@@ -513,7 +513,6 @@ export default function PatientManagement() {
                       <PatientPrint
                         ref={componentRef}
                         patient={selectedPatient}
-                        // public folder files are served from the root path in dev/production
                         formImageUrl={'/Patient-Form.PNG'}
                       />
                     )}

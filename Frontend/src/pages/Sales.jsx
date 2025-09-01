@@ -251,7 +251,7 @@ export default function Sales() {
                         >
                           Total Sale
                         </th>
-                        {authContext.user.role === 'receptionist' && (
+                        {authContext.user.role === 'receptionist' || authContext.user.role === 'admin' && (
                           <>
                             <th className='px-4 sm:px-6 py-3 text-xs font-medium text-gray-700 uppercase tracking-wider text-left'>
                               Discount
@@ -299,7 +299,7 @@ export default function Sales() {
                             <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                               {sale.income}
                             </td>
-                            {authContext.user.role === 'receptionist' && (
+                            {authContext.user.role === 'receptionist' || authContext.user.role === 'admin' && (
                               <>
                                 <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
                                   {sale.discount.toFixed(2)}

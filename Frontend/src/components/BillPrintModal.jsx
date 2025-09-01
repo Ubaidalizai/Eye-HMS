@@ -139,7 +139,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                   <div ref={printRef} className='bg-white px-4 py-5 sm:p-6'>
                     <div className='receipt-header'>
                       <div className='receipt-title text-center mb-3'>
-                        Al-Sayed Eye-Hospital
+                        Al-Sayed Eye Hospital
                       </div>
                       <div className='flex justify-end items-center mb-4 date'>
                         <p className='text-sm text-gray-500'>
@@ -171,7 +171,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                                 >
                                   Quantity
                                 </th>
-                                {authContext.user.role === 'receptionist' && (
+                                {authContext.user.role === 'receptionist' || authContext.user.role === 'admin' && soldItems?.discount > 0 && (
                                   <th
                                     scope='col'
                                     className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
@@ -196,7 +196,7 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                                   <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-500'>
                                     {item.quantity}
                                   </td>
-                                  {authContext.user.role === 'receptionist' && (
+                                  {authContext.user.role === 'receptionist' || authContext.user.role === 'admin' && soldItems?.discount > 0 && (
                                     <td className='px-4 py-3 whitespace-nowrap text-sm text-gray-500'>
                                       {item?.proportionalDiscount?.toFixed(2) ||
                                         '0.00'}
@@ -212,14 +212,14 @@ export function BillPrintModal({ showBill, setShowBill, soldItems }) {
                         </div>
                       </div>
 
-                      {authContext.user.role=== 'receptionist' && soldItems.discount > 0 && (
+                      {authContext.user.role=== 'receptionist' || authContext.user.role === 'admin' && soldItems.discount > 0 && (
                         <div className='border-t border-gray-200 pt-4 mt-4'>
                           <div className='flex justify-between total-row'>
                             <p className='text-base sm:text-lg text-gray-900'>
                               Discount:
                             </p>
                             <p className='text-base sm:text-lg font-semibold text-gray-900'>
-                              {soldItems?.discount?.toFixed(2) || '0.00'}
+                              {soldItems?.discount || '0.00'}
                             </p>
                           </div>
                         </div>

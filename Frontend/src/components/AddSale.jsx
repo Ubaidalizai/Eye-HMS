@@ -30,6 +30,9 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
 
   const authContext = useContext(AuthContext);
 
+  // Hide overall discount input when any selected sale item is a drug
+  const anyDrugSelected = sales.some((s) => s.category === 'drug');
+
   useEffect(() => {
     fetchProductsData();
   }, []);
@@ -414,7 +417,7 @@ export default function AddSale({ addSaleModalSetting, handlePageUpdate }) {
                           </div>
                         </div>
                       ))}
-                      {authContext.user.role === 'receptionist' && (
+                      {((authContext.user.role === 'receptionist' || authContext.user.role === 'admin') && !anyDrugSelected) && (
                         <div className='mb-4'>
                           <label
                             htmlFor='overall-discount'
