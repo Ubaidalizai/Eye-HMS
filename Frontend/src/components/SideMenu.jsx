@@ -129,7 +129,7 @@ function SideMenu({ onMobileItemClick }) {
           <div className='flex items-center'>
             <div className='flex justify-center items-center gap-2'>
               <span className='font-semibold text-gray-500 text-xl'>
-                Al Sayed Eye HMS
+                Eye-Hospital MIS
               </span>
             </div>
           </div>

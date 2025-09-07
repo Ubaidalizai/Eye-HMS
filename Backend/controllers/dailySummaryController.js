@@ -26,32 +26,36 @@ const getDateRange = (date) => {
 
 // Helper function to get records count and sales total for a model
 const getModelSummary = async (Model, date, priceField = 'totalAmount') => {
-  
   const { startOfDay, endOfDay } = getDateRange(date);
-  
+
   const result = await Model.aggregate([
     {
       $match: {
-        date: {
-          $gte: startOfDay,
-          $lte: endOfDay
-        }
-      }
+        date: { $gte: startOfDay, $lte: endOfDay },
+      },
     },
     {
       $group: {
         _id: null,
         count: { $sum: 1 },
-        totalSales: { $sum: `$${priceField}` }
-      }
-    }
+        grossSales: {
+          $sum: {
+            $divide: [
+              `$${priceField}`,
+              { $subtract: [1, { $divide: ["$percentage", 100] }] }
+            ]
+          }
+        }
+      },
+    },
   ]);
 
   return {
     count: result[0]?.count || 0,
-    totalSales: result[0]?.totalSales || 0
+    totalSales: result[0]?.grossSales || 0,
   };
 };
+
 
 // Get daily summary for all categories
 exports.getDailySummary = asyncHandler(async (req, res) => {
