@@ -113,7 +113,7 @@ const addToReceipt = (
 
 // Main sellItems function
 const sellItems = asyncHandler(async (req, res) => {
-  const { soldItems, discount = 0 } = req.body;
+  const { soldItems, discount = 0, remainingAmount = 0 } = req.body;
 
   if (!Array.isArray(soldItems) || !soldItems.length) {
     throw new AppError('No sold items provided.', 400);
@@ -259,6 +259,7 @@ const sellItems = asyncHandler(async (req, res) => {
           date: new Date().toISOString(),
           soldItems: receipt,
           discount,
+          remainingAmount,
           totalIncome,
         },
       },

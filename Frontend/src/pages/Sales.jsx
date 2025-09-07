@@ -117,7 +117,7 @@ export default function Sales() {
           income: sale.income,
         },
       ],
-      totalIncome: sale.income,
+      totalIncome: sale.category === 'drug' ? sale.income : sale.finalPrice,
       discount: sale.discount,
     });
     setShowBillModal(true);
@@ -305,7 +305,7 @@ export default function Sales() {
                                   {sale.discount.toFixed(2)}
                                 </td>
                                 <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                                  {sale.finalPrice.toFixed(2)}
+                                  {sale.category === 'drug' ? sale.income : sale.finalPrice.toFixed(2)} 
                                 </td>
                               </>
                             )}

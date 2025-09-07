@@ -5,7 +5,7 @@ import AuthContext from '../AuthContext';
 
 export function BillPrintModal({ showBill, setShowBill, soldItems }) {
   const authContext = useContext(AuthContext);
-
+  
   const printRef = useRef(null);
   const handlePrint = () => {
     const printContent = printRef.current;

@@ -390,9 +390,9 @@ const deletePurchase = asyncHandler(async (req, res, next) => {
     if (product) {
       // Step 3: Restore stock
       if (productModel === 'Product') {
-        product.stock += originalQuantity;
+        product.stock -= originalQuantity;
       } else if (productModel === 'Glass') {
-        product.quantity += originalQuantity;
+        product.quantity -= originalQuantity;
       }
 
       if (product.stock < 0 || product.quantity < 0) {
