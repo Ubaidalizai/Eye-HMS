@@ -73,15 +73,6 @@ const createBedroom = asyncHandler(async (req, res, next) => {
     const doctorPercentage = doctorAssignment.percentage;
     let doctorIncome = 0;
 
-    if (doctorPercentage > 0) {
-      const result = await calculatePercentage(
-        typeExist.price,
-        doctorPercentage
-      );
-      doctorIncome = result.percentageAmount;
-      req.body.totalAmount = result.finalPrice;
-    }
-
     if (discount > 0) {
       const discountResult = await calculatePercentage(
         req.body.totalAmount,
@@ -89,6 +80,15 @@ const createBedroom = asyncHandler(async (req, res, next) => {
         true
       );
       req.body.totalAmount = discountResult.finalPrice;
+    }
+
+    if (doctorPercentage > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        doctorPercentage
+      );
+      doctorIncome = result.percentageAmount;
+      req.body.totalAmount = result.finalPrice;
     }
 
     // Step 4: Create Bedroom Record

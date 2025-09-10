@@ -2,7 +2,7 @@ const asyncHandler = require('../middlewares/asyncHandler');
 
 const checkExpiry = (Model, fieldName) =>
   asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, q } = req.query;
     const currentDate = new Date();
 
     const pageNumber = parseInt(page);
@@ -13,10 +13,14 @@ const checkExpiry = (Model, fieldName) =>
       filterByStock = 'stock';
     }
 
-    // First, get all products with stock to filter by expiry logic
-    const products = await Model.find({
-      [filterByStock]: { $gt: 0 },
-    });
+    // Build DB query: limit to items with stock > 0 and optionally by name
+    const dbQuery = { [filterByStock]: { $gt: 0 } };
+    if (q && q.trim() !== '') {
+      dbQuery.name = { $regex: q.trim(), $options: 'i' };
+    }
+
+    // Fetch matching products from DB (filtered by name when q provided)
+    const products = await Model.find(dbQuery);
 
     // Filter products that are expiring soon OR already expired
     const expiringSoon = products.filter((product) => {

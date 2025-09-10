@@ -40,9 +40,15 @@ const getModelSummary = async (Model, date, priceField = 'totalAmount') => {
         count: { $sum: 1 },
         grossSales: {
           $sum: {
-            $divide: [
-              `$${priceField}`,
-              { $subtract: [1, { $divide: ["$percentage", 100] }] }
+            $cond: [
+              { $ifNull: ["$percentage", false] }, // if percentage exists
+              {
+                $divide: [
+                  `$${priceField}`,
+                  { $subtract: [1, { $divide: ["$percentage", 100] }] }
+                ]
+              },
+              `$${priceField}` // otherwise just take totalAmount
             ]
           }
         }
@@ -55,7 +61,6 @@ const getModelSummary = async (Model, date, priceField = 'totalAmount') => {
     totalSales: result[0]?.grossSales || 0,
   };
 };
-
 
 // Get daily summary for all categories
 exports.getDailySummary = asyncHandler(async (req, res) => {
@@ -251,7 +256,7 @@ exports.getDailySummaries = asyncHandler(async (req, res) => {
         oct: octSummary,
         laboratory: laboratorySummary,
         bedroom: bedroomSummary,
-        ultrasound: ultrasoundSummary,
+        Bscan: ultrasoundSummary,
         operation: operationSummary,
         yeglizer: yeglizerSummary,
         perimetry: perimetrySummary,

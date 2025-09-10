@@ -40,6 +40,7 @@ const DailySummaryTable = () => {
       }
 
       const data = await response.json();
+      console.log('Fetch response:', data);
       setSummaries(data.data || []);
     } catch (err) {
       console.error('Error fetching daily summaries:', err);
@@ -121,9 +122,11 @@ const DailySummaryTable = () => {
                 .map(
                   ([category, data]) => `
                 <tr>
-                  <td class="category">${category
-                    .replace(/([A-Z])/g, ' $1')
-                    .trim()}</td>
+                  <td class="category">${
+                    category === 'Bscan'
+                      ? 'B-Scan'
+                      : category.replace(/([A-Z])/g, ' $1').trim()
+                  }</td>
                   <td class="number">${data.count}</td>
                   <td class="number">${data.totalSales.toLocaleString()}</td>
                 </tr>
@@ -159,7 +162,7 @@ const DailySummaryTable = () => {
       oct: 'OCT',
       laboratory: 'Laboratory',
       bedroom: 'Bedroom',
-      ultrasound: 'Ultrasound',
+      ultrasound: 'B-Scan',
       operation: 'Operation',
       yeglizer: 'Yeglizer',
       perimetry: 'Perimetry',
@@ -249,7 +252,7 @@ const DailySummaryTable = () => {
                   key={category}
                   className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap'
                 >
-                  {formatCategoryName(category)}
+                  {category === 'Bscan' ? 'B-Scan' : formatCategoryName(category)}
                 </th>
               ))}
               <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>

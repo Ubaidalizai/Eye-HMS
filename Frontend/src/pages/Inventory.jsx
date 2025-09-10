@@ -14,8 +14,8 @@ import {
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { moveItemAPI } from '../redux/inventorySlice';
-import UpdateProduct from ".././components/UpdateProduct.jsx";
-import Pagination from "../components/Pagination.jsx";
+import UpdateProduct from '.././components/UpdateProduct.jsx';
+import Pagination from '../components/Pagination.jsx';
 import { BASE_URL } from '../config';
 
 function Inventory() {
@@ -34,6 +34,7 @@ function Inventory() {
   const [quantity, setQuantity] = useState(0);
   const [salePrice, setSalePrice] = useState(0);
   const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+  const [isMoveDisabled, setIsMoveDisabled] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -92,9 +93,12 @@ function Inventory() {
     setQuantity(0);
     setSalePrice(0);
     setIsOpen(false);
+    setIsMoveDisabled(false);
   };
 
   const handleMoveItem = async () => {
+    if (isMoveDisabled) return; // prevent duplicate calls
+    setIsMoveDisabled(true);
     const quantityNum = Number.parseInt(quantity, 10);
     const salePriceNum = Number.parseFloat(salePrice);
 
@@ -105,34 +109,41 @@ function Inventory() {
     ) {
       console.error('Invalid quantity:', quantityNum);
       toast.error('Please enter a valid quantity.');
+      setIsMoveDisabled(false);
       return;
     }
     if (isNaN(salePriceNum) || salePriceNum <= 0) {
       console.error('Invalid sale price:', salePriceNum);
       toast.error('Please enter a valid sale price.');
+      setIsMoveDisabled(false);
       return;
     }
 
-    await dispatch(
-      moveItemAPI({
-        item: {
-          name: selectedItem.name,
-          manufacturer: selectedItem.manufacturer,
-          category: selectedItem.category,
-          salePrice: salePriceNum,
-          minLevel: 10,
-          expireNotifyDuration: 10,
-          expiryDate: selectedItem.expiryDate,
-        },
-        quantity: quantityNum,
-      })
-    );
-    closeMoveModal();
-    fetchProductsData();
-    toast.success('Item moved successfully');
-    setUpdatePage((show) => !show);
+    try {
+      await dispatch(
+        moveItemAPI({
+          item: {
+            name: selectedItem.name,
+            manufacturer: selectedItem.manufacturer,
+            category: selectedItem.category,
+            salePrice: salePriceNum,
+            minLevel: 10,
+            expireNotifyDuration: 10,
+            expiryDate: selectedItem.expiryDate,
+          },
+          quantity: quantityNum,
+        })
+      );
+      closeMoveModal();
+      fetchProductsData();
+      toast.success('Item moved successfully');
+      setUpdatePage((show) => !show);
+    } catch (err) {
+      console.error('Move item failed', err);
+      toast.error('Failed to move item');
+      setIsMoveDisabled(false);
+    }
   };
-
   const handleProductUpdate = (updatedProduct) => {
     setAllProducts((prevProducts) =>
       prevProducts.map((product) =>
@@ -634,7 +645,14 @@ function Inventory() {
                       </button>
                       <button
                         type='button'
-                        className='w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                        className={`w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                          ${
+                            isMoveDisabled
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                          }
+                          `}
+                        disabled={isMoveDisabled}
                         onClick={handleMoveItem}
                       >
                         Move

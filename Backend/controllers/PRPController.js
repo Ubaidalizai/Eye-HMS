@@ -74,15 +74,6 @@ const createPRP = asyncHandler(async (req, res) => {
     req.body.totalAmount = typeData.price;
     let doctorPercentage = assignedDoctor.percentage || 0;
 
-    if (doctorPercentage > 0) {
-      const result = await calculatePercentage(
-        typeData.price,
-        doctorPercentage
-      );
-      req.body.totalAmount = result.finalPrice;
-      doctorPercentage = result.percentageAmount;
-    }
-
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
         req.body.totalAmount,
@@ -90,6 +81,15 @@ const createPRP = asyncHandler(async (req, res) => {
         true
       );
       req.body.totalAmount = result.finalPrice;
+    }
+
+    if (doctorPercentage > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        doctorPercentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
     }
 
     const prp = new PRP({

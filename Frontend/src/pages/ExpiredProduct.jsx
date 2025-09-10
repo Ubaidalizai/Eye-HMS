@@ -21,6 +21,15 @@ const ExpiredProduct = () => {
     lowStock: null,
   });
 
+  // Search states
+  const [expiredSearch, setExpiredSearch] = useState('');
+  const [expiredSearchTarget, setExpiredSearchTarget] = useState('products'); // 'products' | 'drugs' | 'all'
+  const [lowStockSearch, setLowStockSearch] = useState('');
+  const [lowStockSearchTarget, setLowStockSearchTarget] = useState('products'); // 'products' | 'glasses' | 'drugs' | 'all'
+
+  // debounce timer
+  const [searchTimer, setSearchTimer] = useState(null);
+
   // Filter states for low stock tables
   const [lowStockFilter, setLowStockFilter] = useState('all'); // 'all', 'critical', 'low'
 
@@ -69,20 +78,27 @@ const ExpiredProduct = () => {
   ]);
 
   // Fetch expired products
-  const fetchExpiredProducts = async () => {
+  const fetchExpiredProducts = async (q) => {
     setLoading((prev) => ({ ...prev, expired: true }));
     setError((prev) => ({ ...prev, expired: null }));
     try {
       const { currentPage, limit } = pagination.expiredProducts;
+      const qParam = q && q.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
       const res = await axios.get(
-        `${BASE_URL}/inventory/product/expire?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/inventory/product/expire?page=${currentPage}&limit=${limit}${qParam}`,
         {
           withCredentials: true,
         }
       );
 
       if (res?.data?.expiringSoon) {
-        setExpiredProducts(res.data.expiringSoon);
+        const items = res.data.expiringSoon;
+        if (Array.isArray(items)) {
+          setExpiredProducts(items);
+        } else {
+          console.warn('Unexpected expired products response shape', res.data);
+          setExpiredProducts([]);
+        }
         setPagination(prev => ({
           ...prev,
           expiredProducts: {
@@ -115,20 +131,27 @@ const ExpiredProduct = () => {
   };
 
   // Fetch expired drugs
-  const fetchExpiredDrugs = async () => {
+  const fetchExpiredDrugs = async (q) => {
     setLoading((prev) => ({ ...prev, expired: true }));
     setError((prev) => ({ ...prev, expired: null }));
     try {
       const { currentPage, limit } = pagination.expiredDrugs;
+      const qParam = q && q.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
       const res = await axios.get(
-        `${BASE_URL}/pharmacy/expire?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/pharmacy/expire?page=${currentPage}&limit=${limit}${qParam}`,
         {
           withCredentials: true,
         }
       );
 
       if (res.status === 200 && res?.data?.expiringSoon) {
-        setExpiredDrugs(res.data.expiringSoon);
+        const items = res.data.expiringSoon;
+        if (Array.isArray(items)) {
+          setExpiredDrugs(items);
+        } else {
+          console.warn('Unexpected expired drugs response shape', res.data);
+          setExpiredDrugs([]);
+        }
         setPagination(prev => ({
           ...prev,
           expiredDrugs: {
@@ -160,20 +183,56 @@ const ExpiredProduct = () => {
     }
   };
 
+  // debounce expired search (300ms) to avoid excessive requests
+  useEffect(() => {
+    if (activeTab !== 'expired') return;
+    if (searchTimer) clearTimeout(searchTimer);
+    const t = setTimeout(() => {
+      // refetch only the selected target endpoint(s) and pass the q param
+      if (expiredSearchTarget === 'products') {
+        if (user.role === 'admin') {
+          fetchExpiredProducts(expiredSearch);
+        }
+      } else if (expiredSearchTarget === 'drugs') {
+        if (user.role === 'admin' || user.role === 'pharmacist') {
+          fetchExpiredDrugs(expiredSearch);
+        }
+      } else if (expiredSearchTarget === 'all') {
+        if (user.role === 'admin') {
+          fetchExpiredProducts(expiredSearch);
+          fetchExpiredDrugs(expiredSearch);
+        } else if (user.role === 'pharmacist') {
+          fetchExpiredDrugs(expiredSearch);
+        }
+      }
+    }, 300);
+    setSearchTimer(t);
+    return () => clearTimeout(t);
+  }, [expiredSearch]);
+
   // Fetch low stock products
-  const fetchLowStockProducts = async () => {
+  const fetchLowStockProducts = async (q) => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
       const { currentPage, limit } = pagination.lowStockProducts;
+      // include optional name search param when provided
+  const shouldIncludeQ = (lowStockSearchTarget === 'products' || lowStockSearchTarget === 'all') && lowStockSearch.trim();
+  const qParam = shouldIncludeQ ? `&q=${encodeURIComponent(q ? q.trim() : lowStockSearch.trim())}` : '';
       const res = await axios.get(
-        `${BASE_URL}/inventory/product/low-stock?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/inventory/product/low-stock?page=${currentPage}&limit=${limit}${qParam}`,
         {
           withCredentials: true,
         }
       );
       if (res.status === 200) {
-        setLowStockProducts(res.data.data.lowStockProducts || []);
+        const items = res?.data?.data?.lowStockProducts;
+        if (Array.isArray(items)) {
+          setLowStockProducts(items);
+        } else {
+          console.warn('Unexpected lowStockProducts response', res.data);
+          setLowStockProducts([]);
+        }
         setPagination(prev => ({
           ...prev,
           lowStockProducts: {
@@ -206,19 +265,27 @@ const ExpiredProduct = () => {
   };
 
   // Fetch low stock glasses
-  const fetchLowStockGlasses = async () => {
+  const fetchLowStockGlasses = async (q) => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
       const { currentPage, limit } = pagination.lowStockGlasses;
+  const shouldIncludeQ = (lowStockSearchTarget === 'glasses' || lowStockSearchTarget === 'all') && lowStockSearch.trim();
+  const qParam = shouldIncludeQ ? `&q=${encodeURIComponent(q ? q.trim() : lowStockSearch.trim())}` : '';
       const res = await axios.get(
-        `${BASE_URL}/glasses/low-stock?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/glasses/low-stock?page=${currentPage}&limit=${limit}${qParam}`,
         {
           withCredentials: true,
         }
       );
       if (res.status === 200) {
-        setLowStockGlasses(res.data.data.lowStockGlasses || []);
+        const items = res?.data?.data?.lowStockGlasses;
+        if (Array.isArray(items)) {
+          setLowStockGlasses(items);
+        } else {
+          console.warn('Unexpected lowStockGlasses response', res.data);
+          setLowStockGlasses([]);
+        }
         setPagination(prev => ({
           ...prev,
           lowStockGlasses: {
@@ -251,19 +318,27 @@ const ExpiredProduct = () => {
   };
 
   // Fetch low stock drugs
-  const fetchLowStockDrugs = async () => {
+  const fetchLowStockDrugs = async (q) => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
       const { currentPage, limit } = pagination.lowStockDrugs;
+  const shouldIncludeQ = (lowStockSearchTarget === 'drugs' || lowStockSearchTarget === 'all') && lowStockSearch.trim();
+  const qParam = shouldIncludeQ ? `&q=${encodeURIComponent(q ? q.trim() : lowStockSearch.trim())}` : '';
       const res = await axios.get(
-        `${BASE_URL}/pharmacy/low-stock?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/pharmacy/low-stock?page=${currentPage}&limit=${limit}${qParam}`,
         {
           withCredentials: true,
         }
       );
       if (res.status === 200) {
-        setLowStockDrugs(res.data.data.lowStockDrugs || []);
+        const items = res?.data?.data?.lowStockDrugs;
+        if (Array.isArray(items)) {
+          setLowStockDrugs(items);
+        } else {
+          console.warn('Unexpected lowStockDrugs response', res.data);
+          setLowStockDrugs([]);
+        }
         setPagination(prev => ({
           ...prev,
           lowStockDrugs: {
@@ -294,6 +369,30 @@ const ExpiredProduct = () => {
       setLoading((prev) => ({ ...prev, lowStock: false }));
     }
   };
+
+  // Debounce effect: when lowStockSearch or lowStockSearchTarget changes, wait 300ms then refetch the relevant list
+  useEffect(() => {
+    if (activeTab !== 'lowStock') return;
+
+    if (searchTimer) clearTimeout(searchTimer);
+    const t = setTimeout(() => {
+      // fetch only the target table when searching to save load; pass search q param
+      if (lowStockSearchTarget === 'products') {
+        fetchLowStockProducts(lowStockSearch);
+      } else if (lowStockSearchTarget === 'glasses') {
+        fetchLowStockGlasses(lowStockSearch);
+      } else if (lowStockSearchTarget === 'drugs') {
+        fetchLowStockDrugs(lowStockSearch);
+      } else if (lowStockSearchTarget === 'all') {
+        // fetch all low-stock endpoints with the same q
+        fetchLowStockProducts(lowStockSearch);
+        fetchLowStockGlasses(lowStockSearch);
+        fetchLowStockDrugs(lowStockSearch);
+      }
+    }, 300);
+    setSearchTimer(t);
+    return () => clearTimeout(t);
+  }, [lowStockSearch, lowStockSearchTarget]);
 
   // Pagination handlers
   const handlePageChange = (tableType, page) => {
@@ -336,6 +435,39 @@ const ExpiredProduct = () => {
   const getFilteredLowStockProducts = () => filterLowStockItems(lowStockProducts);
   const getFilteredLowStockGlasses = () => filterLowStockItems(lowStockGlasses);
   const getFilteredLowStockDrugs = () => filterLowStockItems(lowStockDrugs);
+
+  // Clear search handlers: reset input and immediately refetch the selected target(s)
+  const clearExpiredSearch = () => {
+    setExpiredSearch('');
+    // refetch according to target and role
+    if (expiredSearchTarget === 'products') {
+      if (user.role === 'admin') fetchExpiredProducts();
+    } else if (expiredSearchTarget === 'drugs') {
+      if (user.role === 'admin' || user.role === 'pharmacist') fetchExpiredDrugs();
+    } else if (expiredSearchTarget === 'all') {
+      if (user.role === 'admin') {
+        fetchExpiredProducts();
+        fetchExpiredDrugs();
+      } else if (user.role === 'pharmacist') {
+        fetchExpiredDrugs();
+      }
+    }
+  };
+
+  const clearLowStockSearch = () => {
+    setLowStockSearch('');
+    if (lowStockSearchTarget === 'products') {
+      fetchLowStockProducts();
+    } else if (lowStockSearchTarget === 'glasses') {
+      fetchLowStockGlasses();
+    } else if (lowStockSearchTarget === 'drugs') {
+      fetchLowStockDrugs();
+    } else if (lowStockSearchTarget === 'all') {
+      fetchLowStockProducts();
+      fetchLowStockGlasses();
+      fetchLowStockDrugs();
+    }
+  };
 
   return (
     <div className='container mx-auto p-4'>
@@ -382,6 +514,40 @@ const ExpiredProduct = () => {
       {/* Expired Items Tab Content */}
       {activeTab === 'expired' && (
         <div>
+          {/* Search box for expired items */}
+          <div className='mb-4 flex items-center gap-4'>
+            <div className='relative'>
+              <input
+                type='text'
+                placeholder='Search expired items by name...'
+                className='border rounded-md p-2 w-full max-w-md pr-8 w-64 sm:w-96'
+                value={expiredSearch}
+                onChange={(e) => setExpiredSearch(e.target.value)}
+              />
+              {expiredSearch && (
+                <button
+                  onClick={clearExpiredSearch}
+                  className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900 text-lg leading-none px-2 py-0.5 bg-gray-100 hover:bg-gray-200 rounded'
+                  title='Clear'
+                  aria-label='Clear expired search'
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <div className='flex items-center gap-2'>
+              <label className='text-sm font-medium'>Target:</label>
+              <select
+                value={expiredSearchTarget}
+                onChange={(e) => setExpiredSearchTarget(e.target.value)}
+                className='border rounded-md p-2 px-8'
+              >
+                <option value='products'>Inventory Products</option>
+                <option value='drugs'>Pharmacy Drugs</option>
+                <option value='all'>Both</option>
+              </select>
+            </div>
+          </div>
           {user.role === 'admin' && (
             <>
               <h2 className='text-lg font-medium mb-4'>Inventory Expiry</h2>
@@ -581,7 +747,45 @@ const ExpiredProduct = () => {
           {/* Filter Controls */}
           <div className='mb-6 bg-gray-50 p-4 rounded-lg'>
             <h3 className='text-lg font-medium mb-3'>Filter Low Stock Items</h3>
-            <div className='flex flex-wrap gap-2'>
+
+            {/* Search input + target select on one line (wraps on small screens) */}
+            <div className='mb-3 flex items-center gap-3 flex-wrap'>
+              <div className='relative'>
+                <input
+                  type='text'
+                  placeholder='Search low-stock items by name'
+                  className='border rounded-md p-2 pr-9 w-64 sm:w-96'
+                  value={lowStockSearch}
+                  onChange={(e) => setLowStockSearch(e.target.value)}
+                  aria-label='Search low-stock items by name'
+                />
+                {lowStockSearch && (
+                  <button
+                    onClick={clearLowStockSearch}
+                    className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-700 hover:text-gray-900 text-lg leading-none px-2 py-0.5 bg-gray-100 hover:bg-gray-200 rounded'
+                    title='Clear search'
+                    aria-label='Clear low stock search'
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+
+              <div className='flex items-center gap-2'>
+                <label className='text-sm font-medium'>Target:</label>
+                <select
+                  value={lowStockSearchTarget}
+                  onChange={(e) => setLowStockSearchTarget(e.target.value)}
+                  className='border rounded-md p-2 px-7'
+                >
+                  <option value='products'>Products</option>
+                  <option value='glasses'>Glasses</option>
+                  <option value='drugs'>Drugs</option>
+                  <option value='all'>All</option>
+                </select>
+              </div>
+            </div>
+            <div className='flex flex-wrap gap-2 mt-5'>
               <button
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   lowStockFilter === 'all'
