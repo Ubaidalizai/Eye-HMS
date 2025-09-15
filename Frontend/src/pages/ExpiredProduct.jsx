@@ -215,10 +215,9 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
-      const { currentPage, limit } = pagination.lowStockProducts;
-      // include optional name search param when provided
-  const shouldIncludeQ = (lowStockSearchTarget === 'products' || lowStockSearchTarget === 'all') && lowStockSearch.trim();
-  const qParam = shouldIncludeQ ? `&q=${encodeURIComponent(q ? q.trim() : lowStockSearch.trim())}` : '';
+  const { currentPage, limit } = pagination.lowStockProducts;
+  // use q argument directly for server-side name search
+  const qParam = q && q.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
       const res = await axios.get(
         `${BASE_URL}/inventory/product/low-stock?page=${currentPage}&limit=${limit}${qParam}`,
         {
@@ -269,9 +268,9 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
-      const { currentPage, limit } = pagination.lowStockGlasses;
-  const shouldIncludeQ = (lowStockSearchTarget === 'glasses' || lowStockSearchTarget === 'all') && lowStockSearch.trim();
-  const qParam = shouldIncludeQ ? `&q=${encodeURIComponent(q ? q.trim() : lowStockSearch.trim())}` : '';
+  const { currentPage, limit } = pagination.lowStockGlasses;
+  // use q argument directly for server-side name search
+  const qParam = q && q.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
       const res = await axios.get(
         `${BASE_URL}/glasses/low-stock?page=${currentPage}&limit=${limit}${qParam}`,
         {
@@ -322,9 +321,9 @@ const ExpiredProduct = () => {
     setLoading((prev) => ({ ...prev, lowStock: true }));
     setError((prev) => ({ ...prev, lowStock: null }));
     try {
-      const { currentPage, limit } = pagination.lowStockDrugs;
-  const shouldIncludeQ = (lowStockSearchTarget === 'drugs' || lowStockSearchTarget === 'all') && lowStockSearch.trim();
-  const qParam = shouldIncludeQ ? `&q=${encodeURIComponent(q ? q.trim() : lowStockSearch.trim())}` : '';
+  const { currentPage, limit } = pagination.lowStockDrugs;
+  // use q argument directly for server-side name search
+  const qParam = q && q.trim() ? `&q=${encodeURIComponent(q.trim())}` : '';
       const res = await axios.get(
         `${BASE_URL}/pharmacy/low-stock?page=${currentPage}&limit=${limit}${qParam}`,
         {
