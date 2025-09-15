@@ -82,15 +82,6 @@ const createOperation = asyncHandler(async (req, res, next) => {
     req.body.totalAmount = findOperationType.price;
     let doctorPercentage = assignedDoctor.percentage || 0; // Use assigned percentage
 
-    if (doctorPercentage > 0) {
-      const result = await calculatePercentage(
-        findOperationType.price,
-        doctorPercentage
-      );
-      req.body.totalAmount = result.finalPrice;
-      doctorPercentage = result.percentageAmount;
-    }
-
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
         req.body.totalAmount,
@@ -98,6 +89,15 @@ const createOperation = asyncHandler(async (req, res, next) => {
         true,
       );
       req.body.totalAmount = result.finalPrice;
+    }
+
+    if (doctorPercentage > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        doctorPercentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
     }
 
     // Step 5: Create Operation record

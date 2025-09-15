@@ -255,7 +255,7 @@ const giveProductExpireByMonth = asyncHandler(async (req, res) => {
 
 // Get low stock products
 const getLowStockProducts = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, q } = req.query;
 
   const pageNumber = parseInt(page);
   const limitNumber = parseInt(limit);
@@ -264,6 +264,10 @@ const getLowStockProducts = asyncHandler(async (req, res) => {
   const query = {
     $expr: { $lte: ['$stock', '$minLevel'] },
   };
+
+  if (q && q.trim() !== '') {
+    query.name = { $regex: q.trim(), $options: 'i' };
+  }
 
   // Get paginated results and total count
   const [lowStockProducts, totalDocs] = await Promise.all([

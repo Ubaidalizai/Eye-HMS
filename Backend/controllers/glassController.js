@@ -168,15 +168,21 @@ const getGlassesSummary = asyncHandler(async (req, res) => {
 
 // Get low stock glasses
 const getLowStockGlasses = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, q } = req.query;
 
   const pageNumber = parseInt(page);
   const limitNumber = parseInt(limit);
   const skip = (pageNumber - 1) * limitNumber;
 
+  // Base low stock query
   const query = {
     $expr: { $lte: ['$quantity', '$minLevel'] },
   };
+
+  // If a name query provided, add a case-insensitive name match
+  if (q && q.trim() !== '') {
+    query.name = { $regex: q.trim(), $options: 'i' };
+  }
 
   // Get paginated results and total count
   const [lowStockGlasses, totalDocs] = await Promise.all([

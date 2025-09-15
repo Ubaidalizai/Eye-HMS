@@ -79,15 +79,6 @@ const createLabRecord = asyncHandler(async (req, res) => {
     req.body.totalAmount = findOperationType.price;
     let doctorPercentage = doctorAssignment.percentage || 0; // Use assigned percentage
 
-    if (doctorPercentage > 0) {
-      const result = await calculatePercentage(
-        findOperationType.price,
-        doctorPercentage
-      );
-      req.body.totalAmount = result.finalPrice;
-      doctorPercentage = result.percentageAmount;
-    }
-
     if (req.body.discount > 0) {
       const result = await calculatePercentage(
         req.body.totalAmount,
@@ -95,6 +86,15 @@ const createLabRecord = asyncHandler(async (req, res) => {
         true
       );
       req.body.totalAmount = result.finalPrice;
+    }
+
+    if (doctorPercentage > 0) {
+      const result = await calculatePercentage(
+        req.body.totalAmount,
+        doctorPercentage
+      );
+      req.body.totalAmount = result.finalPrice;
+      doctorPercentage = result.percentageAmount;
     }
 
     // Step 5: Create Laboratory Record
