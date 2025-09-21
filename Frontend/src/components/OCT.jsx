@@ -29,7 +29,7 @@ function OCT() {
 
   const fetchOctTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=oct&all=true`, {
+      const response = await fetch(`${BASE_URL}/operation-types?type=oct&all=true&serialToday=true`, {
         credentials: 'include',
       });
       const data = await response.json();

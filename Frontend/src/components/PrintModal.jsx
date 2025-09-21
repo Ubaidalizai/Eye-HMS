@@ -9,7 +9,6 @@ const PrintModal = ({
   isMultipleRecords = false,
   calculatePrintTotal,
 }) => {
-
   const componentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -32,6 +31,21 @@ const PrintModal = ({
     }
     if (fieldName === 'discount' && typeof value === 'number') {
       return value.toFixed(2);
+    }
+
+    // For date field, show serial next to the date (no label)
+    if (fieldName === 'date' && value) {
+      const formatted = new Date(value).toLocaleDateString();
+      return (
+        <>
+          <span className='text-gray-800'>{formatted}</span>
+          {record?.serialNumber ? (
+            <span className='ml-2 inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded'>
+              {record.serialNumber}
+            </span>
+          ) : null}
+        </>
+      );
     }
 
     // Use the existing formatFieldValue for other fields
@@ -59,6 +73,11 @@ const PrintModal = ({
           <p>
             <strong>Date:</strong>{' '}
             {new Date(selectedRecord.records[0]?.date).toLocaleDateString()}
+            {selectedRecord.records[0]?.serialNumber ? (
+              <span className='ml-2 inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded'>
+                {selectedRecord.records[0].serialNumber}
+              </span>
+            ) : null}
           </p>
           <p>
             <strong>Time:</strong> {selectedRecord.records[0]?.time}

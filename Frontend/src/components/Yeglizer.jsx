@@ -31,7 +31,7 @@ function Yeglizer() {
   const fetchData = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/yeglizer?page=${currentPage}&limit=${limit}`,
+        `${BASE_URL}/yeglizer?page=${currentPage}&limit=${limit}&serialToday=true`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to fetch data');

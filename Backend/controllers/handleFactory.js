@@ -11,10 +11,13 @@ const getAll = (Model, userID = false, popOptions = null) =>
       category,
       searchTerm,
       fieldName,
+      serialToday = false, // 👈 optional flag
     } = req.query;
+
     if (!Model) {
       throw new AppError('Model is required', 500);
     }
+
     const query = buildQuery(
       req,
       userID,
@@ -23,6 +26,7 @@ const getAll = (Model, userID = false, popOptions = null) =>
       searchTerm,
       fieldName
     );
+
     const queryBuilder = buildQueryBuilder(
       Model,
       query,
@@ -36,7 +40,39 @@ const getAll = (Model, userID = false, popOptions = null) =>
       Model.countDocuments(query),
     ]);
 
-    const response = formatResponse(results, page, limit, totalDocuments);
+    let finalResults = results;
+
+    if (serialToday) {
+      // find today's date range
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // filter today's records
+      const todaysRecords = results
+        .filter(
+          (doc) =>
+            new Date(doc.date) >= today && new Date(doc.date) < tomorrow
+        )
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      // assign serials to today’s only
+      const serialMap = new Map();
+      todaysRecords.forEach((doc, idx) => {
+        serialMap.set(doc._id.toString(), idx + 1);
+      });
+
+      finalResults = results.map((doc) => {
+        const serialNumber = serialMap.get(doc._id.toString());
+        return {
+          ...doc.toObject(),
+          ...(serialNumber ? { serialNumber } : {}),
+        };
+      });
+    }
+
+    const response = formatResponse(finalResults, page, limit, totalDocuments);
 
     res.status(200).json(response);
   });

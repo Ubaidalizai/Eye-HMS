@@ -33,7 +33,7 @@ function Ultrasound() {
   const fetchAtrasoundTypes = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/operation-types?type=biscayne&all=true`,
+        `${BASE_URL}/operation-types?type=biscayne&serialToday=true`,
         {
           credentials: 'include',
         }
