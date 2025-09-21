@@ -39,7 +39,7 @@ function Perimetry() {
       setLoading(true);
       setError(null);
 
-      let url = `${BASE_URL}/perimetry?page=${currentPage}&limit=${limit}`;
+      let url = `${BASE_URL}/perimetry?page=${currentPage}&limit=${limit}&serialToday=true`;
 
       // Add date filter if selected
       if (selectedDate) {

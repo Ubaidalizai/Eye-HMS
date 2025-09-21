@@ -23,9 +23,10 @@ const ExpiredProduct = () => {
 
   // Search states
   const [expiredSearch, setExpiredSearch] = useState('');
-  const [expiredSearchTarget, setExpiredSearchTarget] = useState('products'); // 'products' | 'drugs' | 'all'
+  // initialize targets empty and set sensible defaults once user.role is available
+  const [expiredSearchTarget, setExpiredSearchTarget] = useState(''); // 'products' | 'drugs' | 'all'
   const [lowStockSearch, setLowStockSearch] = useState('');
-  const [lowStockSearchTarget, setLowStockSearchTarget] = useState('products'); // 'products' | 'glasses' | 'drugs' | 'all'
+  const [lowStockSearchTarget, setLowStockSearchTarget] = useState(''); // 'products' | 'glasses' | 'drugs' | 'all'
 
   // debounce timer
   const [searchTimer, setSearchTimer] = useState(null);
@@ -76,6 +77,63 @@ const ExpiredProduct = () => {
     pagination.lowStockDrugs.currentPage,
     pagination.lowStockDrugs.limit,
   ]);
+
+  // Role-aware options for search targets
+  const getExpiredTargetOptions = () => {
+    if (!user || !user.role) return [];
+    if (user.role === 'admin') {
+      return [
+        { value: 'products', label: 'Inventory Products' },
+        { value: 'drugs', label: 'Pharmacy Drugs' },
+        { value: 'all', label: 'Both' },
+      ];
+    }
+    if (user.role === 'pharmacist') {
+      return [{ value: 'drugs', label: 'Pharmacy Drugs' }];
+    }
+    // receptionist and other roles do not have access to expired inventory view
+    return [];
+  };
+
+  const getLowStockTargetOptions = () => {
+    if (!user || !user.role) return [];
+    if (user.role === 'admin') {
+      return [
+        { value: 'products', label: 'Products' },
+        { value: 'glasses', label: 'Glasses' },
+        { value: 'drugs', label: 'Drugs' },
+        { value: 'all', label: 'All' },
+      ];
+    }
+    if (user.role === 'pharmacist') {
+      return [{ value: 'drugs', label: 'Drugs' }];
+    }
+    if (user.role === 'receptionist') {
+      return [{ value: 'glasses', label: 'Glasses' }];
+    }
+    return [];
+  };
+
+  // Ensure the selected targets are valid for the current role and set defaults on role change
+  useEffect(() => {
+    const expiredOptions = getExpiredTargetOptions();
+    const lowStockOptions = getLowStockTargetOptions();
+
+    if (expiredOptions.length > 0) {
+      const exists = expiredOptions.find((o) => o.value === expiredSearchTarget);
+      if (!exists) setExpiredSearchTarget(expiredOptions[0].value);
+    } else {
+      // no options for expired (e.g., receptionist) -> clear
+      setExpiredSearchTarget('');
+    }
+
+    if (lowStockOptions.length > 0) {
+      const existsLow = lowStockOptions.find((o) => o.value === lowStockSearchTarget);
+      if (!existsLow) setLowStockSearchTarget(lowStockOptions[0].value);
+    } else {
+      setLowStockSearchTarget('');
+    }
+  }, [user.role]);
 
   // Fetch expired products
   const fetchExpiredProducts = async (q) => {
@@ -189,14 +247,11 @@ const ExpiredProduct = () => {
     if (searchTimer) clearTimeout(searchTimer);
     const t = setTimeout(() => {
       // refetch only the selected target endpoint(s) and pass the q param
+      if (!expiredSearchTarget) return;
       if (expiredSearchTarget === 'products') {
-        if (user.role === 'admin') {
-          fetchExpiredProducts(expiredSearch);
-        }
+        if (user.role === 'admin') fetchExpiredProducts(expiredSearch);
       } else if (expiredSearchTarget === 'drugs') {
-        if (user.role === 'admin' || user.role === 'pharmacist') {
-          fetchExpiredDrugs(expiredSearch);
-        }
+        if (user.role === 'admin' || user.role === 'pharmacist') fetchExpiredDrugs(expiredSearch);
       } else if (expiredSearchTarget === 'all') {
         if (user.role === 'admin') {
           fetchExpiredProducts(expiredSearch);
@@ -376,17 +431,19 @@ const ExpiredProduct = () => {
     if (searchTimer) clearTimeout(searchTimer);
     const t = setTimeout(() => {
       // fetch only the target table when searching to save load; pass search q param
+      if (!lowStockSearchTarget) return;
       if (lowStockSearchTarget === 'products') {
-        fetchLowStockProducts(lowStockSearch);
+        if (user.role === 'admin') fetchLowStockProducts(lowStockSearch);
       } else if (lowStockSearchTarget === 'glasses') {
-        fetchLowStockGlasses(lowStockSearch);
+        if (user.role === 'admin' || user.role === 'receptionist') fetchLowStockGlasses(lowStockSearch);
       } else if (lowStockSearchTarget === 'drugs') {
-        fetchLowStockDrugs(lowStockSearch);
+        if (user.role === 'admin' || user.role === 'pharmacist' || user.role === 'receptionist') fetchLowStockDrugs(lowStockSearch);
       } else if (lowStockSearchTarget === 'all') {
-        // fetch all low-stock endpoints with the same q
-        fetchLowStockProducts(lowStockSearch);
-        fetchLowStockGlasses(lowStockSearch);
-        fetchLowStockDrugs(lowStockSearch);
+        if (user.role === 'admin') {
+          fetchLowStockProducts(lowStockSearch);
+          fetchLowStockGlasses(lowStockSearch);
+          fetchLowStockDrugs(lowStockSearch);
+        }
       }
     }, 300);
     setSearchTimer(t);
@@ -439,6 +496,7 @@ const ExpiredProduct = () => {
   const clearExpiredSearch = () => {
     setExpiredSearch('');
     // refetch according to target and role
+    if (!expiredSearchTarget) return;
     if (expiredSearchTarget === 'products') {
       if (user.role === 'admin') fetchExpiredProducts();
     } else if (expiredSearchTarget === 'drugs') {
@@ -455,16 +513,19 @@ const ExpiredProduct = () => {
 
   const clearLowStockSearch = () => {
     setLowStockSearch('');
+    if (!lowStockSearchTarget) return;
     if (lowStockSearchTarget === 'products') {
-      fetchLowStockProducts();
+      if (user.role === 'admin') fetchLowStockProducts();
     } else if (lowStockSearchTarget === 'glasses') {
-      fetchLowStockGlasses();
+      if (user.role === 'admin' || user.role === 'receptionist') fetchLowStockGlasses();
     } else if (lowStockSearchTarget === 'drugs') {
-      fetchLowStockDrugs();
+      if (user.role === 'admin' || user.role === 'pharmacist' || user.role === 'receptionist') fetchLowStockDrugs();
     } else if (lowStockSearchTarget === 'all') {
-      fetchLowStockProducts();
-      fetchLowStockGlasses();
-      fetchLowStockDrugs();
+      if (user.role === 'admin') {
+        fetchLowStockProducts();
+        fetchLowStockGlasses();
+        fetchLowStockDrugs();
+      }
     }
   };
 
@@ -534,18 +595,20 @@ const ExpiredProduct = () => {
                 </button>
               )}
             </div>
-            <div className='flex items-center gap-2'>
-              <label className='text-sm font-medium'>Target:</label>
-              <select
-                value={expiredSearchTarget}
-                onChange={(e) => setExpiredSearchTarget(e.target.value)}
-                className='border rounded-md p-2 px-8'
-              >
-                <option value='products'>Inventory Products</option>
-                <option value='drugs'>Pharmacy Drugs</option>
-                <option value='all'>Both</option>
-              </select>
-            </div>
+            {getExpiredTargetOptions().length > 0 && (
+              <div className='flex items-center gap-2'>
+                <label className='text-sm font-medium'>Target:</label>
+                <select
+                  value={expiredSearchTarget}
+                  onChange={(e) => setExpiredSearchTarget(e.target.value)}
+                  className='border rounded-md p-2 px-8'
+                >
+                  {getExpiredTargetOptions().map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           {user.role === 'admin' && (
             <>
@@ -770,19 +833,20 @@ const ExpiredProduct = () => {
                 )}
               </div>
 
-              <div className='flex items-center gap-2'>
-                <label className='text-sm font-medium'>Target:</label>
-                <select
-                  value={lowStockSearchTarget}
-                  onChange={(e) => setLowStockSearchTarget(e.target.value)}
-                  className='border rounded-md p-2 px-7'
-                >
-                  <option value='products'>Products</option>
-                  <option value='glasses'>Glasses</option>
-                  <option value='drugs'>Drugs</option>
-                  <option value='all'>All</option>
-                </select>
-              </div>
+              {getLowStockTargetOptions().length > 0 && (
+                <div className='flex items-center gap-2'>
+                  <label className='text-sm font-medium'>Target:</label>
+                  <select
+                    value={lowStockSearchTarget}
+                    onChange={(e) => setLowStockSearchTarget(e.target.value)}
+                    className='border rounded-md p-2 px-7'
+                  >
+                    {getLowStockTargetOptions().map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div className='flex flex-wrap gap-2 mt-5'>
               <button

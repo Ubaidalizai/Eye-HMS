@@ -40,7 +40,7 @@ function Laboratory() {
 
   const fetchData = async () => {
     try {
-      let url = `${BASE_URL}/labratory?page=${currentPage}&limit=${limit}`;
+      let url = `${BASE_URL}/labratory?page=${currentPage}&limit=${limit}&serialToday=true`;
 
       // Add date filter if selected
       if (selectedDate) {

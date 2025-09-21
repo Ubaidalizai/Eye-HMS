@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTable } from 'react-table';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorBoundary from "../components/ErrorBoundary.jsx";
 import { useDoctorData } from '../components/useDoctorData';
@@ -72,7 +72,8 @@ function PersonInfoDropdown() {
 
   const handleAddOutcome = async () => {
     if (!newOutcome.date || !newOutcome.amount) {
-      toast.error('Please fill in all fields!');
+      const fillToastId = 'outcome-fill-fields';
+      if (!toast.isActive(fillToastId)) toast.error('Please fill in all fields!', { toastId: fillToastId });
       return;
     }
 
@@ -99,13 +100,15 @@ function PersonInfoDropdown() {
         }
         throw new Error(errorMessage);
       }
-      toast.success('Outcome added successfully!');
+  const successToastId = 'outcome-success';
+  if (!toast.isActive(successToastId)) toast.success('Outcome added successfully!', { toastId: successToastId });
       fetchRecords(selectedDoctorId);
       fetchDocKhataSummary(selectedDoctorId);
       setNewOutcome({ date: '', amount: '' });
     } catch (error) {
       console.error('Error adding outcome:', error.message);
-      toast.error(error.message);
+  const errToastId = 'outcome-error';
+  if (!toast.isActive(errToastId)) toast.error(error.message, { toastId: errToastId });
     }
   };
 
@@ -122,11 +125,7 @@ function PersonInfoDropdown() {
   return (
     <ErrorBoundary>
       <div className='w-full border pt-5 rounded-lg mt-10 md:mt-20 shadow-sm'>
-        <ToastContainer
-          position='top-right'
-          autoClose={3000}
-          hideProgressBar={false}
-        />
+        {/* ToastContainer is provided at app root. Do not render per-page containers to avoid duplicate toasts and clsx toggle errors. */}
         <h1 className='text-xl md:text-2xl font-semibold px-4 sm:px-6 mb-6 md:mb-10 text-gray-700'>
           Doctor Khata List
         </h1>
