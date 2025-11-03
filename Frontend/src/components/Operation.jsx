@@ -44,7 +44,6 @@ function Operation() {
       const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
-      console.log(data.data.results)
       setSubmittedData(data.data.results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (error) {

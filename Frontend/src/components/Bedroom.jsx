@@ -30,6 +30,20 @@ function Bedroom() {
     fetchTypes();
   }, [currentPage, limit, selectedDate]);
 
+  // Helper to compute a sensible total for a record when totalAmount is not present
+  const computeTotal = (record) => {
+    if (!record) return 0;
+    if (record.totalAmount !== undefined && record.totalAmount !== null) {
+      return typeof record.totalAmount === 'number'
+        ? record.totalAmount
+        : parseFloat(record.totalAmount) || 0;
+    }
+    // Prefer explicit price, fall back to rent
+    const originalPrice = (record.price ?? record.rent) || 0;
+    const discountVal = record.discount || 0;
+    return originalPrice - discountVal;
+  };
+
   const fetchData = async () => {
     try {
       let url = `${BASE_URL}/bedroom?page=${currentPage}&limit=${limit}&serialToday=true`;
@@ -42,8 +56,17 @@ function Bedroom() {
       const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
-      
-      setSubmittedData(data.data.results);
+      // Normalize results to ensure totalAmount exists for printing and display
+      const results = Array.isArray(data.data?.results)
+        ? data.data.results.map((r) => ({
+            ...r,
+            totalAmount:
+              r.totalAmount !== undefined && r.totalAmount !== null
+                ? r.totalAmount
+                : computeTotal(r),
+          }))
+        : [];
+      setSubmittedData(results);
       setTotalPages(data.totalPages || Math.ceil(data.results / limit));
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -95,7 +118,16 @@ function Bedroom() {
       }
 
       const result = await res.json();
-      setSubmittedData(result?.data?.records || []);
+      const records = Array.isArray(result?.data?.records)
+        ? result.data.records.map((r) => ({
+            ...r,
+            totalAmount:
+              r.totalAmount !== undefined && r.totalAmount !== null
+                ? r.totalAmount
+                : computeTotal(r),
+          }))
+        : [];
+      setSubmittedData(records);
       setTotalPages(result.data.totalPages || Math.ceil(result.data.results / limit));
     } catch (error) {
       console.error('Error fetching search results:', error);
@@ -109,9 +141,20 @@ function Bedroom() {
 
   // Calculate correct total for printing (original price - discount, without doctor percentage)
   const calculatePrintTotal = (record) => {
-    const originalPrice = record.price || 0;
-    const discount = record.discount || 0;
-    return originalPrice - discount;
+    // Prefer an explicit totalAmount when present
+    let base = 0;
+    if (record && record.totalAmount !== undefined && record.totalAmount !== null) {
+      base = typeof record.totalAmount === 'number'
+        ? record.totalAmount
+        : parseFloat(record.totalAmount) || 0;
+    } else {
+      base = computeTotal(record);
+    }
+    // Add percentage (assumed percentage of the base price/rent)
+    const pct = record?.percentage || 0;
+    const pctBase = (record?.price ?? record?.rent ?? base) || 0;
+    const pctValue = (pctBase * (Number(pct) || 0)) / 100;
+    return base + pctValue;
   };
 
   const handleCancel = () => {
