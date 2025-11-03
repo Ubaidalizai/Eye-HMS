@@ -29,7 +29,7 @@ function OCT() {
 
   const fetchOctTypes = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/operation-types?type=oct&all=true&serialToday=true`, {
+      const response = await fetch(`${BASE_URL}/operation-types?type=oct&all=true`, {
         credentials: 'include',
       });
       const data = await response.json();
@@ -41,7 +41,7 @@ function OCT() {
 
   const fetchData = async () => {
     try {
-      let url = `${BASE_URL}/oct?page=${currentPage}&limit=${limit}`;
+      let url = `${BASE_URL}/oct?page=${currentPage}&limit=${limit}&serialToday=true`;
 
       // Add date filter if selected
       if (selectedDate) {

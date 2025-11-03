@@ -33,7 +33,7 @@ function Ultrasound() {
   const fetchAtrasoundTypes = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/operation-types?type=biscayne&serialToday=true`,
+        `${BASE_URL}/operation-types?type=biscayne&all=true`,
         {
           credentials: 'include',
         }
@@ -47,7 +47,7 @@ function Ultrasound() {
 
   const fetchData = async () => {
     try {
-      let url = `${BASE_URL}/ultrasound?page=${currentPage}&limit=${limit}`;
+      let url = `${BASE_URL}/ultrasound?page=${currentPage}&limit=${limit}&serialToday=true`;
 
       // Add date filter if selected
       if (selectedDate) {

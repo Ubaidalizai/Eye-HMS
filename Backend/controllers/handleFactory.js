@@ -49,20 +49,21 @@ const getAll = (Model, userID = false, popOptions = null) =>
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      // filter today's records
-      const todaysRecords = results
-        .filter(
-          (doc) =>
-            new Date(doc.date) >= today && new Date(doc.date) < tomorrow
-        )
-        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      // fetch all today's records (_id + createdAt only, sorted by createdAt)
+      const allTodaysDocs = await Model.find({
+        ...query,
+        date: { $gte: today, $lt: tomorrow },
+      })
+        .select('_id createdAt')
+        .sort({ createdAt: 1 });
 
-      // assign serials to today’s only
+      // build map of serials
       const serialMap = new Map();
-      todaysRecords.forEach((doc, idx) => {
-        serialMap.set(doc._id.toString(), idx + 1);
+      allTodaysDocs.forEach((doc, idx) => {
+        serialMap.set(doc._id.toString(), idx + 1); // serial starts at 1
       });
 
+      // attach serials to current paginated results
       finalResults = results.map((doc) => {
         const serialNumber = serialMap.get(doc._id.toString());
         return {

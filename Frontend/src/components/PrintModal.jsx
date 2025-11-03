@@ -155,16 +155,18 @@ const PrintModal = ({
           .filter((field) => field.name !== 'percentage') // Exclude percentage field
           .map((field, idx) => (
             <div key={idx} className='print:text-sm'>
-              <span className='font-medium text-gray-600 print:text-black '>
-                {field.label}:
-              </span>
-              <span className='text-gray-800 print:text-black'>
-                {formatFieldValueForPrint(
-                  field.name,
-                  selectedRecord[field.name],
-                  selectedRecord
-                )}
-              </span>
+              <div className='flex items-center justify-between gap-2 min-w-0'>
+                <span className='font-medium text-gray-600 print:text-black whitespace-nowrap flex-shrink-0'>
+                  {field.label}:
+                </span>
+                <span className='text-gray-800 print:text-black break-words whitespace-normal print:whitespace-normal min-w-0'>
+                  {formatFieldValueForPrint(
+                    field.name,
+                    selectedRecord[field.name],
+                    selectedRecord
+                  )}
+                </span>
+              </div>
             </div>
           ))}
       </div>
