@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useAuth } from '../AuthContext.jsx';
 import {
   FaDollarSign,
   FaBoxOpen,
@@ -96,6 +97,7 @@ const Modal = ({ open, onClose, handleUpdate, children }) => {
 
 const Pharmacy = () => {
   const movedItems = useSelector((state) => state.inventory.movedItems);
+  const { user } = useAuth();
   const [drugs, setDrugs] = useState([]);
   const [drugSummary, setDrugSummary] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -736,12 +738,15 @@ const Pharmacy = () => {
                               >
                                 <FaEdit className='w-4 h-4' />
                               </button>
-                              <button
-                                onClick={() => handleDelete(drug._id)}
-                                className='font-medium text-red-600 hover:text-red-700'
-                              >
-                                <FaTrash className='w-4 h-4' />
-                              </button>
+                              {user?.role === 'admin' && (
+                                <button
+                                  onClick={() => handleDelete(drug._id)}
+                                  className='font-medium text-red-600 hover:text-red-700'
+                                  title='Delete (admin only)'
+                                >
+                                  <FaTrash className='w-4 h-4' />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
