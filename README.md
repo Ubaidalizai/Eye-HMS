@@ -2,6 +2,12 @@
 
 A comprehensive Hospital Management System built with React, Node.js, and MongoDB for managing eye hospital operations including patient records, inventory, pharmacy, finances, and more.
 
+## 🚀 Quick Deploy (Frontend Only)
+
+**Deploy frontend to Vercel in 5 minutes!** See [DEPLOY.md](./DEPLOY.md) for step-by-step instructions.
+
+---
+
 ## 🚀 Features
 
 - **User Management**: Role-based access control (Admin, Doctor, Pharmacist, Receptionist)
@@ -38,7 +44,7 @@ A comprehensive Hospital Management System built with React, Node.js, and MongoD
 - MongoDB (local or Atlas)
 - npm or yarn
 
-### Backend Setup
+### Backend Setup (For Local Development)
 
 ```bash
 cd Backend
@@ -87,21 +93,24 @@ All demo accounts use password: `demo123`
 
 ## 🚀 Deployment
 
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed deployment instructions to Vercel.
+### Frontend Deployment (Vercel)
 
-### Quick Deploy to Vercel
+**See [DEPLOY.md](./DEPLOY.md) for detailed frontend deployment instructions.**
 
-**Frontend:**
-```bash
-cd Frontend
-vercel
-```
+Quick steps:
+1. Go to [vercel.com](https://vercel.com)
+2. Import your GitHub repository
+3. Set **Root Directory** to `Frontend`
+4. Add environment variables
+5. Deploy!
 
-**Backend:**
-```bash
-cd Backend
-vercel
-```
+### Backend Deployment (Optional)
+
+The backend can be deployed separately to:
+- Railway: https://railway.app (Recommended)
+- Render: https://render.com
+- Heroku: https://heroku.com
+- Any Node.js hosting service
 
 ## 📁 Project Structure
 
@@ -122,7 +131,7 @@ Eye-HMS/
 │   │   ├── components/  # React components
 │   │   ├── pages/       # Page components
 │   │   ├── config/      # Configuration files
-│   │   └── utils/       # Utility functions
+│   │   └── utils/        # Utility functions
 │   └── public/          # Static assets
 │
 └── README.md
@@ -174,6 +183,5 @@ Eye-HMS Development Team
 
 ---
 
-**For deployment instructions, see [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**  
+**For frontend deployment, see [DEPLOY.md](./DEPLOY.md)**  
 **For demo credentials, see [DEMO_CREDENTIALS.md](./DEMO_CREDENTIALS.md)**
-
