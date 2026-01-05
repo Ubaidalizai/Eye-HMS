@@ -2,30 +2,21 @@
 const app = require('../app');
 const connectDB = require('../config/db');
 
-// Connect to database (cached connection for serverless)
-let cachedDb = null;
+// Cache database connection for serverless
+let dbConnected = false;
 
-async function connectToDatabase() {
-  if (cachedDb) {
-    return cachedDb;
-  }
-  
+// Initialize database connection
+(async () => {
   try {
-    await connectDB();
-    cachedDb = true;
-    return cachedDb;
+    if (!dbConnected) {
+      await connectDB();
+      dbConnected = true;
+    }
   } catch (error) {
-    console.error('Database connection error:', error);
-    throw error;
+    console.error('Initial DB connection error:', error);
   }
-}
+})();
 
-// Handler for Vercel serverless functions
-module.exports = async (req, res) => {
-  // Connect to database if not already connected
-  await connectToDatabase();
-  
-  // Handle the request with Express app
-  return app(req, res);
-};
+// Export Express app directly for Vercel
+module.exports = app;
 
