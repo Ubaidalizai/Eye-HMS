@@ -126,9 +126,16 @@ export default function Header() {
         >
           {({ open }) => (
             <>
-              <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-0'>
-                <div className='flex h-16 items-center justify-end gap-4 sm:mr-10'>
-                  <div className='flex items-center gap-4 mr-4'>
+              <div 
+                className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-6'
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 4px 20px -2px rgba(37, 99, 235, 0.1)'
+                }}
+              >
+                <div className='flex h-16 items-center justify-end gap-3 sm:mr-10'>
+                  <div className='flex items-center gap-3 mr-4'>
                     {/* Backup Button - Visible on all screens */}
                     <button
                       onClick={handleBackup}
@@ -142,7 +149,7 @@ export default function Header() {
                     <Link to='/ExpiredProduct'>
                       <button
                         type='button'
-                        className='relative flex items-center justify-center w-10 h-10 rounded-full bg-white border shadow-sm  text-gray-700 hover:bg-gray-200 active:scale-95 transition'
+                        className='relative flex items-center justify-center w-10 h-10 rounded-full bg-white border shadow-sm text-gray-700 hover:bg-gray-200 active:scale-95 transition'
                         aria-label='View notifications'
                       >
                         <Bell className='text-lg' aria-hidden='true' />

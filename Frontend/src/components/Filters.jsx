@@ -25,21 +25,23 @@ export const Filters = ({
 
     return years;
   };
-  // Custom styles for React Select to match the existing UI
+  // Custom styles for React Select with color palette
   const customStyles = {
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
-      height: '40px',
-      minHeight: '40px',
-      borderColor: '#D1D5DB',
-      boxShadow: 'none',
+      height: '42px',
+      minHeight: '42px',
+      borderColor: state.isFocused ? '#2563eb' : '#D1D5DB',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(37, 99, 235, 0.2)' : 'none',
+      borderRadius: '8px',
+      transition: 'all 0.2s',
       '&:hover': {
-        borderColor: '#9CA3AF',
+        borderColor: '#2563eb',
       },
     }),
     valueContainer: (provided) => ({
       ...provided,
-      padding: '0 8px',
+      padding: '0 12px',
     }),
     input: (provided) => ({
       ...provided,
@@ -51,17 +53,27 @@ export const Filters = ({
     }),
     dropdownIndicator: (provided) => ({
       ...provided,
-      padding: '0 8px',
+      padding: '0 12px',
+      color: '#2563eb',
     }),
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isSelected
-        ? '#3B82F6'
+        ? '#2563eb'
         : state.isFocused
-        ? '#EFF6FF'
+        ? 'rgba(37, 99, 235, 0.1)'
         : null,
-      color: state.isSelected ? 'white' : '#374151',
+      color: state.isSelected ? 'white' : state.isFocused ? '#2563eb' : '#374151',
       fontSize: '0.875rem',
+      padding: '10px 12px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      borderRadius: '8px',
+      border: '1px solid #E5E7EB',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
     }),
   };
 
@@ -70,10 +82,12 @@ export const Filters = ({
     categories.find((option) => option.value === selectedCategory) || null;
 
   return (
-    <div className='bg-white p-4 sm:p-6 rounded-lg border shadow-sm'>
-      <h2 className='text-lg font-medium text-gray-700 mb-4'>
-        Filter Dashboard Data
-      </h2>
+    <div className='bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-md'>
+      <div className='flex items-center mb-5'>
+        <h2 className='text-lg font-medium text-gray-700 mb-4'>
+          Filter Dashboard Data
+        </h2>
+      </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
         <div>

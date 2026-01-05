@@ -71,7 +71,7 @@ export default function BranchesMenu({ onMobileItemClick }) {
       name: 'Yag Laser',
       path: '/branches/yeglizer',
       icon: (
-        <LiaHandLizardSolid className='h-4 w-4 transition-colors duration-300 hover:text-blue-500 focus:text-blue-500' />
+        <LiaHandLizardSolid className='h-4 w-4 transition-colors duration-300' style={{ color: 'inherit' }} />
       ),
     },
     {
@@ -98,35 +98,47 @@ export default function BranchesMenu({ onMobileItemClick }) {
     >
       <summary
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center cursor-pointer gap-2 rounded-lg px-4 py-2 transition-colors duration-300 ${
+        className={`group flex items-center cursor-pointer gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
           isBranchActive()
-            ? 'bg-blue-50 text-blue-600 font-medium'
-            : 'text-gray-500 hover:text-blue-500'
+            ? 'text-white shadow-lg'
+            : 'text-gray-700 hover:bg-gray-100 hover:shadow-md'
         }`}
+        style={isBranchActive() ? {
+          background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+          boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.3)'
+        } : {}}
       >
-        <span className='flex items-center justify-center gap-2'>
-          <FaSitemap className='text-lg' />
-          <span className='text-sm flex font-medium'>
-            Branches <IoMdArrowDropdown className='ml-5 text-2xl' />
-          </span>
+        <span className={`text-lg transition-colors ${isBranchActive() ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`}>
+          <FaSitemap />
+        </span>
+        <span className={`text-sm font-semibold flex items-center gap-2 transition-colors ${isBranchActive() ? 'text-white' : 'text-gray-700 group-hover:text-blue-600'}`}>
+          Branches
+          <IoMdArrowDropdown className={`text-xl transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
         </span>
       </summary>
 
-      <div className='pl-5'>
+      <div className='pl-6 mt-2 space-y-1'>
         {branches.map(({ name, path, icon }, index) => (
           <Link
             key={index}
             to={path}
             onClick={() => onMobileItemClick && onMobileItemClick()}
-            className={`flex items-center gap-1 rounded-lg px-4 py-2 transition-colors duration-300 ${
+            className={`group flex items-center gap-3 rounded-lg px-4 py-2 transition-all duration-200 ${
               isActive(path)
-                ? 'bg-blue-50 text-blue-600 font-medium'
-                : 'text-gray-500 hover:text-blue-500'
+                ? 'text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
             }`}
+            style={isActive(path) ? {
+              background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+              boxShadow: '0 4px 15px -3px rgba(37, 99, 235, 0.2)'
+            } : {}}
           >
-            <span className='text-lg'>{icon}</span>
-            <span className='text-xs font-semibold'>{name}</span>
-            <span className='ml-auto text-xs'>→</span>
+            <span className={`text-base transition-colors ${isActive(path) ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`}>
+              {icon}
+            </span>
+            <span className={`text-xs font-semibold transition-colors ${isActive(path) ? 'text-white' : 'text-gray-700 group-hover:text-blue-600'}`}>
+              {name}
+            </span>
           </Link>
         ))}
       </div>
