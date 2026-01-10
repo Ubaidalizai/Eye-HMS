@@ -20,9 +20,10 @@ function Layout() {
       <div className='grid grid-cols-12 min-h-screen'>
         {/* Desktop Sidebar */}
         <div
-          className='fixed top-0 left-0 h-full hidden lg:block bg-white shadow-lg border-r border-gray-200 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-gray-200 z-40'
+          className='fixed top-0 left-0 h-full hidden lg:block bg-white shadow-xl border-r-2 border-gray-300 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 z-40'
           style={{
             width: '16.666667%',
+            minWidth: '250px',
           }} /* This is equivalent to col-span-2 in a 12-column grid */
         >
           <SideMenu />

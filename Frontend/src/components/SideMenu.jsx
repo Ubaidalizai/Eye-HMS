@@ -83,7 +83,21 @@ function SideMenu({ onMobileItemClick }) {
   const [userInfo, setUserInfo] = useState({ role: null });
   const location = useLocation();
 
+  // TEMPORARY: Disable authentication for demo
+  const DISABLE_AUTH = true;
+
   useEffect(() => {
+    // If auth is disabled, set mock admin user immediately
+    if (DISABLE_AUTH) {
+      setUserInfo({
+        role: 'admin',
+        firstName: 'Demo',
+        lastName: 'Admin',
+        email: 'admin@demo.com'
+      });
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/user/profile`, {
@@ -102,7 +116,10 @@ function SideMenu({ onMobileItemClick }) {
   }, []);
 
   // Filter menu items based on the user's role
-  const allowedMenus = RoleMenus[userInfo.role] || [];
+  // When auth is disabled, show all menus (admin has access to everything)
+  const allowedMenus = DISABLE_AUTH 
+    ? menuItems.map(item => item.id) 
+    : (RoleMenus[userInfo.role] || []);
 
   // Check if a path is active
   const isActive = (path) => {
@@ -120,7 +137,7 @@ function SideMenu({ onMobileItemClick }) {
   };
 
   return (
-    <div className='h-full flex flex-col bg-gradient-to-b from-slate-50 to-white w-full relative shadow-xl'>
+    <div className='h-full flex flex-col bg-white w-full relative shadow-xl border-r border-gray-200'>
       {/* Main content area with scrolling */}
       <div className='flex-grow overflow-y-auto pb-20 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent'>
         {/* Add padding at bottom to ensure content doesn't get hidden behind user info */}
@@ -131,7 +148,7 @@ function SideMenu({ onMobileItemClick }) {
               <div className='bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-lg shadow-md'>
                 <FaGlasses className='text-white text-lg' />
               </div>
-              <span className='font-bold text-gray-800 text-lg tracking-tight'>
+              <span className='font-bold text-gray-900 text-lg tracking-tight'>
                 Eye-Hospital MIS
               </span>
             </div>
@@ -154,7 +171,7 @@ function SideMenu({ onMobileItemClick }) {
                     className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
                       isActive(path)
                         ? "text-white shadow-lg transform scale-[1.02]"
-                        : "text-gray-700 hover:bg-gray-100 hover:shadow-md"
+                        : "text-gray-800 hover:bg-gray-50 hover:shadow-md border border-transparent hover:border-gray-200"
                     }`}
                     style={
                       isActive(path)
@@ -171,7 +188,7 @@ function SideMenu({ onMobileItemClick }) {
                       className={`text-lg transition-colors ${
                         isActive(path)
                           ? "text-white"
-                          : "text-gray-500 group-hover:text-blue-600"
+                          : "text-gray-600 group-hover:text-blue-600"
                       }`}
                     >
                       {icon}
@@ -180,7 +197,7 @@ function SideMenu({ onMobileItemClick }) {
                       className={`text-sm font-semibold transition-colors ${
                         isActive(path)
                           ? "text-white"
-                          : "text-gray-700 group-hover:text-blue-600"
+                          : "text-gray-800 group-hover:text-blue-600"
                       }`}
                     >
                       {label}
@@ -194,26 +211,26 @@ function SideMenu({ onMobileItemClick }) {
       </div>
 
       {/* User Info at Bottom - Fixed position */}
-      <div className='absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white shadow-lg'>
+      <div className='absolute bottom-0 left-0 right-0 border-t border-gray-300 bg-white shadow-lg'>
         <div className='flex justify-start items-center gap-3 py-4 px-5 hover:bg-gray-50 transition-colors cursor-pointer rounded-t-lg'>
           {userInfo?.image ? (
             <img
               src={`${IMAGE_BASE_URL}/users/${userInfo.image}`}
               alt={`${userInfo.firstName || ""} ${userInfo.lastName || ""}`}
-              className='h-12 w-12 rounded-full object-cover ring-2 ring-gray-200 shadow-md'
+              className='h-12 w-12 rounded-full object-cover ring-2 ring-gray-300 shadow-md'
             />
           ) : (
             <div className='h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md'>
-              {userInfo?.firstName?.[0] || "U"}
+              {userInfo?.firstName?.[0] || "D"}
             </div>
           )}
           <div className='flex-1 min-w-0'>
             <p className='text-sm flex flex-col items-start'>
-              <strong className='block font-semibold text-gray-800 truncate w-full'>
-                {userInfo?.firstName} {userInfo?.lastName}
+              <strong className='block font-semibold text-gray-900 truncate w-full'>
+                {userInfo?.firstName || 'Demo'} {userInfo?.lastName || 'Admin'}
               </strong>
-              <span className='text-xs text-gray-500 truncate w-full'>
-                {userInfo?.email}
+              <span className='text-xs text-gray-600 truncate w-full'>
+                {userInfo?.email || 'admin@demo.com'}
               </span>
             </p>
           </div>
