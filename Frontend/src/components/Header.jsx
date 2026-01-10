@@ -122,12 +122,12 @@ export default function Header() {
       <div className='min-h-full z-30'>
         <Disclosure
           as='nav'
-          className='fixed top-0 left-0 right-0 lg:left-[16.666667%] z-30'
+          className='fixed top-0 left-0 right-0 md:left-64 z-30'
         >
           {({ open }) => (
             <>
               <div 
-                className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-6'
+                className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-6 w-full'
                 style={{
                   background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%)',
                   backdropFilter: 'blur(10px)',

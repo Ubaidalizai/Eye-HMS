@@ -17,17 +17,14 @@ function Layout() {
 
   return (
     <>
-      <div className='grid grid-cols-12 min-h-screen'>
-        {/* Desktop Sidebar */}
-        <div
-          className='fixed top-0 left-0 h-full hidden lg:block bg-white shadow-xl border-r-2 border-gray-300 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 z-40'
-          style={{
-            width: '16.666667%',
-            minWidth: '250px',
-          }} /* This is equivalent to col-span-2 in a 12-column grid */
+      <div className='min-h-screen flex'>
+        {/* Desktop Sidebar - Always visible on desktop (768px and above) */}
+        <aside
+          className='hidden md:block md:flex-shrink-0 w-64 bg-white shadow-xl border-r-2 border-gray-300 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100 z-40 fixed left-0 top-0 bottom-0'
+          style={{ minHeight: '100vh', maxHeight: '100vh' }}
         >
           <SideMenu />
-        </div>
+        </aside>
 
         {/* Mobile Menu Toggle Button */}
         <button
@@ -56,15 +53,12 @@ function Layout() {
         </div>
 
         {/* Main Content */}
-        <div
-          className='col-span-12 lg:ml-[16.666667%] overflow-y-auto scrollbar-track-gray-200 px-6 py-4'
-          style={{ maxHeight: '100vh' }}
-        >
-          <div className='mb-16'>
+        <div className='flex-1 overflow-y-auto scrollbar-track-gray-200 px-6 py-4 bg-gray-50 min-h-screen relative md:ml-64'>
+          <div className='mb-16 pt-0'>
             <Header />
           </div>
 
-          <main>
+          <main className='mt-4'>
             <Outlet />
           </main>
         </div>
