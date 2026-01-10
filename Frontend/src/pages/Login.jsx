@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from "../AuthContext.jsx";
 import { navigateByRole } from '../utils/roleNavigation';
+
+// TEMPORARY: Disable authentication for demo
+const DISABLE_AUTH = true;
 
 function Login() {
   const [form, setForm] = useState({
@@ -13,6 +16,13 @@ function Login() {
   const { signin } = useAuth(); // Access the custom hook
   const navigate = useNavigate(); // Navigation hook
 
+  // Auto-redirect to dashboard when auth is disabled
+  useEffect(() => {
+    if (DISABLE_AUTH) {
+      navigate('/');
+    }
+  }, [navigate]);
+
   // Handle input changes
   const handleInputChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -21,6 +31,12 @@ function Login() {
   // Login User Function
   const loginUser = async (e) => {
     e.preventDefault();
+
+    // Skip login when auth is disabled
+    if (DISABLE_AUTH) {
+      navigate('/');
+      return;
+    }
 
     if (!form.email || !form.password) {
       setError('Please enter both email and password.');

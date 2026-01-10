@@ -12,7 +12,13 @@ function ProtectedWrapper({ children, allowedRoles }) {
   const location = useLocation();
   const hasRedirected = useRef(false);
 
+  // TEMPORARY: Allow all access when auth is disabled
+  const DISABLE_AUTH = true;
+
   useEffect(() => {
+    // Skip role-based navigation when auth is disabled
+    if (DISABLE_AUTH) return;
+
     // Only handle role-based navigation if authenticated and haven't redirected yet
     if (
       authStatus === 'authenticated' &&
@@ -50,9 +56,14 @@ function ProtectedWrapper({ children, allowedRoles }) {
     hasRedirected.current = false;
   }, [user?.id]);
 
-  // Show loading screen while checking authentication
-  if (loading) {
+  // Show loading screen while checking authentication (skip if auth disabled)
+  if (loading && !DISABLE_AUTH) {
     return <LoadingScreen />;
+  }
+
+  // Allow all access when auth is disabled
+  if (DISABLE_AUTH) {
+    return children;
   }
 
   // Redirect to login if not authenticated

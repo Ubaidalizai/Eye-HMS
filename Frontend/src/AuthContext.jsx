@@ -8,8 +8,20 @@ import {
 } from 'react';
 import { BASE_URL } from './config';
 
+// TEMPORARY: Disable authentication for demo (set to false to enable login)
+const DISABLE_AUTH = true;
+
 // Create a key for localStorage
 const AUTH_STATUS_KEY = 'auth_status';
+
+// Mock admin user for demo when auth is disabled
+const MOCK_ADMIN_USER = {
+  id: 'demo-admin-1',
+  email: 'admin@demo.com',
+  role: 'admin',
+  name: 'Demo Admin',
+  permissions: ['all']
+};
 
 const AuthContext = createContext(null);
 
@@ -33,6 +45,9 @@ export const AuthProvider = ({ children }) => {
 
   // Use useCallback for functions to prevent unnecessary re-renders
   const isTokenValid = useCallback(() => {
+    // Always return true when auth is disabled
+    if (DISABLE_AUTH) return true;
+    
     const lastLoginTime = localStorage.getItem('lastLoginTime');
     if (!lastLoginTime) return false;
 
@@ -102,6 +117,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signin = useCallback(async (credentials, callback) => {
+    // Skip API call when auth is disabled, just set mock user
+    if (DISABLE_AUTH) {
+      setUser(MOCK_ADMIN_USER);
+      setAuthStatus('authenticated');
+      localStorage.setItem(AUTH_STATUS_KEY, 'authenticated');
+      localStorage.setItem('lastLoginTime', Date.now().toString());
+      if (callback) callback(MOCK_ADMIN_USER);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -143,6 +168,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(
     async (redirect = false) => {
+      // Skip logout when auth is disabled (just refresh)
+      if (DISABLE_AUTH) {
+        if (redirect) {
+          window.location.href = '/';
+        }
+        return;
+      }
+
       // Prevent multiple logout calls
       if (authStatus === 'unauthenticated' || loading) {
         return;
@@ -190,6 +223,17 @@ export const AuthProvider = ({ children }) => {
     // Only run the auth check once when the component mounts
     const initializeAuth = async () => {
       try {
+        // If auth is disabled, set mock user immediately
+        if (DISABLE_AUTH) {
+          setUser(MOCK_ADMIN_USER);
+          setAuthStatus('authenticated');
+          localStorage.setItem(AUTH_STATUS_KEY, 'authenticated');
+          localStorage.setItem('lastLoginTime', Date.now().toString());
+          setLoading(false);
+          // Skip API calls when auth is disabled
+          return;
+        }
+
         const storedStatus = localStorage.getItem(AUTH_STATUS_KEY);
 
         if (storedStatus === 'logged_out') {
